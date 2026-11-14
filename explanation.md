@@ -15,13 +15,43 @@ Nothing in this file is called a result unless a run produced it.
 
 ## 1. What the lab is
 
-A research lab run by AI agents. It is organised like a human lab:
+A research lab run by AI agents, built for one question: can a team of agents reproduce computational biology analyses better than the best single model? (Track 3 of the hackathon.)
 
-- **Head researchers** set direction, read across the whole lab, and decide what gets kept.
-- **Departments** each own one part of the problem.
-- **Workers** sit inside one department and do its day-to-day work.
+**The idea in one sentence.** Agents are kept blind to each other on purpose, so that when two teams agree it means something, and when they disagree the lab knows exactly where to look.
 
-Status: **Decided** as the overall shape. **Open**: the research target, which departments exist, and how many agents each has.
+**Why this idea.** Human science controls error with three habits: independent replication, blinding, and writing the plan down before looking at the data. All three are limits on who may know what. In a lab of agents, a limit on who may know what is a memory rule. So the lab's memory rules are its scientific method, and section 3 is how they are enforced.
+
+**Who is in the lab, for each study.**
+
+| Department | Model | Reads | Job |
+|---|---|---|---|
+| Director | Fable | Everything | Assigns the study, passes facts between departments, signs off the report |
+| Library | Opus | Library memory | Uses Exa to find how the method should be done and what usually goes wrong. Never the benchmark's source study |
+| Team A and Team B | Opus | Its own team's memory only | Each analyses the data without seeing the other. Each writes its plan first and records every warning sign it notices |
+| Referee | Opus | Called only on disagreement | Gets both answers without knowing whose is whose. Must design and run a test that tells them apart; may not simply vote |
+| Team C | Opus | Its own memory only | Called only when the referee cannot settle it |
+
+**How one study runs.**
+
+1. The library researches the method. The director passes its pitfall sheet to both teams.
+2. Each team writes its plan to memory before analysing. The time stamp proves the plan came first.
+3. The teams analyse blind and submit an answer each.
+4. The answers are compared. If they agree, the answer is reported as *replicated*.
+5. If they disagree, the director passes each team's **warning signs, never its answer**, to the other team as questions. Each team must say whether the warning changes its method, and may revise once.
+6. If they still disagree, the referee runs a test. If that fails too, a third blind team is called.
+7. The report gives every answer with how it was reached (replicated, converged after questions, refereed, unresolved) and every rejected answer with the reason.
+
+**An example.** Two teams estimate an effect from a gene study. Team A notices that some samples appear twice and removes them. Team B does not notice, and its answer differs. The director does not tell B what A answered. It passes B one question: "The other team found repeated samples. Does that change your method?" B checks, agrees and redoes the estimate. Now the answers match, and the log shows which warning sign did it.
+
+**Why step 5 matters.** The authors of our first benchmark say models mostly fail there in one way: they notice a warning sign in the data and then do not change the analysis (section 8). Step 5 turns one team's noticing into a question the other team has to act on.
+
+**What the rehearsal taught** (a practice lab built the night before, in a separate private repository; no file from it is here). It tied a single agent, and three causes are designed out here:
+
+- Its head threw away a correct table on a hunch. Here a disagreement is settled by a test or by a hedge, never by opinion.
+- Four of its nine agreement checks compared a table with a copy of itself. Here the teams cannot read each other, so agreement cannot be a copy.
+- Department heads were 38% of all agent runs. Here there is one director, and extra teams are called only on disagreement.
+
+Status: **Decided** (D-8). **Not yet run**: nothing in this section has been measured.
 
 ## 2. Tools
 
@@ -89,6 +119,33 @@ We use Modal if it does something the lab needs and a laptop cannot. We do not a
 **D-6 · Nov 14, 11:20 · Decided · Keep this log.**
 Every agent decision, layout change, observation, idea, issue and source goes here, at the time it happens.
 
+**D-7 · Nov 14, 12:05 · Decided · Enter Track 3, AI Scientist Swarms.**
+The lab reproduces computational biology analyses and is compared with a single agent on the same model and budget. The track's own benchmark, BixBench3, is one project and not the main one: each of its 20 studies needs a large machine for up to a day.
+
+**D-8 · Nov 14, 12:12 · Decided · Blind replication, with more teams only on disagreement.**
+Design in section 1. Considered and not chosen as the core: a "court" where one team proposes and a critic team attacks (close to the POPPER paper the track cites, so less new; its test step is kept as the referee). Considered and limited: more teams per study. Each extra team adds its full cost, and in the rehearsal 56 agent runs scored the same as one. So a study starts with two teams and a third is called only when needed; the lab grows by running several studies at once.
+
+**D-9 · Nov 14, 12:18 · Decided · Which benchmarks, and what we may claim.**
+Three Opus scouts reviewed about 40 benchmarks with Exa (M-4; reports in `research/scouting/`). Chosen:
+
+1. **GeneBench-Pro, the 10 public problems** (OpenAI, June 2026). Genomics problems on small tables, graded automatically. On the full 129 problems the best published model passes about a third and Claude Opus 4.8 passed 9 to 16%. Runs on a laptop.
+2. **scBench public tasks** (LatchBio). Single-cell analysis steps with automatic graders. Next, if time allows.
+3. **One BixBench3 study on Modal**, as a showcase of the same lab on a full study.
+
+Rejected, with reasons: the original BixBench (an audit found 38% of tasks broken; top systems above 90% on the verified set), CORE-Bench (declared solved by its authors), BioAgent Bench (100% already), BioCoder (its grader needs a cloud setup we do not have), the LatchBio full sets (private), OmicsBench (94 of 97 tasks need a request to the authors), and several whose only scores are from 2024 models.
+
+**What we may claim.** Only public problems can be run, so published full-benchmark scores are context, not a record we can beat. The claim we can make honestly is the lab against a single agent, same model, same budget, same problems, with repeats.
+
+**D-10 · Nov 14, 12:18 · Decided · One gateway holds every key; agents hold none.**
+Agents reach memory and Exa only through a small gateway that knows each agent by a secret token and takes its identity from that token, never from what the agent says. This is idea N-1 built locally first; moving it onto Modal comes after the lab runs end to end.
+
+**D-11 · Nov 14, 12:20 · Decided · Fair-play rules for every benchmark run.**
+- Agents get the task text and the data, under neutral names (gb01 to gb10). Never the answers, the worked reports, the grader settings or the benchmark's own problem names.
+- No agent, and no session building the lab, looks up a benchmark's source study. The gateway drops search results that match a block list.
+- Teams are compared with our own rule (numbers within 5%, text equal), not the grader's tolerances, which a single agent would not have either.
+- Grading runs only after every agent has exited.
+- The single-agent baseline gets the same task text, data, model and budget.
+
 ## 5. Agent observations
 
 Things the agents did that we did not expect. Empty until the first run.
@@ -122,6 +179,18 @@ In past.dev a fact sent without an audience is visible to every identity. Re-sen
 **I-3 · Nov 14, 11:33 · Open · Memory is not instant.**
 past.dev accepts a write at once but derives memory from it in the background, one write after another. The raw text is searchable within seconds; the derived facts come later, and a read reports how much is still pending. An agent that writes and reads back straight away may not see its own fact in derived form. The event brief also asks teams to keep data to tens of documents. **Measured Nov 14 (M-1), four short facts, one run:** the writer could read its own fact back 2.9 seconds after sending it; past.dev reported each write fully processed after 7 to 17 seconds; reads took 0.6 to 2.0 seconds. So the delay is small at this size. Not yet measured: the delay with many writes queued.
 
+**I-4 · Nov 14, 12:20 · Open · The public benchmark ships its answers, and its folder names hint at the method.**
+GeneBench-Pro's public package puts the answers, the grader settings and a worked report beside the data, and names each problem folder after its topic. Guard: the package is kept in a sealed folder; agents get copies under neutral names with only the task text and data (D-11), and a test checks the agent side for leaks. Caveat we state plainly: the session that built the lab saw the folder names while downloading. It did not open the answers or the reports, and no folder name is in any text an agent receives.
+
+**I-5 · Nov 14, 12:20 · Open · Ten problems is a small sample.**
+A difference of one problem is 10 points. Every comparison needs repeats, and we report counts, not only percentages.
+
+**I-6 · Nov 14, 12:20 · Open · A team of agents can do worse than one agent.**
+Published cases: on ScienceAgentBench a one-shot team scored 32.4% against 38.2% for a single agent on the same model, and a Google and MIT study found negative returns from extra agents once a single agent passes about 45% (section 8). Our rehearsal was a tie. What we do about it: pick benchmarks where single models score low, and make the team add checking instead of hand-offs. We report the result whichever way it goes.
+
+**I-7 · Nov 14, 12:20 · Open · Grading has not been run yet.**
+The adapter is written and its format and agreement tests pass, but the benchmark's reference grader has not been executed yet.
+
 ## 8. Research behind decisions
 
 All sources below were read on Nov 14. This section is what documentation and papers say. What we measured ourselves is in section 9.
@@ -138,6 +207,12 @@ All sources below were read on Nov 14. This section is what documentation and pa
 | Which Exa endpoint for which job | `build-with-exa` skill, `.agents/skills/build-with-exa/SKILL.md` | D-3 |
 | A summary can hide a restricted or untrusted source, so access limits must follow a fact through everything derived from it | Wang et al., "MAP-Graph: Provenance-Aware Shared Memory for Multi-Agent Workflows", Aug 2026, https://arxiv.org/abs/2608.10509 (found with Exa; abstract read, not the full paper) | Pass-downs record their source, section 3 |
 | Four ways shared agent memory fails: leaks, stale facts spreading, contradictions that persist, lost provenance. Their live test found a scope rule that held on one API path and not on another | Margalit et al., "Governed Shared Memory for Multi-Agent LLM Systems", Jun 2026, https://arxiv.org/abs/2606.24535 (found with Exa; abstract read, not the full paper) | Why we test boundaries with real calls instead of trusting the docs (M-1) |
+
+| Models "notice the relevant local diagnostic clue" but treat it as data cleaning instead of changing the method; best published model passes about a third | OpenAI, GeneBench-Pro (June 2026), https://openai.com/index/introducing-genebench-pro/ and bioRxiv 2026.06.29.735386 (read by a scout through Exa; summarised in `research/scouting/`) | Step 5 in section 1, D-9 |
+| A one-shot team did worse than one agent on the same model (32.4% against 38.2%); a team that learned across rounds did better (43.1%) at about 34 times the cost | Mimosa on ScienceAgentBench, Mar 2026, https://arxiv.org/abs/2603.28986 (via scout) | I-6 |
+| Extra agents give negative returns once one agent already scores above about 45% | "Towards a Science of Scaling Agent Systems", Google Research and MIT, https://arxiv.org/abs/2512.08296 (via scout) | I-6, choice of benchmarks in D-9 |
+| Removing the code reviewer from a six-agent team cut its score from 60.5% to 25.0% | GenoMAS on GenoTEX, ACL Findings 2026 (via scout) | Why the lab's extra agents are checkers |
+| About 40 benchmarks compared on size, grading, compute, published scores and failure causes | Our scouting reports: `research/scouting/study_scale_benchmarks.md`, `short_task_benchmarks.md`, `latch_benchmarks.md`; every source link is in them and every search is in `records/exa_calls.jsonl` | D-9 |
 
 **past.dev facts we are building on** (from the pages above):
 
@@ -177,3 +252,6 @@ One search with highlights, three results: HTTP 200 in 2.1 seconds, cost reporte
 
 **M-3 · Nov 14, 11:58 · Measured · Modal login works.**
 Started one sandbox, ran one command in it and shut it down: 3.7 seconds end to end with Modal client 1.6.4. This only shows the account works. Idea N-1 is not tested yet.
+
+**M-4 · Nov 14, 12:17 · Measured · Benchmark scouting with Exa.**
+Three Opus scouts, each told to use only the lab's Exa tool. Together with the first test search: 94 Exa calls costing $0.36 in total, all logged in `records/exa_calls.jsonl` with who asked and why. Output: three reports covering about 40 benchmarks. What this does not show: the scouts read papers and leaderboard pages, they did not run any benchmark, so every number in the reports is a published number, not ours.
