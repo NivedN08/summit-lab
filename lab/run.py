@@ -81,7 +81,30 @@ def make_backend(kind: str, adapter=None):
     if kind == "mock":
         from lab.backend_mock import MockBackend
         return MockBackend(mock_script(adapter))
+    if kind == "modal":
+        from lab.backend_modal import ModalBackend
+        return ModalBackend()      # its own host list: Anthropic's API and the Python package index
     raise SystemExit(f"unknown backend {kind!r}")
+
+
+def stop_modal_on_interrupt(backend, lab=None) -> None:
+    """With the Modal backend, Ctrl-C terminates every agent sandbox and the gateway sandbox, then exits.
+    Agents cut off this way have agent.start without agent.finish, like any crashed run."""
+    import os
+    import signal
+
+    def handler(signum, frame):
+        print("\ninterrupted: terminating Modal sandboxes", file=sys.stderr)
+        backend.shutdown()
+        gateway = getattr(lab, "gateway", None)
+        if gateway is not None:
+            try:
+                gateway.stop()
+            except Exception as err:
+                print(f"could not stop the gateway sandbox cleanly: {err}", file=sys.stderr)
+        os._exit(130)
+
+    signal.signal(signal.SIGINT, handler)
 
 
 def make_memory(kind: str, log, run_dir: pathlib.Path):
@@ -131,9 +154,23 @@ def cmd_lab(args) -> int:
                     director_model=args.director_model, worker_model=args.model)
     note_run(run_dir, benchmark=args.benchmark, lab_studies=[s.id for s in studies], memory=args.memory,
              backend=args.backend)
+    gateway_factory = None
+    if args.backend == "modal":
+        if args.memory != "past":
+            raise SystemExit("--backend modal needs --memory past: the gateway runs on Modal, so a local "
+                             "memory file on this laptop would not see the agents' facts")
+        from lab.modal_gateway import ModalGateway
+        gateway_factory = ModalGateway
     backend = make_backend(args.backend, adapter)
     memory = make_memory(args.memory, log, run_dir)
-    out = Lab(adapter, backend, memory, log, run_dir, config).run(studies)
+    lab = Lab(adapter, backend, memory, log, run_dir, config, gateway_factory=gateway_factory)
+    if args.backend == "modal":
+        stop_modal_on_interrupt(backend, lab)
+    try:
+        out = lab.run(studies)
+    finally:
+        if hasattr(backend, "shutdown"):
+            backend.shutdown()
     for sid, info in out.items():
         extra = " (already finished)" if info.get("skipped") else ""
         print(f"{sid}: {info['status']}{extra}")
@@ -150,8 +187,14 @@ def cmd_baseline(args) -> int:
     note_run(run_dir, benchmark=args.benchmark, baseline_studies=[s.id for s in studies],
              baseline_attempts=args.attempts, baseline_model=args.model)
     backend = make_backend(args.backend, adapter)
-    out = run_baselines(adapter, backend, log, run_dir, studies, args.attempts, args.model, args.parallel,
-                        timeout_s=args.timeout)
+    if args.backend == "modal":
+        stop_modal_on_interrupt(backend)
+    try:
+        out = run_baselines(adapter, backend, log, run_dir, studies, args.attempts, args.model, args.parallel,
+                            timeout_s=args.timeout)
+    finally:
+        if hasattr(backend, "shutdown"):
+            backend.shutdown()
     for sid, runs in out.items():
         print(f"{sid}: " + (", ".join(f"attempt-{k} {'ok' if ok else 'failed'}" for k, ok in sorted(runs.items()))
                             or "nothing to run"))
@@ -325,7 +368,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--studies", help="comma-separated study ids (default: all)")
     p.add_argument("--run-dir", required=True)
     p.add_argument("--memory", choices=["past", "local"], default="local")
-    p.add_argument("--backend", choices=["claude", "mock"], default="claude")
+    p.add_argument("--backend", choices=["claude", "mock", "modal"], default="claude")
     p.add_argument("--parallel", type=int, default=4, help="agents running at once, across all studies")
     p.add_argument("--model", default="opus", help="model for the workers")
     p.add_argument("--director-model", default="fable")
@@ -341,7 +384,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--attempts", type=int, default=4)
     p.add_argument("--model", default="opus")
     p.add_argument("--run-dir", required=True)
-    p.add_argument("--backend", choices=["claude", "mock"], default="claude")
+    p.add_argument("--backend", choices=["claude", "mock", "modal"], default="claude")
     p.add_argument("--parallel", type=int, default=4)
     p.add_argument("--timeout", type=int, default=1800, help="seconds per attempt (the same limit a lab analyst gets)")
     p.set_defaults(fn=cmd_baseline)

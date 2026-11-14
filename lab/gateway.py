@@ -4,6 +4,10 @@ The orchestrator gives each agent a secret token (issue_token). The gateway deci
 calling from that token alone: any agent id, identity, role, department or audience in a
 request body is ignored. Unknown or missing token: 401.
 
+On Modal (lab/gateway_main.py) the gateway runs with identity_header="X-Verified-User-Data": the
+agent is then taken only from that header, which Modal sets from the agent's connect token, and
+the token table above is not consulted. No header, or an agent not in the org: 401.
+
 Routes (all POST, JSON in and out):
   /memory/write      {text, label}                               -> {id, department}
   /memory/recall     {query, limit}                              -> {facts: [...]}
@@ -82,8 +86,11 @@ class Gateway:
 
     def __init__(self, org: Org, memory: Memory, log: EventLog, exa_departments=(), blocked_terms=(),
                  *, exa_call=default_exa_call, host: str = "127.0.0.1", port: int = 0,
-                 agents_may_pass_down: bool = True):
+                 agents_may_pass_down: bool = True, identity_header: str | None = None):
         self.org = org
+        # When set (on Modal: "X-Verified-User-Data"), the caller's identity comes ONLY from this header,
+        # which a trusted proxy fills in as JSON {"agent": "<agent id>"}. The bearer-token table is not used.
+        self.identity_header = identity_header
         self.memory = memory
         self.log = log
         self.exa_departments = set(exa_departments)
@@ -133,7 +140,8 @@ class Gateway:
         self._thread.start()
         host, port = self._server.server_address[:2]
         self.log.append("gateway.start", "gateway", host=host, port=port,
-                        exa_departments=sorted(self.exa_departments), blocked_terms=len(self.blocked_terms))
+                        exa_departments=sorted(self.exa_departments), blocked_terms=len(self.blocked_terms),
+                        identity=self.identity_header or "bearer token")
         return f"http://{host}:{port}"
 
     def stop(self) -> None:
@@ -146,6 +154,20 @@ class Gateway:
             self.log.append("gateway.stop", "gateway")
 
     # ----- request handling -----
+
+    def _verified_agent(self, value: str | None) -> Agent | None:
+        """The agent named in the proxy's verified-identity header, or None if absent or unknown."""
+        try:
+            data = json.loads(value) if value else None
+        except ValueError:
+            return None
+        agent_id = data.get("agent") if isinstance(data, dict) else None
+        if not isinstance(agent_id, str):
+            return None
+        try:
+            return self.org.agent(agent_id)
+        except KeyError:
+            return None
 
     def _agent_for(self, header: str | None) -> Agent | None:
         if not header or not header.lower().startswith("bearer "):
@@ -165,7 +187,10 @@ class Gateway:
             if length > MAX_BODY:
                 raise Refused(413, "request body too large")
             raw = handler.rfile.read(length) if length else b"{}"
-            agent = self._agent_for(handler.headers.get("Authorization"))
+            if self.identity_header:
+                agent = self._verified_agent(handler.headers.get(self.identity_header))
+            else:
+                agent = self._agent_for(handler.headers.get("Authorization"))
             if agent is None:
                 raise Refused(401, "missing or unknown token")
             if handler.command != "POST":

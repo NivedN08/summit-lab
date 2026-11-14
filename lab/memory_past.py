@@ -189,6 +189,14 @@ class PastMemory:
         self.log.append("memory.setup", "memory", backend="past", namespace=ns, audiences=self._audiences,
                         identities={a.id: self._identity(a.id) for a in org.agents}, memberships=memberships)
 
+    def attach(self, org: Org) -> None:
+        """Use identities and audiences another process already set up for this namespace.
+        Makes no call to past.dev: it only learns the org and the audience names setup() made."""
+        self.org = org
+        self._audiences = {d: audience_slug(self.namespace, d) for d in org.departments}
+        self.log.append("memory.attach", "memory", backend="past", namespace=self.namespace,
+                        audiences=self._audiences)
+
     def _check_memberships(self, tries: int = 6) -> dict:
         """Ask past.dev which audiences each identity reaches; fail if any differs from the org's rule."""
         all_slugs = set(self._audiences.values())

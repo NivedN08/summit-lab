@@ -273,8 +273,10 @@ class Lab:
     """Runs studies through the protocol. One instance per run directory."""
 
     def __init__(self, adapter: Adapter, backend: Backend, memory: Memory, log: EventLog,
-                 run_dir: pathlib.Path, config: Config | None = None, *, exa_call=None):
+                 run_dir: pathlib.Path, config: Config | None = None, *, exa_call=None, gateway_factory=None):
         self.adapter = adapter
+        # Builds the gateway with Gateway's arguments; lab.modal_gateway.ModalGateway runs it on Modal.
+        self.gateway_factory = gateway_factory or Gateway
         self.memory = memory
         self.log = log
         self.run_dir = pathlib.Path(run_dir).resolve()   # briefs carry paths; agents run in their own folder
@@ -320,9 +322,13 @@ class Lab:
             kwargs["blocked_terms"] = self.adapter.blocked_terms()
         if self.exa_call is not None:
             kwargs["exa_call"] = self.exa_call
-        self.gateway = Gateway(self.org, self.memory, self.log, **kwargs)
+        self.gateway = self.gateway_factory(self.org, self.memory, self.log, **kwargs)
         self.gateway_url = self.gateway.start()
-        self.tokens = {a.id: self.gateway.issue_token(a.id) for a in self.org.agents}
+        try:
+            self.tokens = {a.id: self.gateway.issue_token(a.id) for a in self.org.agents}
+        except BaseException:
+            self.gateway.stop()
+            raise
         self.log.append("lab.start", "lab", studies=[s.id for s in todo], config=dataclasses.asdict(self.config))
         try:
             with concurrent.futures.ThreadPoolExecutor(max_workers=len(todo)) as pool:
@@ -339,9 +345,13 @@ class Lab:
         return out
 
     def env(self, agent: Agent) -> dict:
-        return {"LAB_GATEWAY_URL": self.gateway_url, "LAB_GATEWAY_TOKEN": self.tokens[agent.id]}
+        # On Modal every agent's connect token comes with its own URL.
+        url = self.gateway.url_for(agent.id) if hasattr(self.gateway, "url_for") else self.gateway_url
+        return {"LAB_GATEWAY_URL": url, "LAB_GATEWAY_TOKEN": self.tokens[agent.id]}
 
     def wait_settled(self) -> None:
+        if hasattr(self.gateway, "sync"):     # a remote gateway: fetch its latest writes first
+            self.gateway.sync()
         if hasattr(self.memory, "wait_settled"):
             self.memory.wait_settled()
 
