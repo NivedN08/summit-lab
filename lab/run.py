@@ -37,7 +37,12 @@ def _scbench():
     return ScBench()
 
 
-ADAPTERS = {"genebench": _genebench, "scbench": _scbench}     # benchmark name -> zero-argument factory
+def _biodsa():
+    from lab.adapters.biodsa import BioDSA
+    return BioDSA()
+
+
+ADAPTERS = {"genebench": _genebench, "scbench": _scbench, "biodsa": _biodsa}   # benchmark name -> zero-argument factory
 
 
 def load_adapter(name: str):
