@@ -166,7 +166,10 @@ With ten problems these are counts, not rates to trust to the decimal (I-5). We 
 
 ## 5. Agent observations
 
-Things the agents did that we did not expect. Empty until the first run.
+Things the agents did that we did not expect.
+
+**O-1 · Nov 14, 12:47 · Measured (smoke run 1, cheapest model) · Blocked agents reported the block instead of inventing an answer.**
+In the first plumbing test a fault of ours (I-9) stopped every agent from unpacking the data. Neither analyst guessed. One wrote: "No plan was recorded to memory, no analysis was run, and no answer.json was written, because any numbers would be unsupported." The lab then recorded the study as "no-answer". That is the behaviour we want from a team: a missing answer is recorded as missing, not papered over. One run, one model; not evidence of how often this holds.
 
 ## 6. Ideas
 
@@ -209,8 +212,11 @@ Published cases: on ScienceAgentBench a one-shot team scored 32.4% against 38.2%
 **I-7 · Nov 14, 12:20, updated 12:32 · Open · No real answer has been graded yet.**
 The adapter is written and all five of its tests pass, including one that feeds the benchmark's reference grader a placeholder answer and sees it fail. No answer from an agent has been graded yet.
 
-**I-8 · Nov 14, 12:31 · Open · The director cannot run on Fable 5.2 yet.**
-The installed Claude command-line tool (2.1.285) only reaches Fable 5.1; Fable 5.2 needs version 2.1.290 or newer. Until the tool is updated the director runs on Fable 5.1 and the workers on Opus 5.5. Reports name the exact model each agent used.
+**I-8 · Nov 14, 12:31, fixed 12:47 · Fixed · The director could not run on Fable 5.2.**
+The installed Claude command-line tool (2.1.285) only reaches Fable 5.1; Fable 5.2 needs version 2.1.290 or newer. The tool was upgraded to 2.1.311 and a test call confirmed Fable 5.2 answers. The director runs on Fable 5.2 and the workers on Opus 5.5. Reports name the exact model each agent used.
+
+**I-9 · Nov 14, 12:47 · Fixed · Agents could not run shell loops, so they could not open the data.**
+Found by the first plumbing test (`runs/smoke1`, one problem, cheapest model): all four agents stopped within 40 seconds, with no memory writes, no searches and no answer. Cause: in the agents' permission mode the command-line tool refuses any shell command it cannot analyse ahead of time (a loop, a `cd`, a variable), and the first thing an analyst does is loop over the compressed data files. Fix: shell commands are allowed to run, and the operating-system sandbox, not the command check, is what confines them. A new live check (`test_live_loops_and_cd_run_but_stay_confined`) shows loops now run inside the agent's folder and a loop writing outside it is still refused. All six live sandbox checks pass on the upgraded tool (version 2.1.311).
 
 ## 8. Research behind decisions
 
