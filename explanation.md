@@ -367,3 +367,15 @@ Commands: `python3 -m lab.run lab --benchmark genebench --studies gb01,gb02 --ru
 | Waiting on memory | About 5 minutes before the teams started and 3.5 minutes before the question round, for past.dev to finish processing pass-downs |
 
 What this shows: the whole loop runs with real agents, including the disagreement path, the leak check, the referee and the third team; and the lab cost about as much as four single attempts. What it does not show: any advantage for the lab. Two problems are far too few to say there is none (I-5), and on the full benchmark more than half the problems are failed by every published model.
+
+**M-9 · Nov 14, 14:21 · Measured · First real run on Modal; Fable alone also fails both development problems.**
+Command: `python3 -m lab.run baseline --benchmark genebench --studies gb01,gb02 --attempts 2 --model fable --run-dir runs/dev-fable --backend modal --parallel 4`, then `grade`. Four agents, each in its own Modal sandbox, started in the same second and finished in 4.5 to 5.5 minutes. The transcripts name the model as claude-fable-5-2. Records: `results/dev-fable/`.
+
+| | Problem gb01 | Problem gb02 |
+|---|---|---|
+| Fable 5.2 alone, 2 attempts | 0 of 2 passed (partial scores 0.38 and 0.25) | 0 of 2 passed |
+| Opus 5.5 alone, 4 attempts (M-8) | 0 of 4 passed (0.25 each) | 0 of 4 passed |
+| Lab, version 1 (M-8) | fail (0.25) | fail (0) |
+
+Two things this adds. First, on gb02 every single agent on both models gave almost the same four numbers, and all were wrong: the blind spot is shared across models, not only across teams (I-11). The lab's two teams reached a different answer from the single agents, also wrong. Second, the Modal runner works end to end for single agents with a real model; the full lab flow on Modal is still untested.
+What it does not show: anything about the eight test problems. Partial scores are the grader's own number and are reported only as a finer view; pass or fail is the result.
