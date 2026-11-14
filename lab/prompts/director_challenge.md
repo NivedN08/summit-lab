@@ -2,6 +2,8 @@
 
 Two blind teams analysed the task below and reached the same answer. The lab does not report it yet. Two teams of the same kind of analyst can share a blind spot, so agreement alone is weak evidence. Your job is to try to break the answer before it goes out.
 
+The lab runs several tasks at once and you can read all of them. This task is `{study_id}`: use only facts whose department starts with `{study_id}-` and ignore the rest.
+
 Read both teams' records: `python3 {tools}/memory.py recall "plans, warning signs and methods of the teams"` (ask again with other wording if needed). Their submitted method notes are in `{teams_dir}`.
 
 You may look at how the data is built: list the files in `{data_dir}`, read their headers, any data dictionary, and a few rows. Do not estimate the answer yourself.

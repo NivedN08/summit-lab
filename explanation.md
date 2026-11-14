@@ -190,6 +190,10 @@ What can be run: 36 public tasks. Six are the benchmark's current public set; th
 Guards beyond D-11: scBench agents get no access to the Python package index, because one public package there contains the older set's answers; each study gets its own library memory, because several tasks share a data file and shared memory would carry one task's findings into another; grading runs in a separate environment no agent can reach.
 Status: tasks staged with answers sealed; the current six tasks' data is on a Modal volume; wiring into the runner in progress; no task run yet.
 
+**D-17 · Nov 14, 15:03 · Decided · The design is frozen for the test problems.**
+Version 2 as in D-15, plus two changes made before the freeze: each problem has its own library memory, and the director is told to use only its own problem's facts (eight problems now run at once, and the director can read all of them). Models: director Fable 5.2, all other agents Opus 5.5. Limits: 30 minutes per analyst and per single agent, 10 library searches. Comparison: the lab; four independent Opus 5.5 attempts per problem; two Fable 5.2 attempts per problem; a plain vote over the single attempts at about the lab's cost. Scoring: GeneBench's reference grader, once, after every agent has exited.
+Nothing in the lab's design changes after this entry until the test problems gb03 to gb10 are scored.
+
 ## 5. Agent observations
 
 Things the agents did that we did not expect.
@@ -205,6 +209,9 @@ Told it may not vote, the referee ran one estimator on both teams' case sets, sp
 
 **O-4 · Nov 14, 14:13 · Measured (pilot 1, problem gb02) · Two blind teams agreed, and both were wrong.**
 Both teams got the same eight items from the library, made the same choices, named the same weakest point, and submitted answers within 5% of each other. The lab labelled the answer replicated. It failed. The four single agents, who had no library, clustered on a different answer that also failed. See I-11.
+
+**O-5 · Nov 14, 15:03 · Measured (version 2, problem gb02) · The director's challenge found what both teams shared.**
+The two teams agreed again, although only team A had the library's briefing. The director (Fable 5.2) then read both method notes and the data's layout and wrote: "Moderate trust at best: the two teams agree, but both reach the answer through the same chr3 label flip chosen by a separation-maximising rule on only four chromosomes, and neither calibrated it against chance". It listed three assumptions both teams made, three pieces of data neither used (one a whole file), and three other readings of the task's wording, and sent eight questions. After re-checking, the teams no longer agreed, and the referee decided. The final answer still failed. So the challenge did what it is for, breaking a false agreement, and the lab no longer called that answer replicated; it did not find the right answer.
 
 ## 6. Ideas
 
@@ -401,3 +408,17 @@ Command: `python3 -m lab.run baseline --benchmark genebench --studies gb01,gb02 
 
 Two things this adds. First, on gb02 every single agent on both models gave almost the same four numbers, and all were wrong: the blind spot is shared across models, not only across teams (I-11). The lab's two teams reached a different answer from the single agents, also wrong. Second, the Modal runner works end to end for single agents with a real model; the full lab flow on Modal is still untested.
 What it does not show: anything about the eight test problems. Partial scores are the grader's own number and are reported only as a finer view; pass or fail is the result.
+
+**M-10 · Nov 14, 15:03 · Measured · Version 2 on the two development problems: still no pass, but no false "replicated".**
+Command: `python3 -m lab.run lab --benchmark genebench --studies gb01,gb02 --run-dir runs/dev-v2-local --memory past --backend claude --parallel 4 --max-searches 10`, then `grade` and `measures` (single-agent attempts reused from pilot 1). On the laptop. Records: `results/dev-v2/`.
+
+| | Problem gb01 | Problem gb02 |
+|---|---|---|
+| First comparison | teams disagreed | teams agreed |
+| What followed | 8 questions, still disagreed, referee picked | director's challenge, 8 questions, teams then disagreed, referee picked |
+| Lab's label | refereed | refereed |
+| Lab's final answer | fail (1 of 4 fields) | fail (0 of 4) |
+| Version 1 on the same problem (M-8) | unresolved, fail | replicated, fail |
+
+Other measures: 16 questions written, none blocked by the leak check; 6 of 14 replies said the question changed the method; no step turned a failing answer into a passing one or the reverse; 16 agent runs, 38 minutes of agent time, $8.79; no multi-minute waits on memory.
+What it shows: the new steps run with real agents, and the one false "replicated" of version 1 is gone. What it does not show: any gain in correct answers. These two problems have now been failed by the lab twice and by both models alone.

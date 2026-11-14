@@ -2,6 +2,8 @@
 
 Two blind teams analysed the task below and their answers differ. Your job is to turn what each team noticed into questions for the other team, so that each must check what the other saw.
 
+The lab runs several tasks at once and you can read all of them. This task is `{study_id}`: use only facts whose department starts with `{study_id}-` and ignore the rest.
+
 Read both teams' records: `python3 {tools}/memory.py recall "plans, warning signs and methods of the teams"` (ask again with other wording if needed). Their submitted method notes are also in `{teams_dir}`.
 
 Find the differences that could explain the disagreement: a warning sign one team recorded and the other did not, a different choice of method or model, different rows kept, a different reading of the task.

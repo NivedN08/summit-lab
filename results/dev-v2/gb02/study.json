@@ -1,0 +1,429 @@
+{
+  "study": "gb02",
+  "status": "refereed",
+  "final": {
+    "agent": "gb02-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-v2-local/gb02/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ]
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "gb02-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-v2-local/gb02/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "parent1_A_fraction": 0.301,
+        "parent1_t": 3.5,
+        "parent2_A_fraction": 0.747,
+        "parent2_t": 6.34
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "gb02-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-v2-local/gb02/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "parent1_A_fraction": 0.301,
+        "parent1_t": 3.5,
+        "parent2_A_fraction": 0.747,
+        "parent2_t": 6.34
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "gb02-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-v2-local/gb02/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "parent1_A_fraction": 0.301,
+        "parent1_t": 3.41,
+        "parent2_A_fraction": 0.747,
+        "parent2_t": 6.16
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "gb02-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-v2-local/gb02/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "parent1_A_fraction": 0.25,
+        "parent1_t": 4.43,
+        "parent2_A_fraction": 0.797,
+        "parent2_t": 6.27
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "gb02-team-a",
+        "gb02-team-b"
+      ],
+      "fields": {
+        "parent1_A_fraction": true,
+        "parent1_t": true,
+        "parent2_A_fraction": true,
+        "parent2_t": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "gb02-team-a",
+        "gb02-team-b"
+      ],
+      "fields": {
+        "parent1_A_fraction": false,
+        "parent1_t": false,
+        "parent2_A_fraction": false,
+        "parent2_t": true
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Do not estimate the admixture time as t = 1/(mean tract length). Recombination between two segments of the same ancestry is invisible, so under a single pulse t generations ago with ancestry-A fraction m, A tracts are exponential with rate t*(1-m) per Morgan and B tracts with rate t*m per Morgan. The naive estimator is off by a factor 1/(1-m) (or 1/m) and is badly wrong when m is far from 0.5. Estimate t jointly instead, for example t = S / (2*m*(1-m)*L), where S is the number of observed ancestry switches and L is the total called span in Morgans, or equivalently t = 1/(mean_A_length*(1-m)). As a check, estimate t separately from the A tracts (rate t*(1-m)) and from the B tracts (rate t*m) of the same haplotype; the two should agree with each other, while the naive 1/mean will not.",
+      "from": [
+        "sl-dev-v2-local-dff9f74f2f47"
+      ],
+      "reason": "This fixes the core estimator for t; using the naive formula changes the reported time by a large factor that depends on each haplotype's ancestry fraction.",
+      "fact_ids": {
+        "team-a": "sl-dev-v2-local-cd42e06fc3ab"
+      }
+    },
+    {
+      "text": "Tracts that touch the start or end of a chromosome, or the edge of the called span, are censored: their observed length is shorter than their true length. Treating them as complete tracts shortens the mean and inflates t. Per chromosome and haplotype, count the segments that begin at the first called coordinate or end at the last, see what share of the span they hold, and compare boundary with interior tract lengths. Use the censored exponential estimator: rate = (number of uncensored tract ends, that is observed ancestry switches) / (total Morgan span of all tracts of that ancestry, censored ones included). Equivalently, count switches as events and total span as exposure; chromosome ends are not switches.",
+      "from": [
+        "sl-dev-v2-local-3df09f4e7b3f"
+      ],
+      "reason": "With one individual, a large share of tracts touch a chromosome end, so how edges are handled moves t materially.",
+      "fact_ids": {
+        "team-a": "sl-dev-v2-local-ade096975d65"
+      }
+    },
+    {
+      "text": "The ancestry-A fraction must be weighted by genetic length (Morgans) over the span actually called. It is not a count of segments, and the denominator is not physical position or the whole chromosome length. The called span can be shorter than the chromosome lengths given in map_info.tsv, and dividing by chromosome length deflates both fractions. For each haplotype, sum segment lengths per chromosome and compare with length_morgan in map_info.tsv to quantify uncalled flanks and interior gaps, and check that both haplotypes cover the same span. Use the sum of retained, called segment lengths in Morgans per haplotype as the denominator, and use that same span as the exposure in the rate estimate for t.",
+      "from": [
+        "sl-dev-v2-local-e5ee3790a7a0"
+      ],
+      "reason": "The task asks for the fraction 'across the called tract span'; the choice of denominator directly sets both fractions and feeds into t.",
+      "fact_ids": {
+        "team-a": "sl-dev-v2-local-a629cce5274d"
+      }
+    },
+    {
+      "text": "Very short segments produced by local-ancestry inference error (low posterior, repeats or low-complexity regions) add fake ancestry switches and inflate t. Tabulate segment length against the posterior and low_complexity_frac columns and look for an excess of segments below roughly 1-2 cM concentrated at low posterior or high low_complexity_frac. If present, drop segments that fail a posterior threshold (for example below 0.9) or have high low_complexity_frac (for example above 0.5), remove their span from the denominator instead of counting them as switches, and report how sensitive t is to the chosen threshold.",
+      "from": [
+        "sl-dev-v2-local-87640e8f459f"
+      ],
+      "reason": "Each spurious short segment adds two switches, so artefact filtering can change t substantially; the data carry quality columns meant for this check.",
+      "fact_ids": {
+        "team-a": "sl-dev-v2-local-7c2bbc3a68d6"
+      }
+    },
+    {
+      "text": "After filtering, or across uncalled gaps, two adjacent segments of the same ancestry on the same chromosome and haplotype are one tract, not two tracts separated by a switch. Leaving them unmerged roughly doubles the inferred switch rate. Scan each chromosome and haplotype for consecutive rows with the same ancestry label and for same-ancestry pairs flanking a dropped or uncalled interval. Merge them into one tract, summing their lengths and excluding the uncalled interval from the span, before any mean-length or likelihood calculation.",
+      "from": [
+        "sl-dev-v2-local-faede5184b44"
+      ],
+      "reason": "This is the necessary follow-up to segment filtering; skipping it makes the switch count and t wrong.",
+      "fact_ids": {
+        "team-a": "sl-dev-v2-local-9569d42d8a46"
+      }
+    },
+    {
+      "text": "A phasing switch error inside a chromosome looks like a real ancestry switch. Its signature is two coincident, opposite breakpoints: h1 and h2 switch at the same Morgan coordinate in opposite directions (A-to-B on one, B-to-A on the other). This inflates the switch count on both haplotypes, biases t upward and mixes the two parents' ancestry fractions. List breakpoint coordinates for h1 and h2 per chromosome and flag such coincident opposite switches. If found, treat it as a phase error, flip the haplotype assignment downstream of that point to restore the longer tracts, and recompute. If the pattern is frequent, prefer an estimator of parental fractions and times that does not depend on phase.",
+      "from": [
+        "sl-dev-v2-local-f54ae62b10be"
+      ],
+      "reason": "Phase errors within a chromosome corrupt both the per-parent fractions and the per-parent times, which are exactly the quantities asked for.",
+      "fact_ids": {
+        "team-a": "sl-dev-v2-local-d4d6e095a26f"
+      }
+    },
+    {
+      "text": "Haplotype labels h1 and h2 may be assigned independently per chromosome, so h1 need not be the same parent on every chromosome. Pooling chromosomes under mislabelled haplotypes pulls both parental A-fractions toward the genome-wide mean, so the parental difference is understated and the times are distorted. Compute the per-chromosome A-fraction of h1 minus h2 and check whether the sign is consistent across chromosomes; inconsistent signs with large magnitudes point to label swapping, a consistent sign supports genome-wide-consistent labels. If labels must be resolved per chromosome (for example by maximising the between-haplotype separation in A-fraction), say that this choice biases the estimated difference upward, and cross-check with an unphased, homozygosity-based estimate of the two parental fractions.",
+      "from": [
+        "sl-dev-v2-local-ffdbe7b69527"
+      ],
+      "reason": "Whether h1/h2 map to the same parent across chromosomes decides how segments are pooled into parent1 and parent2, which changes all four reported numbers.",
+      "fact_ids": {
+        "team-a": "sl-dev-v2-local-f0c93282eb31"
+      }
+    },
+    {
+      "text": "Fit the A-fraction and t independently for each haplotype. Do not force the two haplotypes to share one admixture time or pool their tracts into one likelihood, because the task asks for the two parental histories separately and they may genuinely differ. Assign the parent1/parent2 labels only after all QC and filtering is settled: filtering changes each haplotype's A-fraction, so labelling early can swap the labels. Recompute the A-fractions after every filtering decision, check whether the ordering ever changes, and report the gap between the two fractions so that a near-tie is visible.",
+      "from": [
+        "sl-dev-v2-local-a9cc7c023070"
+      ],
+      "reason": "A label swap or a pooled time would make every answer key wrong even if the underlying estimates are sound.",
+      "fact_ids": {
+        "team-a": "sl-dev-v2-local-5f6ec948e6b9"
+      }
+    },
+    {
+      "text": "The generation convention is ambiguous and can shift t by a whole generation. A transmitted haplotype has passed through one meiosis per generation since the pulse, including the meiosis that produced the focal individual, so a recombination rate per Morgan measures the number of meioses, which is not necessarily what is meant by generations. State explicitly which convention is used. The recommended convention is the one in which A tracts are exponential with rate t*(1-m), with t the generations since the admixture pulse for that parental haplotype; say so in the reasoning so the number can be interpreted.",
+      "from": [
+        "sl-dev-v2-local-00914fff025e"
+      ],
+      "reason": "An unstated off-by-one in the generation count is a silent error when t is small; the team should pick the convention deliberately and report it.",
+      "fact_ids": {
+        "team-a": "sl-dev-v2-local-2c0e68cd704b"
+      }
+    },
+    {
+      "text": "One individual's genome gives few tracts, so the time estimate has a large variance and a known downward bias, and for very recent admixture tract lengths are not truly exponential or independent. Count the uncensored tracts per haplotype. If there are fewer than about 20, give a confidence interval for the rate (a Poisson interval on the switch count divided by the exposure in Morgans) and derive t three ways, from the A tracts, from the B tracts and from the pooled switch rate, to see whether they agree. Report t from the pooled switch-rate estimator, not from one ancestry's mean length, state the interval, and do not round the point estimate to a precision the data cannot support.",
+      "from": [
+        "sl-dev-v2-local-ac176d066086"
+      ],
+      "reason": "It determines which estimator to report and how to express uncertainty, and the grading weighs the quality of reasoning as well as the number.",
+      "fact_ids": {
+        "team-a": "sl-dev-v2-local-0d755f73e670"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams flipped the chr3 haplotype labels so that h1 minus h2 A-fraction has the same sign on all four chromosomes. Both selection rules (sign consistency / maximum separation, and maximum two-state Markov likelihood over 8 groupings) reward between-parent separation in A-fraction, so they are not independent confirmations of each other. Neither team calibrated the rule against a null in which the two parents have similar fractions and the labels as given are correct, with only four chromosomes.",
+      "Both teams use the same estimator form, t = switches / (2 m (1-m) L) (team B's L_A(1-m) + L_B m is algebraically the same), with m set to that haplotype's own observed A-fraction. Neither tested how t moves if m is a population/source proportion rather than the single haplotype's realised fraction, nor whether the rate is t or t-1 generations of recombination.",
+      "Both teams removed the eight 0.03 M low-posterior segments from the span (denominator) rather than keeping the span and assigning it the ancestry of the merged flanks. Neither reports how much the A-fractions and t change under the other treatment.",
+      "Both teams treat the two haplotypes as independent Poisson/Markov switch processes after masking; the exactly mirrored artefacts and the near-coincident chr1 breakpoints show that h1 and h2 calls are not fully independent.",
+      "Both assume a single shared t convention applies per parent and that one pulse fits each parent; neither tested tract-length distribution fit (exponential) within each parent."
+    ],
+    "unused_evidence": [
+      "map_info.tsv.gz (chromosome genetic lengths 2.8, 2.8, 3.1, 2.9 M): team A compared it with the called span; team B's notes do not mention it. The uncalled chromosome ends (for example 0.03 M at the start and 0.08 M at the end of chr1) are neither in the span nor in the exposure, and neither team says whether the first and last tracts were treated as censored at the called boundary or at the chromosome end.",
+      "Gap coordinates as a signal: the 12 uncalled gaps were used only as 'one switch each'. Neither team tabulated whether gaps on h1 and h2 fall at the same positions (for example chr1 h1 gap 1.4788-1.5037 and chr1 h2 gap 1.4854-1.5132 overlap, at the site team B flagged as a possible phase switch). Overlapping gaps on both haplotypes would point to a phase-switch or shared breakpoint artefact rather than two independent ancestry switches.",
+      "Switch density per chromosome and haplotype, separately from A-fraction, as an independent discriminator of which chr3 haplotype belongs with which parent. Team B's likelihood mixes it with A-fraction; team A did not use it.",
+      "posterior and low_complexity_frac take only two value pairs (0.985/0.08 and 0.62/0.92), so they were used fully as a mask; no further information there."
+    ],
+    "unresolved_weak_points": [
+      "Team A: the chr3 swap is 'inferred from separation and sign consistency, which can bias the difference upward'; the unphased check 'agrees roughly' (0.34/0.71) but the size of the upward bias was never estimated. Reported, not resolved.",
+      "Team B: the assignment likelihood is 'partly inflated by choosing among 8 groupings' and dLL of 3.55-4.6 was not compared with a null distribution. Reported, not resolved.",
+      "Team B: the chr1 possible phase switch near 1.49 M was kept as given although the stated sensitivity (0.25/4.4 and 0.80/6.3) moves all four reported numbers. Team A found coincident opposite breakpoints and did not change the method either. Reported, not resolved.",
+      "Both: t rests on 16 and 26 switches with wide intervals, and team B says its t convention may differ from another by about 1 generation. Neither tested which convention the data support."
+    ],
+    "second_readings": [
+      "'the called tract span': (a) sum of called segment lengths after removing artefacts (what both did), (b) sum of all called segment lengths including the eight low-confidence segments reassigned to flank ancestry, or (c) first-to-last called coordinate including interior gaps. These change the denominators of both the fraction and t.",
+      "'each transmitted parental haplotype': read literally the file's h1 and h2 are the two transmitted haplotypes as phased; the teams instead rebuilt parents by flipping chr3. If the phasing is trio-based or otherwise genome-wide consistent, the as-given pooled fractions (about 0.565 and 0.482) and their t values are the answer, and chr3 is simply a chromosome where the lower-A parent transmitted a high-A haplotype.",
+      "'number of generations since a single recent admixture pulse' per parent: the per-haplotype m in the switch-rate formula versus one admixture proportion for the pulse; and whether t counts meioses on the transmitted haplotype (parent's t plus one) or generations before the parent.",
+      "'fraction of ancestry A': Morgan-weighted (both teams) versus any other weighting; only Morgans are given, so this reading is settled."
+    ],
+    "verdict": "Moderate trust at best: the two teams agree, but both reach the answer through the same chr3 label flip chosen by a separation-maximising rule on only four chromosomes, and neither calibrated it against chance or resolved the chr1 phase-switch sensitivity that moves all four numbers. The fractions and t values should not go out until the flip is tested with evidence independent of A-fraction and the span and gap treatments are shown not to matter.",
+    "questions": [
+      {
+        "to": "gb02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your chr3 swap rests on sign consistency across only four chromosomes. Simulate four chromosomes of the given lengths under the labels-as-given pooled parameters (your own fitted m and t for h1 and h2 without the swap) and count how often one chromosome shows an h1-minus-h2 A-fraction as opposite and as large as chr3's -0.67 by chance. Does that frequency make the swap necessary, and if it is not rare, does your method change (for example reporting the as-given haplotypes)?",
+        "from": [
+          "sl-dev-v2-local-f0c93282eb31",
+          "sl-dev-v2-local-61294b0648aa"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-v2-local-8b4659c95c84"
+      },
+      {
+        "to": "gb02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Count ancestry switches per Morgan for each chromosome and haplotype after artefact masking, without using A-fraction at all. Does chr3 h1 or chr3 h2 match the switch density of h1 on chr1, chr2 and chr4, and does that evidence, which is independent of the separation you maximised, agree with the swap? If it disagrees, does your method change?",
+        "from": [
+          "sl-dev-v2-local-f0c93282eb31"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-v2-local-762d3d8b017e"
+      },
+      {
+        "to": "gb02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: List the start and end of every uncalled gap on h1 and on h2 side by side and mark the gaps that overlap between the two haplotypes on the same chromosome (chr1 near 1.48-1.51 M is one candidate). For each overlapping pair where the ancestries exchange, recompute both parents' A-fraction and t with that point treated as a phase switch instead of two ancestry switches. Do the numbers move by more than your Poisson interval, and does that change which treatment you report?",
+        "from": [
+          "sl-dev-v2-local-61294b0648aa"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-v2-local-ebfd3dc14726"
+      },
+      {
+        "to": "gb02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The task says 'across the called tract span'. Recompute both A-fractions and both t values three ways: (a) artefact span removed, as you did; (b) artefact span kept and assigned the ancestry of the merged flanks; (c) span from first to last called coordinate with gaps included and split at the midpoint. Report the largest difference among them. Does it change which definition of span your method uses, and does the parent1/parent2 labelling stay the same under all three?",
+        "from": [
+          "sl-dev-v2-local-61294b0648aa"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-v2-local-0af81ed04fd9"
+      },
+      {
+        "to": "gb02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You noted the likelihood gain for flipping chr3 (dLL 3.55-4.6) is inflated by choosing among 8 groupings. Simulate four chromosomes of the given lengths under the labels-as-given fit, apply your same best-of-8 selection to each simulated data set, and report where the observed dLL falls in that null distribution. If it is not in the far tail, does your method change (for example reporting the haplotypes as given)?",
+        "from": [
+          "sl-dev-v2-local-d07e4dc2f2ce"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-v2-local-3bb8b17fd0c1"
+      },
+      {
+        "to": "gb02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Split your assignment likelihood into the part due to A-fraction and the part due to switch density (switches per Morgan per chromosome and haplotype, after masking). Does switch density alone, with no use of A-fraction, place chr3 h2 with h1 of the other chromosomes? If the two parts disagree, does your method change?",
+        "from": [
+          "sl-dev-v2-local-d07e4dc2f2ce"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-v2-local-ebe818df30ef"
+      },
+      {
+        "to": "gb02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your chr1 phase-switch sensitivity (0.25/4.4 and 0.80/6.3) moves every reported number, yet you kept the data as given. Check whether the h1 gap and the h2 gap near 1.48-1.51 M on chr1 overlap in coordinates, and tabulate for all 12 gaps whether a gap on one haplotype overlaps a gap or breakpoint on the other. Compare the count of overlaps with the roughly 0.7 chance coincidences you expected, using gap width rather than a point tolerance. Does the result change whether you correct chr1?",
+        "from": [
+          "sl-dev-v2-local-d07e4dc2f2ce"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-v2-local-4b2f9020719a"
+      },
+      {
+        "to": "gb02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You said your t convention may differ from another by about 1 generation, and your exposure excludes gap length while each gap still contributes a switch. Recompute t for each parent (a) with gap length added back to the exposure, (b) with the artefact span kept and assigned flank ancestry, and (c) from A tracts alone and from B tracts alone using map_info chromosome ends to decide which boundary tracts are censored. Do the A-tract and B-tract estimates agree within their intervals, and does any of these change the t you report or the convention you state?",
+        "from": [
+          "sl-dev-v2-local-d07e4dc2f2ce"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-v2-local-d0b74e05fbbe"
+      }
+    ]
+  },
+  "referee": {
+    "difference": "Both teams mask the same 8 artefact segments, flip chr3 between parents, and use the same switch-rate estimator. The main difference is that Y treats the overlapping opposite-direction gaps on chr1 (h1 A->B gap 1.4788-1.5037 M, h2 B->A gap 1.4854-1.5132 M) as a within-chromosome phase-switch error. Y swaps the haplotypes distal to 1.49 M, which removes 2 switches and moves the answer from 0.301/0.747 to 0.250/0.797, and parent1 t from about 3.4 to 4.43. X does not correct it. A minor second difference is that X puts interior gap length in the switch exposure (11.15 M vs about 10.85 M), which changes t by about 3%.",
+    "test": "test_phase.py: simulate the null of no phase error. The two parental haplotypes on each chromosome are independent two-state Markov single-pulse tracts with X's fitted m and t (0.301/3.41, 0.747/6.16), over the observed called spans, with random chromosome-to-parent assignment. Each breakpoint gets an uncalled gap with the observed frequency (12/42) and an observed width. 20000 replicates. Two statistics compared with the data: (1) the minimum distance between opposite-direction switches on h1 and h2 of the same chromosome (observed 0.0080 M, gap midpoints); (2) at least one overlapping opposite-direction gap pair (observed 1).",
+    "expected_if_x": "If X is right that there is no phase error, a near-coincident opposite switch pair this close is ordinary under independent haplotypes: P well above 0.05 for both statistics.",
+    "expected_if_y": "If Y is right that this is a phase-switch artefact, the coincidence should be rare under the no-error null (P < 0.05, ideally < 0.01), so that two independent real recombinations are an implausible explanation.",
+    "outcome": "P(min opposite-switch distance <= 0.0080 M) = 0.257. P(>=1 overlapping opposite gap pair) = 0.087. Neither result rejects the no-phase-error null. About one replicate in four shows opposite switches this close by chance. Y's own likelihood gain from the correction was only +0.1 log units, and the data show no other coincident opposite breakpoints that would point to a raised phase-error rate.",
+    "pick": "X",
+    "reason": "Y's chr1 swap is a data edit that changes both A-fractions by 0.05 and parent1 t by 1 generation. The test shows the evidence for it (the coincident opposite switches) is what independent real recombinations produce routinely (P 0.09-0.26). Without that edit Y's estimates reduce to X's (0.301/3.50, 0.747/6.34). The remaining gap-exposure difference is small, and X's choice is the better justified one: each gap brackets a breakpoint, so gap length belongs in the exposure over which switches can occur.",
+    "own_answer": null,
+    "picked_agent": "gb02-team-a",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "gb02-team-a",
+      "Y": "gb02-team-b"
+    }
+  },
+  "not_chosen": [
+    {
+      "agent": "gb02-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "gb02-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "gb02-team-b",
+      "round": "challenge",
+      "reason": "the referee's test supported the other answer: Y's chr1 swap is a data edit that changes both A-fractions by 0.05 and parent1 t by 1 generation. The test shows the evidence for it (the coincident opposite switches) is what independent real recombinations produce routinely (P 0.09-0.26). Without that edit Y's estimates reduce to X's (0.301/3.50, 0.747/6.34). The remaining gap-exposure difference is small, and X's choice is the better justified one: each gap brackets a breakpoint, so gap length belongs in the exposure over which switches can occur."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "gb02-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 241.20599945809226,
+      "cost_usd": 1.1199087000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 58.74223470897414,
+      "cost_usd": 0.3096705,
+      "error": null
+    },
+    {
+      "agent": "gb02-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 136.8490939590847,
+      "cost_usd": 0.5124362,
+      "error": null
+    },
+    {
+      "agent": "gb02-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 150.97095841704868,
+      "cost_usd": 0.503719,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 85.26286908402108,
+      "cost_usd": 0.40155700000000005,
+      "error": null
+    },
+    {
+      "agent": "gb02-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 138.5722600420704,
+      "cost_usd": 0.5185772,
+      "error": null
+    },
+    {
+      "agent": "gb02-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 224.82031270791776,
+      "cost_usd": 0.7537066,
+      "error": null
+    },
+    {
+      "agent": "gb02-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 105.66167420800775,
+      "cost_usd": 0.3351736,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

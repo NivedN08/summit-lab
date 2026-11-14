@@ -322,7 +322,8 @@ class Lab:
         cfg = self.config
         agents = [Agent("director", DIRECTOR, "director", cfg.director_model)]
         for s in studies:
-            agents.append(Agent(f"{s.id}-library", WORKER, "library", cfg.worker_model))
+            # Each study has its own library department, so one study's findings cannot reach another's teams.
+            agents.append(Agent(f"{s.id}-library", WORKER, f"{s.id}-library", cfg.worker_model))
             for team in TEAMS:
                 agents.append(Agent(f"{s.id}-{team}", WORKER, f"{s.id}-{team}", cfg.worker_model))
             agents.append(Agent(f"{s.id}-referee", WORKER, f"{s.id}-referee", cfg.worker_model))
@@ -345,7 +346,8 @@ class Lab:
         self.org = self.build_org(studies)
         self.memory.setup(self.org)
         # Agents may not pass facts down themselves: the lab delivers every pass-down after its leak check.
-        kwargs = {"exa_departments": ["library"] if self.config.library else [], "agents_may_pass_down": False}
+        libraries = sorted({a.department for a in self.org.agents if a.id.endswith("-library")})
+        kwargs = {"exa_departments": libraries if self.config.library else [], "agents_may_pass_down": False}
         if hasattr(self.adapter, "blocked_terms"):
             kwargs["blocked_terms"] = self.adapter.blocked_terms()
         if self.exa_call is not None:
@@ -428,6 +430,7 @@ class StudyRun:
         """Template fields every brief may use."""
         s = self.study
         return {"statement": s.statement, "data_dir": str(s.data_dir), "max_searches": self.cfg.max_searches,
+                "study_id": s.id,
                 "time_limit_minutes": self.cfg.timeout("analyst") // 60,
                 "team_departments": f"{self.dept('team-a')}, {self.dept('team-b')}", **extra}
 
