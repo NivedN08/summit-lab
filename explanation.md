@@ -2,7 +2,7 @@
 
 This file explains how the lab works and why. It is updated as the work happens, so a reader can follow every decision without having been in the room.
 
-**How to read it.** Sections 1 to 3 describe the lab as it stands now. Sections 4 to 8 are logs: newest entries go at the bottom of each one. Every entry has a date, a time (Pacific) and a status:
+**How to read it.** Sections 1 to 3 describe the lab as it stands now. Sections 4 to 9 are logs: newest entries go at the bottom of each one. Every entry has a date, a time (Pacific) and a status:
 
 - **Decided**: we are doing this.
 - **Proposed**: the current plan, not built or tested yet.
@@ -27,9 +27,9 @@ Status: **Decided** as the overall shape. **Open**: the research target, which d
 
 | Tool | What it is for here | Status |
 |---|---|---|
-| Exa | Deep research: finding sources the agents do not already know | Decided; waiting for the key |
-| past.dev | Shared memory that agents write to and read from, with limits on who can read what | Decided; waiting for the key |
-| Modal | Cloud compute | Open: used only where it gives a real benefit (see section 6) |
+| Exa | Deep research: finding sources the agents do not already know | Decided; key works (M-2) |
+| past.dev | Shared memory that agents write to and read from, with limits on who can read what | Decided; key works, read boundaries tested (M-1) |
+| Modal | Cloud compute | Open: used only where it gives a real benefit (see section 6); login works (M-3) |
 
 Keys live in environment variables only. They are never written into this repository or this log.
 
@@ -59,6 +59,9 @@ So a worker never reads another department's raw memory. If department A learns 
 - A worker's write always names its department's audience.
 - A pass-down is a **new** fact with its own id, written by a head and addressed to the receiving department's audience. It cannot be the original fact re-sent: in past.dev, re-sending the same text with another audience moves the fact instead of sharing it.
 - Nothing is written without an audience, because a fact with no audience can be read by every identity (issue I-2).
+- A pass-down records the id of the fact it came from, so every relay a head makes can be traced back. (Added after reading the MAP-Graph paper in section 8: a summary that crosses a boundary hides where it came from unless the source is kept.)
+
+**Tested on Nov 14 (M-1 in section 9).** With two departments, one worker each and one head, all nine checks passed: workers read their own department only, the head reads both, an unknown identity reads neither, and a pass-down reaches the other department without exposing the original note. This holds when each agent names its own identity honestly. Issue I-1 is about what happens when it does not.
 
 **What we expect before any run.** To be written before the first run, so it can be compared with what happens.
 
@@ -114,14 +117,14 @@ past.dev can answer a read "as of" an earlier moment. For any decision in this l
 The caller names the identity it is reading as, and one project key covers the whole project. past.dev's access-control page says it directly: a project key "reaches every audience of the project". The same key can also change who is in each audience. So if every agent holds the key, a worker could read as a head, or rewrite the rules. Separate past.dev projects would isolate fully, but they share nothing, and the starter plan allows one project. Candidate fix: N-1. Not yet tested with a key.
 
 **I-2 · Nov 14, 11:33 · Open · A write without an audience is readable by everyone.**
-In past.dev a fact sent without an audience is visible to every identity. Re-sending a fact without repeating its audience also makes it visible to everyone. An identity past.dev has never seen gets that shared set and no error. So one careless write leaks across departments. Planned guard: all writes go through one code path that refuses a write with no audience, and the shared set is kept empty unless we decide to use it for lab-wide notices.
+In past.dev a fact sent without an audience is visible to every identity. Re-sending a fact without repeating its audience also makes it visible to everyone. An identity past.dev has never seen gets that shared set and no error. So one careless write leaks across departments. Planned guard: all writes go through one code path that refuses a write with no audience, and the shared set is kept empty unless we decide to use it for lab-wide notices. **Measured Nov 14 (M-1):** a fact written with no audience was read back by a worker in another department and by an identity past.dev had never seen.
 
 **I-3 · Nov 14, 11:33 · Open · Memory is not instant.**
-past.dev accepts a write at once but derives memory from it in the background, one write after another. The raw text is searchable within seconds; the derived facts come later, and a read reports how much is still pending. An agent that writes and reads back straight away may not see its own fact in derived form. The event brief also asks teams to keep data to tens of documents. To measure once we have a key: how long a write takes to become readable.
+past.dev accepts a write at once but derives memory from it in the background, one write after another. The raw text is searchable within seconds; the derived facts come later, and a read reports how much is still pending. An agent that writes and reads back straight away may not see its own fact in derived form. The event brief also asks teams to keep data to tens of documents. **Measured Nov 14 (M-1), four short facts, one run:** the writer could read its own fact back 2.9 seconds after sending it; past.dev reported each write fully processed after 7 to 17 seconds; reads took 0.6 to 2.0 seconds. So the delay is small at this size. Not yet measured: the delay with many writes queued.
 
 ## 8. Research behind decisions
 
-All sources below were read on Nov 14. Nothing here has been run yet: these are what the documentation says, not what we measured.
+All sources below were read on Nov 14. This section is what documentation and papers say. What we measured ourselves is in section 9.
 
 | Topic | Source | Used for |
 |---|---|---|
@@ -133,6 +136,8 @@ All sources below were read on Nov 14. Nothing here has been run yet: these are 
 | Injecting a key from outside the sandbox (Beta) | Modal, Sandbox secret injection, https://modal.com/docs/guide/sandbox-secret-injection | N-1 |
 | Snapshot a sandbox and start several from it | Modal, Sandbox snapshots, https://modal.com/docs/guide/sandbox-snapshots | N-2 |
 | Which Exa endpoint for which job | `build-with-exa` skill, `.agents/skills/build-with-exa/SKILL.md` | D-3 |
+| A summary can hide a restricted or untrusted source, so access limits must follow a fact through everything derived from it | Wang et al., "MAP-Graph: Provenance-Aware Shared Memory for Multi-Agent Workflows", Aug 2026, https://arxiv.org/abs/2608.10509 (found with Exa; abstract read, not the full paper) | Pass-downs record their source, section 3 |
+| Four ways shared agent memory fails: leaks, stale facts spreading, contradictions that persist, lost provenance. Their live test found a scope rule that held on one API path and not on another | Margalit et al., "Governed Shared Memory for Multi-Agent LLM Systems", Jun 2026, https://arxiv.org/abs/2606.24535 (found with Exa; abstract read, not the full paper) | Why we test boundaries with real calls instead of trusting the docs (M-1) |
 
 **past.dev facts we are building on** (from the pages above):
 
@@ -142,3 +147,33 @@ All sources below were read on Nov 14. Nothing here has been run yet: these are 
 - A later value for the same property supersedes the earlier one, and the read says when.
 - Every call gets a request id and appears in a request log, so each read an agent makes can be cited as evidence.
 - Costs and limits on the starter plan: one credit per 350 bytes written, one credit per read, 500 requests a minute, up to 8,000 tokens of evidence per read, one project.
+
+## 9. Measurements
+
+Each entry gives the command, what came back, and what it does not show.
+
+**M-1 · Nov 14, 11:56 · Measured · past.dev read boundaries hold for honest identities.**
+Command: `python3 checks/memory_boundary.py`. Record: `checks/results/memory_boundary_1114115657.json`, which lists the past.dev request id of every read.
+The script builds two departments with one worker each and one head, using the rule from section 3, writes one fact per department and one fact with no audience, then reads as each agent.
+
+| Check | Expected | Got |
+|---|---|---|
+| Worker reads its own department's fact | yes | yes |
+| Worker reads the other department's fact | no | no |
+| Head reads department A's fact | yes | yes |
+| Head reads department B's fact | yes | yes |
+| Unknown identity reads department A's fact | no | no |
+| Fact with no audience is read by the other department's worker | yes | yes |
+| Fact with no audience is read by an unknown identity | yes | yes |
+| After a head's pass-down, the other department's worker reads the value | yes | yes |
+| ... and still does not get department A's original note | no | no |
+
+9 of 9 as expected. Timings are under I-3.
+What it does not show: one run, four short facts, and every agent named its own identity honestly. It says nothing about an agent that names another identity (I-1). The check data was deleted afterwards.
+Also seen: with this little memory, a read returned everything the reader was allowed to see, whatever the question. The worker in department B asked about department A's value and got six results, none containing it. So an agent must check what a result says; getting results back does not mean the question was answered.
+
+**M-2 · Nov 14, 11:57 · Measured · Exa key works.**
+One search with highlights, three results: HTTP 200 in 2.1 seconds, cost reported by Exa $0.007. A follow-up call fetching the text of two pages cost $0.002. The search returned the two papers now listed in section 8.
+
+**M-3 · Nov 14, 11:58 · Measured · Modal login works.**
+Started one sandbox, ran one command in it and shut it down: 3.7 seconds end to end with Modal client 1.6.4. This only shows the account works. Idea N-1 is not tested yet.
