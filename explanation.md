@@ -194,6 +194,24 @@ Status: tasks staged with answers sealed; the current six tasks' data is on a Mo
 Version 2 as in D-15, plus two changes made before the freeze: each problem has its own library memory, and the director is told to use only its own problem's facts (eight problems now run at once, and the director can read all of them). Models: director Fable 5.2, all other agents Opus 5.5. Limits: 30 minutes per analyst and per single agent, 10 library searches. Comparison: the lab; four independent Opus 5.5 attempts per problem; two Fable 5.2 attempts per problem; a plain vote over the single attempts at about the lab's cost. Scoring: GeneBench's reference grader, once, after every agent has exited.
 Nothing in the lab's design changes after this entry until the test problems gb03 to gb10 are scored.
 
+**D-18 · Nov 14, 15:15 · Decided · Run several projects side by side; add BioDSA-1K as the third.**
+The team's aim is several projects at once, each on a benchmark that is not already solved and that the lab might beat. Two more Opus scouts swept for candidates with Exa (reports: `research/scouting/shortlist_verified.md` and `wider_sweep.md`; 276 Exa calls in total so far, $1.35).
+
+| Project | Tasks we can run | Why it is in or out |
+|---|---|---|
+| GeneBench-Pro public | 10 | In. Running. Hardest: nothing has passed the two development problems |
+| scBench | 36 | In. Staged and wired; published single models pass roughly a third to two thirds |
+| BioDSA-1K | 40 sampled from about 1,000 | In. Each task is a biomedical claim to judge True, False or Not verifiable against data tables. It is the track's question in its plainest form: rejecting claims the data does not support. Exact labels, small tables |
+| GenoTEX | a few traits | Later, if usage allows: 2 to 3 hours of setup; its expert answers ship in the same download as the inputs |
+| CloningQA | 14 | Out for now: too few tasks to show a difference |
+| VariantBench | 6 | Out for now: too few tasks, 34 GB of memory per task in the reference setup |
+| ScienceAgentBench | 3 after exclusions | Out: most of its biology and chemistry tasks are drug-property models, which we do not do, and its figure tasks need a judge model |
+| SciAgentArena | 229 | Not started: the largest candidate, with low published scores, but it needs its terms accepted by a team member and the most wiring |
+| BioMysteryBench, GeneTasks | 90, 173 | Not started: each needs an access step or a new paid account, and for the first we could not confirm answers can be checked by a program |
+| CompBioBench, Galaxy workflow set, CORE-Bench, BioAgent Bench, original BixBench | | Out: already at or near 100% |
+
+What limits the number of projects is Claude usage on one account, not compute.
+
 ## 5. Agent observations
 
 Things the agents did that we did not expect.
