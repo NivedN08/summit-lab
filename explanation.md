@@ -212,6 +212,19 @@ The team's aim is several projects at once, each on a benchmark that is not alre
 
 What limits the number of projects is Claude usage on one account, not compute.
 
+**D-19 · Nov 14, 15:58 · Decided · Design version 3 for the new benchmarks: Fable analysts and research as part of the work.**
+Why. The GeneBench test (M-11) said two things. The lab fixes inconsistency, not blind spots: it passed every problem one Opus attempt passes at least half the time and none beyond. And web research was thin: one library agent, about 8 quick searches per problem, 7 pages opened across the whole run, a 7 to 9 item note to one team; analysts could not look anything up. A blind spot is missing knowledge, and two copies of one model lack the same knowledge. Search is the only part of the lab that can bring in knowledge the model does not have.
+What changes, for scBench and BioDSA-1K only (both untouched so far):
+1. **All agents on Fable 5.2**, the team's decision after Fable alone beat the Opus lab. The model per team stays switchable, so a mixed Fable and Opus run can be compared.
+2. **Team A's analyst can search while it works**, through the gateway, and must record what it learned and from where. Team B still works from the data alone, which keeps the two teams different in what they know.
+3. **Research on demand.** When the director writes questions (after a disagreement or when challenging an agreement) it can also ask up to three research questions. The library looks them up, opening the pages, and the findings go to both teams before they revise. Research questions pass the same leak check as team questions.
+4. **Search budgets enforced by the gateway**: library 12 calls, team A's analyst 8 per round, research on demand 10.
+5. **A run with all search off**, to measure what search contributes.
+Unchanged: blind teams, the leak check, the referee that must test, the third team, the 30-minute limit, the fair-play rules (no agent may look up a task, its dataset or a benchmark; results about the benchmark are dropped by the gateway).
+The comparison is now against the best single model: Fable 5.2 alone, same tasks, same limit, without web access as the benchmarks intend, plus a vote over its attempts at about the lab's cost.
+What we expect, written before any run: a lab of Fable analysts without the search changes would do about as well as Fable alone, because Fable was consistent on GeneBench (2 of 2 or 0 of 2 on every problem). If version 3 beats Fable alone, we expect the gain to come from problems where a search changed a method, and the search-off run to lose that gain. We may be wrong on both counts.
+Status: being built. The GeneBench design of D-17 stays reproducible with `--model opus --no-team-search --no-research`.
+
 ## 5. Agent observations
 
 Things the agents did that we did not expect.
