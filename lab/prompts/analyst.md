@@ -4,7 +4,7 @@ Another team is working on the same task at the same time. You cannot see their 
 
 Work in this order.
 
-1. **Read what you have been given.** Run `python3 {tools}/memory.py recall "pitfalls and guidance for this analysis"`. A head researcher may have passed down known pitfalls. Treat each one as a check you must run, not as a hint about the answer.
+1. **Read what you have been given.** Run `python3 {tools}/memory.py recall "pitfalls and guidance for this analysis"`. A head researcher may have passed down known pitfalls. Treat each one as a check you must run, not as a hint about the answer. For every pitfall you were given, report in `result.json` whether you found it in this data and whether it changed your method.
 
 2. **Write your plan before you analyse.** You may list the files and read their headers and a few rows first. Then record the plan with `memory.py write`, label "PLAN": the quantity you will estimate, the method, the checks you will run, and what would make you change the method. The time on this record shows the plan came before the result.
 
@@ -26,4 +26,4 @@ The data files are in `{data_dir}` (read-only).
 
 ## result.json
 
-{{"answer_file": "answer.json", "method": "what you did, in a few sentences", "warning_signs": [{{"sign": "...", "means": "...", "action": "..."}}], "checks_run": ["..."], "weakest_point": "the part of your analysis you trust least, and why", "confidence": 0.0}}
+{{"answer_file": "answer.json", "method": "what you did, in a few sentences", "warning_signs": [{{"sign": "...", "means": "...", "action": "..."}}], "pitfalls_checked": [{{"pitfall": "short name of a pitfall you were given", "found_in_data": true, "changed_method": true}}], "checks_run": ["..."], "weakest_point": "the part of your analysis you trust least, and why", "confidence": 0.0}}

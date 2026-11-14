@@ -146,6 +146,24 @@ Agents reach memory and Exa only through a small gateway that knows each agent b
 - Grading runs only after every agent has exited.
 - The single-agent baseline gets the same task text, data, model and budget.
 
+**D-12 · Nov 14, 12:32 · Decided · Score with the benchmark's own grader; add our own measures on top.**
+Pass or fail comes from the benchmark's reference grader, unchanged, so our numbers are measured the way published ones are. A grader of our own would invite the question of whether we marked ourselves kindly.
+
+The lab also produces something a single agent cannot: a label on every answer saying how it was reached (replicated, converged after questions, refereed, third team, unresolved). Our measures ask whether that label, and each step behind it, is worth anything. All of them are computed from the run's records. They need no extra agent runs: after the run, every candidate answer is graded, not only the final ones.
+
+| Measure | The question it answers | How it is computed |
+|---|---|---|
+| Lab, single agent, same-budget vote | Does the organisation help, or only the extra spending? | Passes for the lab's final answers; for single-agent attempts; and for a plain vote over as many single attempts as cost about what the lab cost |
+| Agreement as evidence | When the lab calls an answer replicated, how often is it right? | Pass rate for each label |
+| False agreement | How often do two blind teams agree on a wrong answer? | Replicated answers that fail, out of all replicated answers. This is the error blinding cannot remove: a blind spot both teams share |
+| Rescues and damage | What did each step change? | For the question round, the referee and the third team: answers turned from wrong to right, and from right to wrong |
+| Selection | When a right answer was in the lab's hands, did the lab ship it? | Lab passes, out of the problems where at least one candidate passed. The rehearsal lab failed here |
+| Noticing to acting | Do warning signs change the analysis? | Of the warning signs recorded, the share that changed a method; of the director's questions, the share that changed a method, and the share of those that turned a wrong answer right |
+| Library value | Did the Exa research matter? | Of the pitfalls the library found, the share a team confirmed in the data and the share that changed a method; plus a run of the lab with the library switched off |
+| Cost | What does it cost? | Agent runs, minutes and dollars per problem; passes per dollar |
+
+With ten problems these are counts, not rates to trust to the decimal (I-5). We report the counts.
+
 ## 5. Agent observations
 
 Things the agents did that we did not expect. Empty until the first run.
@@ -188,8 +206,8 @@ A difference of one problem is 10 points. Every comparison needs repeats, and we
 **I-6 · Nov 14, 12:20 · Open · A team of agents can do worse than one agent.**
 Published cases: on ScienceAgentBench a one-shot team scored 32.4% against 38.2% for a single agent on the same model, and a Google and MIT study found negative returns from extra agents once a single agent passes about 45% (section 8). Our rehearsal was a tie. What we do about it: pick benchmarks where single models score low, and make the team add checking instead of hand-offs. We report the result whichever way it goes.
 
-**I-7 · Nov 14, 12:20 · Open · Grading has not been run yet.**
-The adapter is written and its format and agreement tests pass, but the benchmark's reference grader has not been executed yet.
+**I-7 · Nov 14, 12:20, updated 12:32 · Open · No real answer has been graded yet.**
+The adapter is written and all five of its tests pass, including one that feeds the benchmark's reference grader a placeholder answer and sees it fail. No answer from an agent has been graded yet.
 
 **I-8 · Nov 14, 12:31 · Open · The director cannot run on Fable 5.2 yet.**
 The installed Claude command-line tool (2.1.285) only reaches Fable 5.1; Fable 5.2 needs version 2.1.290 or newer. Until the tool is updated the director runs on Fable 5.1 and the workers on Opus 5.5. Reports name the exact model each agent used.
