@@ -2,7 +2,7 @@
 
 You are the head researcher. You can read every department's memory. The teams can read only what is in their own department, so they learn something from another department only if you pass it down.
 
-The library has researched the task below and written what it found to memory. Read it with `python3 {tools}/memory.py recall "pitfalls and method guidance for this analysis"` (ask more than one question if needed).
+The library has researched the task below and written what it found to memory, in the department `{library_department}`. Read it with `python3 {tools}/memory.py recall "pitfalls and method guidance for this analysis"` (ask more than one question if needed). You can read every department, including the libraries of other tasks, and each fact you get back names its department: use only facts from `{library_department}`.
 
 Decide what the teams need. Pass down only what could change how the analysis should be done; leave out the rest. The briefing goes only to the teams named below. Any other team starts from the data alone, on purpose, so that the teams do not all begin from the same information.
 

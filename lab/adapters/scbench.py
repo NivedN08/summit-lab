@@ -21,10 +21,16 @@ Neutral ids: sc01-sc06 are the current set and sc07-sc36 the canonical set; insi
 order is by a hash of the real id, so it carries no meaning.
 
 `grade` is the only function that runs the benchmark's grader, and the lab calls it only after
-every agent has exited. It runs the grader in a separate `python -I` process.
+every agent has exited. It runs the grader in a separate `python -I` process from its own virtual
+environment on the sealed side (GRADER_ENV, holding only pydantic, the graders' one dependency).
+
+Agents run only on Modal (`modal_spec`): each sandbox mounts its own task's folder of the Volume
+read-only at MOUNT, links the data into the working folder where the task text expects it, and
+cannot reach any package index (an index package, inspect-evals, holds the older set's answers).
 
 Stage the public side once with:  python3 -m lab.adapters.scbench stage
 (needs network for the current set's file sizes; the result is cached on the sealed side.)
+Make the grader's environment once with:  python3 -m lab.adapters.scbench grader-env
 """
 
 from __future__ import annotations
@@ -64,6 +70,19 @@ DELIVERABLE = "eval_answer.json"                  # the file name both harnesses
 RELATIVE_TOLERANCE = 0.05   # two teams agree on a number when they are within 5 percent
 JACCARD_AGREEMENT = 0.8     # ... and on a list of genes or labels when the sets overlap this much
 GRADER_TIMEOUT_S = 120
+GRADER_ENV = SEALED / "grader-venv"               # made with uv; only the graders' dependency in it
+GRADER_PYTHON = GRADER_ENV / "bin" / "python"
+GRADER_PACKAGES = ["pydantic==2.13.3"]            # the version Inspect Evals' uv.lock pins
+
+# The sandbox each scBench agent runs in (lab.backend_modal reads this through modal_spec).
+MOUNT = "/scbench-data"           # the task's Volume folder, mounted read-only
+WORKSPACE_ALIAS = "/workspace"    # the current set's task text names /workspace/data and /workspace/eval_answer.json
+CURRENT_DATA_DIR = "/workspace/data"
+AGENT_PACKAGES = ["scanpy==1.10.4", "anndata==0.11.1", "h5py==3.12.1", "numpy==1.26.4", "pandas==2.2.3",
+                  "scipy==1.14.1", "scikit-learn==1.5.2", "leidenalg==0.10.2", "igraph==0.11.8",
+                  "umap-learn==0.5.7", "matplotlib==3.8.4"]
+AGENT_CPU, AGENT_MEMORY_MB = 4.0, 16384           # what the benchmark's own harness gives
+DATA_COMMAND = "modal run lab/adapters/scbench_data.py --sets {sets}"
 
 
 # ----------------------------------------------------------------------------- reading the sealed side
@@ -301,14 +320,32 @@ def _jaccard(a: list, b: list) -> float:
     return 1.0 if not sa and not sb else len(sa & sb) / len(sa | sb)
 
 
+def grader_env_ready() -> bool:
+    """True when the sealed grading environment exists (see make_grader_env)."""
+    return GRADER_PYTHON.is_file()
+
+
+def make_grader_env() -> pathlib.Path:
+    """Create GRADER_ENV with uv and install GRADER_PACKAGES only. The grader code itself is the
+    sealed copy of each set's pinned package, loaded by path. Returns the environment's python."""
+    if not SEALED.is_dir():
+        raise RuntimeError(f"{SEALED} is missing; download the benchmark first")
+    subprocess.run(["uv", "venv", "--python", "3.12", str(GRADER_ENV)], check=True)
+    subprocess.run(["uv", "pip", "install", "--python", str(GRADER_PYTHON), *GRADER_PACKAGES], check=True)
+    return GRADER_PYTHON
+
+
 def _benchmark_grader(set_name: str, grader_type: str, config: dict, answer: dict) -> dict:
-    """Run the benchmark's own grader on one answer in a separate `python -I` process.
-    The grader packages are mapped onto the sealed folders without running their package
-    __init__ files (latch_eval_tools' imports the harness and the Latch SDK). Returns
-    {"passed": bool, "score": float}. Raises on any failure; `grade` turns that into a fail."""
+    """Run the benchmark's own grader on one answer in a separate `python -I` process, with the
+    sealed grading environment's python. The grader packages are mapped onto the sealed folders
+    without running their package __init__ files (latch_eval_tools' imports the harness and the
+    Latch SDK). Returns {"passed": bool, "score": float}. Raises on any failure; `grade` turns that
+    into a fail."""
+    if not grader_env_ready():
+        raise RuntimeError("the grading environment is missing; run `python3 -m lab.adapters.scbench grader-env`")
     request = {"set": set_name, "type": grader_type, "config": config, "answer": answer,
                "latch_dir": str(LATCH_TOOLS), "inspect_top": str(INSPECT_TOP), "inspect_pkg": str(INSPECT_PKG)}
-    done = subprocess.run([sys.executable, "-I", "-c", _GRADER_RUNNER], input=json.dumps(request),
+    done = subprocess.run([str(GRADER_PYTHON), "-I", "-c", _GRADER_RUNNER], input=json.dumps(request),
                           capture_output=True, text=True, timeout=GRADER_TIMEOUT_S, cwd=str(SEALED))
     lines = done.stdout.strip().splitlines()
     if done.returncode != 0 or not lines:
@@ -337,18 +374,71 @@ print(json.dumps({"passed": passed, "score": float(score) if score is not None e
 
 # ----------------------------------------------------------------------------- the adapter
 
+def volume_listing(sub_path: str) -> dict[str, int]:
+    """File name -> size in bytes for the files in one folder of the Volume; {} if there is none."""
+    import modal
+    from modal.volume import FileEntryType
+    try:
+        entries = modal.Volume.from_name(VOLUME).listdir(sub_path)
+    except (modal.exception.NotFoundError, FileNotFoundError):
+        return {}
+    return {pathlib.PurePosixPath(e.path).name: e.size for e in entries if e.type == FileEntryType.FILE}
+
+
+def _is_current(study_id: str) -> bool:
+    """sc01-sc06 are the current set (lab/adapters/scbench_data.py uses the same split)."""
+    return study_id in [f"sc{i:02d}" for i in range(1, 7)]
+
+
 class ScBench:
     name = "scbench-public"
+    modal_only = True     # the data is only on the Modal Volume; the laptop runner cannot reach it
 
     def studies(self) -> list[Study]:
+        """Each study's data_dir is where its agents see the data inside their sandbox."""
         if not PUBLIC.exists():
             raise RuntimeError("run `python3 -m lab.adapters.scbench stage` first")
         out = []
         for d in sorted(PUBLIC.iterdir()):
             if (d / "task.md").exists():
+                manifest = json.loads((d / "data_manifest.json").read_text())
+                data_dir = CURRENT_DATA_DIR if manifest["data_dir"] == CURRENT_DATA_DIR else MOUNT
                 out.append(Study(id=d.name, title=d.name, statement=(d / "task.md").read_text(),
-                                 data_dir=d, deliverables=[DELIVERABLE]))
+                                 data_dir=pathlib.Path(data_dir), deliverables=[DELIVERABLE]))
         return out
+
+    def modal_spec(self, study: Study) -> dict:
+        """The sandbox for this study's agents (see lab/backend_modal.py, ModalBackend).
+        The current set's task text names /workspace/data and /workspace/eval_answer.json, so
+        /workspace is made to point at the working folder and `data` in it at the mount. The
+        older set's text says the files are in the working directory, so each is linked there."""
+        manifest = self.data_manifest(study)
+        if manifest["data_dir"] == CURRENT_DATA_DIR:
+            links, alias = {"data": MOUNT}, WORKSPACE_ALIAS
+        else:
+            links, alias = {f["name"]: f"{MOUNT}/{f['name']}" for f in manifest["files"]}, None
+        return {"packages": list(AGENT_PACKAGES), "cpu": AGENT_CPU, "memory_mb": AGENT_MEMORY_MB,
+                "volumes": [{"name": VOLUME, "sub_path": manifest["volume_sub_path"], "mount": MOUNT}],
+                "links": links, "workspace_alias": alias, "package_index": False}
+
+    def missing_data(self, studies: list[Study], listing=None) -> list[str]:
+        """Ids of the studies whose data files are not all on the Volume with the right size.
+        `listing(sub_path)` gives {file name: size}; default: volume_listing, which asks Modal."""
+        listing = listing or volume_listing
+        missing = []
+        for s in studies:
+            manifest = self.data_manifest(s)
+            present = listing(manifest["volume_sub_path"])
+            if any(present.get(f["name"]) != f["size_bytes"] for f in manifest["files"]):
+                missing.append(s.id)
+        return missing
+
+    @staticmethod
+    def data_command(study_ids: list[str]) -> str:
+        """The command that puts these studies' data on the Volume."""
+        current = [_is_current(i) for i in study_ids]
+        sets = "current" if all(current) else "canonical" if not any(current) else "all"
+        return DATA_COMMAND.format(sets=sets)
 
     def blocked_terms(self) -> list[str]:
         """Words that mark a web result as being about this benchmark. The gateway drops such results."""
@@ -451,5 +541,7 @@ if __name__ == "__main__":
     if sys.argv[1:] == ["stage"]:
         ids = stage()
         print(f"staged {len(ids)} tasks under {PUBLIC.relative_to(ROOT)}: {', '.join(ids)}")
+    elif sys.argv[1:] == ["grader-env"]:
+        print(f"grading environment ready: {make_grader_env()}")
     else:
-        sys.exit("usage: python3 -m lab.adapters.scbench stage")
+        sys.exit("usage: python3 -m lab.adapters.scbench stage | grader-env")
