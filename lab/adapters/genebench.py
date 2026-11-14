@@ -95,6 +95,13 @@ class GeneBench:
                                  data_dir=d / "data", deliverables=["answer.json"]))
         return out
 
+    def blocked_terms(self) -> list[str]:
+        """Words that mark a search result as being about this benchmark. The gateway drops such results."""
+        terms = ["genebench", "gene-bench", "gene bench"]
+        if MAPPING.exists():
+            terms += list(json.loads(MAPPING.read_text()).values())
+        return terms
+
     def schema(self, study: Study) -> dict:
         return json.loads((PUBLIC / study.id / "answer_schema.json").read_text())
 
