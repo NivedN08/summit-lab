@@ -258,6 +258,12 @@ What this costs: an answer that needed more than 30 minutes is cut short, for bo
 **I-11 · Nov 14, 14:13 · Open · Blind teams are not independent if they are the same model with the same briefing.**
 Pilot 1, problem gb02: the lab's first "replicated" answer was wrong (O-4). Blinding stops one team copying the other. It does not stop both from making the same mistake for the same reason. Two causes are visible: the teams are the same model, and the director gave both the same briefing. What we will try, and test on problems we have not scored yet (D-14): give the library's briefing to one team only, so the two teams start from different information; and make agreement earn its label, by having the director challenge an agreed answer before it is reported.
 
+**I-12 · Nov 14, 14:33 · Open · The Claude account ran out of usage in the middle of a run.**
+The first full lab run on Modal (`runs/dev-v2`, the two development problems on version 2) got through the library step and then every agent returned the same message: "You've hit your session limit · resets 12am (UTC)". The lab treated each as a failed agent and wrote both problems down as "no-answer". That record is wrong: the agents never ran. The run is discarded and is not a result.
+Fixed: both runners now recognise the limit message, the lab logs `lab.halted`, starts no further agent, and leaves the study without a final answer so it is re-run later (test: `test_a_usage_limit_stops_the_run_and_records_no_final_answer`).
+Still open: the lab cannot run again until the limit resets (4pm Pacific) or it is given more accounts. Everything today ran on one account; the usage it had counted by then was about $35 as the command-line tool estimates it, plus the builder and scout agents.
+What the discarded run did show: with the gateway on Modal, the library made 14 Exa searches, read 4 pages and wrote 17 facts, every request carrying an identity that Modal attached (the gateway log records the identity source as the X-Verified-User-Data header). So the gateway on Modal, Exa through it, and past.dev through it all work.
+
 ## 8. Research behind decisions
 
 All sources below were read on Nov 14. This section is what documentation and papers say. What we measured ourselves is in section 9.

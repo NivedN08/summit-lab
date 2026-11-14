@@ -208,8 +208,16 @@ def scrub(obj: Any, names: list[str], keep: tuple = ()) -> Any:
 
 # ----- running agents -----
 
+class UsageLimit(RuntimeError):
+    """The Claude account behind the agents has run out of usage. The run must stop, not carry on."""
+
+
 class AgentRunner:
-    """Runs agents through a backend: a shared limit on how many run at once, one retry, and logging."""
+    """Runs agents through a backend: a shared limit on how many run at once, one retry, and logging.
+    When any agent reports the account's usage limit, every later run is refused: a study must not
+    be recorded as "no answer" just because the account was out of usage."""
+
+    halted: str | None = None
 
     def __init__(self, backend: Backend, log: EventLog, max_agents: int):
         self.backend = backend
@@ -230,6 +238,8 @@ class AgentRunner:
             common = {"agent": agent.id, "role": role, "study": study, "phase": phase, "attempt": attempt,
                       "run_id": run_id}
             with self.slots:
+                if self.halted:
+                    raise UsageLimit(self.halted)
                 self.log.append("agent.start", agent.id, **common, model=agent.model, workspace=str(workspace),
                                 readable=[str(p) for p in readable], timeout_s=timeout_s)
                 t0 = time.time()
@@ -244,6 +254,10 @@ class AgentRunner:
                 self.log.append("agent.finish", agent.id, **common, ok=bool(result.ok),
                                 seconds=round(float(result.seconds or 0), 2), cost_usd=result.cost_usd,
                                 session_id=result.session_id, error=result.error)
+            if "usage limit" in (result.error or ""):
+                self.halted = result.error
+                self.log.append("lab.halted", "lab", reason=result.error, agent=agent.id, study=study)
+                raise UsageLimit(result.error)
             if result.ok or "timed out" in (result.error or ""):
                 break      # a timed-out run is not retried: it would only spend the same time again
         return result

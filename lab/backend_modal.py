@@ -352,6 +352,8 @@ class ModalBackend:
             self.finish_files(sb, ws, stop=first["timed_out"])
             if first["timed_out"]:
                 return self._done(False, {}, start, costs, session, f"timed out after {timeout_s} s")
+            if first.get("limit"):
+                return self._done(False, {}, start, costs, session, f"usage limit: {first['limit']}")
             result, problem = read_result(ws)
             if problem is None:
                 return self._done(True, result, start, costs, session, None)
@@ -459,6 +461,9 @@ class ModalBackend:
                 info["session_id"] = msg.get("session_id") or info["session_id"]
                 if msg.get("type") == "result" and msg.get("total_cost_usd") is not None:
                     info["cost"] = float(msg["total_cost_usd"])
+                # The account's usage limit comes back as an error result, not as a crash.
+                if msg.get("type") == "result" and msg.get("is_error") and "limit" in str(msg.get("result", "")).lower():
+                    info["limit"] = str(msg.get("result"))[:200]
         return info
 
     @staticmethod

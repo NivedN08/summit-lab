@@ -681,3 +681,30 @@ def test_grade_refuses_while_an_agent_is_unfinished_then_grades(tmp_path, monkey
     report = (run_dir / "report.md").read_text()
     assert "replicated" in report and "s2" in report
     assert "challenged" in report and "team-a" in report
+
+
+def test_a_usage_limit_stops_the_run_and_records_no_final_answer(tmp_path):
+    """An agent that reports the account's usage limit must halt the lab: no later agent starts,
+    and the study is not written down as "no answer"."""
+    from lab.contracts import Agent, AgentResult, WORKER
+    from lab.eventlog import JsonlEventLog
+    from lab.protocol import AgentRunner, UsageLimit
+
+    class LimitedBackend:
+        calls = 0
+
+        def run(self, agent, brief, workspace, *, readable=(), env=None, timeout_s=1800):
+            LimitedBackend.calls += 1
+            return AgentResult(ok=False, result={}, seconds=1.0, error="usage limit: You've hit your session limit")
+
+    log = JsonlEventLog(tmp_path / "events.jsonl")
+    runner = AgentRunner(LimitedBackend(), log, max_agents=2)
+    agent = Agent("s1-team-a", WORKER, "s1-team-a", "opus")
+    kwargs = dict(readable=[], env=None, timeout_s=10, study="s1", phase="analysis", role="analyst")
+    with pytest.raises(UsageLimit):
+        runner.run(agent, "brief", tmp_path / "a", **kwargs)
+    with pytest.raises(UsageLimit):
+        runner.run(agent, "brief", tmp_path / "b", **kwargs)
+    assert LimitedBackend.calls == 1                       # no retry, and the second run never started
+    assert [e["kind"] for e in log.events("lab.halted")] == ["lab.halted"]
+    assert not log.events("study.final")
