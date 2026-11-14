@@ -99,6 +99,7 @@ JOBS = {
     "# Your job: the lab's library": "library",
     "# Your job: director, briefing the teams": "relay",
     "# Your job: director, after the teams disagreed": "crossexam",
+    "# Your job: director, challenging an answer both teams agree on": "challenge",
     "# Your job: analyst on a blind team": "analyst",
     "# Your job: analyst, answering the director's questions": "revise",
     "# Your job: referee": "referee",
@@ -109,6 +110,7 @@ class FakeBackend:
     """Plays every agent from a script. `plan` keys:
     team-a / team-b / team-c: list of (effect, label) or None (invalid answer), one per run
     questions: list of {"to": "team-a"|"team-b", "question": ...}
+    challenge: the same, for the director's challenge of an agreed answer (default: no questions)
     referee: {"pick_team": "team-b"} or {"pick": "neither", "own_answer": ...}
     fail: {"team-a": 1} makes that agent's first run(s) fail
     baseline: list of (effect, label) by attempt number
@@ -168,6 +170,14 @@ class FakeBackend:
             result = {"differences_found": ["rows kept"], "likely_cause": "duplicates",
                       "questions": [{"to": f"{study}-{q['to']}", "from": [], "question": q["question"]}
                                     for q in self.plan.get("questions", [])]}
+        elif job == "challenge":
+            teams_dir = workspace / "teams"
+            assert teams_dir.is_dir() and not list(teams_dir.rglob("answer*.json"))
+            result = {"shared_assumptions": ["independent rows"], "unused_evidence": ["batch column"],
+                      "unresolved_weak_points": ["small sample"], "second_readings": ["effect on the log scale"],
+                      "questions": [{"to": f"{study}-{q['to']}", "from": [], "question": q["question"]}
+                                    for q in self.plan.get("challenge", [])],
+                      "verdict": "agreement alone is weak evidence"}
         elif job == "referee":
             spec = self.plan["referee"]
             if "pick_team" in spec:
@@ -230,18 +240,208 @@ def test_teams_agree_replicated_without_questions_or_referee(tmp_path):
         assert out[sid]["status"] == "replicated"
         assert final_answer(run_dir, sid) == {"effect": A[0], "label": A[1]}   # team A's file
         assert "crossexam" not in jobs(backend, sid) and "referee" not in jobs(backend, sid)
-        assert sorted(jobs(backend, sid)) == sorted(["library", "relay", "analyst", "analyst"])
+        assert sorted(jobs(backend, sid)) == sorted(["library", "relay", "analyst", "analyst", "challenge"])
     finals = log.events("study.final")
     assert {e["study"] for e in finals} == {"s1", "s2"} and all(e["status"] == "replicated" for e in finals)
-    # the briefing reached both teams under the director's name
+    # the briefing reached team A under the director's name, and not team B
     to = {e["to_department"] for e in log.events("memory.pass_down") if e["actor"] == "director"}
-    assert {"s1-team-a", "s1-team-b", "s2-team-a", "s2-team-b"} <= to
+    assert {"s1-team-a", "s2-team-a"} <= to and not {"s1-team-b", "s2-team-b"} & to
     rec = study_record(run_dir)
     assert rec["comparisons"][0]["agree"] is True and rec["comparisons"][0]["fields"] == {"effect": True, "label": True}
     assert any(n["agent"] == "s1-team-b" for n in rec["not_chosen"])
     starts, finishes = log.events("agent.start"), log.events("agent.finish")
     assert len(starts) == len(finishes) == len(backend.calls)
     assert all({"agent", "study", "phase", "ok", "seconds", "cost_usd"} <= set(e) for e in finishes)
+
+
+def briefing_targets(log, study="s1"):
+    return {e["to_department"] for e in log.events("memory.pass_down")
+            if e["actor"] == "director" and e["text"].startswith("PITFALL") and e["to_department"].startswith(study)}
+
+
+def test_only_team_a_is_briefed_by_default(tmp_path):
+    lab, adapter, backend, log, memory, run_dir = make(tmp_path, {"team-a": [A], "team-b": [A]})
+    lab.run(one_study(adapter))
+    assert briefing_targets(log) == {"s1-team-a"}
+    rec = study_record(run_dir)
+    assert rec["briefed_teams"] == ["team-a"] and rec["briefing"][0]["fact_ids"].keys() == {"team-a"}
+    relay = next(c for c in backend.calls if c["job"] == "relay")
+    assert "s1-team-a" in relay["brief"] and "s1-team-b" not in relay["brief"]
+
+
+def test_brief_teams_set_to_both_restores_the_old_briefing(tmp_path):
+    config = protocol.Config(max_agents=3, brief_teams=("team-a", "team-b"))
+    lab, adapter, backend, log, memory, run_dir = make(tmp_path, {"team-a": [A], "team-b": [A]}, config)
+    lab.run(one_study(adapter))
+    assert briefing_targets(log) == {"s1-team-a", "s1-team-b"}
+    assert study_record(run_dir)["briefed_teams"] == ["team-a", "team-b"]
+
+
+def test_agree_and_challenge_asks_nothing_replicated(tmp_path):
+    lab, adapter, backend, log, memory, run_dir = make(tmp_path, {"team-a": [A], "team-b": [A]})
+    out = lab.run(one_study(adapter))
+    assert out["s1"]["status"] == "replicated"
+    assert jobs(backend).count("challenge") == 1 and "revise" not in jobs(backend)
+    challenge = next(c for c in backend.calls if c["job"] == "challenge")
+    assert adapter.root / "s1" / "data" in challenge["readable"]       # it may look at how the data is built
+    rec = study_record(run_dir)
+    assert rec["challenged"] is True and rec["challenge_questions"] == 0
+    assert rec["challenge"]["questions"] == [] and rec["challenge"]["verdict"]
+    for key in ("shared_assumptions", "unused_evidence", "unresolved_weak_points", "second_readings"):
+        assert rec["challenge"][key], key
+    assert rec["final"]["round"] == "analysis"
+
+
+CHALLENGE = [{"to": "team-a", "question": "QUESTION FROM THE DIRECTOR: neither team used the batch column. "
+                                          "Check it. Does it change your method?"},
+             {"to": "team-b", "question": "QUESTION FROM THE DIRECTOR: both teams assumed independent rows. "
+                                          "Check it. Does it change your method?"}]
+
+
+def test_agree_challenge_asks_both_keep_their_answers(tmp_path):
+    plan = {"team-a": [A, A], "team-b": [A, A], "challenge": CHALLENGE}
+    lab, adapter, backend, log, memory, run_dir = make(tmp_path, plan)
+    out = lab.run(one_study(adapter))
+    assert out["s1"]["status"] == "replicated"
+    assert jobs(backend).count("revise") == 2 and "crossexam" not in jobs(backend) and "referee" not in jobs(backend)
+    revise_briefs = [c["brief"] for c in backend.calls if c["job"] == "revise"]
+    assert all("reached the same answer as you" in b for b in revise_briefs)
+    checks = [e for e in log.events("relay.leak_check") if e["round"] == "challenge"]
+    assert [(e["to"], e["passed"]) for e in checks] == [("s1-team-a", True), ("s1-team-b", True)]
+    delivered = {e["to_department"]: e["text"] for e in log.events("memory.pass_down") if e["text"].startswith("QUESTION")}
+    assert delivered == {"s1-team-a": CHALLENGE[0]["question"], "s1-team-b": CHALLENGE[1]["question"]}
+    rec = study_record(run_dir)
+    assert rec["challenged"] is True and rec["challenge_questions"] == 2
+    assert rec["challenge_changed_answer"] is False
+    assert [c["round"] for c in rec["comparisons"]] == ["analysis", "challenge"]
+    assert rec["final"] == {**rec["final"], "agent": "s1-team-a", "round": "challenge"}
+    assert all(q["delivered"] for q in rec["challenge"]["questions"]) and rec["questions"] == []
+
+
+def test_agree_challenge_both_change_to_the_same_new_answer(tmp_path):
+    plan = {"team-a": [B, A], "team-b": [B, A], "challenge": CHALLENGE}
+    lab, adapter, backend, log, memory, run_dir = make(tmp_path, plan)
+    out = lab.run(one_study(adapter))
+    assert out["s1"]["status"] == "replicated"
+    assert final_answer(run_dir) == {"effect": A[0], "label": A[1]}
+    rec = study_record(run_dir)
+    assert rec["challenge_changed_answer"] is True
+    kept = {(c["team"], c["round"]): c["answer"]["effect"] for c in rec["candidates"]}
+    assert kept == {("team-a", "analysis"): B[0], ("team-b", "analysis"): B[0],
+                    ("team-a", "challenge"): A[0], ("team-b", "challenge"): A[0]}
+    first = json.loads((run_dir / "s1" / "candidates" / "team-a-analysis.json").read_text())
+    assert first["answer"]["effect"] == B[0]
+    assert any(n["agent"] == "s1-team-a" and n["round"] == "analysis" and "challenge" in n["reason"]
+               for n in rec["not_chosen"])
+
+
+def test_agree_challenge_then_teams_disagree_referee_decides(tmp_path):
+    plan = {"team-a": [A, A], "team-b": [A, B], "challenge": CHALLENGE, "referee": {"pick_team": "team-b"}}
+    lab, adapter, backend, log, memory, run_dir = make(tmp_path, plan)
+    out = lab.run(one_study(adapter))
+    assert out["s1"]["status"] == "refereed"
+    assert final_answer(run_dir) == {"effect": B[0], "label": B[1]}
+    assert "crossexam" not in jobs(backend) and jobs(backend).count("referee") == 1
+    rec = study_record(run_dir)
+    assert [c["round"] for c in rec["comparisons"]] == ["analysis", "challenge"]
+    assert rec["comparisons"][1]["agree"] is False
+    assert rec["challenged"] is True and rec["challenge_changed_answer"] is None
+    assert rec["final"]["round"] == "challenge"
+
+
+def test_no_challenge_restores_the_old_agreement(tmp_path):
+    plan = {"team-a": [A], "team-b": [A], "challenge": CHALLENGE}
+    lab, adapter, backend, log, memory, run_dir = make(tmp_path, plan, protocol.Config(max_agents=3, challenge=False))
+    out = lab.run(one_study(adapter))
+    assert out["s1"]["status"] == "replicated"
+    assert sorted(jobs(backend)) == sorted(["library", "relay", "analyst", "analyst"])
+    rec = study_record(run_dir)
+    assert rec["challenged"] is False and rec["challenge"] is None and rec["switches"]["challenge"] is False
+
+
+def test_challenge_question_with_the_teams_own_agreed_value_is_delivered(tmp_path):
+    # The teams agree within the adapter's tolerance but not to the digit: each question names
+    # the other team's figure, which is no secret once they agree.
+    near = (2.75, "UpZeta")
+    qa = "QUESTION FROM THE DIRECTOR: an effect near 2.75 labelled upzeta assumes independent rows. Check it."
+    qb = "QUESTION FROM THE DIRECTOR: an effect near 2.718 labelled upzeta assumes no batch effect. Check it."
+    plan = {"team-a": [A, A], "team-b": [near, near],
+            "challenge": [{"to": "team-a", "question": qa}, {"to": "team-b", "question": qb}]}
+    lab, adapter, backend, log, memory, run_dir = make(tmp_path, plan)
+    lab.run(one_study(adapter))
+    checks = [e for e in log.events("relay.leak_check") if e["round"] == "challenge"]
+    assert [e["passed"] for e in checks] == [True, True]
+    texts = [e["text"] for e in log.events("memory.pass_down")]
+    assert qa in texts and qb in texts
+    assert study_record(run_dir)["challenge_questions"] == 2
+
+
+def test_cli_switches_for_challenge_and_briefed_teams(tmp_path, monkeypatch):
+    adapter = FakeAdapter(tmp_path / "bench")
+    seen = []
+
+    class StubLab:
+        def __init__(self, adapter, backend, memory, log, run_dir, config, **kwargs):
+            seen.append(config)
+
+        def run(self, studies):
+            return {}
+
+    monkeypatch.setitem(run.ADAPTERS, "fake", lambda: adapter)
+    monkeypatch.setattr(run, "Lab", StubLab)
+    base = ["lab", "--benchmark", "fake", "--backend", "mock", "--memory", "local"]
+    assert run.main(base + ["--run-dir", str(tmp_path / "r1")]) == 0
+    assert run.main(base + ["--run-dir", str(tmp_path / "r2"), "--no-challenge", "--brief-teams", "team-a,team-b"]) == 0
+    assert (seen[0].challenge, seen[0].brief_teams) == (True, ("team-a",))
+    assert (seen[1].challenge, seen[1].brief_teams) == (False, ("team-a", "team-b"))
+    with pytest.raises(SystemExit):
+        run.main(base + ["--run-dir", str(tmp_path / "r3"), "--brief-teams", "team-c"])
+
+
+class WatchedMemory(LocalMemory):
+    """LocalMemory that records every wait_visible call and refuses wait_settled."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.visible_calls = []
+
+    def wait_visible(self, agent_id, fact_ids, timeout=90):
+        self.visible_calls.append((agent_id, list(fact_ids)))
+        return super().wait_visible(agent_id, fact_ids, timeout)
+
+    def wait_settled(self, timeout=180):
+        raise AssertionError("the loop should not wait for memory to settle")
+
+
+class SyncedGateway(protocol.Gateway):
+    """The local gateway with a sync() like ModalGateway's, counting calls."""
+    syncs = 0
+
+    def sync(self):
+        SyncedGateway.syncs += 1
+        return 0
+
+
+def test_loop_waits_until_receivers_can_see_their_facts(tmp_path):
+    plan = {"team-a": [A, A], "team-b": [B, A],
+            "questions": [{"to": "team-b", "question": "QUESTION FROM THE DIRECTOR: the other team found repeated "
+                                                        "ids. Does that change your method?"}]}
+    adapter = FakeAdapter(tmp_path / "bench")
+    run_dir = tmp_path / "runs" / "watched"
+    log = JsonlEventLog(run_dir / "events.jsonl")
+    memory = WatchedMemory(log, run_dir / "memory.jsonl")
+    lab = protocol.Lab(adapter, FakeBackend(plan), memory, log, run_dir, protocol.Config(max_agents=3),
+                       exa_call=no_exa, gateway_factory=SyncedGateway)
+    SyncedGateway.syncs = 0
+    assert lab.run(one_study(adapter))["s1"]["status"] == "converged"
+    library_fact = next(e["fact_id"] for e in log.events("memory.write") if e["actor"] == "s1-library")
+    to = {}
+    for e in log.events("memory.pass_down"):
+        to.setdefault(e["to_department"], []).append(e["fact_id"])
+    assert memory.visible_calls == [("director", [library_fact]), ("s1-team-a", to["s1-team-a"]),
+                                    ("s1-team-b", to["s1-team-b"])]
+    assert SyncedGateway.syncs >= 1      # a remote gateway's writes are fetched before looking for the library's facts
+    assert len(log.events("memory.visible")) == 3
 
 
 def test_disagree_then_questions_then_team_b_revises_converged(tmp_path):
@@ -252,7 +452,9 @@ def test_disagree_then_questions_then_team_b_revises_converged(tmp_path):
     out = lab.run(one_study(adapter))
     assert out["s1"]["status"] == "converged"
     assert final_answer(run_dir) == {"effect": A[0], "label": A[1]}
-    assert jobs(backend).count("revise") == 2 and "referee" not in jobs(backend)
+    assert jobs(backend).count("revise") == 2 and "referee" not in jobs(backend) and "challenge" not in jobs(backend)
+    revise_briefs = [c["brief"] for c in backend.calls if c["job"] == "revise"]
+    assert all("The other team reached a different answer" in b and "{situation}" not in b for b in revise_briefs)
     delivered = [e for e in log.events("memory.pass_down") if e["to_department"] == "s1-team-b" and e["text"].startswith("QUESTION")]
     assert len(delivered) == 1
     rec = study_record(run_dir)
@@ -478,3 +680,4 @@ def test_grade_refuses_while_an_agent_is_unfinished_then_grades(tmp_path, monkey
     assert run.main(["report", "--run-dir", str(run_dir)]) == 0
     report = (run_dir / "report.md").read_text()
     assert "replicated" in report and "s2" in report
+    assert "challenged" in report and "team-a" in report

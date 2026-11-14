@@ -114,6 +114,13 @@ class LocalMemory:
                         audience=to_department, came_from=came_from, reason=reason, text=text)
         return fact_id
 
+    def wait_visible(self, agent_id: str, fact_ids: list[str], timeout: float = 90) -> list[str]:
+        """A local fact is readable as soon as it is written, so nothing is missing. Logs one event."""
+        self._agent(agent_id, "wait_visible")
+        self.log.append("memory.visible", "memory", agent=agent_id, fact_ids=list(fact_ids), missing=[],
+                        timed_out=False, polls=0, seconds=0.0)
+        return []
+
     def recall(self, agent_id: str, query: str, limit: int = 20) -> list[Fact]:
         """Facts this agent may read that share words with the question, best match first."""
         agent = self._agent(agent_id, "recall")

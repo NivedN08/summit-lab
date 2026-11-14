@@ -9,6 +9,10 @@ ten studies are too few for rates to the decimal (I-5).
 How rescues and damage (d) are counted, step by step:
   question round  per team: its first answer against the answer it used after the round
                   (the revised one when that was valid, else the first).
+  challenge       per challenged study: the first agreed answer (team A's first answer, which
+                  the lab would have reported as replicated without the challenge) against the
+                  final answer. When the teams agree again that is team A's answer after the
+                  challenge; when they no longer agree it is what the referee or team C produced.
   referee         per team: the answer that team handed to the referee against the answer the
                   referee step produced (its pick, or its own answer when it picked neither).
                   A referee that picked neither and gave no usable answer changed nothing.
@@ -25,6 +29,7 @@ from typing import Any
 
 LABELS = ("replicated", "converged", "refereed", "third-team", "unresolved", "single-source", "no-answer")
 FIRST_TEAMS = ("team-a", "team-b")
+REVISING = ("revise", "challenge")     # rounds in which a team answers the director's questions
 
 
 class NotGraded(RuntimeError):
@@ -224,8 +229,12 @@ def steps(run: Run) -> dict:
     q_changes, q_compared = [], 0
     r_changes, r_compared, r_ran, r_nothing = [], 0, 0, 0
     c_changes, c_ran, c_without_answer = [], 0, 0
+    ch_changes, ch_compared = [], 0
     for sid in run.lab_ids:
         grades, record = run.passed[sid], run.records[sid]
+        if record.get("challenged"):
+            ch_compared += 1
+            _tally(ch_changes, sid, "study", grades.get("team-a-analysis", False), run.lab_passed(sid))
         for team in FIRST_TEAMS:
             revised = run.cand(sid, f"{team}-revise")
             if revised is None or f"{team}-analysis" not in grades:
@@ -257,7 +266,7 @@ def steps(run: Run) -> dict:
             before = grades.get("referee-own", False) if own and own.get("valid") else False
             c_without_answer += not (own and own.get("valid"))
             _tally(c_changes, sid, "study", before, run.lab_passed(sid))
-    return {"questions": _step(q_changes, q_compared),
+    return {"questions": _step(q_changes, q_compared), "challenge": _step(ch_changes, ch_compared),
             "referee": _step(r_changes, r_compared, ran=r_ran, settled_nothing=r_nothing),
             "team_c": _step(c_changes, c_ran, ran=c_ran, no_answer_without_it=c_without_answer)}
 
@@ -284,7 +293,7 @@ def noticing(run: Run) -> dict:
     changed, fixed = 0, 0
     for sid in run.lab_ids:
         for cand, doc in run.team_results(sid):
-            if cand.get("round") == "revise":
+            if cand.get("round") in REVISING:
                 for r in (doc or {}).get("replies") or []:
                     if isinstance(r, dict):
                         replies += 1
@@ -329,7 +338,7 @@ def library(run: Run) -> dict:
                 with_sources += bool(links)
                 sources += len(links)
         for cand, doc in run.team_results(sid):
-            if cand.get("round") == "revise":
+            if cand.get("round") in REVISING:
                 continue
             items = (doc or {}).get("pitfalls_checked")
             if not isinstance(items, list):
@@ -347,6 +356,41 @@ def library(run: Run) -> dict:
     return {"pitfalls_found": found, "pitfalls_with_sources": with_sources, "sources": sources,
             "studies_without_library": no_library, "pitfall_checks": checks, "found_in_data": in_data,
             "changed_method": changed, "team_answers_without_checks": without_checks}
+
+
+# ----- the challenge of agreed answers, and who was briefed -----
+
+def challenge(run: Run) -> dict:
+    """How many agreed first answers were challenged, drew questions, changed, or split the teams."""
+    agreed = [sid for sid in run.lab_ids if any(c.get("round") == "analysis" and c.get("agree")
+                                                for c in run.records[sid].get("comparisons") or [])]
+    challenged = [sid for sid in run.lab_ids if run.records[sid].get("challenged")]
+    questioned = [sid for sid in challenged if (run.records[sid].get("challenge_questions") or 0) > 0]
+    changed = [sid for sid in questioned if run.records[sid].get("challenge_changed_answer") is True]
+    split = [sid for sid in questioned if any(c.get("round") == "challenge" and not c.get("agree")
+                                              for c in run.records[sid].get("comparisons") or [])]
+    written = delivered = 0
+    for sid in challenged:
+        for q in (run.records[sid].get("challenge") or {}).get("questions") or []:
+            written += 1
+            delivered += bool(q.get("delivered"))
+    return {"challenged": count(len(challenged), len(agreed)), "questioned": count(len(questioned), len(challenged)),
+            "changed": count(len(changed), len(questioned)), "disagreed_after": count(len(split), len(questioned)),
+            "questions_written": written, "questions_delivered": delivered,
+            "changed_studies": changed, "disagreed_after_studies": split}
+
+
+def briefing(run: Run) -> dict:
+    """Which first teams received the director's briefing, per study and as a tally."""
+    studies = {}
+    for sid in run.lab_ids:
+        teams = run.records[sid].get("briefed_teams")
+        studies[sid] = list(teams) if isinstance(teams, list) else None
+    tally: dict[str, int] = {}
+    for teams in studies.values():
+        key = "not recorded" if teams is None else ",".join(teams) or "none"
+        tally[key] = tally.get(key, 0) + 1
+    return {"studies": studies, "by_teams": tally}
 
 
 # ----- h. cost -----
@@ -392,7 +436,8 @@ def measure(run_dir: pathlib.Path) -> dict:
     run = Run(run_dir)
     head = headline(run)
     out = {"run": run.dir.name, "studies": len(run.lab_ids), "headline": head, "labels": labels(run),
-           "false_agreement": false_agreement(run), "steps": steps(run), "selection": selection(run),
+           "false_agreement": false_agreement(run), "steps": steps(run), "challenge": challenge(run),
+           "briefing": briefing(run), "selection": selection(run),
            "noticing": noticing(run), "library": library(run), "cost": cost(run, head)}
     out["missing"] = run.missing
     return out
@@ -428,9 +473,15 @@ def summary_lines(m: dict) -> list[str]:
     lines += [f"    {label:<14} {row['studies']}, {row['passed']}" for label, row in m["labels"].items()]
     fa, st, sel = m["false_agreement"], m["steps"], m["selection"]
     n, lib, c = m["noticing"], m["library"], m["cost"]
+    ch = m["challenge"]
     lines += ["",
               f"  False agreement: {frac(fa['replicated_failed'])} replicated studies failed; first answers agreed in "
               f"{fa['first_answers_agreed']}, both wrong in {fa['first_agreed_both_wrong']}.",
+              f"  Briefing went to: " + "; ".join(f"{k} in {v} studies" for k, v in m["briefing"]["by_teams"].items())
+              + ".",
+              f"  Challenge: {frac(ch['challenged'])} agreed first answers challenged; {frac(ch['questioned'])} "
+              f"drew questions; {frac(ch['changed'])} changed the agreed answer; {frac(ch['disagreed_after'])} left the "
+              f"teams disagreeing. {st['challenge']['rescued']} rescued, {st['challenge']['damaged']} damaged.",
               f"  Question round: {st['questions']['rescued']} rescued, {st['questions']['damaged']} damaged "
               f"({st['questions']['compared']} team answers). Referee: {st['referee']['rescued']} rescued, "
               f"{st['referee']['damaged']} damaged. Team C: {st['team_c']['rescued']} rescued, "

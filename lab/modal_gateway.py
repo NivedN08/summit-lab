@@ -18,7 +18,8 @@ pass-downs itself; the remote PastMemory only attaches to that setup.
 Logs: every few seconds, and once more at stop, new lines of the gateway's events.jsonl are added
 to the local event log (same kind, actor and data, plus remote_time and remote_seq) and new lines
 of its exa_calls.jsonl to the local records/exa_calls.jsonl. Agent writes seen this way are also
-registered with the local PastMemory, so its wait_settled() waits for them as it does locally.
+registered with the local PastMemory: their ingestion ids, so its wait_settled() waits for them as
+it does locally, and their text, so its wait_visible() can ask for them by what they say.
 """
 
 from __future__ import annotations
@@ -186,7 +187,11 @@ class ModalGateway:
 
     def _track(self, event: dict) -> None:
         """Let the local PastMemory wait for facts agents wrote through the remote gateway."""
+        if event.get("kind") not in ("memory.write", "memory.pass_down") or not event.get("fact_id"):
+            return
         pending = getattr(self.memory, "_pending", None)
-        if (isinstance(pending, dict) and event.get("kind") in ("memory.write", "memory.pass_down")
-                and event.get("fact_id") and event.get("ingestion_id")):
+        if isinstance(pending, dict) and event.get("ingestion_id"):
             pending.setdefault(event["fact_id"], event["ingestion_id"])
+        texts = getattr(self.memory, "_texts", None)
+        if isinstance(texts, dict) and isinstance(event.get("text"), str):
+            texts.setdefault(event["fact_id"], event["text"])

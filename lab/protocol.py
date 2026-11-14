@@ -3,9 +3,14 @@
 For each study S the lab runs, in order (explanation.md, section 1, and D-8 to D-11):
 
   1. library     `S-library` researches pitfalls with web search through the gateway.
-  2. briefing    the director picks what the teams need; the lab passes each item down.
+  2. briefing    the director picks what the teams need; the lab passes each item down to the
+                 teams in Config.brief_teams only (default team A), so the two teams start from
+                 different information (I-11).
   3. analysis    `S-team-a` and `S-team-b` analyse blind, at the same time.
-  4. compare     both valid and agreeing: "replicated". One valid: "single-source". None: "no-answer".
+  4. compare     one valid: "single-source". None: "no-answer". Both valid and agreeing: step 4a.
+  4a. challenge  the director tries to break the agreed answer and writes questions for both teams.
+                 No questions: "replicated". Otherwise the lab delivers them as in step 5, both
+                 teams revise, and agreeing again is "replicated"; disagreeing now goes to step 6.
   5. questions   on disagreement the director writes questions from each team's method note;
                  the lab leak-checks each one, delivers those that pass, and both teams revise.
                  Agreeing now: "converged".
@@ -16,10 +21,11 @@ For each study S the lab runs, in order (explanation.md, section 1, and D-8 to D
 
 Blindness: a team's brief holds only the lab's instructions, the task text and the paths of its
 own workspace, the data and the agent tools. The only thing that ever crosses from one team to
-another is a question that passed the leak check, delivered through memory.
+another is a question that passed the leak check, delivered through memory. After each delivery
+the lab waits until each receiving agent can read what it was sent (Memory.wait_visible).
 
 Folders under `<run_dir>/<S>/`: one workspace per agent run (`library`, `director-briefing`,
-`director-questions`, `team-a`, `team-b`, `team-c`, `referee`), `candidates/` (the lab's copy of
+`director-questions`, `director-challenge`, `team-a`, `team-b`, `team-c`, `referee`), `candidates/` (the lab's copy of
 every answer, which no agent can read), `briefs/` (every brief given), `final/` and `study.json`.
 """
 
@@ -50,11 +56,17 @@ DIVERSITY = {
     "team-b": "Start with a full audit of the data files and how they relate before choosing a model.",
     "team-c": "Before choosing a model, check each warning sign passed down to you against the data.",
 }
+SITUATION = {      # the {situation} line of analyst_revise.md, per round
+    "revise": "The other team reached a different answer. You will not be told what it was. The director's "
+              "questions come from warning signs the other team recorded and from differences in method.",
+    "challenge": "The other team reached the same answer as you. The director does not think agreement alone "
+                 "makes it right, and has questions for both teams.",
+}
 
 
 @dataclasses.dataclass
 class Config:
-    """Settings for one lab run. The three switches exist for ablation runs."""
+    """Settings for one lab run. The switches exist for ablation and comparison runs."""
     director_model: str = "fable"
     worker_model: str = "opus"
     timeouts: dict = dataclasses.field(default_factory=lambda: {
@@ -64,6 +76,8 @@ class Config:
     library: bool = True         # run the library and the director's briefing
     questions: bool = True       # run the director's question round on disagreement
     referee: bool = True         # run the referee before calling team C
+    challenge: bool = True       # challenge an agreed answer before reporting it as replicated
+    brief_teams: tuple = ("team-a",)   # the first teams that receive the director's briefing
     seed: int | None = None      # for the referee's X/Y order; None means random
 
     def timeout(self, role: str) -> int:
@@ -350,6 +364,7 @@ class Lab:
         return {"LAB_GATEWAY_URL": url, "LAB_GATEWAY_TOKEN": self.tokens[agent.id]}
 
     def wait_settled(self) -> None:
+        """Wait until past.dev has derived memory from every write. Slow (minutes); the loop no longer uses it."""
         if hasattr(self.gateway, "sync"):     # a remote gateway: fetch its latest writes first
             self.gateway.sync()
         if hasattr(self.memory, "wait_settled"):
@@ -365,9 +380,13 @@ class StudyRun:
         self.cfg = lab.config
         self.dir = lab.run_dir / study.id
         self.deliverable = study.deliverables[0] if study.deliverables else "answer.json"
+        self.briefed = [t for t in ("team-a", "team-b") if t in self.cfg.brief_teams]
         self.record: dict = {"study": study.id, "status": None, "final": None, "switches": {
-            "library": self.cfg.library, "questions": self.cfg.questions, "referee": self.cfg.referee},
+            "library": self.cfg.library, "questions": self.cfg.questions, "referee": self.cfg.referee,
+            "challenge": self.cfg.challenge, "brief_teams": list(self.cfg.brief_teams)},
+            "briefed_teams": self.briefed if self.cfg.library else [],
             "candidates": [], "comparisons": [], "briefing": [], "questions": [], "warning_signs_to_team_c": [],
+            "challenged": False, "challenge_questions": None, "challenge_changed_answer": None, "challenge": None,
             "referee": None, "not_chosen": [], "agent_runs": [], "unsanctioned_pass_downs": []}
         self.candidates: list[Candidate] = []
         self.start_seq = 0
@@ -442,6 +461,33 @@ class StudyRun:
         self.lab.delivered.add(fact_id)
         return fact_id
 
+    def wait_visible(self, waits: dict[str, list[str]]) -> None:
+        """For each agent, wait until it can read the facts just delivered to it. Missing ones are logged, not fatal."""
+        for agent_id, fact_ids in waits.items():
+            if not fact_ids:
+                continue
+            missing = self.lab.memory.wait_visible(agent_id, list(fact_ids))
+            if missing:
+                self.log("relay.not_visible", agent=agent_id, missing=missing)
+
+    def library_facts(self) -> list[str]:
+        """Ids of the facts the library wrote in this study. A remote gateway's writes are fetched first."""
+        if hasattr(self.lab.gateway, "sync"):
+            self.lab.gateway.sync()
+        library = self.agent("library").id
+        return [e["fact_id"] for e in self.lab.log.events("memory.write")
+                if e.get("actor") == library and e["seq"] > self.start_seq and e.get("fact_id")]
+
+    def team_notes(self, ws: pathlib.Path) -> pathlib.Path:
+        """Copy both teams' result.json (method notes, never answer files) into `ws/teams`."""
+        teams_dir = ws / "teams"
+        teams_dir.mkdir(parents=True, exist_ok=True)
+        for team in ("team-a", "team-b"):
+            note = self.dir / team / "result.json"
+            if note.is_file():
+                shutil.copyfile(note, teams_dir / f"{self.dept(team)}.json")
+        return teams_dir
+
     # ----- steps -----
 
     def library(self) -> None:
@@ -451,7 +497,8 @@ class StudyRun:
 
     def briefing(self) -> list[dict]:
         director = self.agent("director")
-        brief = make_brief("director_relay", director, **self.fields())
+        brief = make_brief("director_relay", director,
+                           **self.fields(team_departments=", ".join(self.dept(t) for t in self.briefed)))
         result = self.run_agent(director, brief, "director-briefing", [TOOLS], "briefing", "director")
         items = result.result.get("pass_down") if result.ok else None
         kept = []
@@ -462,17 +509,20 @@ class StudyRun:
             came_from = item.get("from") if isinstance(item.get("from"), list) else []
             reason = item.get("reason") if isinstance(item.get("reason"), str) and item["reason"].strip() \
                 else "the director judged the teams need it"
-            ids = {team: self.pass_down(self.dept(team), text, came_from, reason) for team in ("team-a", "team-b")}
+            ids = {team: self.pass_down(self.dept(team), text, came_from, reason) for team in self.briefed}
             entry = {"text": text, "from": came_from, "reason": reason, "fact_ids": ids}
             kept.append(entry)
             self.record["briefing"].append(entry)
-        self.log("relay.briefing", items=len(kept))
+        self.log("relay.briefing", items=len(kept), teams=self.briefed)
+        self.wait_visible({self.agent(t).id: [e["fact_ids"][t] for e in kept] for t in self.briefed})
         return kept
 
     def analyse(self, team: str, template_name: str = "analyst", round_: str = "analysis",
                 phase: str = "analysis") -> Candidate | None:
+        """Run one team. A revising round ("revise" or "challenge") gets that round's {situation} line."""
         agent = self.agent(team)
-        brief = make_brief(template_name, agent, **self.fields(diversity=DIVERSITY[team]))
+        brief = make_brief(template_name, agent, **self.fields(diversity=DIVERSITY[team],
+                                                               situation=SITUATION.get(round_, "")))
         result = self.run_agent(agent, brief, team, [self.study.data_dir, TOOLS], phase, "analyst")
         return self.take(team, round_, result, self.dir / team)
 
@@ -486,17 +536,46 @@ class StudyRun:
     def questions(self, a: Candidate, b: Candidate) -> list[dict]:
         """The director's question round: write, leak-check and deliver. Returns every question."""
         director = self.agent("director")
-        ws = self.dir / "director-questions"
-        teams_dir = ws / "teams"
-        teams_dir.mkdir(parents=True, exist_ok=True)
-        for team in ("team-a", "team-b"):
-            note = self.dir / team / "result.json"
-            if note.is_file():
-                shutil.copyfile(note, teams_dir / f"{self.dept(team)}.json")
+        teams_dir = self.team_notes(self.dir / "director-questions")
         brief = make_brief("director_crossexam", director, **self.fields(teams_dir=str(teams_dir)))
         result = self.run_agent(director, brief, "director-questions", [TOOLS], "questions", "director")
         raw = result.result.get("questions") if result.ok else None
-        answers = {self.dept("team-a"): (a, b), self.dept("team-b"): (b, a)}
+        answers = {self.dept("team-a"): (a.values, b.values), self.dept("team-b"): (b.values, a.values)}
+        out = self.deliver(raw, answers, "questions", "question from the director after the teams' answers differed")
+        self.record["questions"].extend(out)
+        return out
+
+    def differing(self, own: Candidate, other: Candidate) -> dict:
+        """The other team's values for the fields where it differs from `own`: the only ones that could leak."""
+        fields = field_agreement(self.lab.adapter, self.study, own.path, other.path)
+        if set(fields) == {"all"}:
+            return {} if fields["all"] else dict(other.values)
+        return {k: v for k, v in other.values.items() if fields.get(k) is not True}
+
+    def challenge(self, a: Candidate, b: Candidate) -> list[dict]:
+        """The director challenges an agreed answer. Records its findings, delivers its questions, returns them."""
+        director = self.agent("director")
+        teams_dir = self.team_notes(self.dir / "director-challenge")
+        brief = make_brief("director_challenge", director, **self.fields(teams_dir=str(teams_dir)))
+        result = self.run_agent(director, brief, "director-challenge", [self.study.data_dir, TOOLS], "challenge",
+                                "director")
+        doc = result.result if result.ok else {}
+        found = {k: doc.get(k) if isinstance(doc.get(k), list) else []
+                 for k in ("shared_assumptions", "unused_evidence", "unresolved_weak_points", "second_readings")}
+        verdict = doc.get("verdict") if result.ok else f"challenge run failed: {result.error}"
+        # The teams agree, so a team's own value is no secret: check each question only against the
+        # other team's values for fields where the two differ (none, when they agree on every field).
+        answers = {self.dept("team-a"): (a.values, self.differing(a, b)),
+                   self.dept("team-b"): (b.values, self.differing(b, a))}
+        out = self.deliver(doc.get("questions"), answers, "challenge",
+                           "question from the director challenging the answer both teams agreed on")
+        self.record["challenge"] = {"ran": bool(result.ok), **found, "verdict": verdict, "questions": out}
+        return out
+
+    def deliver(self, raw, answers: dict[str, tuple[dict, dict]], round_: str, reason: str) -> list[dict]:
+        """Leak-check each question the director wrote and pass down those that pass, then wait until
+        each receiving team can read its questions. `answers` maps a team department to (its own
+        values, the values it must not learn). Returns one entry per question."""
         out = []
         for item in raw if isinstance(raw, list) else []:
             if not isinstance(item, dict) or not isinstance(item.get("question"), str) or not item["question"].strip():
@@ -512,16 +591,19 @@ class StudyRun:
                 entry["reasons"] = [f"no team department called {to!r}"]
             else:
                 own, other = answers[to]
-                entry["reasons"] = leak_check(item["question"], own.values, [other.values])
+                entry["reasons"] = leak_check(item["question"], own, [other])
             passed = not entry["reasons"]
-            self.log("relay.leak_check", round="questions", to=to, passed=passed, reasons=entry["reasons"],
+            self.log("relay.leak_check", round=round_, to=to, passed=passed, reasons=entry["reasons"],
                      question=item["question"])
             if passed:
-                entry["fact_id"] = self.pass_down(to, item["question"], came_from,
-                                                  "question from the director after the teams' answers differed")
+                entry["fact_id"] = self.pass_down(to, item["question"], came_from, reason)
                 entry["delivered"] = True
             out.append(entry)
-            self.record["questions"].append(entry)
+        waits: dict[str, list[str]] = {}
+        for entry in out:
+            if entry["delivered"]:
+                waits.setdefault(entry["to"], []).append(entry["fact_id"])   # a team's agent id is its department
+        self.wait_visible(waits)
         return out
 
     def referee(self, a: Candidate, b: Candidate) -> dict:
@@ -565,8 +647,7 @@ class StudyRun:
     def team_c(self, briefing: list[dict], questions: list[dict], a: Candidate, b: Candidate) -> Candidate | None:
         """Brief team C like the first two, add every question as a warning sign, and run it blind."""
         dept = self.dept("team-c")
-        for item in briefing:
-            self.pass_down(dept, item["text"], item["from"], item["reason"])
+        sent = [self.pass_down(dept, item["text"], item["from"], item["reason"]) for item in briefing]
         for q in questions:
             reasons = leak_check(q["question"], None, [a.values, b.values])   # C has no answer of its own
             passed = not reasons
@@ -575,8 +656,9 @@ class StudyRun:
             if passed:
                 entry["fact_id"] = self.pass_down(dept, "WARNING SIGN TO CHECK: " + q["question"], q["from"],
                                                   "raised when two earlier teams disagreed; check it on the data")
+                sent.append(entry["fact_id"])
             self.record["warning_signs_to_team_c"].append(entry)
-        self.lab.wait_settled()
+        self.wait_visible({self.agent("team-c").id: sent})
         return self.analyse("team-c", round_="third-team", phase="third-team")
 
     # ----- the flow -----
@@ -589,25 +671,32 @@ class StudyRun:
         briefing = []
         if self.cfg.library:
             self.library()
-            self.lab.wait_settled()
+            self.wait_visible({self.agent("director").id: self.library_facts()})
             briefing = self.briefing()
-        self.lab.wait_settled()
         a, b = self.both(self.analyse)
         va, vb = bool(a and a.valid), bool(b and b.valid)
         if not (va and vb):
             if va or vb:
                 return self.finish("single-source", a if va else b)
             return self.finish("no-answer", None)
-        if self.compare(a, b, "analysis"):
-            return self.finish("replicated", a)
 
         questions = []
-        if self.cfg.questions:
+        if self.compare(a, b, "analysis"):
+            if not self.cfg.challenge:
+                return self.finish("replicated", a)
+            first = a
+            delivered = [q for q in self.challenge(a, b) if q["delivered"]]
+            self.record.update(challenged=True, challenge_questions=len(delivered))
+            if not delivered:
+                return self.finish("replicated", a)
+            a, b = self.revised(a, b, "challenge")
+            if self.compare(a, b, "challenge"):
+                changed = not all(field_agreement(self.lab.adapter, self.study, first.path, a.path).values())
+                self.record["challenge_changed_answer"] = changed
+                return self.finish("replicated", a)
+        elif self.cfg.questions:
             questions = self.questions(a, b)
-            self.lab.wait_settled()
-            a2, b2 = self.both(self.analyse, "analyst_revise", "revise", "revise")
-            a = a2 if a2 and a2.valid else a
-            b = b2 if b2 and b2.valid else b
+            a, b = self.revised(a, b, "revise")
             if self.compare(a, b, "revise"):
                 return self.finish("converged", a)
 
@@ -621,6 +710,11 @@ class StudyRun:
             return self.finish("third-team", c)
         own = next((x for x in self.candidates if x.team == "referee" and x.valid), None)
         return self.finish("unresolved", own or (c if c and c.valid else None), verdict=verdict)
+
+    def revised(self, a: Candidate, b: Candidate, round_: str) -> tuple[Candidate, Candidate]:
+        """Both teams answer the director's questions. A team whose revised answer is not valid keeps its first."""
+        a2, b2 = self.both(self.analyse, "analyst_revise", round_, round_)
+        return (a2 if a2 and a2.valid else a), (b2 if b2 and b2.valid else b)
 
     # ----- the record -----
 

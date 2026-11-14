@@ -285,6 +285,31 @@ def test_past_cleanup_deletes_what_it_made(fake_past):
     assert ("DELETE", "/identities/run-x-worker-a", None) in paths
 
 
+def test_local_wait_visible_has_nothing_to_wait_for(mem, log):
+    fid = mem.pass_down("boss", "team-b", "Check for repeated ids.", [], "why")
+    assert mem.wait_visible("worker-b", [fid]) == []
+    event = log.events("memory.visible")[-1]
+    assert event["agent"] == "worker-b" and event["fact_ids"] == [fid] and event["missing"] == []
+
+
+def test_past_wait_visible_polls_recall_as_the_receiver(fake_past, log):
+    mem, fake = fake_past
+    fid = mem.pass_down("boss", "team-b", "QUESTION FROM THE DIRECTOR: check for repeated ids.", [], "why")
+    fake.recall_response = {"results": []}
+    assert mem.wait_visible("worker-b", [fid], timeout=0) == [fid]       # not there yet: reported missing
+    first = log.events("memory.visible")[-1]
+    assert first["missing"] == [fid] and first["timed_out"] is True and first["polls"] == 1
+    fake.recall_response = {"results": [{"id": "r1", "content": "check for repeated ids",
+                                         "sources": [{"sourceId": fid}]}]}
+    assert mem.wait_visible("worker-b", [fid]) == []
+    bodies = [b for m, p, b in fake.calls if p == "/recall"]
+    assert all(b["identity"] == "run-x-worker-b" for b in bodies)
+    assert "repeated ids" in bodies[-1]["query"]            # it asks with the fact's own text
+    event = log.events("memory.visible")[-1]
+    assert event["missing"] == [] and event["timed_out"] is False and "seconds" in event
+    assert not [p for m, p, b in fake.calls if p.startswith("/ingest/")]   # it never waits for derivation
+
+
 # ---------- live test against real past.dev ----------
 
 @pytest.mark.skipif(os.environ.get("LAB_LIVE") != "1", reason="set LAB_LIVE=1 to run against real past.dev")

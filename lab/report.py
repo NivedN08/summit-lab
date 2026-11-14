@@ -27,8 +27,24 @@ def _fmt_answer(values: dict) -> str:
     return ", ".join(f"{k} = {v}" for k, v in values.items()) or "(none)"
 
 
+def challenge_line(record: dict) -> str:
+    """One sentence on the director's challenge of an agreed answer, or "" if there was none."""
+    if not record.get("challenged"):
+        return ""
+    n = record.get("challenge_questions") or 0
+    if not n:
+        return "The director challenged the agreed answer and asked no questions, so it was reported."
+    changed = record.get("challenge_changed_answer")
+    after = ("the teams then agreed on a different answer" if changed is True else
+             "the teams kept the answer they had agreed on" if changed is False else
+             "the teams then disagreed")
+    return f"The director challenged the agreed answer with {n} question(s); {after}."
+
+
 def study_section(record: dict, grade: dict | None) -> list[str]:
     lines = [f"## {record['study']}: {record['status']}", "", HOW.get(record["status"], "")]
+    if challenge_line(record):
+        lines.append(challenge_line(record))
     final = record.get("final")
     lines.append(f"Reported answer: from {final['agent']} ({final['round']} round)." if final else "No answer reported.")
     if grade is not None:
@@ -48,7 +64,20 @@ def study_section(record: dict, grade: dict | None) -> list[str]:
             lines.append(f"- {c['round']}: {' and '.join(c['between'])} {verdict}")
         lines.append("")
     if record.get("briefing"):
-        lines.append(f"The director passed {len(record['briefing'])} item(s) from the library to the teams.")
+        teams = record.get("briefed_teams")
+        to = " and ".join(teams) if teams else "the teams"
+        lines.append(f"The director passed {len(record['briefing'])} item(s) from the library to {to}.")
+        lines.append("")
+    challenge = record.get("challenge") or {}
+    if challenge:
+        lines.append(f"The director's challenge: {challenge.get('verdict') or '-'}")
+        for key, name in (("shared_assumptions", "Shared assumptions"), ("unused_evidence", "Unused evidence"),
+                          ("unresolved_weak_points", "Unresolved weak points"), ("second_readings", "Second readings")):
+            if challenge.get(key):
+                lines.append(f"- {name}: " + "; ".join(str(x) for x in challenge[key]))
+        for q in challenge.get("questions") or []:
+            state = "delivered" if q["delivered"] else "blocked (" + "; ".join(q["reasons"]) + ")"
+            lines.append(f"- question to {q['to']}, {state}: {q['question']}")
         lines.append("")
     if record.get("questions"):
         lines.append("Questions the director wrote:")
@@ -104,6 +133,7 @@ def measures_section(m: dict) -> list[str]:
     fa, st, sel = m["false_agreement"], m["steps"], m["selection"]
     n, lib, c = m["noticing"], m["library"], m["cost"]
     q, ref, tc = st["questions"], st["referee"], st["team_c"]
+    ch, ch_step, brief = m.get("challenge"), st.get("challenge"), m.get("briefing")
     failing = ", ".join(sel["passing_candidate_but_failing_final"]) or "none"
     lab, base = c["overall"]["lab"], c["overall"]["baseline"]
 
@@ -133,6 +163,14 @@ def measures_section(m: dict) -> list[str]:
               f"in {ref['settled_nothing']}. Team C ran in {tc['ran']} studies: it turned {tc['rescued']} studies right "
               f"and {tc['damaged']} wrong.",
               "",
+              *([f"**Challenge.** {_n(ch['challenged'])} studies whose first answers agreed were challenged by the "
+                 f"director; {_n(ch['questioned'])} challenges produced questions ({ch['questions_delivered']} of "
+                 f"{ch['questions_written']} questions delivered). After the questions the agreed answer changed in "
+                 f"{_n(ch['changed'])} and the teams no longer agreed in {_n(ch['disagreed_after'])}. Against the first "
+                 f"agreed answer, the challenge turned {ch_step['rescued']} studies right and {ch_step['damaged']} "
+                 f"wrong, out of {ch_step['compared']}.", ""] if ch and ch_step else []),
+              *([f"**Briefing.** The library's briefing went to: "
+                 + "; ".join(f"{k} in {v} studies" for k, v in brief["by_teams"].items()) + ".", ""] if brief else []),
               f"**Selection.** In {sel['lab_passed']['of']} studies at least one answer in the lab passed, and the lab "
               f"shipped a passing answer in {sel['lab_passed']['n']} of them. Studies where it shipped a failing "
               f"answer although a passing one existed: {failing}.",

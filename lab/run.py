@@ -60,6 +60,9 @@ def mock_script(adapter):
             return {"differences_found": ["mock"], "likely_cause": "mock", "questions": [
                 {"to": f"{study_id}-team-b", "from": [],
                  "question": "QUESTION FROM THE DIRECTOR: the other team checked for repeated rows. Does that change your method?"}]}
+        if "# Your job: director, challenging an answer both teams agree on" in brief:
+            return {"shared_assumptions": [], "unused_evidence": [], "unresolved_weak_points": [],
+                    "second_readings": [], "questions": [], "verdict": "mock: nothing to ask"}
         if "# Your job: the lab's library" in brief:
             return {"pitfalls": [], "searches_made": 0, "notes": "mock library"}
         if "# Your job: referee" in brief:
@@ -107,6 +110,15 @@ def stop_modal_on_interrupt(backend, lab=None) -> None:
     signal.signal(signal.SIGINT, handler)
 
 
+def brief_teams(text: str) -> tuple:
+    """Parse --brief-teams: a comma-separated list drawn from team-a and team-b."""
+    teams = tuple(dict.fromkeys(t.strip() for t in text.split(",") if t.strip()))
+    wrong = [t for t in teams if t not in ("team-a", "team-b")]
+    if wrong or not teams:
+        raise SystemExit(f"--brief-teams takes team-a, team-b or both, comma-separated; got {text!r}")
+    return teams
+
+
 def make_memory(kind: str, log, run_dir: pathlib.Path):
     if kind == "local":
         from lab.memory_local import LocalMemory
@@ -150,7 +162,8 @@ def cmd_lab(args) -> int:
     adapter = load_adapter(args.benchmark)
     studies = pick_studies(adapter, args.studies)
     config = Config(max_agents=args.parallel, max_searches=args.max_searches, library=not args.no_library,
-                    questions=not args.no_questions, referee=not args.no_referee,
+                    questions=not args.no_questions, referee=not args.no_referee, challenge=not args.no_challenge,
+                    brief_teams=brief_teams(args.brief_teams),
                     director_model=args.director_model, worker_model=args.model)
     note_run(run_dir, benchmark=args.benchmark, lab_studies=[s.id for s in studies], memory=args.memory,
              backend=args.backend)
@@ -376,6 +389,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--no-library", action="store_true")
     p.add_argument("--no-questions", action="store_true")
     p.add_argument("--no-referee", action="store_true")
+    p.add_argument("--no-challenge", action="store_true",
+                   help="report agreeing first answers as replicated without the director's challenge")
+    p.add_argument("--brief-teams", default="team-a",
+                   help="teams that receive the director's briefing, comma-separated (default: team-a)")
     p.set_defaults(fn=cmd_lab)
 
     p = sub.add_parser("baseline", help="run single-agent attempts")

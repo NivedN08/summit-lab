@@ -87,6 +87,7 @@ class PastMemory:
         self._audiences: dict[str, str] = {}    # department -> audience slug
         self._written: list[str] = []           # fact ids this instance sent
         self._pending: dict[str, str] = {}      # fact id -> ingestion id not yet seen completed
+        self._texts: dict[str, str] = {}        # fact id -> its text, for wait_visible's queries
         self._key: str | None = None
 
     # ----- HTTP -----
@@ -226,6 +227,7 @@ class PastMemory:
                 "audience": audience, "identity": self._identity(actor), "idempotencyKey": fact_id}
         parsed, request_id, seconds = self._must(self._call(actor, "POST", "/ingest", body), f"write {fact_id}")
         self._written.append(fact_id)
+        self._texts[fact_id] = text
         if parsed.get("status") != "completed":
             self._pending[fact_id] = parsed.get("ingestionId")
         return parsed.get("ingestionId"), request_id, seconds
@@ -291,10 +293,41 @@ class PastMemory:
         for fact_id in list(self._pending):
             self._wait(fact_id, timeout)
 
+    def wait_visible(self, agent_id: str, fact_ids: list[str], timeout: float = 90) -> list[str]:
+        """Poll recall as this agent until every given fact id is among the results' sources.
+
+        past.dev makes a fact's raw text readable within seconds, long before it has finished
+        deriving memory from it (I-3), so this waits far less than wait_settled. Each poll asks
+        once per missing fact, with that fact's own text as the question. Returns the ids still
+        missing when the timeout passes (empty when all are visible) and logs one
+        "memory.visible" event."""
+        self._agent(agent_id, "wait_visible")
+        start = time.time()
+        missing = list(dict.fromkeys(fact_ids))
+        polls = 0
+        while missing:
+            polls += 1
+            for fact_id in list(missing):
+                query = (self._texts.get(fact_id) or "facts passed down to this department")[:300]
+                _, sources = self._recall(agent_id, query, 50, checked_by="lab.wait_visible")
+                missing = [f for f in missing if f not in sources]
+                if not missing:
+                    break
+            if not missing or time.time() - start >= timeout:
+                break
+            time.sleep(2)
+        self.log.append("memory.visible", "memory", agent=agent_id, fact_ids=list(fact_ids), missing=missing,
+                        timed_out=bool(missing), polls=polls, seconds=round(time.time() - start, 2))
+        return missing
+
     # ----- reading -----
 
     def recall(self, agent_id: str, query: str, limit: int = 20) -> list[Fact]:
         """Read as the agent's own identity; past.dev returns only what its audiences allow."""
+        return self._recall(agent_id, query, limit)[0]
+
+    def _recall(self, agent_id: str, query: str, limit: int, **extra) -> tuple[list[Fact], set[str]]:
+        """One recall as the agent. Returns the facts and every source id behind them; `extra` goes into the log."""
         agent = self._agent(agent_id, "recall")
         limit = max(1, min(int(limit), 200))
         body = {"query": query, "identity": self._identity(agent.id), "limit": limit}
@@ -316,8 +349,8 @@ class PastMemory:
             ))
         self.log.append("memory.recall", agent.id, query=query, limit=limit, ids=[f.id for f in facts],
                         source_ids=sorted(source_ids), kinds=[f.kind for f in facts],
-                        pending=parsed.get("pending"), request_id=request_id, seconds=seconds)
-        return facts
+                        pending=parsed.get("pending"), request_id=request_id, seconds=seconds, **extra)
+        return facts, source_ids
 
     # ----- cleanup -----
 
@@ -345,5 +378,5 @@ class PastMemory:
             delete(f"identity {agent.id}", "DELETE", f"/identities/{urllib.parse.quote(self._identity(agent.id), safe='')}")
         summary = {"facts": len(self._written), "audiences": len(self._audiences), "problems": problems}
         self.log.append("memory.cleanup", "memory", namespace=self.namespace, **summary)
-        self._written, self._pending = [], {}
+        self._written, self._pending, self._texts = [], {}, {}
         return summary

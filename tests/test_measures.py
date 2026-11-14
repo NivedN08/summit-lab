@@ -15,9 +15,10 @@ from lab import baseline as baseline_mod
 from lab import measures, protocol, run
 from lab.eventlog import JsonlEventLog
 from lab.memory_local import LocalMemory
-from test_protocol import A, B, FakeAdapter, FakeBackend, no_exa
+from test_protocol import A, B, CHALLENGE, FakeAdapter, FakeBackend, no_exa
 
 W = (7.0, "other")      # another wrong answer
+NO_CHALLENGE = protocol.Config(max_agents=3, challenge=False)
 
 
 class StudyBackend:
@@ -136,6 +137,55 @@ def test_replicated_right_and_replicated_wrong(tmp_path):
     assert fa["first_answers_agreed"] == 2 and fa["first_agreed_both_wrong"] == 1 and fa["first_agreed_one_wrong"] == 0
 
 
+# ----- the challenge of agreed answers, and who was briefed -----
+
+def test_challenge_rescue_and_damage_and_every_candidate_graded(tmp_path):
+    plans = {"s1": {"team-a": [B, A], "team-b": [B, A], "challenge": CHALLENGE},   # agreed wrong, both turn right
+             "s2": {"team-a": [A, B], "team-b": [A, B], "challenge": CHALLENGE}}   # agreed right, both turn wrong
+    run_dir, _ = build(tmp_path, plans)
+    cands = by_id(run_dir)
+    passed = {cid: cands[cid]["passed"] for cid in ("team-a-analysis", "team-b-analysis", "team-a-challenge",
+                                                    "team-b-challenge", "final")}
+    assert passed == {"team-a-analysis": False, "team-b-analysis": False, "team-a-challenge": True,
+                      "team-b-challenge": True, "final": True}
+    assert cands["team-a-challenge"]["round"] == "challenge" and cands["final"]["same_as"] == "team-a-challenge"
+    m = measures.measure(run_dir)
+    ch = m["challenge"]
+    assert (ch["challenged"]["n"], ch["challenged"]["of"]) == (2, 2)
+    assert (ch["questioned"]["n"], ch["questioned"]["of"]) == (2, 2)
+    assert (ch["changed"]["n"], ch["changed"]["of"]) == (2, 2)
+    assert (ch["disagreed_after"]["n"], ch["disagreed_after"]["of"]) == (0, 2)
+    step = m["steps"]["challenge"]
+    assert (step["rescued"], step["damaged"], step["compared"]) == (1, 1, 2)
+    assert {(x["study"], x["change"]) for x in step["changes"]} == {("s1", "rescued"), ("s2", "damaged")}
+    assert m["labels"]["replicated"] == {"studies": 2, "passed": 1}
+    assert m["briefing"]["by_teams"] == {"team-a": 2}
+    assert m["briefing"]["studies"] == {"s1": ["team-a"], "s2": ["team-a"]}
+    assert m["noticing"]["replies"] == 4    # the challenge round's replies count too
+    assert not any("warning_signs" in x for x in m["missing"])
+
+
+def test_challenge_without_questions_and_unchanged_answers(tmp_path):
+    plans = {"s1": {"team-a": [A], "team-b": [A]},                                  # nothing to ask
+             "s2": {"team-a": [B, B], "team-b": [B, B], "challenge": CHALLENGE}}   # asked, both keep B
+    run_dir, _ = build(tmp_path, plans)
+    m = measures.measure(run_dir)
+    ch = m["challenge"]
+    assert (ch["challenged"]["n"], ch["questioned"]["n"], ch["questioned"]["of"]) == (2, 1, 2)
+    assert (ch["changed"]["n"], ch["changed"]["of"]) == (0, 1)
+    step = m["steps"]["challenge"]
+    assert (step["rescued"], step["damaged"], step["compared"]) == (0, 0, 2)
+    assert "team-a-challenge" in by_id(run_dir, "s2") and "team-a-challenge" not in by_id(run_dir, "s1")
+
+    old, _ = build(tmp_path, {"s1": {"team-a": [A], "team-b": [A]}}, name="old-way",
+                   config=protocol.Config(max_agents=3, challenge=False, brief_teams=("team-a", "team-b")))
+    m = measures.measure(old)
+    assert (m["challenge"]["challenged"]["n"], m["challenge"]["challenged"]["of"]) == (0, 1)
+    assert m["steps"]["challenge"]["compared"] == 0
+    assert m["briefing"]["by_teams"] == {"team-a,team-b": 1}
+    assert any("challenge" in line.lower() for line in measures.summary_lines(m))
+
+
 # ----- rescues and damage -----
 
 def test_question_round_rescue_and_damage(tmp_path):
@@ -176,9 +226,9 @@ def test_selection_referee_picks_the_wrong_team_and_team_c_rescues(tmp_path):
 # ----- the same-budget vote and cost -----
 
 def test_same_budget_vote_takes_k_from_costs(tmp_path):
-    # Replicated study: 4 lab runs at $0.25 = $1.00. One attempt costs $0.50, so k = 2.
+    # Replicated study without the challenge: 4 lab runs at $0.25 = $1.00. One attempt costs $0.50, so k = 2.
     plan = {"team-a": [A], "team-b": [A], "baseline": [B, A, A]}
-    run_dir, _ = build(tmp_path, {"s1": plan}, attempts=3, cost={"lab": 0.25, "baseline": 0.5})
+    run_dir, _ = build(tmp_path, {"s1": plan}, attempts=3, cost={"lab": 0.25, "baseline": 0.5}, config=NO_CHALLENGE)
     m = measures.measure(run_dir)
     sb = m["headline"]["same_budget_vote"]
     assert sb["basis"] == "dollars" and sb["k"] == 2
@@ -197,7 +247,7 @@ def test_same_budget_vote_takes_k_from_costs(tmp_path):
 def test_missing_cost_falls_back_to_time_then_to_runs(tmp_path):
     plan = {"team-a": [A], "team-b": [A], "baseline": [B, A, A]}
     run_dir, _ = build(tmp_path, {"s1": plan}, attempts=3, cost={"lab": None, "baseline": None},
-                       seconds={"lab": 60.0, "baseline": 120.0}, name="timed")
+                       seconds={"lab": 60.0, "baseline": 120.0}, name="timed", config=NO_CHALLENGE)
     m = measures.measure(run_dir)
     sb = m["headline"]["same_budget_vote"]
     assert sb["basis"] == "minutes" and sb["k"] == 2
@@ -206,7 +256,7 @@ def test_missing_cost_falls_back_to_time_then_to_runs(tmp_path):
     assert any("cost" in note for note in m["missing"])
 
     run_dir, _ = build(tmp_path, {"s1": plan}, attempts=3, cost={"lab": None, "baseline": None},
-                       seconds={"lab": 0.0, "baseline": 0.0}, name="counted")
+                       seconds={"lab": 0.0, "baseline": 0.0}, name="counted", config=NO_CHALLENGE)
     sb = measures.measure(run_dir)["headline"]["same_budget_vote"]
     assert sb["basis"] == "agent runs" and sb["k_unrounded"] == pytest.approx(4.0)
     assert sb["k"] == 3                                        # at most the 3 attempts available
@@ -268,5 +318,5 @@ def test_report_has_a_measures_section(tmp_path):
     section = report[report.index("## Measures"):]
     for words in ("Lab final answers", "Single-agent attempts", "Same-budget vote", "| replicated |",
                   "False agreement", "Rescues and damage", "Selection", "Noticing to acting", "Library",
-                  "Cost"):
+                  "Cost", "Challenge", "Briefing"):
         assert words in section, words
