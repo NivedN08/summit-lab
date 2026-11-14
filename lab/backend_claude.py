@@ -84,7 +84,9 @@ class ClaudeBackend:
         return {
             "permissions": {
                 "defaultMode": "dontAsk",
-                "allow": [rule("Read", ws), rule("Edit", ws)] + [rule("Read", p) for p in rd],
+                # Every shell command is allowed to run, because the sandbox below confines what it can touch.
+                # Without this, commands the CLI cannot analyse (loops, cd, variables) are refused in dontAsk mode.
+                "allow": ["Bash", rule("Read", ws), rule("Edit", ws)] + [rule("Read", p) for p in rd],
                 "deny": ["WebFetch", "WebSearch", f"Edit(/{ws}/.claude/**)", f"Read(/{env_file})"]
                         + [rule("Edit", p) for p in rd],
             },
