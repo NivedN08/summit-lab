@@ -164,6 +164,13 @@ The lab also produces something a single agent cannot: a label on every answer s
 
 With ten problems these are counts, not rates to trust to the decimal (I-5). We report the counts.
 
+**D-13 · Nov 14, 13:40 · Decided · Run each agent in its own Modal sandbox, with the gateway on Modal too.**
+Why: the laptop fits about four analysts at once (I-10), and ten problems with repeats would take most of a night. A sandbox per agent removes that limit and makes the blindness physical: two teams are two separate machines with no path between them.
+How identity works there (idea N-1, now being built): Modal issues each agent a connect token carrying its agent id. When the agent calls the gateway, Modal adds that id to the request in a header the agent cannot set or change. The gateway takes identity from that header alone. So "who is asking" is vouched for by the platform, not by the agent and not by a list of tokens we keep.
+What stays the same: the flow, the prompts, the fair-play rules, and the laptop runner, which remains available.
+Limits we accept: the Claude sign-in token is present inside each agent's sandbox (the agent needs it to run), with the network closed to everything except the model API, the gateway and the package index. Many agents at once may hit the Claude usage limit before they hit a compute limit.
+Status: being built; nothing in this entry has been tested yet.
+
 ## 5. Agent observations
 
 Things the agents did that we did not expect.
