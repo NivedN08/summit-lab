@@ -19,7 +19,21 @@ same session, AgentResult), with the sandbox as the boundary instead of the CLI'
     tools Bash, Read, Write, Edit, Glob, Grep only, no MCP servers, no settings files, no hooks,
     telemetry and non-essential traffic off. Raw output streams to workspace/.agent/attempt-N.jsonl.
 
-`python3 -m lab.backend_modal build` builds and publishes the image ahead of a run.
+A benchmark can change the sandbox for its studies with an adapter method `modal_spec(study)`.
+`ModalBackend(specs={study_id: spec})` uses the spec of the study a run belongs to (found from
+the agent id, which names the study, or else from the workspace path). Every key is optional:
+
+    {"packages": ["scanpy==1.10.4", ...],   # extra packages, installed over the base ones (so a pin
+                                            # here wins). Gives its own image, IMAGE_NAME-<set hash>,
+                                            # without the GeneBench public data
+     "cpu": 4.0, "memory_mb": 16384,        # a hard limit (request = limit)
+     "volumes": [{"name": "summit-scbench-data", "sub_path": "/sc01", "mount": "/scbench-data"}],
+                                            # always mounted read-only
+     "links": {"data": "/scbench-data"},    # name in the working folder -> path in a mount
+     "workspace_alias": "/workspace",       # a path made to point at the working folder
+     "package_index": False}                # False: no package-index hosts in the allowlist
+
+`python3 -m lab.backend_modal build` builds and publishes the default image ahead of a run.
 """
 
 from __future__ import annotations
@@ -50,6 +64,7 @@ TOOL_FILES = [ROOT / "lab" / "tools" / "memory.py", ROOT / "lab" / "tools" / "re
 CLAUDE_SECRET = "claude-token"
 # Claude Code needs only Anthropic's API; the Python package index lets an agent install a package.
 AGENT_HOSTS = ["api.anthropic.com", "pypi.org", "files.pythonhosted.org"]
+PACKAGE_INDEX_HOSTS = ("pypi.org", "files.pythonhosted.org")
 CPU, MEMORY_MB = 2.0, 4096
 SLACK_S = 300                 # sandbox lifetime beyond the agent's limit, for copy-in, copy-back and cleanup
 # Set in the image: no telemetry, error reports, auto-updates or other non-essential traffic.
@@ -68,10 +83,12 @@ REMOTE_TMP = "/tmp/lab-agent"
 
 # ----------------------------------------------------------------------------- the image
 
-def image_inputs() -> list[pathlib.Path]:
-    """Every local file baked into the image. Refuses symlinks and anything outside the public side."""
+def image_inputs(packages=()) -> list[pathlib.Path]:
+    """Every local file baked into the image. Refuses symlinks and anything outside the public side.
+    The default image (no extra packages) also holds the GeneBench public data; a package-set image
+    holds the agent tools only, since its benchmark brings its data on a Volume."""
     files = list(TOOL_FILES)
-    for path in sorted(PUBLIC_DATA.rglob("*")):
+    for path in [] if packages else sorted(PUBLIC_DATA.rglob("*")):
         if path.is_symlink():
             raise ValueError(f"{path} is a symlink; the image takes regular files only")
         if path.is_file():
@@ -82,16 +99,23 @@ def image_inputs() -> list[pathlib.Path]:
     return files
 
 
-def image_name() -> str:
-    """IMAGE_NAME tagged with a hash of everything that goes in, so a change gives a new image."""
+def image_name(packages=()) -> str:
+    """IMAGE_NAME tagged with a hash of everything that goes in, so a change gives a new image.
+    A package set gets its own name, IMAGE_NAME-<hash of the set>."""
+    packages = tuple(packages)
     digest = hashlib.sha256(json.dumps([CLAUDE_CODE_VERSION, NODE_VERSION, PY_PACKAGES, IMAGE_ENV]).encode())
-    for path in image_inputs():
+    name = IMAGE_NAME
+    if packages:
+        digest.update(json.dumps(list(packages)).encode())
+        name += "-" + hashlib.sha256(json.dumps(sorted(packages)).encode()).hexdigest()[:8]
+    for path in image_inputs(packages):
         digest.update(str(path).encode() + b"\0" + path.read_bytes())
-    return f"{IMAGE_NAME}:{digest.hexdigest()[:12]}"
+    return f"{name}:{digest.hexdigest()[:12]}"
 
 
-def image_definition():
-    """The agent image as a Modal Image definition (not built)."""
+def image_definition(packages=()):
+    """The agent image as a Modal Image definition (not built). Extra packages are one more
+    install layer on top of the base one, so the layers below it are shared with the default image."""
     import modal
     node = f"node-v{NODE_VERSION}-linux-x64"
     image = (
@@ -103,11 +127,15 @@ def image_definition():
             "claude --version",
         )
         .uv_pip_install(*PY_PACKAGES)
-        .env(IMAGE_ENV)
     )
+    if packages:
+        image = image.uv_pip_install(*packages)
+    image = image.env(IMAGE_ENV)
     for path in TOOL_FILES:
         image = image.add_local_file(path, str(path), copy=True)
-    image_inputs()   # the checks above, before the public folder is added
+    image_inputs(packages)   # the checks above, before the public folder is added
+    if packages:
+        return image
     return image.add_local_dir(PUBLIC_DATA, str(PUBLIC_DATA), copy=True)
 
 
@@ -124,10 +152,12 @@ def modal_app():
         return _cache["app"]
 
 
-def agent_image(build: bool = True):
-    """The published agent image; built and published first if it does not exist yet."""
+def agent_image(build: bool = True, packages=()):
+    """The published agent image for this package set (default: none extra); built and published
+    first if it does not exist yet."""
     import modal
-    name = image_name()
+    packages = tuple(packages)
+    name = image_name(packages)
     with _lock:
         if name in _cache:
             return _cache[name]
@@ -137,7 +167,7 @@ def agent_image(build: bool = True):
         except modal.exception.NotFoundError:
             if not build:
                 raise
-            image = image_definition()
+            image = image_definition(packages)
             with modal.enable_output():
                 image.build(app=app)
             image.publish(name)
@@ -246,33 +276,92 @@ def gateway_host(url: str | None) -> str | None:
     return urlparse(url).hostname
 
 
+def link_script(ws: pathlib.Path, spec: dict) -> str | None:
+    """Shell commands that make a spec's links in the working folder and its workspace alias.
+    None when the spec has neither. Link names must be plain names inside the working folder."""
+    lines = []
+    for name, target in (spec.get("links") or {}).items():
+        if not name or "/" in name or name in (".", ".."):
+            raise ValueError(f"link name {name!r} must be a plain name in the working folder")
+        lines.append(f"ln -sfn {shlex.quote(str(target))} {shlex.quote(str(ws / name))}")
+    alias = spec.get("workspace_alias")
+    if alias:
+        a, w = shlex.quote(str(alias)), shlex.quote(str(ws))
+        lines += [f"if [ -d {a} ] && [ ! -L {a} ]; then rmdir {a}; fi",
+                  f"ln -sfn {w} {a}", f'test "$(readlink {a})" = {w}']
+    return "set -e\n" + "\n".join(lines) if lines else None
+
+
 class ModalBackend:
-    """contracts.Backend on Modal Sandboxes. Safe to call from many threads at once."""
+    """contracts.Backend on Modal Sandboxes. Safe to call from many threads at once.
+    `specs` maps a study id to its sandbox spec (see the module docstring)."""
 
     def __init__(self, allowed_hosts: list[str] | None = None, models: dict[str, str] | None = None, *,
-                 cpu: float = CPU, memory_mb: int = MEMORY_MB, secret_name: str = CLAUDE_SECRET):
+                 cpu: float = CPU, memory_mb: int = MEMORY_MB, secret_name: str = CLAUDE_SECRET,
+                 specs: dict[str, dict] | None = None):
         self.allowed_hosts = list(AGENT_HOSTS if allowed_hosts is None else allowed_hosts)
         self.models = {**DEFAULT_MODELS, **(models or {})}
         self.cpu, self.memory_mb, self.secret_name = cpu, memory_mb, secret_name
+        self.specs = dict(specs or {})
         self._live: dict[str, object] = {}     # sandbox id -> sandbox, while a run is in progress
         self._lock = threading.Lock()
         self._closed = False
 
     # ------------------------------------------------------------ what the sandbox is given
 
-    def hosts(self, env: dict | None) -> list[str]:
-        """Outbound TLS allowlist: the fixed hosts plus the gateway named in the agent's env."""
+    def spec_for(self, agent: Agent, workspace: pathlib.Path) -> dict:
+        """The spec of the study this run belongs to, or {} (the defaults). Agent ids name their
+        study ("sc01-team-a", "baseline-sc01-2"); the director's does not, so for it the workspace
+        path (<run dir>/<study>/director-...) decides."""
+        padded = f"-{agent.id}-"
+        for study_id, spec in self.specs.items():
+            if f"-{study_id}-" in padded:
+                return spec
+        parts = pathlib.Path(workspace).parts
+        for study_id, spec in self.specs.items():
+            if study_id in parts:
+                return spec
+        return {}
+
+    def hosts(self, env: dict | None, spec: dict | None = None) -> list[str]:
+        """Outbound TLS allowlist: the fixed hosts plus the gateway named in the agent's env,
+        without the package index when the spec forbids it."""
         out = list(self.allowed_hosts)
+        if (spec or {}).get("package_index") is False:
+            out = [h for h in out if h not in PACKAGE_INDEX_HOSTS]
         host = gateway_host((env or {}).get("LAB_GATEWAY_URL"))
         if host and host not in out:
             out.append(host)
         return out
 
-    def sandbox_options(self, timeout_s: int, env: dict | None = None) -> dict:
-        """Sandbox.create settings other than app, image and secret objects."""
-        return {"cpu": self.cpu, "memory": self.memory_mb, "timeout": int(timeout_s) + SLACK_S,
+    def sandbox_options(self, timeout_s: int, env: dict | None = None, spec: dict | None = None) -> dict:
+        """Sandbox.create settings other than app, image, volume and secret objects.
+        A spec's CPUs and memory are a hard limit: Modal's request and limit are both set to them."""
+        spec = spec or {}
+        cpu = (float(spec["cpu"]),) * 2 if "cpu" in spec else self.cpu
+        memory = (int(spec["memory_mb"]),) * 2 if "memory_mb" in spec else self.memory_mb
+        return {"cpu": cpu, "memory": memory, "timeout": int(timeout_s) + SLACK_S,
                 "secret_names": [self.secret_name] if self.secret_name else [],   # None only in tests
-                "outbound_domain_allowlist": self.hosts(env)}
+                "outbound_domain_allowlist": self.hosts(env, spec)}
+
+    @staticmethod
+    def volumes(spec: dict | None) -> dict:
+        """The spec's Volumes as Sandbox.create's `volumes`, every one read-only."""
+        import modal
+        out = {}
+        for v in (spec or {}).get("volumes") or []:
+            out[v["mount"]] = modal.Volume.from_name(v["name"]).with_mount_options(
+                read_only=True, sub_path=v.get("sub_path"))
+        return out
+
+    @staticmethod
+    def spec_paths(spec: dict | None) -> list[pathlib.Path]:
+        """Paths an agent may be told to read because the spec puts them in its sandbox."""
+        spec = spec or {}
+        paths = [pathlib.Path(v["mount"]) for v in spec.get("volumes") or []]
+        if spec.get("workspace_alias"):
+            paths.append(pathlib.Path(spec["workspace_alias"]))
+        return paths
 
     def command(self, agent: Agent, workspace: pathlib.Path, readable=(), resume: str | None = None) -> list[str]:
         """The CLI command line inside the sandbox. The brief goes on stdin."""
@@ -301,34 +390,45 @@ class ModalBackend:
         return out
 
     @staticmethod
-    def check_readable(readable, workspace: pathlib.Path) -> list[pathlib.Path]:
-        """Readable paths must already be in the image (public data, agent tools) or in the workspace."""
+    def check_readable(readable, workspace: pathlib.Path, extra=()) -> list[pathlib.Path]:
+        """Readable paths must already be in the image (public data, agent tools), in the workspace,
+        or under `extra` (a spec's mounts and workspace alias). Paths are compared resolved and
+        returned as given (made absolute), since the image holds them at their unresolved path."""
         out = []
-        allowed = [PUBLIC_DATA, *TOOL_FILES, TOOL_FILES[0].parent]
-        for p in readable:
-            p = pathlib.Path(p).resolve()
+        workspace = pathlib.Path(workspace).resolve()
+        allowed = [pathlib.Path(a).resolve() for a in (PUBLIC_DATA, *TOOL_FILES, TOOL_FILES[0].parent, *extra)]
+        for given in readable:
+            p = pathlib.Path(given).resolve()
             inside = any(p == a or a in p.parents for a in allowed) or p == workspace or workspace in p.parents
             if not inside or "sealed" in p.parts:
                 raise ValueError(f"readable path {p} is not in the agent image or the workspace")
-            out.append(p)
+            out.append(pathlib.Path(os.path.abspath(given)))
         return out
 
     # ------------------------------------------------------------------------- running
 
-    def create_sandbox(self, timeout_s: int, env: dict | None):
-        """Start an idle sandbox with the agent settings and remember it until the run ends."""
+    def create_sandbox(self, timeout_s: int, env: dict | None, spec: dict | None = None):
+        """Start an idle sandbox with the agent settings (and a spec's image, resources and
+        read-only Volumes) and remember it until the run ends."""
         import modal
         with self._lock:
             if self._closed:
                 raise RuntimeError("the Modal backend has been shut down")
-        opts = self.sandbox_options(timeout_s, env)
+        opts = self.sandbox_options(timeout_s, env, spec)
         sb = modal.Sandbox.create(
-            "sleep", "infinity", app=modal_app(), image=agent_image(),
+            "sleep", "infinity", app=modal_app(), image=agent_image(packages=(spec or {}).get("packages") or ()),
             secrets=[modal.Secret.from_name(n) for n in opts.pop("secret_names")],
-            tags={"summit-lab": "agent"}, **opts)
+            volumes=self.volumes(spec), tags={"summit-lab": "agent"}, **opts)
         with self._lock:
             self._live[sb.object_id] = sb
         return sb
+
+    def make_links(self, sb, ws: pathlib.Path, spec: dict | None) -> None:
+        """Make the spec's links and workspace alias inside the sandbox (after copy-in). Links are
+        never copied back: copy-back takes regular files only."""
+        script = link_script(ws, spec or {})
+        if script:
+            _check(sb.exec("bash", "-c", script, timeout=60), "link the data into the working folder")
 
     def run(self, agent, brief, workspace, *, readable=(), env=None, timeout_s=1800) -> AgentResult:
         start = time.monotonic()
@@ -336,15 +436,17 @@ class ModalBackend:
         ws = pathlib.Path(workspace).resolve()
         agent_dir = ws / ".agent"
         agent_dir.mkdir(parents=True, exist_ok=True)
-        readable = self.check_readable(readable, ws)
+        spec = self.spec_for(agent, ws)
+        readable = self.check_readable(readable, ws, self.spec_paths(spec))
         old = ws / "result.json"
         if old.exists():   # a result from an earlier run must not count for this one
             old.rename(agent_dir / f"previous-result-{time.time_ns()}.json")
         environment = self.environment(env)
         costs: list = []
-        sb = self.create_sandbox(timeout_s, env)
+        sb = self.create_sandbox(timeout_s, env, spec)
         try:
             self.copy_in(sb, ws)
+            self.make_links(sb, ws, spec)
             first = self._attempt(sb, self.command(agent, ws, readable), brief, ws, environment,
                                   agent_dir / "attempt-1", deadline)
             costs.append(first["cost"])
