@@ -27,23 +27,24 @@ A research lab run by AI agents, built for one question: can a team of agents re
 |---|---|---|---|
 | Director | Fable | Everything | Assigns the study, passes facts between departments, signs off the report |
 | Library | Opus | Library memory | Uses Exa to find how the method should be done and what usually goes wrong. Never the benchmark's source study |
-| Team A and Team B | Opus | Its own team's memory only | Each analyses the data without seeing the other. Each writes its plan first and records every warning sign it notices |
+| Team A and Team B | Opus | Its own team's memory only | Each analyses the data without seeing the other. Team A gets the library's briefing; team B does not. Each writes its plan first and records every warning sign it notices |
 | Referee | Opus | Called only on disagreement | Gets both answers without knowing whose is whose. Must design and run a test that tells them apart; may not simply vote |
 | Team C | Opus | Its own memory only | Called only when the referee cannot settle it |
 
-**How one study runs.**
+**How one study runs** (version 2, from D-15; version 1 briefed both teams and reported agreed answers without a challenge).
 
-1. The library researches the method. The director passes its pitfall sheet to both teams.
+1. The library researches the method with Exa. The director chooses what to pass down, and it goes to **team A only**. Team B starts from the data alone, so the two teams do not begin from the same information.
 2. Each team writes its plan to memory before analysing. The time stamp proves the plan came first.
 3. The teams analyse blind and submit an answer each.
-4. The answers are compared. If they agree, the answer is reported as *replicated*.
-5. If they disagree, the director passes each team's **warning signs, never its answer**, to the other team as questions. Each team must say whether the warning changes its method, and may revise once.
-6. If they still disagree, the referee runs a test. If that fails too, a third blind team is called.
-7. The report gives every answer with how it was reached (replicated, converged after questions, refereed, unresolved) and every rejected answer with the reason.
+4. The answers are compared.
+5. **If they agree, the director tries to break the answer** before it is reported: assumptions both teams made, data neither used, weak points they named and did not resolve, a second reading of the task. Its questions go to both teams, and each must run the check and say whether it changes the method. An answer that survives is reported as *replicated*.
+6. **If they disagree**, the director passes each team's warning signs, never its answer, to the other team as questions. Each team must say whether the warning changes its method, and may revise once.
+7. If they still disagree, the referee runs a test. If that fails too, a third blind team is called.
+8. The report gives every answer with how it was reached and every rejected answer with the reason.
 
 **An example.** Two teams estimate an effect from a gene study. Team A notices that some samples appear twice and removes them. Team B does not notice, and its answer differs. The director does not tell B what A answered. It passes B one question: "The other team found repeated samples. Does that change your method?" B checks, agrees and redoes the estimate. Now the answers match, and the log shows which warning sign did it.
 
-**Why step 5 matters.** The authors of our first benchmark say models mostly fail there in one way: they notice a warning sign in the data and then do not change the analysis (section 8). Step 5 turns one team's noticing into a question the other team has to act on.
+**Why step 6 matters.** The authors of our first benchmark say models mostly fail there in one way: they notice a warning sign in the data and then do not change the analysis (section 8). Step 6 turns one team's noticing into a question the other team has to act on.
 
 **What the rehearsal taught** (a practice lab built the night before, in a separate private repository; no file from it is here). It tied a single agent, and three causes are designed out here:
 
@@ -173,6 +174,15 @@ Status: being built; nothing in this entry has been tested yet.
 
 **D-14 · Nov 14, 14:13 · Decided · Problems gb01 and gb02 are for development; gb03 to gb10 are the test.**
 We have now seen scores for gb01 and gb02 and will change the design because of them. Any change is frozen and written here before a single test problem is run, and the test problems are scored once. Results are reported for the eight test problems and for all ten, separately, with the pilot's result on the two development problems kept as it was.
+
+**D-15 · Nov 14, 14:27 · Decided · Design version 2, because of pilot 1.**
+Three changes, each answering something pilot 1 showed (M-8, O-4, I-11):
+1. **Brief one team only.** In the pilot both teams got the same eight items from the library, made the same choices and agreed on a wrong answer. Now only team A is briefed.
+2. **Challenge every agreed answer.** In the pilot an agreed answer was reported at once and was wrong. Now the director must try to break it first (step 5 in section 1). This is where Fable, the strongest model in the lab, does its main work.
+3. **Wait for memory only until it is readable.** The pilot lost 8.5 minutes waiting for past.dev to finish deriving memory. The lab now waits only until the receiving agent can see the facts just delivered to it.
+Not changed: the models (Fable alone did no better than Opus alone on the development problems, M-9), the time limit, the question round, the referee, the third team, the fair-play rules.
+What we expect, written before any test problem runs: the challenge will change some agreed answers; we do not know whether it will change them for the better. Version 1 is still runnable (`--brief-teams team-a,team-b --no-challenge`) for a direct comparison if the budget allows.
+Status: built and tested with scripted agents (116 tests pass). Running on the two development problems now; frozen once that run is read.
 
 ## 5. Agent observations
 
