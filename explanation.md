@@ -218,6 +218,14 @@ The installed Claude command-line tool (2.1.285) only reaches Fable 5.1; Fable 5
 **I-9 · Nov 14, 12:47 · Fixed · Agents could not run shell loops, so they could not open the data.**
 Found by the first plumbing test (`runs/smoke1`, one problem, cheapest model): all four agents stopped within 40 seconds, with no memory writes, no searches and no answer. Cause: in the agents' permission mode the command-line tool refuses any shell command it cannot analyse ahead of time (a loop, a `cd`, a variable), and the first thing an analyst does is loop over the compressed data files. Fix: shell commands are allowed to run, and the operating-system sandbox, not the command check, is what confines them. A new live check (`test_live_loops_and_cd_run_but_stay_confined`) shows loops now run inside the agent's folder and a loop writing outside it is still refused. All six live sandbox checks pass on the upgraded tool (version 2.1.311).
 
+**I-10 · Nov 14, 13:36 · Fixed · Analysts had no useful time limit and filled the machine.**
+Found by the second plumbing test (`runs/smoke2`): 40 minutes in, both analysts were still running large bootstrap jobs at about two full cores each, some left in the background, and the limit was an hour. We stopped the run. Changes, applied to lab analysts and to the single-agent baseline alike:
+- A 30-minute limit, stated in the instructions, with the rule that only what is in `answer.json` when time runs out counts. Agents are told to write a first answer early and improve it.
+- If an agent is stopped by the limit and has left a valid `answer.json`, the lab uses it and records that it was salvaged. A timed-out run is not repeated.
+- Each script should stay under about 3 minutes; numeric libraries are capped at two threads per process; agents are told to use at most 2 cores.
+- When an agent ends, any job it left running in its folder is stopped.
+What this costs: an answer that needed more than 30 minutes is cut short, for both arms equally. Running more than about four analysts at once needs more cores than the laptop has; that is the case for moving analysts to Modal (idea N-1's sandboxes).
+
 ## 8. Research behind decisions
 
 All sources below were read on Nov 14. This section is what documentation and papers say. What we measured ourselves is in section 9.
@@ -300,3 +308,16 @@ Command: `LAB_LIVE=1 python3 -m pytest tests/test_backend.py -k live` (57 second
 What it does not show: these ran in a temporary folder, not under the repository where real runs live, and on Haiku, not Opus. The first real run repeats the check in place. This is what makes "blind" mean something: a team has no path to the other team's folder, the keys or the web.
 
 **Note on grading (I-7).** The benchmark's reference grader was executed once, inside a builder agent's run of the whole test suite, on a placeholder answer that failed as it should. No real answer has been graded.
+
+**M-7 · Nov 14, 13:36 · Measured · The chain works end to end up to the blind analysis (plumbing test, cheapest model).**
+Command: `python3 -m lab.run lab --benchmark genebench --studies gb01 --run-dir runs/smoke2 --memory past --backend claude --model haiku --director-model haiku --max-searches 4`. Stopped by hand after 45 minutes (I-10), so the comparison, question round and referee steps have so far run only in tests with scripted agents.
+
+| Step | What the log shows |
+|---|---|
+| Library | 4 Exa searches through the gateway, 8 pitfalls written to memory, 80 seconds |
+| Director | 3 reads of the library's memory, 7 items chosen to pass down, 48 seconds |
+| Delivery | 14 pass-downs written by the lab under the director's name (7 to each team) |
+| Wait for memory | About 2 minutes 10 seconds for past.dev to finish processing 22 new facts before the teams started (issue I-3, now measured at this size) |
+| Teams A and B | Each read its own memory once through the gateway; team A wrote 6 facts, team B wrote 10 (plans and warning signs) |
+
+Every memory and search call in this table went through the gateway under the agent's token. The answers from this run mean nothing: it used the cheapest model and was stopped early.
