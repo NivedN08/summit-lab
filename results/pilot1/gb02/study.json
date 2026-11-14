@@ -1,0 +1,196 @@
+{
+  "study": "gb02",
+  "status": "replicated",
+  "final": {
+    "agent": "gb02-team-a",
+    "team": "team-a",
+    "round": "analysis",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/pilot1/gb02/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true
+  },
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "gb02-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/pilot1/gb02/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "parent1_A_fraction": 0.301,
+        "parent1_t": 3.5,
+        "parent2_A_fraction": 0.747,
+        "parent2_t": 6.34
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "gb02-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/pilot1/gb02/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "parent1_A_fraction": 0.298,
+        "parent1_t": 3.48,
+        "parent2_A_fraction": 0.749,
+        "parent2_t": 6.32
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "gb02-team-a",
+        "gb02-team-b"
+      ],
+      "fields": {
+        "parent1_A_fraction": true,
+        "parent1_t": true,
+        "parent2_A_fraction": true,
+        "parent2_t": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The h1/h2 labels in phased local-ancestry output are only consistent within a chromosome; phase between chromosomes is unknown, so 'h1' on one chromosome and 'h1' on another need not come from the same parent, and pooling tracts by label can mix the two parents. Check: per chromosome, compute the ancestry-A fraction of h1 and h2 over the called span and see whether the higher-A haplotype always carries the same label, and whether one haplotype per chromosome is near-pure. If labels are not consistent, assign each chromosome's haplotypes to parent1/parent2 by an explicitly stated rule (for example by per-chromosome A fraction, or a likelihood/EM over the possible assignments), say that the rule is an assumption, and report how much the answer changes under alternative assignments.",
+      "from": [
+        "sl-pilot1-c089afdf895e"
+      ],
+      "reason": "The task asks for per-parent fractions and times; how haplotypes are grouped into parents across chromosomes decides both numbers for both parents.",
+      "fact_ids": {
+        "team-a": "sl-pilot1-1f4fbc437479",
+        "team-b": "sl-pilot1-f70677de120b"
+      }
+    },
+    {
+      "text": "Phase switch errors appear as reciprocal ancestry swaps between the two haplotypes at the same position where ancestry is heterozygous (h1 goes A->B while h2 goes B->A). They create false junctions on both haplotypes and move ancestry from one parent to the other. Check: list the breakpoints on h1 and h2 of each chromosome and flag pairs that coincide within about 1 cM (0.01 Morgan) and are reciprocal. If found, undo the swap (flip the strands downstream of the switch) before computing per-haplotype fractions and junction counts, or at least drop those junctions, and report how many were corrected.",
+      "from": [
+        "sl-pilot1-2543a14f21c5"
+      ],
+      "reason": "Uncorrected switch errors bias both the per-parent ancestry fractions and the junction counts that set t.",
+      "fact_ids": {
+        "team-a": "sl-pilot1-53b4b9c77456",
+        "team-b": "sl-pilot1-9575d21d5e13"
+      }
+    },
+    {
+      "text": "Short, low-confidence ancestry tracts (low posterior, high low-complexity fraction) are often miscalls; each one adds two spurious ancestry junctions and inflates the admixture-time estimate substantially. Check: tabulate tract length against any confidence columns in the data (e.g. posterior, low_complexity_frac); count tracts shorter than about 1-2 cM (0.01-0.02 Morgan) and see whether they are mostly low-confidence and sit between two flanking tracts of the same ancestry. If found, mask them (treat as uncalled) or merge the flanking same-ancestry tracts across them before counting junctions, state the thresholds used, and report how sensitive t is to those thresholds. A plain length cutoff on a tract-length fit needs a truncated likelihood, and many spurious short tracts still distort the longer ones.",
+      "from": [
+        "sl-pilot1-f87a76fd9f00"
+      ],
+      "reason": "With only tens of real junctions per haplotype, a handful of spurious short tracts can change t by a large factor; the filtering choice must be made deliberately and tested.",
+      "fact_ids": {
+        "team-a": "sl-pilot1-2f8b6c2c73b0",
+        "team-b": "sl-pilot1-b7daec04f364"
+      }
+    },
+    {
+      "text": "Adjacent called tracts with the same ancestry (split by the caller, or left adjacent after a short miscall is masked) are not ancestry junctions; counting every tract boundary as a switch inflates t. Check: within each chromosome and haplotype, sort by start and count boundaries where the ancestry is the same on both sides. Merge same-ancestry neighbours (when the gap between them is small or zero) before counting, and count only A<->B changes.",
+      "from": [
+        "sl-pilot1-700471c0bf6e"
+      ],
+      "reason": "Junction counting drives t; counting row boundaries rather than real ancestry changes gives a wrong count.",
+      "fact_ids": {
+        "team-a": "sl-pilot1-613d3a7099b1",
+        "team-b": "sl-pilot1-cb0c33c7b715"
+      }
+    },
+    {
+      "text": "Tracts that touch a chromosome end or an uncalled gap are censored (their true length is longer than observed), so the naive mean tract length or the number of tracts per chromosome is biased; with few chromosomes and a recent pulse, censored tracts are a large share of the data. Check: count the tracts per haplotype whose start or end is the first or last called position of the chromosome. Estimate t from the number of internal junctions (ancestry changes between adjacent called tracts, after merging same-ancestry neighbours) divided by called genetic length, or use a censored-exponential likelihood. Never treat chromosome ends as junctions.",
+      "from": [
+        "sl-pilot1-1c1eb0ed39b8"
+      ],
+      "reason": "Choosing a mean-tract-length or tract-count estimator instead of an internal-junction or censored estimator biases t upward.",
+      "fact_ids": {
+        "team-a": "sl-pilot1-a1f2eb6472a6",
+        "team-b": "sl-pilot1-212672138702"
+      }
+    },
+    {
+      "text": "The ancestry fraction must be computed over the called tract span, not chromosome length: fraction_A = sum(length of A tracts) / sum(length of all called tracts kept), per haplotype. Uncalled gaps (tracts not starting at 0, or holes between tracts) and any tracts you mask leave both numerator and denominator. Check: compare the summed called length per haplotype with the chromosome lengths given in any map information supplied, and list gaps between consecutive tracts. State whether masked low-confidence tracts are excluded from the fraction. Do not count an ancestry change across an uncalled gap as a certain junction; either exclude it or report t both with and without such changes.",
+      "from": [
+        "sl-pilot1-14fb64fcaa0a"
+      ],
+      "reason": "The task defines the fraction 'across the called tract span'; the denominator and the handling of masked tracts and gaps change both the fraction and the junction count.",
+      "fact_ids": {
+        "team-a": "sl-pilot1-aaa2a2fcec19",
+        "team-b": "sl-pilot1-0d042875e752"
+      }
+    },
+    {
+      "text": "The convention that turns t into a junction rate decides the answer. Under the Markov single-pulse model, a haploid lineage with a pulse t generations ago and ancestry-A fraction m has expected junction density 2*t*m*(1-m) per Morgan (A tracts ~ Exp(rate t(1-m)), B tracts ~ Exp(rate t*m)). So for each haplotype use its own m and its own called length L in Morgans: t_hat = J / (2 m (1-m) L), with J the number of internal junctions. Using the individual's average m instead of the haplotype's own m, or confusing t with t-1 (counting from the child versus from the parent who transmitted the haplotype), shifts t by 1 or more. Write the convention down before estimating, report t on the transmitting parent's time scale, state whether any +/-1 offset was applied and why, and give a Poisson interval on J. A haplotype from an unadmixed source has no junctions and t of about 1.",
+      "from": [
+        "sl-pilot1-ace61e3870ce"
+      ],
+      "reason": "This gives the estimator and its convention; a different m or time-scale convention changes each parent's t materially.",
+      "fact_ids": {
+        "team-a": "sl-pilot1-c3f527e19b95",
+        "team-b": "sl-pilot1-aaca0b73ccf0"
+      }
+    },
+    {
+      "text": "For recent admixture (a few generations) the iid-exponential tract-length model is only an approximation, and one individual provides only tens of junctions, so a fitted tract-length histogram is noisy and can be driven by outlier long tracts. Check: count junctions per haplotype; under about 30 the Poisson error on t exceeds about 20%. Prefer the junction-count (method-of-moments) estimator, or a likelihood that handles finite chromosomes, over fitting a histogram of tract lengths, and report a confidence interval (Poisson on J, or a bootstrap over chromosomes). Methods of this kind tend to underestimate t by about 1 generation when the local-ancestry caller has merged short tracts.",
+      "from": [
+        "sl-pilot1-a3bf1afe2381"
+      ],
+      "reason": "It guides the choice of estimator and requires the teams to quantify uncertainty rather than report a bare point estimate.",
+      "fact_ids": {
+        "team-a": "sl-pilot1-b21c50d6ec41",
+        "team-b": "sl-pilot1-f004263f07f7"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "referee": null,
+  "not_chosen": [
+    {
+      "agent": "gb02-team-b",
+      "round": "analysis",
+      "reason": "agreed with gb02-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "gb02-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 157.68491495901253,
+      "cost_usd": 0.5342450000000001,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 84.03709708398674,
+      "cost_usd": 0.49139850000000007,
+      "error": null
+    },
+    {
+      "agent": "gb02-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 122.25502625002991,
+      "cost_usd": 0.4351896,
+      "error": null
+    },
+    {
+      "agent": "gb02-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 144.95224429108202,
+      "cost_usd": 0.5813948000000001,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

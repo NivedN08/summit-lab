@@ -171,12 +171,24 @@ What stays the same: the flow, the prompts, the fair-play rules, and the laptop 
 Limits we accept: the Claude sign-in token is present inside each agent's sandbox (the agent needs it to run), with the network closed to everything except the model API, the gateway and the package index. Many agents at once may hit the Claude usage limit before they hit a compute limit.
 Status: being built; nothing in this entry has been tested yet.
 
+**D-14 · Nov 14, 14:13 · Decided · Problems gb01 and gb02 are for development; gb03 to gb10 are the test.**
+We have now seen scores for gb01 and gb02 and will change the design because of them. Any change is frozen and written here before a single test problem is run, and the test problems are scored once. Results are reported for the eight test problems and for all ten, separately, with the pilot's result on the two development problems kept as it was.
+
 ## 5. Agent observations
 
 Things the agents did that we did not expect.
 
 **O-1 · Nov 14, 12:47 · Measured (smoke run 1, cheapest model) · Blocked agents reported the block instead of inventing an answer.**
 In the first plumbing test a fault of ours (I-9) stopped every agent from unpacking the data. Neither analyst guessed. One wrote: "No plan was recorded to memory, no analysis was run, and no answer.json was written, because any numbers would be unsupported." The lab then recorded the study as "no-answer". That is the behaviour we want from a team: a missing answer is recorded as missing, not papered over. One run, one model; not evidence of how often this holds.
+
+**O-2 · Nov 14, 14:13 · Measured (pilot 1, problem gb01) · A director's question changed a team's method, and the teams then agreed on that field.**
+The teams first disagreed on three of four fields. One of the director's questions to team A reported what team B had seen about toxicity at different activity scores, without giving any number of B's. Team A checked and replied: "It holds and it is a real mis-specification in my earlier model. Toxicity under TXR1i is a step function, not a gradient". It changed its model, and the two teams' toxicity figures then agreed. This is step 5 of the design doing what it was built for. The final answer still failed the grader, so the change made the teams agree; we cannot say it made them right.
+
+**O-3 · Nov 14, 14:13 · Measured (pilot 1, problem gb01) · The referee refused to pick and found something neither team had.**
+Told it may not vote, the referee ran one estimator on both teams' case sets, split the gap into "which rows" and "which model", and judged one team right on the disputed rows. It then reported that both teams kept a cluster of 154 cases that looked different from the rest on an independent marker, picked neither, and gave its own answer. That answer also failed. So the referee behaved as designed (a test, not a vote); whether its finding was the missing insight we cannot tell without the answer key, which we do not open.
+
+**O-4 · Nov 14, 14:13 · Measured (pilot 1, problem gb02) · Two blind teams agreed, and both were wrong.**
+Both teams got the same eight items from the library, made the same choices, named the same weakest point, and submitted answers within 5% of each other. The lab labelled the answer replicated. It failed. The four single agents, who had no library, clustered on a different answer that also failed. See I-11.
 
 ## 6. Ideas
 
@@ -232,6 +244,9 @@ Found by the second plumbing test (`runs/smoke2`): 40 minutes in, both analysts 
 - Each script should stay under about 3 minutes; numeric libraries are capped at two threads per process; agents are told to use at most 2 cores.
 - When an agent ends, any job it left running in its folder is stopped.
 What this costs: an answer that needed more than 30 minutes is cut short, for both arms equally. Running more than about four analysts at once needs more cores than the laptop has; that is the case for moving analysts to Modal (idea N-1's sandboxes).
+
+**I-11 · Nov 14, 14:13 · Open · Blind teams are not independent if they are the same model with the same briefing.**
+Pilot 1, problem gb02: the lab's first "replicated" answer was wrong (O-4). Blinding stops one team copying the other. It does not stop both from making the same mistake for the same reason. Two causes are visible: the teams are the same model, and the director gave both the same briefing. What we will try, and test on problems we have not scored yet (D-14): give the library's briefing to one team only, so the two teams start from different information; and make agreement earn its label, by having the director challenge an agreed answer before it is reported.
 
 ## 8. Research behind decisions
 
@@ -328,3 +343,27 @@ Command: `python3 -m lab.run lab --benchmark genebench --studies gb01 --run-dir 
 | Teams A and B | Each read its own memory once through the gateway; team A wrote 6 facts, team B wrote 10 (plans and warning signs) |
 
 Every memory and search call in this table went through the gateway under the agent's token. The answers from this run mean nothing: it used the cheapest model and was stopped early.
+
+**M-8 · Nov 14, 14:13 · Measured · Pilot 1: nobody passed either problem.**
+Commands: `python3 -m lab.run lab --benchmark genebench --studies gb01,gb02 --run-dir runs/pilot1 --memory past --backend claude --parallel 4 --max-searches 10`, then `baseline ... --attempts 4 --model opus`, then `grade`, `measures`, `report`. Director on Fable 5.2, everyone else on Opus 5.5, 30-minute limit per agent, on the laptop. Scored by GeneBench's reference grader after every agent had exited. Records: `results/pilot1/`.
+
+| | Problem gb01 | Problem gb02 |
+|---|---|---|
+| Lab's label | unresolved (teams disagreed twice, referee picked neither, third team agreed with no one) | replicated |
+| Lab's final answer | fail (1 of 4 fields right) | fail (0 of 4) |
+| Single agent, 4 attempts | 0 of 4 passed (each 1 of 4 fields right) | 0 of 4 passed |
+| Plain vote over the attempts | fail | fail |
+| Any candidate answer passing | none of 6 | none of 2 |
+
+| Measure | Result |
+|---|---|
+| Lab against single agent | 0 of 2 problems against 0 of 8 attempts: no difference |
+| False agreement | 1 of 1 replicated answers was wrong |
+| Rescues and damage | none either way: no step turned a failing answer into a passing one, or the reverse |
+| Selection | no passing answer existed, so nothing to select |
+| Noticing to acting | 25 warning signs recorded; 8 questions written, none blocked by the leak check, 8 delivered; 1 of 9 replies changed a method |
+| Library | 18 pitfalls, each with a source. Teams reported 32 of 39 pitfall checks as "found in the data" and 31 as "changed the method"; that is too high to believe and we treat this self-report as unreliable |
+| Cost | Lab: 13 agent runs, 34 minutes of agent time, $8.16. Single agents: 8 runs, 41 minutes, $10.51. Dollars are the command-line tool's own estimate |
+| Waiting on memory | About 5 minutes before the teams started and 3.5 minutes before the question round, for past.dev to finish processing pass-downs |
+
+What this shows: the whole loop runs with real agents, including the disagreement path, the leak check, the referee and the third team; and the lab cost about as much as four single attempts. What it does not show: any advantage for the lab. Two problems are far too few to say there is none (I-5), and on the full benchmark more than half the problems are failed by every published model.
