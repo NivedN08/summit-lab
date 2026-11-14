@@ -184,6 +184,12 @@ Not changed: the models (Fable alone did no better than Opus alone on the develo
 What we expect, written before any test problem runs: the challenge will change some agreed answers; we do not know whether it will change them for the better. Version 1 is still runnable (`--brief-teams team-a,team-b --no-challenge`) for a direct comparison if the budget allows.
 Status: built and tested with scripted agents (116 tests pass). Running on the two development problems now; frozen once that run is read.
 
+**D-16 · Nov 14, 14:49 · Decided · Add scBench as the second project.**
+Why: on the two GeneBench development problems nothing passed, for the lab or for either model alone (M-8, M-9). If every score is zero there is nothing to compare. scBench (LatchBio) gives single-cell analysis tasks with automatic graders where published single models pass roughly a third to two thirds, so a difference can show in either direction.
+What can be run: 36 public tasks. Six are the benchmark's current public set; thirty are an older public set packaged in UK AISI's Inspect Evals. Published single-model results on these sets: on the current six, 16, 10 and 11 passes out of 18 runs for three model-and-harness pairs (tallied by our builder from the benchmark's published runs); on the older thirty, 43%, 37% and 30% for three 2025 models (Inspect Evals README). These are context, not our baseline: our baseline is our own single agent on the same tasks, model and limit.
+Guards beyond D-11: scBench agents get no access to the Python package index, because one public package there contains the older set's answers; each study gets its own library memory, because several tasks share a data file and shared memory would carry one task's findings into another; grading runs in a separate environment no agent can reach.
+Status: tasks staged with answers sealed; the current six tasks' data is on a Modal volume; wiring into the runner in progress; no task run yet.
+
 ## 5. Agent observations
 
 Things the agents did that we did not expect.
