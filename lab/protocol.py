@@ -2,7 +2,8 @@
 
 For each study S the lab runs, in order (explanation.md, section 1, and D-8 to D-11):
 
-  1. library     `S-library` researches pitfalls with web search through the gateway.
+  1. library     `S-library` researches pitfalls with web search through the gateway, writing to its
+                 own department `S-library`, so one study's findings never reach another study's teams.
   2. briefing    the director picks what the teams need; the lab passes each item down to the
                  teams in Config.brief_teams only (default team A), so the two teams start from
                  different information (I-11).
@@ -17,7 +18,10 @@ For each study S the lab runs, in order (explanation.md, section 1, and D-8 to D
   6. referee     `S-referee` gets the two answers as X and Y and must run a test. A pick: "refereed".
   7. team C      on "neither", a third blind team runs with the questions as warning signs.
                  Agreeing with A or B: "third-team". Otherwise "unresolved".
-  8. record      `<run_dir>/<S>/final/answer.json` and `<run_dir>/<S>/study.json`, event "study.final".
+  8. record      `<run_dir>/<S>/final/<answer file>` and `<run_dir>/<S>/study.json`, event "study.final".
+
+The answer file is the study's first deliverable (answer_file): `answer.json` for GeneBench,
+`eval_answer.json` for scBench. Briefs name it through the {answer_file} field.
 
 Blindness: a team's brief holds only the lab's instructions, the task text and the paths of its
 own workspace, the data and the agent tools. The only thing that ever crosses from one team to
@@ -101,6 +105,16 @@ def make_brief(name: str, agent: Agent | None, **fields: Any) -> str:
 
 
 # ----- answers -----
+
+def answer_file(study: Study) -> str:
+    """The name of the file a study's answer goes in: its first deliverable."""
+    return study.deliverables[0] if study.deliverables else "answer.json"
+
+
+def library_department(study: Study) -> str:
+    """Each study's library has its own department, so its findings stay with that study."""
+    return f"{study.id}-library"
+
 
 def load_doc(path: pathlib.Path) -> Any:
     try:
@@ -322,8 +336,7 @@ class Lab:
         cfg = self.config
         agents = [Agent("director", DIRECTOR, "director", cfg.director_model)]
         for s in studies:
-            # Each study has its own library department, so one study's findings cannot reach another's teams.
-            agents.append(Agent(f"{s.id}-library", WORKER, f"{s.id}-library", cfg.worker_model))
+            agents.append(Agent(f"{s.id}-library", WORKER, library_department(s), cfg.worker_model))
             for team in TEAMS:
                 agents.append(Agent(f"{s.id}-{team}", WORKER, f"{s.id}-{team}", cfg.worker_model))
             agents.append(Agent(f"{s.id}-referee", WORKER, f"{s.id}-referee", cfg.worker_model))
@@ -346,8 +359,8 @@ class Lab:
         self.org = self.build_org(studies)
         self.memory.setup(self.org)
         # Agents may not pass facts down themselves: the lab delivers every pass-down after its leak check.
-        libraries = sorted({a.department for a in self.org.agents if a.id.endswith("-library")})
-        kwargs = {"exa_departments": libraries if self.config.library else [], "agents_may_pass_down": False}
+        libraries = [library_department(s) for s in studies] if self.config.library else []
+        kwargs = {"exa_departments": libraries, "agents_may_pass_down": False}
         if hasattr(self.adapter, "blocked_terms"):
             kwargs["blocked_terms"] = self.adapter.blocked_terms()
         if self.exa_call is not None:
@@ -395,7 +408,7 @@ class StudyRun:
         self.study = study
         self.cfg = lab.config
         self.dir = lab.run_dir / study.id
-        self.deliverable = study.deliverables[0] if study.deliverables else "answer.json"
+        self.deliverable = answer_file(study)
         self.briefed = [t for t in ("team-a", "team-b") if t in self.cfg.brief_teams]
         self.record: dict = {"study": study.id, "status": None, "final": None, "switches": {
             "library": self.cfg.library, "questions": self.cfg.questions, "referee": self.cfg.referee,
@@ -431,22 +444,23 @@ class StudyRun:
         s = self.study
         return {"statement": s.statement, "data_dir": str(s.data_dir), "max_searches": self.cfg.max_searches,
                 "study_id": s.id,
-                "time_limit_minutes": self.cfg.timeout("analyst") // 60,
+                "time_limit_minutes": self.cfg.timeout("analyst") // 60, "answer_file": self.deliverable,
+                "library_department": library_department(s),
                 "team_departments": f"{self.dept('team-a')}, {self.dept('team-b')}", **extra}
 
     def take(self, team: str, round_: str, result: AgentResult, workspace: pathlib.Path) -> Candidate | None:
         """Copy an agent's answer out of its workspace and check its format. None if the run failed."""
         if not result.ok:
-            # An agent stopped by its time limit may still have left an answer.json (it is told to write one early).
-            if "timed out" in (result.error or "") and (workspace / "answer.json").is_file():
+            # An agent stopped by its time limit may still have left an answer file (it is told to write one early).
+            if "timed out" in (result.error or "") and (workspace / self.deliverable).is_file():
                 self.log("candidate.salvaged", team=team, round=round_, reason=result.error)
             else:
                 self.log("candidate.none", team=team, round=round_, reason=result.error or "run failed")
                 return None
-        name = result.result.get("answer_file") or "answer.json"
+        name = result.result.get("answer_file") or self.deliverable
         source = (workspace / str(name)).resolve()
         if not source.is_relative_to(workspace.resolve()) or not source.is_file():
-            source = workspace / "answer.json"
+            source = workspace / self.deliverable
         store = self.dir / "candidates"
         store.mkdir(parents=True, exist_ok=True)
         path = store / f"{team}-{round_}.json"
@@ -636,7 +650,7 @@ class StudyRun:
             folder = ws / "candidates" / label
             folder.mkdir(parents=True, exist_ok=True)
             doc = load_doc(cand.path)
-            (folder / "answer.json").write_text(json.dumps(scrub(doc, names, keep=("answer",)), indent=2))
+            (folder / self.deliverable).write_text(json.dumps(scrub(doc, names, keep=("answer",)), indent=2))
             note = load_doc(self.dir / "candidates" / f"{cand.team}-{cand.round}-result.json")
             (folder / "method.json").write_text(json.dumps(scrub(note if isinstance(note, dict) else {}, names), indent=2))
         brief = make_brief("referee", agent, **self.fields(candidates_dir=str(ws / "candidates"),
@@ -762,9 +776,9 @@ class StudyRun:
         final_dir = self.dir / "final"
         final_dir.mkdir(parents=True, exist_ok=True)
         if final is not None:
-            shutil.copyfile(final.path, final_dir / "answer.json")
+            shutil.copyfile(final.path, final_dir / self.deliverable)
             self.record["final"] = {"agent": final.agent, "team": final.team, "round": final.round,
-                                    "path": str(final_dir / "answer.json")}
+                                    "path": str(final_dir / self.deliverable)}
         self.record["status"] = status
         self.record["not_chosen"] = [{"agent": c.agent, "round": c.round,
                                       "reason": self.reason_not_chosen(c, status, final, verdict)}

@@ -4,7 +4,7 @@ You are the head researcher. You can read every department's memory. The teams c
 
 The lab runs several tasks at once and you can read all of them. This task is `{study_id}`: use only facts whose department starts with `{study_id}-` and ignore the rest.
 
-The library has researched the task below and written what it found to memory. Read it with `python3 {tools}/memory.py recall "pitfalls and method guidance for this analysis"` (ask more than one question if needed).
+The library has researched the task below and written what it found to memory, in the department `{library_department}`. Read it with `python3 {tools}/memory.py recall "pitfalls and method guidance for this analysis"` (ask more than one question if needed).
 
 Decide what the teams need. Pass down only what could change how the analysis should be done; leave out the rest. The briefing goes only to the teams named below. Any other team starts from the data alone, on purpose, so that the teams do not all begin from the same information.
 

@@ -14,14 +14,14 @@ Work in this order.
    "WARNING SIGN: <what you saw, with the number>. MEANS: <what it implies for the method>. ACTION: <what you changed, or why you changed nothing>."
    Noticing a problem and then carrying on with the same method is the most common way this kind of analysis goes wrong. For every warning sign, ask: does this change which method is right, or only which rows I keep? If it changes the method, change it.
 
-5. **Answer.** Write `answer.json` exactly as the task asks. Then write `result.json`.
+5. **Answer.** Write `{answer_file}` exactly as the task asks. Then write `result.json`.
 
 {diversity}
 
 ## Working limits
 
-- You have {time_limit_minutes} minutes in total. When they run out you are stopped, and only what is in `answer.json` at that moment counts.
-- Write a first `answer.json` as soon as you have a defensible estimate, then improve it. Do not leave it to the end.
+- You have {time_limit_minutes} minutes in total. When they run out you are stopped, and only what is in `{answer_file}` at that moment counts.
+- Write a first `{answer_file}` as soon as you have a defensible estimate, then improve it. Do not leave it to the end.
 - Keep every script under about 3 minutes. If a method would take longer (a large bootstrap, an exhaustive search), use fewer repetitions or a faster approximation.
 - Use at most 2 CPU cores, and do not leave jobs running in the background.
 
@@ -33,4 +33,4 @@ The data files are in `{data_dir}` (read-only).
 
 ## result.json
 
-{{"answer_file": "answer.json", "method": "what you did, in a few sentences", "warning_signs": [{{"sign": "...", "means": "...", "action": "..."}}], "pitfalls_checked": [{{"pitfall": "short name of a pitfall you were given", "found_in_data": true, "changed_method": true}}], "checks_run": ["..."], "weakest_point": "the part of your analysis you trust least, and why", "confidence": 0.0}}
+{{"answer_file": "{answer_file}", "method": "what you did, in a few sentences", "warning_signs": [{{"sign": "...", "means": "...", "action": "..."}}], "pitfalls_checked": [{{"pitfall": "short name of a pitfall you were given", "found_in_data": true, "changed_method": true}}], "checks_run": ["..."], "weakest_point": "the part of your analysis you trust least, and why", "confidence": 0.0}}

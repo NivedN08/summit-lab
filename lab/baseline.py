@@ -16,7 +16,7 @@ import pathlib
 import statistics
 
 from lab.contracts import WORKER, Adapter, Agent, Backend, EventLog, Study
-from lab.protocol import AgentRunner, load_doc, make_brief
+from lab.protocol import AgentRunner, answer_file, load_doc, make_brief
 
 
 def attempt_dir(run_dir: pathlib.Path, study_id: str, k: int) -> pathlib.Path:
@@ -35,7 +35,7 @@ def run_baselines(adapter: Adapter, backend: Backend, log: EventLog, run_dir: pa
     def one(study: Study, k: int) -> bool:
         agent = Agent(f"baseline-{study.id}-{k}", WORKER, "baseline", model)
         brief = make_brief("baseline", None, statement=study.statement, data_dir=str(study.data_dir),
-                           time_limit_minutes=timeout_s // 60)
+                           time_limit_minutes=timeout_s // 60, answer_file=answer_file(study))
         ws = attempt_dir(run_dir, study.id, k)
         result = runner.run(agent, brief, ws, readable=[study.data_dir], env=None, timeout_s=timeout_s,
                             study=study.id, phase=f"baseline-{k}", role="baseline",
@@ -56,7 +56,7 @@ def combine_attempts(adapter: Adapter, study: Study, answer_paths: list[pathlib.
     """A plain vote over valid attempts: median for numbers (a real attempt's value when all are
     whole numbers, so a code stays a code), most common value for strings and anything else.
     Returns an answer document in the attempts' own shape, or None if no attempt is valid."""
-    deliverable = study.deliverables[0] if study.deliverables else "answer.json"
+    deliverable = answer_file(study)
     docs = []
     for p in answer_paths:
         p = pathlib.Path(p)

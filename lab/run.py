@@ -22,7 +22,7 @@ import shutil
 import sys
 
 from lab.eventlog import JsonlEventLog
-from lab.protocol import Config, Lab, unfinished_agents
+from lab.protocol import Config, Lab, answer_file, unfinished_agents
 
 NETWORK_HOSTS = ["pypi.org", "files.pythonhosted.org", "conda.anaconda.org", "repo.anaconda.com", "cran.r-project.org"]
 
@@ -32,7 +32,17 @@ def _genebench():
     return GeneBench()
 
 
-ADAPTERS = {"genebench": _genebench}     # benchmark name -> zero-argument factory
+def _scbench():
+    from lab.adapters.scbench import ScBench
+    return ScBench()
+
+
+def _biodsa():
+    from lab.adapters.biodsa import BioDSA
+    return BioDSA()
+
+
+ADAPTERS = {"genebench": _genebench, "scbench": _scbench, "biodsa": _biodsa}   # benchmark name -> zero-argument factory
 
 
 def load_adapter(name: str):
@@ -43,13 +53,17 @@ def load_adapter(name: str):
 
 def mock_script(adapter):
     """A scripted stand-in for every agent, for a free end-to-end check of the loop.
-    Team B first disagrees with team A, then agrees after the question round ("converged")."""
+    Team B first disagrees with team A, then agrees after the question round ("converged").
+    Answers go in the study's answer file, wrapped in {"answer": ...} unless the benchmark's format
+    check wants the bare object (scBench)."""
 
-    def answer(study_id: str, number: float) -> dict:
-        schema = adapter.schema(next(s for s in adapter.studies() if s.id == study_id)) \
-            if hasattr(adapter, "schema") else {}
-        values = {k: (number if kind == "number" else "mock" if kind == "string" else None) for k, kind in schema.items()}
-        return {"answer": values, "reasoning": "mock agent"}
+    def write_answer(study, path: pathlib.Path, number: float) -> None:
+        schema = adapter.schema(study) if hasattr(adapter, "schema") else {}
+        mock = {"number": number, "string": "mock", "list": ["mock"], "mapping": {"mock": number}}
+        values = {k: mock.get(kind) for k, kind in schema.items()}
+        path.write_text(json.dumps({"answer": values, "reasoning": "mock agent"}, indent=2))
+        if adapter.problems(study, path.name, path):
+            path.write_text(json.dumps(values, indent=2))
 
     def script(agent, brief, workspace):
         study_id = workspace.parent.name
@@ -69,14 +83,29 @@ def mock_script(adapter):
             return {"pick": "X", "reason": "mock referee", "test": "none", "own_answer": None}
         revising = "# Your job: analyst, answering the director's questions" in brief
         number = 2.0 if agent.id.endswith("team-b") and not revising else 1.0
-        (workspace / "answer.json").write_text(json.dumps(answer(study_id, number), indent=2))
-        return {"answer_file": "answer.json", "method": "mock", "warning_signs": [], "confidence": 0.0}
+        study = next(s for s in adapter.studies() if s.id == study_id)
+        write_answer(study, workspace / answer_file(study), number)
+        return {"answer_file": answer_file(study), "method": "mock", "warning_signs": [], "confidence": 0.0}
 
     return script
 
 
-def make_backend(kind: str, adapter=None):
-    """Import the backend only when it is used, so the module may be missing until then."""
+def check_can_run(adapter, backend: str, studies) -> None:
+    """Stop before anything starts when the benchmark cannot run on this backend, or when a
+    requested study's data is not where its agents will look for it."""
+    if backend == "claude" and getattr(adapter, "modal_only", False):
+        raise SystemExit(f"{adapter.name} runs only with --backend modal: its data is on a Modal Volume, "
+                         "which the laptop runner cannot reach (--backend mock checks the loop for free)")
+    if backend == "modal" and hasattr(adapter, "missing_data"):
+        missing = adapter.missing_data(studies)
+        if missing:
+            raise SystemExit(f"the data for {', '.join(missing)} is not on the Modal Volume yet. "
+                             f"Put it there first, from the repository root: {adapter.data_command(missing)}")
+
+
+def make_backend(kind: str, adapter=None, studies=()):
+    """Import the backend only when it is used, so the module may be missing until then.
+    On Modal, an adapter with `modal_spec` sets the sandbox for each of its studies."""
     if kind == "claude":
         from lab.backend_claude import ClaudeBackend
         sealed = pathlib.Path(__file__).resolve().parents[1] / "data" / "genebench" / "sealed"
@@ -86,7 +115,8 @@ def make_backend(kind: str, adapter=None):
         return MockBackend(mock_script(adapter))
     if kind == "modal":
         from lab.backend_modal import ModalBackend
-        return ModalBackend()      # its own host list: Anthropic's API and the Python package index
+        specs = {s.id: adapter.modal_spec(s) for s in studies} if hasattr(adapter, "modal_spec") else {}
+        return ModalBackend(specs=specs)   # its own host list: Anthropic's API and the Python package index
     raise SystemExit(f"unknown backend {kind!r}")
 
 
@@ -156,11 +186,12 @@ def note_run(run_dir: pathlib.Path, **info) -> None:
 # ----- commands -----
 
 def cmd_lab(args) -> int:
+    adapter = load_adapter(args.benchmark)
+    studies = pick_studies(adapter, args.studies)
+    check_can_run(adapter, args.backend, studies)
     run_dir = pathlib.Path(args.run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     log = JsonlEventLog(run_dir / "events.jsonl")
-    adapter = load_adapter(args.benchmark)
-    studies = pick_studies(adapter, args.studies)
     config = Config(max_agents=args.parallel, max_searches=args.max_searches, library=not args.no_library,
                     questions=not args.no_questions, referee=not args.no_referee, challenge=not args.no_challenge,
                     brief_teams=brief_teams(args.brief_teams),
@@ -174,7 +205,7 @@ def cmd_lab(args) -> int:
                              "memory file on this laptop would not see the agents' facts")
         from lab.modal_gateway import ModalGateway
         gateway_factory = ModalGateway
-    backend = make_backend(args.backend, adapter)
+    backend = make_backend(args.backend, adapter, studies)
     memory = make_memory(args.memory, log, run_dir)
     lab = Lab(adapter, backend, memory, log, run_dir, config, gateway_factory=gateway_factory)
     if args.backend == "modal":
@@ -192,14 +223,15 @@ def cmd_lab(args) -> int:
 
 def cmd_baseline(args) -> int:
     from lab.baseline import run_baselines
+    adapter = load_adapter(args.benchmark)
+    studies = pick_studies(adapter, args.studies)
+    check_can_run(adapter, args.backend, studies)
     run_dir = pathlib.Path(args.run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     log = JsonlEventLog(run_dir / "events.jsonl")
-    adapter = load_adapter(args.benchmark)
-    studies = pick_studies(adapter, args.studies)
     note_run(run_dir, benchmark=args.benchmark, baseline_studies=[s.id for s in studies],
              baseline_attempts=args.attempts, baseline_model=args.model)
-    backend = make_backend(args.backend, adapter)
+    backend = make_backend(args.backend, adapter, studies)
     if args.backend == "modal":
         stop_modal_on_interrupt(backend)
     try:
@@ -235,17 +267,17 @@ def grade_run(run_dir: pathlib.Path, adapter) -> dict:
         raise RuntimeError(f"refusing to grade: {len(open_runs)} agent run(s) started and not finished: {names}")
 
     def graded(study, folder: pathlib.Path) -> dict:
-        if not (folder / "answer.json").is_file():
-            return {"passed": False, "score": 0.0, "error": "no answer.json"}
+        if not (folder / answer_file(study)).is_file():
+            return {"passed": False, "score": 0.0, "error": f"no {answer_file(study)}"}
         return adapter.grade(study, folder)
 
     def graded_file(study, source: pathlib.Path, folder: pathlib.Path) -> dict:
-        """Grade one answer file by copying it to `folder/answer.json`, the shape the grader reads.
+        """Grade one answer file by copying it to `folder/<answer file>`, the shape the grader reads.
         A grader that raises on a malformed answer counts as a fail, so one bad answer cannot stop grading."""
         if not source.is_file() or not source.read_text().strip():
             return {"passed": False, "score": 0.0, "error": "no answer file"}
         folder.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(source, folder / "answer.json")
+        shutil.copyfile(source, folder / answer_file(study))
         try:
             return graded(study, folder)
         except Exception as err:
@@ -256,7 +288,7 @@ def grade_run(run_dir: pathlib.Path, adapter) -> dict:
         if voted is None:
             return {"passed": False, "score": 0.0, "error": "no valid attempt to vote over"}
         folder.mkdir(parents=True, exist_ok=True)
-        (folder / "answer.json").write_text(json.dumps(voted, indent=2) + "\n")
+        (folder / answer_file(study)).write_text(json.dumps(voted, indent=2) + "\n")
         return {"answer": voted, **graded(study, folder)}
 
     results = {"benchmark": getattr(adapter, "name", None), "studies": {}}
@@ -284,7 +316,7 @@ def grade_run(run_dir: pathlib.Path, adapter) -> dict:
                           key=lambda p: int(p.name.split("-")[1])) if base.is_dir() else []
         if attempts:
             entry["baseline"] = {"attempts": {p.name: graded(study, p) for p in attempts}}
-            paths = [p / "answer.json" for p in attempts]
+            paths = [p / answer_file(study) for p in attempts]
             entry["baseline"]["vote"] = vote(study, paths, base / "vote")
             entry["baseline"]["votes_over_first"] = {
                 str(j): vote(study, paths[:j], base / f"vote-first-{j}") for j in range(1, len(paths) + 1)}
