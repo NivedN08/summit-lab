@@ -2,11 +2,14 @@
 
   lab       run studies through the lab protocol
   baseline  run single-agent attempts per study
-  grade     grade the lab's final answers, every baseline attempt and the vote over attempts
+  grade     grade every candidate answer: each team's in each round, the referee's, team C's,
+            the final answer, every baseline attempt and the votes over attempts
+  measures  compute the lab's measures (explanation.md, D-12) from results.json into measures.json
   report    write <run_dir>/report.md in plain words
 
 Every command works on one run directory: `events.jsonl` (the event log), `memory.jsonl` (local
-memory), `run.json` (what was run), one folder per study, `baseline/`, `results.json`, `report.md`.
+memory), `run.json` (what was run), one folder per study, `baseline/`, `results.json`,
+`measures.json`, `report.md`.
 """
 
 from __future__ import annotations
@@ -15,6 +18,7 @@ import argparse
 import json
 import pathlib
 import re
+import shutil
 import sys
 
 from lab.eventlog import JsonlEventLog
@@ -154,9 +158,19 @@ def cmd_baseline(args) -> int:
     return 0
 
 
+def candidate_id(team: str, round_: str) -> str:
+    """The name of one lab answer in results.json, matching its file in `<study>/candidates/`."""
+    return "referee-own" if team == "referee" else f"{team}-{round_}"
+
+
 def grade_run(run_dir: pathlib.Path, adapter) -> dict:
-    """Grade every final answer, baseline attempt and vote in a run directory. Refuses while any
-    agent has started and not finished. Writes results.json and returns it."""
+    """Grade every candidate answer in a run directory: each team's answer in each round, the
+    referee's own answer, team C's, the final answer, every baseline attempt, the vote over all
+    attempts and the vote over the first j attempts for each j. Refuses while any agent has
+    started and not finished. Writes results.json and returns it.
+
+    Each study's `candidates` list in results.json has one row per graded answer, with who
+    produced it, in which round, and whether it passed."""
     from lab.baseline import combine_attempts
     log = JsonlEventLog(run_dir / "events.jsonl")
     open_runs = unfinished_agents(log)
@@ -169,28 +183,64 @@ def grade_run(run_dir: pathlib.Path, adapter) -> dict:
             return {"passed": False, "score": 0.0, "error": "no answer.json"}
         return adapter.grade(study, folder)
 
+    def graded_file(study, source: pathlib.Path, folder: pathlib.Path) -> dict:
+        """Grade one answer file by copying it to `folder/answer.json`, the shape the grader reads.
+        A grader that raises on a malformed answer counts as a fail, so one bad answer cannot stop grading."""
+        if not source.is_file() or not source.read_text().strip():
+            return {"passed": False, "score": 0.0, "error": "no answer file"}
+        folder.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, folder / "answer.json")
+        try:
+            return graded(study, folder)
+        except Exception as err:
+            return {"passed": False, "score": 0.0, "error": f"grader raised {type(err).__name__}: {err}"[:500]}
+
+    def vote(study, paths: list, folder: pathlib.Path) -> dict:
+        voted = combine_attempts(adapter, study, paths)
+        if voted is None:
+            return {"passed": False, "score": 0.0, "error": "no valid attempt to vote over"}
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / "answer.json").write_text(json.dumps(voted, indent=2) + "\n")
+        return {"answer": voted, **graded(study, folder)}
+
     results = {"benchmark": getattr(adapter, "name", None), "studies": {}}
     for study in adapter.studies():
-        entry = {}
-        record_path = run_dir / study.id / "study.json"
+        entry, rows = {}, []
+        study_dir = run_dir / study.id
+        record_path = study_dir / "study.json"
         if record_path.is_file():
             record = json.loads(record_path.read_text())
-            entry["lab"] = {"status": record.get("status"), "final": record.get("final"),
-                            "grade": graded(study, run_dir / study.id / "final")}
+            for c in record.get("candidates") or []:
+                cid = candidate_id(c.get("team"), c.get("round"))
+                source = study_dir / "candidates" / pathlib.Path(c.get("path") or f"{cid}.json").name
+                rows.append({"id": cid, "kind": "lab", "who": c.get("agent"), "team": c.get("team"),
+                             "round": c.get("round"), "valid": bool(c.get("valid")),
+                             **graded_file(study, source, study_dir / "graded" / cid)})
+            final = record.get("final")
+            entry["lab"] = {"status": record.get("status"), "final": final,
+                            "grade": graded(study, study_dir / "final")}
+            rows.append({"id": "final", "kind": "final", "who": final.get("agent") if final else None,
+                         "team": final.get("team") if final else None, "round": "final",
+                         "same_as": candidate_id(final.get("team"), final.get("round")) if final else None,
+                         "status": record.get("status"), **entry["lab"]["grade"]})
         base = run_dir / "baseline" / study.id
         attempts = sorted((p for p in base.glob("attempt-*") if p.is_dir()),
                           key=lambda p: int(p.name.split("-")[1])) if base.is_dir() else []
         if attempts:
             entry["baseline"] = {"attempts": {p.name: graded(study, p) for p in attempts}}
-            voted = combine_attempts(adapter, study, [p / "answer.json" for p in attempts])
-            vote_dir = base / "vote"
-            if voted is not None:
-                vote_dir.mkdir(parents=True, exist_ok=True)
-                (vote_dir / "answer.json").write_text(json.dumps(voted, indent=2) + "\n")
-                entry["baseline"]["vote"] = {"answer": voted, **graded(study, vote_dir)}
-            else:
-                entry["baseline"]["vote"] = {"passed": False, "score": 0.0, "error": "no valid attempt to vote over"}
+            paths = [p / "answer.json" for p in attempts]
+            entry["baseline"]["vote"] = vote(study, paths, base / "vote")
+            entry["baseline"]["votes_over_first"] = {
+                str(j): vote(study, paths[:j], base / f"vote-first-{j}") for j in range(1, len(paths) + 1)}
+            for p in attempts:
+                k = p.name.split("-")[1]
+                rows.append({"id": p.name, "kind": "attempt", "who": f"baseline-{study.id}-{k}",
+                             "team": "single agent", "round": p.name, **entry["baseline"]["attempts"][p.name]})
+            v = entry["baseline"]["vote"]
+            rows.append({"id": "vote", "kind": "vote", "who": "vote", "team": "single agent", "round": "vote",
+                         **{key: val for key, val in v.items() if key != "answer"}})
         if entry:
+            entry["candidates"] = rows
             results["studies"][study.id] = entry
     s = results["studies"].values()
     lab_rows = [e["lab"] for e in s if "lab" in e]
@@ -240,6 +290,25 @@ def cmd_grade(args) -> int:
     return 0
 
 
+def cmd_measures(args) -> int:
+    from lab import measures
+    run_dir = pathlib.Path(args.run_dir)
+    try:
+        result = measures.measure(run_dir)
+        other = measures.measure(pathlib.Path(args.compare)) if args.compare else None
+    except measures.NotGraded as err:
+        print(err, file=sys.stderr)
+        return 2
+    if other is not None:
+        result["compared_with"] = {"run": other["run"], "headline": other["headline"]}
+    (run_dir / "measures.json").write_text(json.dumps(result, indent=2, default=str) + "\n")
+    print("\n".join(measures.summary_lines(result)))
+    if other is not None:
+        print()
+        print("\n".join(measures.compare_lines(result, other)))
+    return 0
+
+
 def cmd_report(args) -> int:
     from lab.report import write_report
     path = write_report(pathlib.Path(args.run_dir))
@@ -281,6 +350,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--run-dir", required=True)
     p.add_argument("--benchmark", help="default: the one recorded in run.json")
     p.set_defaults(fn=cmd_grade)
+
+    p = sub.add_parser("measures", help="compute measures.json from a graded run")
+    p.add_argument("--run-dir", required=True)
+    p.add_argument("--compare", help="another graded run directory, to print both headlines side by side")
+    p.set_defaults(fn=cmd_measures)
 
     p = sub.add_parser("report", help="write report.md")
     p.add_argument("--run-dir", required=True)
