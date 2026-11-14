@@ -1,0 +1,349 @@
+{
+  "study": "gb09",
+  "status": "converged",
+  "final": {
+    "agent": "gb09-team-a",
+    "team": "team-a",
+    "round": "revise",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb09/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ]
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "gb09-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb09/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "theta_PROTA": 0.293,
+        "theta_PROTB": 0.209
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "gb09-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb09/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "theta_PROTA": 0.34,
+        "theta_PROTB": 0.23
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "gb09-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb09/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "theta_PROTA": 0.29,
+        "theta_PROTB": 0.21
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "gb09-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb09/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "theta_PROTA": 0.293,
+        "theta_PROTB": 0.209
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "gb09-team-a",
+        "gb09-team-b"
+      ],
+      "fields": {
+        "theta_PROTA": false,
+        "theta_PROTB": false
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "gb09-team-a",
+        "gb09-team-b"
+      ],
+      "fields": {
+        "theta_PROTA": true,
+        "theta_PROTB": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The task asks for the DIRECT effect of each protein on disease conditional on the other. Running a separate (univariable) Mendelian randomization for PROTA and for PROTB gives total effects that are contaminated by the neighbouring protein when the two share cis-pQTLs, so it does not answer the question. Fit both proteins jointly (multivariable MR: SNP-disease beta regressed on the SNP-PROTA and SNP-PROTB betas together, using an LD-aware GLS). Joint estimation only works if the SNP effects on PROTA and on PROTB are not collinear across the instruments: check the correlation of the two sets of SNP-protein betas and compute conditional (Sanderson-Windmeijer type) F-statistics for each protein. The library's rule of thumb is that a conditional F below about 10 for either protein signals weak-instrument bias and inflated variance; in that case choose instruments from the union of signals for either protein so that some SNPs separate the two, use weak-instrument-robust inference (e.g. Q-minimisation / LIML-type), and report the conditional F with the estimates.",
+      "from": [
+        "sl-test-v2-bc8329b5261f"
+      ],
+      "reason": "Decides the estimand: univariable MR would answer a different question from the conditional effect the task defines, and instrument collinearity determines whether the joint estimate can be trusted.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-e965c0c1df82"
+      }
+    },
+    {
+      "text": "The instruments come from one locus and are in LD, so the correlation reference has to be used, but carefully. Treating correlated SNPs as independent (plain IVW with no LD matrix) double-counts information and gives wrong weights and standard errors. The opposite error is to put all variants into a GLS and invert an ill-conditioned LD matrix, which gives numerically unstable and over-precise estimates. Check the eigenvalues / condition number of the LD matrix restricted to the chosen instruments, and re-run the estimate at several pruning thresholds (library suggestion: r^2 < 0.1, 0.2, 0.3) and with principal components of the weighted LD matrix (keeping ~99% of variance). Use correlated-instrument GLS, theta = (Bx' S^-1 Bx)^-1 Bx' S^-1 by with S = diag(se_y) R diag(se_y), on a pruned set or on PCs. If the point estimate moves or the SE collapses (e.g. by more than 3x) as more correlated SNPs are added, treat that as instability and prefer the more conservative fit.",
+      "from": [
+        "sl-test-v2-5673d69e3e23"
+      ],
+      "reason": "How LD is handled changes both the point estimate and its uncertainty; both the no-LD and the all-SNPs shortcuts fail in a single-locus design.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-7496f0b20674"
+      }
+    },
+    {
+      "text": "Effect alleles are reported by the library to differ between the input files. Its example (not verified by the director, confirm it in the files): the phase 2 protein files code rs200000 with effect allele C, while phase 1, the disease association file and the variant metadata use A. Before any selection, meta-analysis or MR, compare effect_allele/other_allele for every SNP across all protein phase files, the disease association file, the variant metadata and the allele coding of the LD reference, and count mismatches. Where alleles are swapped relative to one chosen reference coding, multiply beta by -1 and use 1-EAF; drop SNPs whose alleles cannot be matched.",
+      "from": [
+        "sl-test-v2-a0b6b40f7421"
+      ],
+      "reason": "Unharmonised alleles flip signs of SNP effects, which can reverse or cancel the causal estimates; the library points to a concrete mismatch in this dataset.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-3f44864f79c3"
+      }
+    },
+    {
+      "text": "The LD matrix must be the SIGNED correlation matrix, in the same SNP order and the same effect-allele coding as the harmonised summary statistics. Check that the 'snp' order in locus_correlation_EUR.npz matches the order used for the betas, that R is symmetric with unit diagonal and positive semi-definite, and that z-scores are consistent with R (predict each SNP's z from its neighbours through R; large outliers suggest an allele flip or mismatch). Reorder R to the analysis order; if SNP j is flipped relative to the summary statistics, multiply row and column j of R by -1; drop SNPs whose z-scores cannot be reconciled with the LD reference. Do not use r^2 in place of signed r.",
+      "from": [
+        "sl-test-v2-0dc0a1e09f19"
+      ],
+      "reason": "A misordered, unsigned or allele-inconsistent LD matrix silently corrupts the GLS weights; this check is separate from harmonising the betas and is easy to miss.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-83b1efb7af50"
+      }
+    },
+    {
+      "text": "Winner's curse: if instruments are selected by p-value in a protein GWAS and the same sample's betas are then used for estimation, the SNP-protein effects are inflated, which biases the causal estimates (typically towards zero, and by a different amount for each protein). The library reports that the data contain two protein GWAS phases, a 'screening' phase 1 (reported n=12000) and a 'holdout' phase 2 (reported n=8000); confirm this in the metadata. After allele harmonisation, compare phase 1 and phase 2 betas for the selected SNPs: systematic shrinkage in phase 2 indicates winner's curse. The library's recommended design is to select instruments in phase 1 and take the SNP-protein effects used for estimation from phase 2 only (a three-sample design), rather than meta-analysing phase 1 into those betas, or else to apply a formal winner's-curse correction.",
+      "from": [
+        "sl-test-v2-703b3011fce6"
+      ],
+      "reason": "Determines which protein GWAS phase is used for selection and which for estimation; using the same phase for both, or pooling them, biases theta.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-a6201a02c887"
+      }
+    },
+    {
+      "text": "Scale: the target is log-odds per +1 SD of log10 concentration, but the library reports that the protein GWAS betas are per log10(ng/mL) unit (dataset_metadata unit = log10_ng_per_mL; confirm). An MR estimate from those betas is therefore per log10 unit, not per SD. Estimate the SD of log10 concentration for each protein from protein_measurements.tsv and convert: theta_per_SD = theta_per_log10_unit * SD_log10 (equivalently, divide the SNP-protein betas by the SD before MR). Use the same convention for both proteins and report the SDs used.",
+      "from": [
+        "sl-test-v2-a266822f8c84"
+      ],
+      "reason": "Without this rescaling, or with the wrong SD, the reported numbers are on the wrong scale even if the MR itself is correct.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-4974f4d9d275"
+      }
+    },
+    {
+      "text": "protein_measurements has a batch column. Shifts in mean or scale between batches inflate the pooled SD of log10 concentration, so a raw pooled SD would mis-scale the per-SD estimates. For each protein compare per-batch mean and SD of log10_concentration (and per-batch control_cv), test for batch differences (e.g. ANOVA), and look for outliers, out-of-range values and duplicated records. If batch effects or QC failures are present, compute the SD after removing them (within-batch centring or a pooled within-batch SD, after excluding failed/outlying records), state the choice, and show how theta changes between the pooled and the within-batch SD.",
+      "from": [
+        "sl-test-v2-ec1168b60823"
+      ],
+      "reason": "The SD is the conversion factor for the final answer, so any artefact in the measurement records propagates directly into both thetas.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-c264c1860b1a"
+      }
+    },
+    {
+      "text": "A judgement call on the SD, flagged by the library as open rather than settled: the observed SD of log10 concentration includes technical assay noise, and the control_cv column gives the assay coefficient of variation. A CV can be converted to a log10-scale technical SD (approximately CV/ln(10) for small CV) and compared with the observed within-batch variance; also check whether CV differs by batch. pQTL betas themselves are not biased by classical measurement error in the protein, so this affects only the per-SD scaling. A noise-corrected SD would be sqrt(SD_obs^2 - SD_tech^2). The task text says only 'per +1 SD increase in log10 concentration' and does not say which SD is meant, so decide deliberately, justify the choice, and report how much the thetas differ between the observed and the noise-corrected SD.",
+      "from": [
+        "sl-test-v2-5c63da735049"
+      ],
+      "reason": "It can shift the final scale of both estimates; the team should make this choice knowingly and show its sensitivity rather than discover the control_cv column late or ignore it.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-6dfd908d05a2"
+      }
+    },
+    {
+      "text": "The disease GWAS is case-control (library reports 15000 cases / 35000 controls; confirm), so its betas should be log odds ratios. Verify this (beta/se consistent with the reported p-value; values centred on 0 rather than on 1 as odds ratios would be) and keep everything on the log-odds scale: do not exponentiate and do not treat the outcome as linear or liability scale. Separately, a single external LD reference may not match the GWAS samples, which makes fixed-effect GLS over-precise. Compute Cochran's Q for the multivariable GLS fit against its chi-square degrees of freedom; if Q is large, use multiplicative random-effects standard errors and investigate the outlying SNPs (pleiotropy or LD mismatch) instead of trusting the fixed-effect precision.",
+      "from": [
+        "sl-test-v2-451d4ae88f54"
+      ],
+      "reason": "Confirms the outcome scale the answer must be on, and adds a heterogeneity check that can reveal invalid instruments or LD mismatch that would otherwise bias the estimates unnoticed.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-7e00cb3fe2f7"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "gb09-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that the disease marginal z-scores fall off with distance from a peak faster than the EUR correlation reference predicts, while the phase-2 protein z-scores follow the reference. Your LD checks are recorded as finding no problem, but they do not say whether they were run on the disease file separately from the protein files. Check, for the disease statistics alone and for each protein alone, how the z-scores of the neighbours of a strong peak (for example the disease-only peak rs200068, and a protein lead SNP) compare with what the reference predicts at lag 1, 2 and 3. Does the reference describe the disease data as well as it describes the protein data, and does it change your method?",
+      "from": [
+        "sl-test-v2-441964840049"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-da5bac324d5b"
+    },
+    {
+      "to": "gb09-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team recorded that two of the disease-only peaks lie right next to protein lead SNPs (rs200028 beside rs200024/rs200025, and rs200050 beside rs200047). Your rule removes every SNP with r2>=0.05 to those peaks. List which SNPs the rule removes, and check whether the strongest and the conditionally independent lead SNPs for PROTA and for PROTB are among them. Among the 47 SNPs you keep, which signals actually identify each protein's effect, and are those SNPs independent signals or only the LD tails of removed leads? Does it change your method?",
+      "from": [
+        "sl-test-v2-503611337d32",
+        "sl-test-v2-441964840049"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-72f60a3392e6"
+    },
+    {
+      "to": "gb09-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team kept the SNPs near the disease-only peaks and modelled those variants as explicit effects, and it attributes much of the heterogeneity to the correlation reference not fitting the disease data. You rejected stepwise modelling because it did not converge, and your exclusion set and LD threshold were chosen from the data until Q matched its degrees of freedom. Check whether the failure of your stepwise fit to converge is related to how well the reference fits the disease statistics, and whether a Q close to its degrees of freedom on the retained SNPs could arise from having removed the informative region rather than from a correct model. Does it change your method?",
+      "from": [
+        "sl-test-v2-441964840049",
+        "sl-test-v2-7210ec9d72a7"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-dd5a81add5ed"
+    },
+    {
+      "to": "gb09-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team did not model the disease-only variants; it removed all SNPs in LD with three disease-only peaks (rs200028, rs200050, rs200068) and then found residual heterogeneity consistent with its degrees of freedom using the EUR reference unchanged. Your models keep a residual Q several times its degrees of freedom under every LD model you tried. Check whether, on the SNPs that are not in LD with those three peaks, the disease statistics are consistent with the EUR reference and with your protein model, and whether the misfit you see is confined to the neighbourhoods of the disease-only peaks or is present across the locus. Does it change your method?",
+      "from": [
+        "sl-test-v2-0ac14f2cf8b4",
+        "sl-test-v2-fcdb0e5e4d86"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-420615280364"
+    },
+    {
+      "to": "gb09-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team identified three protein-independent disease peaks, whereas you modelled 9 to 12 disease-only variants and replaced the reference with a one-parameter AR(rho) correlation for the disease data. Check whether each of your additional modelled variants is a distinct signal or appears only because of the assumed disease LD model, whether any of them is in LD with a protein lead SNP so that it could absorb protein-mediated signal, and whether the observed pairwise structure of the disease z-scores supports a single AR(rho) form. Does it change your method?",
+      "from": [
+        "sl-test-v2-fcdb0e5e4d86",
+        "sl-test-v2-0ac14f2cf8b4"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-a34ed9038825"
+    },
+    {
+      "to": "gb09-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team computed LD-aware conditional F statistics for each protein on its final instrument set, found one protein borderline weak conditional on the other, and used weights that include the uncertainty of the phase-2 protein betas. Your plan lists a conditional F check, but none is recorded for your final models built on 6 conditionally independent leads. Compute the conditional instrument strength for each protein in your final models and check whether the standard errors of the phase-2 betas enter your weights. Does it change your method?",
+      "from": [
+        "sl-test-v2-58d6708a3bff"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-da1fd493974b"
+    },
+    {
+      "to": "gb09-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team submitted the estimate of one fitted specification that it could defend with a heterogeneity test. Your submitted values are a central value taken across several specifications, each of which you describe as fitting poorly. Check whether any single specification of yours can be justified from the data on its own fit, and whether the spread across your specifications is driven by one modelling choice (the disease LD parameter, the set of modelled disease-only variants, or the instrument set). Does it change your method?",
+      "from": [
+        "sl-test-v2-0ac14f2cf8b4",
+        "sl-test-v2-58d6708a3bff"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-0328d2063da4"
+    }
+  ],
+  "warning_signs_to_team_c": [],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": null,
+  "not_chosen": [
+    {
+      "agent": "gb09-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "gb09-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "gb09-team-b",
+      "round": "revise",
+      "reason": "agreed with gb09-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "gb09-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 118.78625045891386,
+      "cost_usd": 0.5133447999999999,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 97.86588179098908,
+      "cost_usd": 0.15043479999999998,
+      "error": null
+    },
+    {
+      "agent": "gb09-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 207.89796612493228,
+      "cost_usd": 0.7774468,
+      "error": null
+    },
+    {
+      "agent": "gb09-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 254.22874579101335,
+      "cost_usd": 1.0054872000000001,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 91.09287679207046,
+      "cost_usd": 0.220702,
+      "error": null
+    },
+    {
+      "agent": "gb09-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 102.16118225001264,
+      "cost_usd": 0.3711168,
+      "error": null
+    },
+    {
+      "agent": "gb09-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 162.65936887497082,
+      "cost_usd": 0.6501966,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

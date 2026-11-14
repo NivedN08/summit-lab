@@ -1,0 +1,376 @@
+{
+  "study": "gb04",
+  "status": "replicated",
+  "final": {
+    "agent": "gb04-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb04/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ]
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "gb04-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb04/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "selected_locus": "A",
+        "s": 0.096
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "gb04-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb04/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "selected_locus": "A",
+        "s": 0.095
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "gb04-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb04/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "selected_locus": "A",
+        "s": 0.096
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "gb04-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb04/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "selected_locus": "A",
+        "s": 0.095
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "gb04-team-a",
+        "gb04-team-b"
+      ],
+      "fields": {
+        "s": true,
+        "selected_locus": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "gb04-team-a",
+        "gb04-team-b"
+      ],
+      "fields": {
+        "s": true,
+        "selected_locus": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Polarise before fitting: the read counts are for the ALT allele, but s is defined for the DERIVED allele. The library reports that the variant information file (variant_info.tsv) carries an outgroup_allele per locus; the derived allele is the one that does NOT match the outgroup. For each locus, compare outgroup_allele with ref and alt. If the outgroup allele equals alt, then alt is ancestral, so model derived frequency = 1 - alt frequency for that locus before fitting. Compare the two loci on derived-allele s only: a locus whose alt allele falls in frequency can be the one under strong positive selection on the derived allele. Outgroup polarisation by parsimony can itself be wrong, so state it as an assumption in the reasoning.",
+      "from": [
+        "sl-test-v2-4be8ec20a2a5"
+      ],
+      "reason": "A missed polarisation flips the sign of s at that locus and can change which locus is reported as the more strongly selected one, so it affects both answer fields.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-c4e55de53806"
+      }
+    },
+    {
+      "text": "Use the haploid selection model, not a diploid one. For a haploid locus with relative fitness 1+s, p' = p(1+s)/(1+sp), so logit(p_t) = logit(p_0) + t*ln(1+s) exactly. The slope of logit frequency against generation is therefore ln(1+s), not s; the two differ noticeably once s is above about 0.1. Either fit the haploid recursion directly with s as the parameter, or convert a logit slope with s = exp(slope) - 1. Do not use diploid additive or dominance formulas. State in the reasoning which convention the reported s follows.",
+      "from": [
+        "sl-test-v2-9c5a0dd5bccb"
+      ],
+      "reason": "The choice between the logit slope and exp(slope)-1, or the use of a diploid formula, changes the reported number directly.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-f2cb241b6898"
+      }
+    },
+    {
+      "text": "Use generation, not calendar year, as the time axis. The library reports that the time series has both a 'generation' column and a 'sample_year' column. s is per generation, so fitting against years (or mixing the two) rescales s by the generations-per-year factor. Confirm that generation increases steadily, see how it relates to sample_year, and check that the Ne schedule is in generation coordinates. Use sample_year only for QC, for example to spot duplicate or out-of-order samples.",
+      "from": [
+        "sl-test-v2-6a2044439889"
+      ],
+      "reason": "Fitting on the wrong time column rescales s by a constant factor and would go unnoticed without an explicit check.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-6a0ec66ed23e"
+      }
+    },
+    {
+      "text": "Put sequencing error inside the likelihood. Under symmetric error e the observed frequency is p_obs = p(1-e) + (1-p)e, which reads too high near 0 and too low near 1. This flattens the logit trajectory and biases s toward 0, mostly where the allele is rare or near fixation. Look for samples where alt_reads/total_reads is within a few multiples of the error rate (about 0.01) of 0 or 1. Model alt_reads ~ Binomial(total_reads, p(1-e) + (1-p)e) using each row's seq_error value; because that column is already the average of the two directional miscall rates, the symmetric form is the appropriate one. Do not put raw frequencies or 0/1 values into a logit, and do not simply subtract the error and clip.",
+      "from": [
+        "sl-test-v2-e574ae5b091b"
+      ],
+      "reason": "Whether and how error is handled changes the fitted slope, especially for points near 0 or 1, and the task statement explicitly calls out the ~1% error and the seq_error column.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-e6b278e5e032"
+      }
+    },
+    {
+      "text": "Do not estimate s by ordinary least squares on logit(raw frequency). OLS ignores binomial read-sampling noise (variance about p(1-p)/depth), is unstable or infinite at frequencies of 0 or 1, and weights samples equally even when total_reads differs between them. Inspect total_reads per sample and whether any frequency is at or near 0 or 1. Fit by maximum likelihood with a read-level binomial (plus error) observation model, or at the very least use weighted least squares with weights depth*p(1-p). Report a confidence interval from profile likelihood or bootstrap, not only a point estimate.",
+      "from": [
+        "sl-test-v2-93db7d378319"
+      ],
+      "reason": "The estimator and its weighting determine both the point estimate and whether an uncertainty statement is available; the task is graded on analytical reasoning as well as the number.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-0f27d1e71f11"
+      }
+    },
+    {
+      "text": "Account for the Ne schedule. The library reports that a piecewise Ne schedule by generation is provided (Ne_schedule.tsv with gen_start, gen_end, N), which means drift variance differs between intervals, for example during a bottleneck. Ignoring it treats drift-driven jumps in low-N intervals as selection signal and can confuse drift with selection when comparing the two loci. Read the schedule, see which sampling intervals fall in low-N periods, and see whether large frequency jumps line up with them. Use a model that separates drift and sampling noise from selection under time-varying N: a Wright-Fisher HMM, a Beta-with-spikes model, or a Gaussian/Kalman approximation with drift variance p(1-p)/N per generation in each interval. Compare the result with the deterministic (no-drift) fit as a sensitivity check.",
+      "from": [
+        "sl-test-v2-04d31d8e8271"
+      ],
+      "reason": "Whether drift is modelled, and with which N per interval, changes the s estimate, its uncertainty, and the comparison between loci.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-869ba2174324"
+      }
+    },
+    {
+      "text": "Do not choose the 'more strongly selected' locus by eye or by the larger raw frequency change. Drift in a small-Ne population, low read depth, or allele polarisation can make the weaker locus look stronger. Estimate derived-allele s at BOTH loci with the same model and give a confidence interval for each. Check whether the intervals overlap and whether each locus differs from neutrality (likelihood-ratio test against s=0, with drift under the Ne schedule accounted for). Base the locus choice on these derived-allele estimates and report both in the reasoning.",
+      "from": [
+        "sl-test-v2-64129d888d6c"
+      ],
+      "reason": "The selected_locus field depends on a like-for-like comparison of both loci; an informal choice can pick the wrong locus and then report the wrong s.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-7e5d81d32f3a"
+      }
+    },
+    {
+      "text": "Check that a single constant s describes the series. Selection may change over time (for example with environment or at an Ne epoch boundary), or the allele may plateau or fix; a single-s fit then averages across regimes or is dominated by saturated points that carry little information. For each locus, plot error-corrected logit(derived frequency) against generation and look for curvature, breakpoints (especially at Ne schedule boundaries) and samples stuck near 0 or 1. Compare a constant-s model with a piecewise-s model by likelihood ratio or AIC. Report the constant-s estimate only if it fits adequately; otherwise say so and justify which interval defines s. Points near fixation should carry little weight, which a correct binomial-plus-error likelihood does automatically.",
+      "from": [
+        "sl-test-v2-c85b1bacd1ee"
+      ],
+      "reason": "If the trajectory is not log-linear over the whole series, the interval used to define s changes the reported value, and the team needs to test this rather than assume it.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-537ec4e1200e"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams split the 0.16 seq_error into C->T 0.31 and T->C 0.01 and treat that split as fixed and known. It is inferred, not given, and both justify it with the same sentence: that locus A gen 6 (36/40 = 0.90) is 'impossible' under symmetric 0.16 because the ceiling is 0.84. That is a point comparison with no sampling noise: for 40 reads at a true rate of 0.84, P(X >= 36) is about 0.21, so this single sample does not by itself exclude the symmetric model. The remaining support is a non-nested log-likelihood gap of about 4 at locus A only (-30.0 vs -34.1); neither team reported the gap at locus B, jointly, or without the gen-6 sample.",
+      "Both assume the split is identical at the two loci and constant across all samples spanning 2000 years of sample age, because the seq_error column is constant.",
+      "Both assume a single constant s over generations 6-60. Under the asymmetric model the T-read floor is 0.31 and locus A's late T fractions (0.33-0.45) sit on or just above it, so the late derived frequencies, and therefore how much of the trajectory is 'saturated', are set almost entirely by the assumed floor rather than by the data.",
+      "Both use the N column as the haploid Wright-Fisher population size (drift variance p(1-p)/N) and neither records how the hidden chain is initialised (start at generation 0 or at the first sample at generation 6; prior on starting frequency). Neither reports sensitivity to these.",
+      "Both treat the two loci as independent (separate per-locus fits). In a haploid population the loci may be linked; the read depths are identical at every time point and the gen-12 counts are identical (34/45), so the two series come from the same samples. Not testable with strength from 9 points, but untested.",
+      "Both accept outgroup parsimony for polarisation (outgroup = T = alt at both loci), which also happens to be the allele that C->T damage manufactures."
+    ],
+    "unused_evidence": [
+      "Locus B as a calibrator of the error split: the error process is shared by both loci, yet the error-model comparison (asymmetric vs symmetric 0.16 vs symmetric 0.01) is reported only for locus A. A joint fit with a shared split was not run.",
+      "sample_year: used only as a monotonicity check (about 37 years per generation). It marks the data as ancient and spans 2000 years; neither team asked whether a constant damage rate across that age range is plausible, though the constant seq_error column gives no handle to model otherwise.",
+      "Ne_schedule generations 0-5 (before the first sample at generation 6): whether and how this stretch enters the model (initial state) is not recorded by either team.",
+      "The symmetric-0.01 log-likelihood: team A ran it (s_A = 0.045) but recorded no fit statistic, so the three error readings are not ranked on a common footing."
+    ],
+    "unresolved_weak_points": [
+      "Both teams name the same weakest point: the 0.31/0.01 split is inferred and s_A moves from about 0.045 (symmetric 0.01) through 0.06 (symmetric 0.16) to 0.096 (asymmetric). Both only reported it. Neither estimated the split from the data (profile over e_CT with e_CT + e_TC = 0.32, both loci jointly) nor propagated its uncertainty into the interval for s.",
+      "Team A's second weak point: a piecewise-s improvement at generation 26 (s1 = 0.15, s2 = 0.05, LRT 5.3). It was tested only in the deterministic fit, not in the drift HMM, and only under the asymmetric error model, where the late points are at the error floor. It was set aside as post hoc; whether constant s 'fits adequately' was not shown by any goodness-of-fit test.",
+      "Team B recorded no pitfall checks at all (pitfalls_checked is empty): no constant-vs-piecewise s test, no deterministic-vs-drift comparison, and no statement of how the Ne schedule changed the estimate.",
+      "Team B tested sensitivity to T->C from 0.001 to 0.1 but did not record what s did across that range."
+    ],
+    "second_readings": [
+      "'Assume instrument-driven sequencing error is ~1%' together with 'seq_error is the average of the two directional miscall rates' has at least three readings: (i) use 1% symmetric and treat the 0.16 column as something else; (ii) use the column symmetrically at 0.16, as the library guidance said; (iii) 1% instrument error in both directions plus one-directional damage making up the average (the teams' reading). The three give s_A of roughly 0.045, 0.06 and 0.096, a factor of two, so the reported number rests on reading (iii).",
+      "'Selection coefficient s' for a haploid locus can be the Wrightian per-generation fitness advantage (w = 1 + s) or the logit-slope / Malthusian rate. Team A states s = exp(slope) - 1; team B does not say which its HMM uses. The gap is small at this s (about 5% relative) but should be stated.",
+      "'Estimate s' with a constant value: if selection decelerates, 'the' s could mean the early-phase value or the series average; team A's own piecewise fit gives 0.15 early and 0.05 late.",
+      "The locus choice (A) does not depend on any of these readings; only the magnitude of s does."
+    ],
+    "verdict": "I trust the locus choice (A) and the sign of s: they hold under every error model either team tried. I do not yet trust the magnitude: s_A ranges from about 0.045 to 0.096 depending on an error split that both teams inferred with the same argument, and that argument's key premise (36/40 'impossible' under symmetric 0.16) is a roughly 1-in-5 sampling event, so the agreement between teams reflects a shared assumption rather than independent confirmation.",
+    "questions": [
+      {
+        "to": "gb04-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your case against the symmetric 0.16 error model rests on locus A gen 6 (36/40 = 0.90 > 0.84) being 'impossible', but for 40 reads at a true rate of 0.84 the chance of 36 or more is about 0.21. Refit all three error models (asymmetric 0.31/0.01, symmetric 0.16, symmetric 0.01) with identical HMM settings and report the log-likelihood for locus A, for locus B, for both jointly, and for locus A with the gen-6 sample left out. Does the preference for the asymmetric model survive at locus B and without that one sample, and does the result change your method or the uncertainty you attach to s?",
+        "from": [
+          "sl-test-v2-e6649cdf2e7d",
+          "sl-test-v2-b7c8c16ac7d6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-223615fa36f2"
+      },
+      {
+        "to": "gb04-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You name the 0.31/0.01 split as your weakest point but only report it. Profile the likelihood over the split itself (C->T rate free, T->C = 0.32 minus it, shared by both loci, s and starting frequency re-optimised at each value) and report the likelihood-supported range of the split and the s_A estimate at each end of that range. Locus A's late T fractions (0.33-0.45) sit at the assumed 0.31 floor, so state how far s_A moves when the floor moves within its supported range. Does this change your point estimate or widen your interval?",
+        "from": [
+          "sl-test-v2-e6649cdf2e7d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-60b9dbadb5a3"
+      },
+      {
+        "to": "gb04-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your piecewise-s test (break at generation 26, s 0.15 then 0.05, LRT 5.3) was run in the deterministic fit and only under the asymmetric error model. Repeat it inside the drift HMM with the Ne schedule, under each error model, and add a goodness-of-fit test of the constant-s model (for example simulating trajectories and read counts from the fitted model and comparing a fit statistic). Is the deceleration still present with drift modelled, and does it appear only under the error model that puts the late samples on the error floor? Does the result change whether constant s is adequate and which interval defines the s you report?",
+        "from": [
+          "sl-test-v2-6447fff2c843"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-ee66f4f84ef6"
+      },
+      {
+        "to": "gb04-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your notes do not say how the hidden chain starts or how N enters. Report s_A and its interval under (a) the chain started at generation 0 versus at generation 6, (b) a flat prior on starting frequency versus a starting frequency estimated as a free parameter, and (c) drift variance p(1-p)/N versus p(1-p)/(2N) and N halved. Does any of these move s_A by more than a small fraction of its confidence interval, and if so does it change the method?",
+        "from": [
+          "sl-test-v2-b7c8c16ac7d6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-a8b88b3638e2"
+      },
+      {
+        "to": "gb04-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your case against the symmetric 0.16 error model rests on locus A gen 6 (36/40 = 0.90 > 0.84) being 'impossible', but for 40 reads at a true rate of 0.84 the chance of 36 or more is about 0.21. Refit the asymmetric 0.31/0.01, symmetric 0.16 and symmetric 0.01 models with identical HMM settings and report the log-likelihood for locus A, for locus B, for both jointly, and for locus A with the gen-6 sample left out. Does the preference for the asymmetric model survive at locus B and without that one sample, and does the result change your method or the uncertainty you attach to s?",
+        "from": [
+          "sl-test-v2-8be896ff1290",
+          "sl-test-v2-9b72695b7173"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-714afdcfcfd2"
+      },
+      {
+        "to": "gb04-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You tested T->C rates from 0.001 to 0.1 but did not record what s did, and your interval for s (0.04-0.165) holds the split fixed. Profile the likelihood over the split (C->T free, T->C = 0.32 minus it, shared by both loci, other parameters re-optimised) and report the supported range of the split and s_A at each end. Locus A's late T fractions (0.33-0.45) sit at the assumed 0.31 floor. Does the spread of s_A over the supported splits change your point estimate or your stated interval?",
+        "from": [
+          "sl-test-v2-8be896ff1290"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-144c06592699"
+      },
+      {
+        "to": "gb04-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your record lists no pitfall checks and no test of constant selection. Inside your HMM, compare constant s with piecewise s at the Ne-schedule boundaries (generations 18/19, 26/27, 37/38) for locus A by likelihood ratio, correcting for the number of breakpoints tried, and compare the HMM estimate with a deterministic no-drift fit. Is there evidence that s differs between the early rise and the late samples near the error floor, and does it change whether a single s is the right quantity to report?",
+        "from": [
+          "sl-test-v2-9b72695b7173"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-515590f70f45"
+      },
+      {
+        "to": "gb04-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: State three modelling choices your notes leave open and report s_A under the alternative for each: (a) whether your HMM's s is the per-generation fitness advantage (w = 1 + s) or a logit slope, (b) whether the chain starts at generation 0 or generation 6 and with what prior on starting frequency, (c) whether drift variance uses N or 2N. Does any alternative move s_A by more than a small fraction of its interval, and does that change the method?",
+        "from": [
+          "sl-test-v2-9b72695b7173"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-fab8c06469f2"
+      }
+    ]
+  },
+  "referee": null,
+  "not_chosen": [
+    {
+      "agent": "gb04-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "gb04-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "gb04-team-b",
+      "round": "challenge",
+      "reason": "agreed with gb04-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "gb04-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 82.6776369579602,
+      "cost_usd": 0.3598148,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 76.49823254102375,
+      "cost_usd": 0.1470219,
+      "error": null
+    },
+    {
+      "agent": "gb04-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 112.12446041696239,
+      "cost_usd": 0.2674068,
+      "error": null
+    },
+    {
+      "agent": "gb04-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 125.54081991605926,
+      "cost_usd": 0.317413,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 136.01840833295137,
+      "cost_usd": 0.251034,
+      "error": null
+    },
+    {
+      "agent": "gb04-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 128.42938125005458,
+      "cost_usd": 0.2960966,
+      "error": null
+    },
+    {
+      "agent": "gb04-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 241.0087544999551,
+      "cost_usd": 0.48200659999999995,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

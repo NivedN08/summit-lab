@@ -1,0 +1,389 @@
+{
+  "study": "gb06",
+  "status": "refereed",
+  "final": {
+    "agent": "gb06-team-a",
+    "team": "team-a",
+    "round": "revise",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb06/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ]
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "gb06-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb06/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "beta_activated": -0.36
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "gb06-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb06/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "beta_activated": -0.3
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "gb06-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb06/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "beta_activated": -0.54
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "gb06-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb06/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "beta_activated": -0.34
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "gb06-team-a",
+        "gb06-team-b"
+      ],
+      "fields": {
+        "beta_activated": false
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "gb06-team-a",
+        "gb06-team-b"
+      ],
+      "fields": {
+        "beta_activated": false
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Unit of analysis is the donor, not the cell. Genotype varies only between donors (the library reports about 24 donors; confirm the donor and cell counts yourself), so cells from one donor are pseudoreplicates: a cell-level GLM that treats cells as independent gives badly overconfident standard errors and lets donors with many cells dominate the estimate. Check: count cells per donor and per genotype group inside the activated subset, and compare a naive cell-level fit with a donor-level fit. Recommended estimator: sum CXCL10 counts and total_umi per donor within the activated subset and fit a Poisson or negative-binomial GLM, count ~ g + covariates + offset(log summed total_umi); or fit a cell-level NB mixed model with a donor random intercept. Report the g coefficient on the natural-log scale per allele, with g coded 0/1/2.",
+      "from": [
+        "sl-test-v2-e955b9b87a07"
+      ],
+      "reason": "Decides the model structure and the uncertainty; a cell-level fit would weight donors by cell number and can shift the point estimate as well as understate the SE.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-95e61d97dcd6"
+      }
+    },
+    {
+      "text": "The target is a log RATE ratio, so model raw CXCL10 counts with a log link and an offset of log(total_umi) (summed per donor if pseudobulking). Do not regress log-normalised expression (for example log1p of counts per 10k): that slope is not a log rate ratio and is biased when counts are low. Check: compare total_umi distributions by genotype and by donor (if depth differs by genotype, unadjusted counts confound depth with genotype), and check overdispersion (variance against mean, Pearson chi-square/df of a Poisson fit). If chi-square/df is well above 1, use negative binomial rather than Poisson.",
+      "from": [
+        "sl-test-v2-ff95e5ee6716"
+      ],
+      "reason": "Using the wrong scale or omitting the depth offset gives a number that is not the quantity the task asks for.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-460e026dc94c"
+      }
+    },
+    {
+      "text": "Do not define the activated subpopulation using CXCL10 itself. Gating or clustering on the outcome gene (or thresholding it) conditions on the outcome, truncates its distribution and biases the genotype effect, usually toward zero but not predictably. Define activation from other interferon-stimulated markers only (the library names IFI6 and ISG15 as available, normalised by total_umi), using a mixture model or a rule fixed in advance and blind to genotype. Then show how the estimate moves across reasonable gates or cutoffs; soft (probabilistic) assignment weights are an alternative to a hard cutoff.",
+      "from": [
+        "sl-test-v2-4d12ff7c83fc"
+      ],
+      "reason": "The task's answer depends entirely on which cells count as activated; a gate that touches CXCL10 biases beta by construction.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-602f5b59859e"
+      }
+    },
+    {
+      "text": "Separate the within-state effect from a composition effect. Genotype may change the FRACTION of monocytes that are activated as well as CXCL10 per activated cell. An estimate from all monocytes pooled, or from a mis-gated subset, mixes the two, and the task asks for the effect within the activated state. Check: tabulate the activated fraction per donor against g; fit the model in the activated stratum, and also a genotype-by-state interaction model (count ~ g*state + offset, donor random effect). Report beta from the activated stratum (equivalently the g main effect plus the g:state term for activated cells), not the pooled monocyte effect, and describe any composition effect separately.",
+      "from": [
+        "sl-test-v2-c23b56ee1641"
+      ],
+      "reason": "A pooled or leaky-gate estimate answers a different question from the one asked and can differ substantially if genotype shifts the activated fraction.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-e1390f6b1278"
+      }
+    },
+    {
+      "text": "Check for ambient (cell-free) RNA contamination. Ambient RNA adds counts of highly expressed induced genes (CXCL10, ISG15, IFI6) to every droplet; this inflates expression in low-expressing cells and attenuates genotype log rate ratios toward zero, or creates spurious effects if ambient load differs between samples. The library reports that the data include an empty-droplet file (empty_drops.csv.gz) with counts for low-total_umi barcodes and no donor column, so the ambient profile can only be estimated pooled. Check: compute each gene's ambient fraction (gene/total_umi in empty drops) and compare with cell-level fractions; estimate a contamination fraction rho from a gene that monocytes should not express (for example HBB), SoupX-style: rho is roughly (HBB/total in cells) / (HBB/total in empty drops). Estimate rho after removing RBC-contaminated or low-quality barcodes, since those would inflate it. If contamination is material, subtract the expected ambient counts per cell (rho * total_umi * ambient fraction) before aggregating, or put the ambient expectation in the model, and report beta with and without the correction.",
+      "from": [
+        "sl-test-v2-f649bf2ec3a0",
+        "sl-test-v2-8c4f649394df"
+      ],
+      "reason": "Ambient CXCL10 biases the rate ratio directly and also contaminates the ISG markers used for gating; the empty-drop file is easy to overlook.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-1337d9357d24"
+      }
+    },
+    {
+      "text": "Do cell-level QC before gating and aggregation. Low-quality barcodes, RBC-contaminated droplets and doublets distort per-cell CXCL10 and the activation gate. Check: look at the distributions of total_umi and of HBB fraction per cell; flag cells with total_umi near the empty-droplet range (the library reports empty drops at roughly 100-200 UMI), cells with unusually high total_umi (possible doublets), and cells with a high HBB fraction or a low fraction of the monocyte marker LST1. Use thresholds fixed in advance (for example MAD-based) and applied blind to genotype. Report how many cells were removed per donor and whether beta changes with and without the filter.",
+      "from": [
+        "sl-test-v2-8c4f649394df"
+      ],
+      "reason": "Contaminated or non-monocyte barcodes enter both the gate and the pseudobulk sums; removal must be genotype-blind and its effect on beta reported.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-e42dcc12ed8f"
+      }
+    },
+    {
+      "text": "Check donor-level confounding and thin donors. The library reports that donors.csv carries sex, age and bmi. With only about two dozen donors these can be imbalanced across genotype by chance and confound beta, while adding many covariates makes the fit unstable. Check: cross-tabulate g against sex, age and bmi; confirm g is coded as an additive 0/1/2 allele count; count activated cells per donor. Adjust for covariates that are actually imbalanced and report beta with and without them. Donors with very few activated cells give noisy rates: drop or down-weight them under a rule stated in advance (one reference workflow drops donors with fewer than 5 cells), say that you did, and show the sensitivity.",
+      "from": [
+        "sl-test-v2-dfffd3a4f957"
+      ],
+      "reason": "With so few donors, a single imbalanced covariate or a few near-empty donors can move the estimate; the adjustment choice needs to be explicit and tested.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-9c213f6ab299"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "gb06-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team applied barcode-level QC, fixed before looking at genotype, that flagged total-UMI outliers and droplets whose HBB is far in excess of what ambient contamination could explain (red-blood-cell-contaminated droplets), and estimated contamination only after setting those aside. Your notes record duplicate checks but no barcode QC, and your contamination model assumes all HBB in a cell is ambient. Check whether such barcodes exist in your data, how many there are per donor and per genotype, and whether your per-donor contamination estimates move when they are set aside. Does it change your method?",
+      "from": [
+        "sl-test-v2-1c9257fd709f",
+        "sl-test-v2-e99f963b69ea"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-8e8de2e67a39"
+    },
+    {
+      "to": "gb06-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team defined the activated state from the ISG markers only after removing the ambient contribution to those markers, on the grounds that the ambient profile itself contains ISG transcripts and contamination differs between donors. Your clustering used an ISG/LST1 score with no recorded ambient adjustment, and the two teams ended with different numbers of activated cells. Check whether the cluster assignment of any cells, especially in the high-contamination donors, changes when the ambient contribution to the gating markers is accounted for, and which donors those cells belong to. Does it change your method?",
+      "from": [
+        "sl-test-v2-1c9257fd709f",
+        "sl-test-v2-8b1811b805bf"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-d14cdcd37267"
+    },
+    {
+      "to": "gb06-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that the way the ambient expectation is removed (per cell with clipping at zero, per donor without clipping, or as a term in the model mean) changes the estimate, and that ambient makes up the majority of activated-cell CXCL10 counts in the most contaminated donors. Check in your mixture-mean fit what share of each donor's expected CXCL10 count is the ambient term, how much information the most contaminated donors actually contribute to the genotype coefficient, and whether the coefficient is stable to the dispersion and to how those donors are weighted. Does it change your method?",
+      "from": [
+        "sl-test-v2-a66bacdcd678"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-e4a2061a0499"
+    },
+    {
+      "to": "gb06-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team counted activated cells per donor and applied (and varied) a minimum number of activated cells for a donor to enter the pseudobulk fit, because the activated fraction is small in some genotype groups. Your notes do not record such a check. Tabulate activated cells per donor in your data and check whether any donor enters your fit on very few cells. Does it change your method?",
+      "from": [
+        "sl-test-v2-1c9257fd709f"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-549c908d3856"
+    },
+    {
+      "to": "gb06-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team estimated a separate contamination fraction for each donor, whereas your notes describe contamination as two donor groups and your plan mentioned a per-cell estimate. State at which level (cell, donor, donor group) the contamination fraction in your final model is estimated, how precisely HBB counts pin it down at that level, and whether the genotype coefficient moves when the level is changed. Does it change your method?",
+      "from": [
+        "sl-test-v2-9bfc8ff848d4",
+        "sl-test-v2-1c9257fd709f"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-ae53bc6cd694"
+    },
+    {
+      "to": "gb06-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team did not take the HBB-derived contamination scale on trust: they let a multiplier on the ambient CXCL10 term be estimated from the data, once in activated cells only and once jointly with the resting cells, and found the genotype coefficient very sensitive to that multiplier. Your notes record no test of the ambient scale. Check in your data what multiplier the counts themselves support, in the activated stratum alone and when the resting stratum is included, and how your coefficient responds across a plausible range. Does it change your method?",
+      "from": [
+        "sl-test-v2-ac1ff4e92990"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-7b51e82f0c09"
+    },
+    {
+      "to": "gb06-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team fitted the same ambient-corrected model in the resting cluster and used it as a check on whether the ambient correction is complete. Check what your corrected CXCL10 rates look like in the resting stratum across donors and contamination levels, and whether that pattern is what you would expect if the ambient removal were right. Does it change your method?",
+      "from": [
+        "sl-test-v2-1f076fbb4c0d",
+        "sl-test-v2-ac1ff4e92990"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-df6a023cdd0b"
+    },
+    {
+      "to": "gb06-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team defined the activated state from ISG and LST1 jointly and obtained a different number of activated cells from you. You recorded that ISG-high and LST1-low agree for most but not all cells. Check the cells where your ISG gate and LST1 status disagree: which donors and genotypes they come from, what their CXCL10 and contamination look like, and whether your estimate moves when they are assigned the other way. Does it change your method?",
+      "from": [
+        "sl-test-v2-66ee44626c15",
+        "sl-test-v2-5d5b8fe5010b"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-b84f931825dd"
+    },
+    {
+      "to": "gb06-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team estimated the endogenous rate and the ambient term together in one donor-level negative-binomial mean model, rather than subtracting first and fitting afterwards. You recorded strong overdispersion between donors, yet your ambient-in-mean version was a Poisson fit, and your headline figure combines it with a subtract-then-fit version. Check how donors whose corrected count is near or below zero are handled in each version, whether the two versions weight the heavily contaminated donors the same way, and which single version you judge correct and why. Does it change your method?",
+      "from": [
+        "sl-test-v2-ac1ff4e92990",
+        "sl-test-v2-5d5b8fe5010b"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-24858439ec9e"
+    },
+    {
+      "to": "gb06-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team ran leave-one-donor-out and a donor bootstrap, and described contamination as falling into two donor groups rather than varying donor by donor. Your notes record neither a leave-one-out check nor how precisely each donor's rho is determined. Check whether any single donor drives your coefficient, how noisy the donor-specific rho values are given the HBB counts behind them, and whether the coefficient moves if rho is shared within the two contamination groups. Does it change your method?",
+      "from": [
+        "sl-test-v2-ac1ff4e92990",
+        "sl-test-v2-a618cf0a175a"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-73ab8e90d7e9"
+    },
+    {
+      "to": "gb06-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team checked the input for duplicate barcode IDs and duplicate rows before analysis, and did not remove cells by UMI or HBB thresholds. Your notes record cell QC but no duplicate check. Check whether duplicates exist in your data, and report how many cells per donor and genotype your QC removed and whether removal is balanced across the contamination groups. Does it change your method?",
+      "from": [
+        "sl-test-v2-5d5b8fe5010b"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-b7b98b370504"
+    }
+  ],
+  "warning_signs_to_team_c": [],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": {
+    "difference": "Both use the same pipeline (HBB-based donor contamination rho, ISG gate, donor-pseudobulk NB with an additive ambient term). They differ only in the ambient scale k: X fixes k=1 (the empty-drop profile times the HBB-derived rho), giving -0.34. Y estimates k from the data (1.27, using the resting stratum and the split g=1 donors), giving -0.54.",
+    "test": "Within genotype g=1 (genotype held fixed: 4 high-rho and 4 low-rho donors), I computed the ambient-corrected rate (y - k*rho*N*amb)/(N*(1-rho)) for high-rho and low-rho donors and solved for the k that makes the two groups equal. I did this for genes Y did not use to set k (resting IFI6 and ISG15, which are mostly ambient in resting cells) as well as for CXCL10, with a 2000-rep donor bootstrap. Code: test.py.",
+    "expected_if_x": "If k=1 is right, the corrected rates should be equal at k=1 (k_eq near 1, bootstrap CI covering 1) for the ambient-dominated genes, so no residual dependence on rho.",
+    "expected_if_y": "If ambient is under-removed at the HBB scale, k_eq should be clearly above 1 (about 1.2-1.3) for the other ambient-dominated genes too, and at k=1 the high-rho donors should show higher corrected rates.",
+    "outcome": "At k=1, the corrected resting IFI6 and ISG15 rates are 2.1x and 2.5x higher in high-rho donors. k_eq is 1.14 for IFI6 (CI 0.86-1.56), 1.15 for ISG15 (CI 1.08-1.22, excludes 1) and 1.26 for resting CXCL10 (CI 1.06-1.49). For activated CXCL10, k_eq is 1.64 (CI 1.27-1.87), and its high-rho rate is still 1.75x higher at k=1.27. LST1 is not informative because it is mostly endogenous in resting cells and has few counts in activated cells.",
+    "pick": "Y",
+    "reason": "An independent gene (ISG15) and resting CXCL10 both reject k=1 and point to a k above 1, close to Y's 1.27. So X's fixed scale leaves ambient CXCL10 in the high-contamination donors, which are mostly higher-genotype donors, and that biases beta upward toward 0. The size of the effect is still uncertain: k from about 1.15 to 1.6 maps to beta from about -0.45 to -0.75. Y's -0.54 sits inside that range, so I give no own answer.",
+    "own_answer": null,
+    "picked_agent": "gb06-team-a",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "gb06-team-b",
+      "Y": "gb06-team-a"
+    }
+  },
+  "not_chosen": [
+    {
+      "agent": "gb06-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "gb06-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "gb06-team-b",
+      "round": "revise",
+      "reason": "the referee's test supported the other answer: An independent gene (ISG15) and resting CXCL10 both reject k=1 and point to a k above 1, close to Y's 1.27. So X's fixed scale leaves ambient CXCL10 in the high-contamination donors, which are mostly higher-genotype donors, and that biases beta upward toward 0. The size of the effect is still uncertain: k from about 1.15 to 1.6 maps to beta from about -0.45 to -0.75. Y's -0.54 sits inside that range, so I give no own answer."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "gb06-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 87.7090138749918,
+      "cost_usd": 0.371957,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 59.64081770798657,
+      "cost_usd": 0.170367,
+      "error": null
+    },
+    {
+      "agent": "gb06-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 134.33984783303458,
+      "cost_usd": 0.4135386,
+      "error": null
+    },
+    {
+      "agent": "gb06-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 157.35633741598576,
+      "cost_usd": 0.5049892,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 101.46658424998168,
+      "cost_usd": 0.18969389999999997,
+      "error": null
+    },
+    {
+      "agent": "gb06-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 155.1073187920265,
+      "cost_usd": 0.523666,
+      "error": null
+    },
+    {
+      "agent": "gb06-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 171.73788758402225,
+      "cost_usd": 0.5828122,
+      "error": null
+    },
+    {
+      "agent": "gb06-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 75.72059425001498,
+      "cost_usd": 0.243772,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

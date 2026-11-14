@@ -1,0 +1,392 @@
+{
+  "study": "gb10",
+  "status": "refereed",
+  "final": {
+    "agent": "gb10-team-b",
+    "team": "team-b",
+    "round": "revise",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb10/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ]
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "gb10-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb10/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "high_founder": "F4",
+        "qtl_pos_cM": 44.5
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "gb10-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb10/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "high_founder": "F5",
+        "qtl_pos_cM": 45.0
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "gb10-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb10/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "high_founder": "F5",
+        "qtl_pos_cM": 46.0
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "gb10-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb10/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "high_founder": "F4",
+        "qtl_pos_cM": 45.0
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "gb10-team-a",
+        "gb10-team-b"
+      ],
+      "fields": {
+        "high_founder": false,
+        "qtl_pos_cM": true
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "gb10-team-a",
+        "gb10-team-b"
+      ],
+      "fields": {
+        "high_founder": false,
+        "qtl_pos_cM": true
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The library reports that the gb10 input files are not in genetic-map order: the rows of markers.tsv and founders.tsv and the marker columns of ril_genotypes.npz are shuffled and mix chromosome 1 and chromosome 2 markers (the reported first IDs are m2_065, m2_103, m2_107, m1_054). Any HMM or interval scan run in file order gives meaningless haplotype probabilities and a wrong peak. Confirm this in the data, then join every table by marker_id and by sample_id (never by row index), check that the sample_id order in the npz agrees with phenotypes.tsv, and sort markers by chromosome and then pos_cM before computing genotype probabilities or LOD curves.",
+      "from": [
+        "sl-test-v2-cbd4bcfbc6fa"
+      ],
+      "reason": "A data-specific trap that silently invalidates the haplotype reconstruction and the reported position if the team assumes the files are already ordered and aligned.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-66412a7baea3"
+      }
+    },
+    {
+      "text": "The library reports that the genotype codings differ between gb10 files: RIL genotypes in ril_genotypes.npz are int8 values in {1, 0, -1}, while founder genotypes in founders.tsv are 0/1. The meaning of -1 is not established (it could be missing, or a heterozygous call), so do not assume it. Tabulate the values, count -1 per marker and per RIL, and verify that the RIL and founder codes refer to the same allele (each RIL should match some founder at nearly every marker over long runs). Treat -1 as missing unless the data documentation says otherwise (heterozygous calls in inbred lines are normally treated as missing too), never as a third allele, and drop markers that are monomorphic across the 8 founders. A flipped or misread coding can reverse the founder assignment, so that the lowest founder is reported as the highest.",
+      "from": [
+        "sl-test-v2-84532024507b"
+      ],
+      "reason": "A coding mistake would directly corrupt the high_founder answer; the team needs to know the two files use different value sets and that the meaning of -1 has to be checked.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-a57beefdab54"
+      }
+    },
+    {
+      "text": "A single-marker association on the biallelic SNPs cannot identify which founder carries the high allele: each SNP only splits the 8 founders into two groups, and several founders usually share each allele. At any peak SNP, count how many founders carry each allele in founders.tsv; if more than one carries the high allele, the SNP result alone does not name a founder. The appropriate method is to reconstruct 8-founder haplotype probabilities with a multipoint HMM over the ordered markers (R/qtl2 calc_genoprob with an 8-way selfed RIL cross type such as riself8, or an equivalent hand-written HMM), run an 8-founder additive scan (7 degrees of freedom) on those probabilities, and read high_founder from the founder coefficients at the peak.",
+      "from": [
+        "sl-test-v2-09c39583b071"
+      ],
+      "reason": "It determines the core method: a SNP-by-SNP scan, the obvious first approach, cannot answer the founder half of the question.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-32766f507189"
+      }
+    },
+    {
+      "text": "Genotyping errors or residual heterozygosity in RILs or founders create false double recombinants that distort the haplotype probabilities and can move both the peak position and the founder assignment. An error in a founder genotype is the most damaging kind, because every RIL is decoded against the founders. Run the HMM with a nonzero genotyping-error probability (about 0.002 to 0.01), count inferred crossovers per RIL and look for outlier lines with very many, look for markers whose calls conflict with their flanking markers, and check per-marker missing rates. Drop or mask bad markers and samples, and confirm that the peak and the top founder are stable when the error probability is varied between 0.001 and 0.01.",
+      "from": [
+        "sl-test-v2-5abb0e9d7251"
+      ],
+      "reason": "It sets an HMM parameter and a QC and sensitivity step that affect both reported quantities; a zero-error HMM is fragile to a handful of bad calls.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-29402f7aa267"
+      }
+    },
+    {
+      "text": "The library reports that the gb10 phenotype file has a batch column. Leaving batch out adds residual noise and, if batch is unbalanced across founder haplotypes, can shift the founder effects and the peak. Compare phenotype means and variances by batch and cross-tabulate batch against founder haplotype at the peak. If batch matters, include it as an additive covariate in the null model, the QTL scan, the founder-effect estimation and the permutations alike, and consider a batch-by-QTL interaction if effects differ by batch. Also check the phenotype for outliers or skew; if present, repeat the scan on a rank-based inverse normal transform and check that the peak does not move.",
+      "from": [
+        "sl-test-v2-3085c71dd03a"
+      ],
+      "reason": "A covariate and phenotype-QC decision that can change the LOD curve, the peak location and the founder ranking.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-8f3de7ffb05f"
+      }
+    },
+    {
+      "text": "Relatedness and population structure among multi-parent RILs (from the crossing design and uneven founder contributions) can inflate LOD scores and create ghost peaks, and genetic effects on other chromosomes inflate residual variance. Compare the chromosome 1 LOD curve and peak from plain Haley-Knott regression with a linear mixed model that uses a leave-one-chromosome-out kinship matrix (for a chromosome 1 scan, kinship computed from chromosome 2 only). Also scan chromosome 2: if it carries a strong QTL, include it as a covariate when scanning chromosome 1. If the peak or the top founder shifts under the mixed model, report the mixed-model result.",
+      "from": [
+        "sl-test-v2-217fe5a48bd4"
+      ],
+      "reason": "It tells the team that chromosome 2 is not just a distraction (it supplies the kinship and possibly a background covariate) and adds a robustness comparison that could change the chromosome 1 result.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-82e21847c702"
+      }
+    },
+    {
+      "text": "Do not report only the argmax marker. The library reports that the population has about 120 RILs; with that size and a 7-df founder model the LOD peak may be broad or there may be more than one peak, and a marker-only scan restricts the position to marker locations. Scan a pseudomarker grid (for example 1 cM) between markers; get a significance threshold by permutation (shuffle phenotypes with batch kept attached to the phenotype, about 1000 permutations, genome-wide maximum LOD); and compute a 1.5-LOD support interval or 95% Bayes credible interval on chromosome 1. If chromosome 1 shows two separated peaks, fit a two-QTL model or a conditional scan with the top QTL as a covariate before choosing a position. Give the position as the peak of the full 8-founder (or mixed-model) LOD curve and quote the interval in the reasoning.",
+      "from": [
+        "sl-test-v2-88dd84cb2f2e"
+      ],
+      "reason": "It changes how qtl_pos_cM is obtained (grid rather than marker positions, handling of multiple peaks) and supplies the significance and precision reasoning the task is graded on.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-93d357403f14"
+      }
+    },
+    {
+      "text": "Founder-effect estimates at the QTL can be unstable or extreme when a founder haplotype is rare at that locus. With about 120 RILs each of 8 founders is expected in only about 15 lines and may be present in far fewer, so a sparsely represented founder can get the largest fixed-effect coefficient by chance. At the peak, sum the founder haplotype probabilities across RILs to get the expected number of lines per founder, look at the standard errors of the founder coefficients, and compare the fixed-effect coefficients with shrunken estimates (BLUPs, e.g. qtl2 scan1blup or an equivalent random-effect/ridge fit). Report a founder as high only if it stays on top under the shrunken estimates and is clearly separated from the runner-up; state in the reasoning any tie, or any founders that share the same SNP haplotype in the region and so cannot be distinguished.",
+      "from": [
+        "sl-test-v2-b4ac27c8cf00"
+      ],
+      "reason": "It guards the high_founder call against a noise-driven coefficient and prescribes a specific cross-check that could change which founder is reported.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-464672bec552"
+      }
+    },
+    {
+      "text": "The high-effect founder is the one with the highest positive effect on the phenotype, not the one with the most extreme coefficient regardless of sign. Coefficients are also easy to misread under different contrasts: a sum-to-zero parameterisation (qtl2 scan1coef with zerosum=TRUE) gives 8 effects that sum to zero plus an intercept, whereas a reference-founder parameterisation gives effects relative to one omitted founder. As a contrast-free check, at the peak assign each RIL to its most likely founder haplotype (probability above 0.5), compute the raw mean phenotype per founder group, and confirm that the founder with the highest group mean is the founder with the largest positive coefficient before reporting it.",
+      "from": [
+        "sl-test-v2-0fb38f94160e"
+      ],
+      "reason": "A sign or contrast misreading would give the wrong founder even after a correct scan; the raw group-mean check is cheap and decisive.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-81bf286e3fb1"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "gb10-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team compared, marker by marker, the RIL calls with the allele of the founder haplotype inferred from the neighbouring markers, and found that two chromosome 1 markers lying close to the peak region disagree far more often than any other marker, with the founders.tsv alleles at those two markers looking opposite to the RIL alleles for all 8 founders. Your records show no per-marker check of founder-versus-RIL agreement. Check whether that holds in your data: compute the per-marker mismatch between RIL calls and your inferred haplotypes (leaving the tested marker out), and see whether any markers near the peak stand out and whether your founder haplotype probabilities and founder effects at the peak change depending on how those markers are treated. Does it change your method?",
+      "from": [
+        "sl-test-v2-07e7ca1eb968"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-e6d59258cc5a"
+    },
+    {
+      "to": "gb10-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that the 8 founders are very unevenly represented at the chromosome 1 peak, that one of the nearly tied candidate founders is carried by about half the number of lines expected for an equal split and that its lines are unevenly spread over the two batches, and that the ranking of the tied founders depends on whether plain fixed-effect coefficients or shrunken (random-effect) estimates are used. Your records rank the founders by point estimates without per-founder line counts or standard errors. Check in your data: the expected number of lines per founder at the peak (sum of haplotype probabilities), the standard error of each founder effect, the batch split of each candidate founder's lines, and whether your ranking of the tied founders is the same under shrunken estimates. Does it change your method?",
+      "from": [
+        "sl-test-v2-e4833e8b2338"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-b5e9dd3418af"
+    },
+    {
+      "to": "gb10-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: you recorded that the founder you reported is not the founder that comes out on top most often in your own bootstrap, and that the three candidate founders have almost identical estimated effects. The other team's bootstrap and its point estimates pointed to one and the same founder for that team. Check why your two lines of evidence disagree: is the top founder in each bootstrap resample read at a re-estimated peak or at a fixed position, how sharply does your HMM assign each line to one founder at the peak (how many lines have a maximum founder probability above one half, and can the candidate founders be told apart from the local SNP pattern), and do the raw phenotype means of lines hard-called to each candidate founder, adjusted for batch, agree with your coefficients? Does it change your method?",
+      "from": [
+        "sl-test-v2-f1bdd231e3d9",
+        "sl-test-v2-1f71e70b3a5c"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-37f374a8244d"
+    },
+    {
+      "to": "gb10-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that the chromosome 2 signal is not a localised peak: the 8-founder LOD stays elevated along the whole of chromosome 2 and its support interval spans the entire chromosome, which that team read as diffuse background rather than a single locus, and it therefore also controlled background with a mixed model using kinship computed from chromosome 2. You added the chromosome 2 peak as a single covariate and counted that model among those deciding the founder. Check whether that holds in your data: the shape of your chromosome 2 LOD curve, and whether the ranking of the tied founders at the chromosome 1 peak is the same with no chromosome 2 control, with the single covariate, and with a kinship-based control. Does it change your method?",
+      "from": [
+        "sl-test-v2-69fb198601c6"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-36bb0a719996"
+    },
+    {
+      "to": "gb10-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: you reported a position that is the midpoint between the peaks of two different analyses (with and without the outlying line), so it is not the maximum of any single LOD curve. The other team reported the maximum of one stated primary model, scanned on a regular 1 cM pseudomarker grid, and quoted a support interval around it. Check which single model you judge to be the primary one for this task and why, where its LOD curve peaks on a regular grid, and whether the choice matters relative to the width of your support interval. Does it change your method?",
+      "from": [
+        "sl-test-v2-49923c6d212b",
+        "sl-test-v2-b8be37417c08"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-9e26433b2547"
+    },
+    {
+      "to": "gb10-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found a single line with an extreme phenotype value, far below every other line in its batch, and found that leaving that one line out moves the chromosome 1 peak position and changes the LOD by about one unit. Your records show a rank-based transform but no check of the influence of individual lines. Check whether that holds in your data: identify the most extreme phenotype value after batch adjustment, see which founder haplotype that line carries at the peak, and see whether the peak position, the LOD against your permutation threshold, and the ranking of the tied founders change when that line is left out. Does it change your method?",
+      "from": [
+        "sl-test-v2-b8be37417c08"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-f43daa1cfad8"
+    },
+    {
+      "to": "gb10-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team compared the nearly tied candidate founders with one-founder-versus-the-rest contrast models at the peak and with scans run separately within each batch. You recorded that the lines carrying your top founder are few and unevenly spread over the two batches, but no within-batch or one-founder-versus-rest comparison. Check in your data whether the ranking of the tied founders is the same within each batch taken separately, and whether a one-founder-versus-rest contrast at the peak ranks the candidate founders in the same order as your 8-founder coefficients. Does it change your method?",
+      "from": [
+        "sl-test-v2-1f71e70b3a5c",
+        "sl-test-v2-e4833e8b2338"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-b0301ae5acfe"
+    },
+    {
+      "to": "gb10-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team treated the chromosome 2 peak as a covariate in the models from which it read the founder effects, and found that its chromosome 1 LOD changes by about one unit when that covariate is added. You recorded that your top founder changes when the chromosome 2 covariate is combined with shrinkage, yet you kept the chromosome 2 covariate as a sensitivity check only. Check what in the data decides whether chromosome 2 control belongs in the primary model (for example how much residual variance it removes, and whether chromosome 2 haplotypes are correlated with the candidate founders' haplotypes at the chromosome 1 peak), and state which founder ranking you obtain under the model you judge to be best supported, and why the rule you were given for reporting a founder under shrunken estimates is or is not met. Does it change your method?",
+      "from": [
+        "sl-test-v2-1f71e70b3a5c",
+        "sl-test-v2-69fb198601c6"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-2d7a8e4ebe80"
+    },
+    {
+      "to": "gb10-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team kept every marker in its haplotype reconstruction and varied the amount of recombination assumed by the HMM (map expansion), while you removed two chromosome 1 markers next to the peak and varied only the genotyping error rate. Check whether the two markers you removed could instead be kept with their founder alleles recoded, and whether the ranking of the tied founders and the peak position are the same under the three treatments (kept as given, removed, recoded) and under different assumed amounts of recombination in your transition model. Does it change your method?",
+      "from": [
+        "sl-test-v2-f9ffd5871edf",
+        "sl-test-v2-07e7ca1eb968"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-9dce3a232627"
+    }
+  ],
+  "warning_signs_to_team_c": [],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": {
+    "difference": "Both teams find the same position (45 vs 46 cM, both inside the other's interval) and both flip m1_056/m1_058. They differ only on the high founder: X says F4 and Y says F5. X puts the chr2 QTL in the primary model and ranks founders by REML-BLUP shrunken effects. Under X's own fixed effects F5 is first, so X's F4 comes from shrinkage pulling the rare F5 (about 7 lines) down. Y uses batch only and ranks by the fixed haplotype effects at the peak.",
+    "test": "test.py: my own 8-state selfed-RIL HMM (flipped markers recoded, monomorphic markers dropped) at two settings, err 0.005/map x1 and err 0.02/map x3. At 45 and 46 cM I fitted founder-mean regressions with batch only and with batch plus chr2-peak haplotypes. For each fit I computed the direct F5-F4 contrast (estimate, SE, t) and a 300-replicate bootstrap P(F5>F4) at the fixed peak. I also compared batch-adjusted phenotype means of confidently hard-called (posterior >0.8) F4 and F5 carriers, which is model-free.",
+    "expected_if_x": "F4 >= F5 in the direct contrast, at least under X's primary batch+chr2 model. Bootstrap P(F5>F4) at or below 0.5, and hard-called F4 carriers at least as high as F5 carriers.",
+    "expected_if_y": "F5-F4 > 0 under every model, bootstrap P(F5>F4) clearly above 0.5, and hard-called F5 carriers above F4 carriers.",
+    "outcome": "Peaks are at 45-46 cM (LOD 5.25-5.43). F5-F4 is positive in all 8 fits. With batch only it is +0.82 to +1.04 (t about 1.0, bootstrap P(F5>F4) 0.88-0.93). With batch+chr2 it is +0.26 to +0.48 (t 0.3-0.5, P 0.67-0.77). Hard calls give F5 (n=5) a batch-adjusted residual mean of +2.13, against +1.18 for F4 (n=12) and +0.77 for F2 (n=8); 4 of the 5 F5 lines are above +1.7. No model or setting put F4 above F5. The F5 lead is not significant (t<1.2) and shrinks when chr2 is added.",
+    "pick": "Y",
+    "reason": "The data favour F5 under every unshrunken model, including X's own primary batch+chr2 model, in the bootstrap and in model-free carrier means. X's switch to F4 depends only on BLUP shrinkage of a rare founder, which is an estimator choice and not evidence that F4 carriers score higher. The direct contrast never favours F4. The F5 call is weak (F5 vs F4 not significant), but no test outcome supports X over Y. Position about 45-46 cM; Y's 46.0 is the batch-only peak.",
+    "own_answer": null,
+    "picked_agent": "gb10-team-b",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "gb10-team-a",
+      "Y": "gb10-team-b"
+    }
+  },
+  "not_chosen": [
+    {
+      "agent": "gb10-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "gb10-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "gb10-team-a",
+      "round": "revise",
+      "reason": "the referee's test supported the other answer: The data favour F5 under every unshrunken model, including X's own primary batch+chr2 model, in the bootstrap and in model-free carrier means. X's switch to F4 depends only on BLUP shrinkage of a rare founder, which is an estimator choice and not evidence that F4 carriers score higher. The direct contrast never favours F4. The F5 call is weak (F5 vs F4 not significant), but no test outcome supports X over Y. Position about 45-46 cM; Y's 46.0 is the batch-only peak."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "gb10-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 109.52346491697244,
+      "cost_usd": 0.524483,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 97.43966020795051,
+      "cost_usd": 0.1674926,
+      "error": null
+    },
+    {
+      "agent": "gb10-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 131.85655612498522,
+      "cost_usd": 0.42400400000000005,
+      "error": null
+    },
+    {
+      "agent": "gb10-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 313.55335866694804,
+      "cost_usd": 0.8094222000000001,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 128.69527491694316,
+      "cost_usd": 0.257286,
+      "error": null
+    },
+    {
+      "agent": "gb10-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 113.90421441697981,
+      "cost_usd": 0.45375299999999996,
+      "error": null
+    },
+    {
+      "agent": "gb10-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 221.95457249996252,
+      "cost_usd": 0.5671094,
+      "error": null
+    },
+    {
+      "agent": "gb10-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 65.89743266708683,
+      "cost_usd": 0.23787960000000002,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

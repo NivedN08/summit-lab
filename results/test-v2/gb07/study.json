@@ -1,0 +1,402 @@
+{
+  "study": "gb07",
+  "status": "refereed",
+  "final": {
+    "agent": "gb07-team-a",
+    "team": "team-a",
+    "round": "revise",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb07/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ]
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "gb07-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb07/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "carrier_frequency_afr": 0.09261,
+        "carrier_frequency_eur": 0.07029,
+        "residual_carrier_risk_afr_negative": 0.03392,
+        "partner_carrier_frequency_full_roster": 0.22153,
+        "couple_reproductive_risk": 0.001878
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "gb07-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb07/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "carrier_frequency_afr": 0.080766,
+        "carrier_frequency_eur": 0.065396,
+        "residual_carrier_risk_afr_negative": 0.02888,
+        "partner_carrier_frequency_full_roster": 0.131273,
+        "couple_reproductive_risk": 0.000948
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "gb07-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb07/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "carrier_frequency_afr": 0.098553,
+        "carrier_frequency_eur": 0.076686,
+        "residual_carrier_risk_afr_negative": 0.034529,
+        "partner_carrier_frequency_full_roster": 0.209731,
+        "couple_reproductive_risk": 0.00181
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "gb07-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb07/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "carrier_frequency_afr": 0.09261,
+        "carrier_frequency_eur": 0.07029,
+        "residual_carrier_risk_afr_negative": 0.03392,
+        "partner_carrier_frequency_full_roster": 0.22153,
+        "couple_reproductive_risk": 0.001878
+      }
+    },
+    {
+      "team": "referee",
+      "agent": "gb07-referee",
+      "round": "referee",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb07/candidates/referee-own.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "carrier_frequency_afr": 0.1028,
+        "carrier_frequency_eur": 0.0783,
+        "residual_carrier_risk_afr_negative": 0.0369,
+        "partner_carrier_frequency_full_roster": 0.2097,
+        "couple_reproductive_risk": 0.001936
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "gb07-team-a",
+        "gb07-team-b"
+      ],
+      "fields": {
+        "carrier_frequency_afr": false,
+        "carrier_frequency_eur": false,
+        "residual_carrier_risk_afr_negative": false,
+        "partner_carrier_frequency_full_roster": false,
+        "couple_reproductive_risk": false
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "gb07-team-a",
+        "gb07-team-b"
+      ],
+      "fields": {
+        "carrier_frequency_afr": false,
+        "carrier_frequency_eur": false,
+        "residual_carrier_risk_afr_negative": true,
+        "partner_carrier_frequency_full_roster": false,
+        "couple_reproductive_risk": true
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Match the sample to the estimand before estimating any carrier frequency. The task asks for carrier frequency among 'screening-roster adults', but cohort_roster may mix ascertainment routes: rows whose collection is not 'screening', and rows with family_history_tier above 0, are enriched for carriers and inflate the carrier frequency if pooled in. CHECK: tabulate cohort_roster by collection x ancestry x family_history_tier (and any field that marks adults) before computing anything. IF a mix is present: estimate carrier_frequency_afr and carrier_frequency_eur only on the rows that meet the task's 'screening-roster adult' definition, separately per ancestry, and state in the reasoning how many rows were excluded and why. Column names and values quoted here come from the library's reading of the schema; confirm them against the files.",
+      "from": [
+        "sl-test-v2-3687cef8c2b2"
+      ],
+      "reason": "Which roster rows are counted sets the denominator and numerator of both carrier frequencies, and everything downstream (residual risk, couple risk) inherits it. A team that pools all cohort rows gets a different, inflated answer.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-44aae2906ca5"
+      }
+    },
+    {
+      "text": "Do not turn assay_observations rows into carrier calls without allele-fraction and missingness QC. True germline heterozygotes sit near VAF 0.5. Very low VAF points to an artifact, paralog reads or contamination. VAF near 1 at a heterozygous site can be an SNV in trans with a deletion on the other allele (apparent homozygosity), not a homozygous call. Blank vaf or log2_ratio values are no-calls, not negatives. CHECK: histogram VAF and alt_reads/depth per target and per batch; cross-tabulate high-VAF SNV calls against the copy-number target's log2_ratio (DRX1_T02); count blank/no-call rows per sample and per target. IF FOUND: require a heterozygous allele balance (roughly 0.3-0.7, with the exact cut-offs justified on calibration_controls) plus a minimum depth; reinterpret SNV-plus-deletion cases; treat no-calls as missing (exclude, impute, or let them lower the detection rate), never as screen-negative.",
+      "from": [
+        "sl-test-v2-136c9768c396"
+      ],
+      "reason": "The calling rule decides who is a carrier. Counting low-VAF artifacts as carriers, or no-calls as negatives, shifts the carrier frequencies and the detection rate, so it changes every reported quantity.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-5dfa5e4f756b"
+      }
+    },
+    {
+      "text": "Paralog/pseudogene or segmental-duplication reads can mismap onto DRX1 and create false heterozygous SNV calls, and median MAPQ alone can miss this because a variant can make paralog reads look uniquely mapped. CHECK: in assay_observations compare paralog_kmer_fraction, segmental_dup_score and mapq_median between alt-supporting calls and reference calls, per target and per batch; look for a cluster of low-VAF calls (about 0.1-0.3) with high paralog fraction or low MAPQ. IF FOUND: treat those calls as artifacts/no-calls rather than carriers, with thresholds validated on calibration_controls and set before looking at ancestry-level results, and reduce the assay's effective sensitivity/specificity for the affected target accordingly.",
+      "from": [
+        "sl-test-v2-ab08fe6c458a"
+      ],
+      "reason": "A paralog artifact cluster would add false carriers, possibly concentrated in one target or batch, and bias carrier frequency upward; filtering it also changes the sensitivity that goes into the detection rate.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-e7e6ec47230a"
+      }
+    },
+    {
+      "text": "Exon-deletion calls on the copy-number target (DRX1_T02, read out as log2_ratio) should not use one global threshold across batches or lots, because depth ratios shift by batch. A heterozygous deletion should sit near log2(1/2) = -1 relative to the batch-matched normal median. CHECK: plot log2_ratio for DRX1_T02 by batch, and use calibration_controls (known deletion-class versus normal samples per source_batch) to see where the two clusters fall in each batch. IF a batch shift is present: re-centre log2 ratios per batch against batch-matched normal controls, call deletions with batch-specific cut-offs or a mixture model, and estimate deletion-call sensitivity per batch from the controls.",
+      "from": [
+        "sl-test-v2-762ac0d61e97"
+      ],
+      "reason": "A global cut-off under a batch shift miscalls deletion carriers in some batches. If the deletion class differs in frequency by ancestry, that error falls unevenly on AFR and EUR and changes the carrier frequencies and the AFR detection rate.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-e19d069f3148"
+      }
+    },
+    {
+      "text": "Count persons, not variant rows, and check phase when one person is positive at more than one target. Two variants in the same person (for example the two class_03 sites DRX1_T03 and DRX1_T04, or an SNV plus the exon deletion) can be double-counted as two carriers, or wrongly labelled. In cis they are one carrier allele (a complex allele); in trans the person is compound heterozygous, i.e. affected rather than a carrier. CHECK: for each sample with more than one positive target, inspect phase_set (same phase set means same haplotype block), and measure how often T03 and T04 co-occur, which would point to a single complex allele in linkage disequilibrium. IF FOUND: collapse cis co-occurring variants into one carrier allele; treat confirmed trans pairs as non-carriers for carrier-frequency purposes, or flag them; keep unphased pairs as explicitly ambiguous and say how they were handled.",
+      "from": [
+        "sl-test-v2-b908afb79c6f"
+      ],
+      "reason": "Carrier frequency is a per-person quantity. Summing positive rows, or misreading cis pairs as two carriers or as affected, changes the carrier counts and the split of carriers across variant classes that the detection rate depends on.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-0a49f512c4eb"
+      }
+    },
+    {
+      "text": "An observed screen-positive rate is not the true carrier frequency when the assay has imperfect sensitivity or specificity, and sensitivity should not be assumed equal across variant classes, batches or ancestries. CHECK: use calibration_controls (ancestry x reference_category x source_batch) to estimate, under the same final calling rules applied to the cohort, the sensitivity per variant class and batch and the false-positive rate. IF sensitivity or specificity is materially below 1: correct the observed prevalence with a Rogan-Gladen-type adjustment, true = (obs + Sp - 1)/(Se + Sp - 1), or a Bayesian equivalent, and feed the class- and batch-specific sensitivities into the detection rate. Propagate the uncertainty, which matters most for rare classes.",
+      "from": [
+        "sl-test-v2-3fcb2bb9c359"
+      ],
+      "reason": "Whether carrier frequency is reported as the raw positive rate or as a sensitivity-corrected rate changes carrier_frequency_afr, carrier_frequency_eur and the residual risk. The calibration controls are the only source for that correction.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-83bba53ad228"
+      }
+    },
+    {
+      "text": "Compute the AFR residual carrier risk with the full Bayes formula and an AFR-specific detection rate. Two common errors: (1) using CF*(1-DR), or CF minus the detected-carrier frequency, which drops the Bayesian denominator; (2) reusing a pooled or EUR detection rate for AFR. The variant classes (reported_group class_01 SNV, class_02 deletion, class_03 sites) can differ sharply in frequency by ancestry, so the detection rate can differ a lot between AFR and EUR. CHECK: compare the frequency of each class by ancestry in both the screening samples and the controls. Then compute DR for AFR as the fraction of AFR carriers whose variants the screen would detect, from AFR class frequencies and class-specific assay sensitivity, and compute residual risk = CF*(1-DR)/(1-CF*DR). Keep CF and DR within ancestry throughout, never transfer the EUR DR to AFR, and report on the probability scale.",
+      "from": [
+        "sl-test-v2-1ea5ff5731ce",
+        "sl-test-v2-8a01bfd5575e"
+      ],
+      "reason": "residual_carrier_risk_afr_negative depends directly on the formula and on which detection rate is used. The shortcut formula and a pooled DR each give a different number, and the error carries into couple_reproductive_risk.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-9d709307fa59"
+      }
+    },
+    {
+      "text": "The partner term is a mixture over every partner_roster row, not the screening-roster carrier frequency. The partner roster's mix of ancestry, family-history tier and testing status differs from the screening cohort. CHECK: tabulate partner_roster by partner_ancestry x family_history_tier x testing_status. Assign each row a carrier probability from its own stratum (ancestry, family_history_tier, and testing status/result: the known result where testing is completed, the appropriate prior or post-negative residual risk otherwise), then average over all rows with equal weight to get partner_carrier_frequency_full_roster. Do not drop rows whose testing is not completed. Couple reproductive risk = residual carrier risk of the AFR screen-negative index x that row-averaged partner carrier probability x 1/4. Index and partner are independent, so the mixture is linear, but the partner strata must be computed explicitly rather than replaced by one aggregate ancestry CF.",
+      "from": [
+        "sl-test-v2-8291587c150e",
+        "sl-test-v2-3687cef8c2b2"
+      ],
+      "reason": "The task defines the partner as a uniformly sampled roster row. Using a single ancestry CF, or only tested partners, changes partner_carrier_frequency_full_roster and therefore couple_reproductive_risk.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-b7b7958f910e"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "gb07-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that cohort_roster rows are not all of one kind: they differ in family_history_tier, and the screen-positive rate is not the same across tiers within each ancestry. Your checks list a tier breakdown of screening carrier rates, but your record does not say which rows went into carrier_frequency_afr and carrier_frequency_eur. Tabulate cohort_roster by collection x ancestry x family_history_tier (and any field that marks adults), check whether the tiers differ in your data, and state which rows you judge the task to mean by 'screening-roster adults' and why. Does it change your method, including the prior that goes into the AFR screen-negative residual risk?",
+      "from": [
+        "sl-test-v2-bdc966671f96",
+        "sl-test-v2-56b42a380e00"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-1e27f684be6c"
+    },
+    {
+      "to": "gb07-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team treated the partner term row by row: a tested partner row carries its own assay result (read with lot_C42 calibration), and an untested row carries a prior that does not come from the tested partners. You recorded that 280 of 500 partner rows sit in one site x wave x family-history stratum where only 14 were tested, and that your figure rests on missing-at-random within strata. Check (a) how much of your full-roster estimate comes from those 14 rows, (b) whether the tested rows in that stratum look like a random draw from it on every roster field you have (ancestry, tier, any reason-for-testing field), and (c) whether the carrier rates you infer for tested partners are compatible with the screening-roster rates for the same ancestry and family-history tier after allowing for the different reagent lot. Does it change your method for the untested rows?",
+      "from": [
+        "sl-test-v2-7739a19a4869",
+        "sl-test-v2-56b42a380e00"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-dbddb0791465"
+    },
+    {
+      "to": "gb07-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that DRX1_T02 deletion sensitivity in the controls differs between the two reagent lots within the same ancestry, as well as between ancestries, and that some deletion-like calls in 'none' controls survive the segmental-duplication filter and cannot be told apart from true deletions. Your recorded AFR deletion sensitivity pools controls from both lots. Check whether deletion sensitivity and the remaining false-positive rate differ by lot within ancestry in your data, and whether the AFR detection rate behind your residual risk uses only the lot the screening roster was run on. Does it change your method?",
+      "from": [
+        "sl-test-v2-12a3327af75f",
+        "sl-test-v2-b4acdbb1d4e4"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-fbd5875893d4"
+    },
+    {
+      "to": "gb07-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that in partner_roster the positive-call rate among tested partners differs a lot between intake_site x collection_wave strata, and that testing completion also depends on site x wave x family-history tier (one site is fully tested, while the largest stratum has very few tested rows). Your partner strata use ancestry x tier and testing result only. Tabulate partner_roster by intake_site x collection_wave x family_history_tier x testing_status, check whether this holds in your data, and check whether a prior for untested partners taken from the screening cohort by ancestry x tier agrees with the tested partners in the same site x wave stratum. Does it change your method for the untested rows?",
+      "from": [
+        "sl-test-v2-74ac0bcd0ce9",
+        "sl-test-v2-ce7dbc8c873e"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-c7d2c5c22a0e"
+    },
+    {
+      "to": "gb07-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the two teams did not use the same cohort_roster rows for the carrier frequencies. You excluded the family_history_tier 1 rows although every cohort row has collection = screening; the other team did not record such an exclusion. Check whether the roster or the task text gives any basis, other than the difference in positive rate, for saying tier-1 rows are not 'screening-roster adults' (for example a field for ascertainment route, referral, or age), and state which reading of the estimand you judge the task to mean and why. Check also whether the AFR screen-negative residual risk should use the same row set as carrier_frequency_afr. Does it change your method?",
+      "from": [
+        "sl-test-v2-77cee1d1f675",
+        "sl-test-v2-769aaad0efe8"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-0f278ab7c4d5"
+    },
+    {
+      "to": "gb07-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found allele dropout at DRX1_T01 in class_01 controls (VAF near zero in true carriers) at a rate that differs between AFR and EUR, and corrected class proportions jointly with an ancestry x batch misclassification matrix instead of one class at a time. Check in your controls whether class_01 sensitivity differs by ancestry as well as by lot, whether your het window (VAF 0.3-0.7, depth >= 20) loses true carriers beyond the dropout cases, and whether any control of one class is called as another class or as two classes, which a per-class correction would not account for. Does it change your method?",
+      "from": [
+        "sl-test-v2-64b19f71b79a",
+        "sl-test-v2-87c8a361b1ee"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-65a4a35201cf"
+    }
+  ],
+  "warning_signs_to_team_c": [],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": {
+    "difference": "Both teams use effectively the same per-person calling rules: in this data the VAF windows 0.3-0.7 and >=0.2 give identical calls, and segdup 0.55 vs 0.6 also gives identical calls. Both include all 800 screening rows, and both treat partners as MAR within site x wave strata. The screening carrier frequencies differ because of the misclassification correction. X used per-class Rogan-Gladen (AFR 0.0986, EUR 0.0767). Y reports a joint EM over ancestry x lot confusion matrices (AFR 0.0926, EUR 0.0703). The partner term differs because of the stratum model: X scales the cohort prior per site x wave (0.210), and Y uses shrunk site x wave x tier EM (0.2215).",
+    "test": "test.py, calls.py and t2.py rebuild the calls and the lot_A17 per-ancestry 4x4 confusion matrix from the controls. They then (a) recompute both corrections, (b) fit the exact joint EM/MLE that Y describes, and (c) compute profile-likelihood LRs for the screening call counts at X's and Y's carrier frequencies. For partners they compute unshrunk stratified EM on lot_C42 under three stratifications.",
+    "expected_if_x": "Per-class RG reproduces X's numbers. The joint MLE lies at or above X, and Y's lower values cannot be reached from the stated matrices.",
+    "expected_if_y": "The joint EM on the stated matrices reproduces about 0.0926/0.0703, below the RG values, and Y's values have the smaller LR.",
+    "outcome": "RG reproduces X exactly (0.09855, 0.07669, residual 0.03453). The exact joint EM, which Y says it used, gives AFR 0.1028, EUR 0.0783 and residual 0.0369: higher than X, not lower. Y's numbers could not be reproduced. The LR from the MLE is 0.02 for X and 0.12 for Y in AFR, and 0.01 for X and 0.26 for Y in EUR. Both are well inside the 95% profile CI (AFR 0.05-0.17), so the data cannot rule out either value statistically. X's RG composition predicts call rates close to those observed (deletion 0.0755 vs 0.0775). Unshrunk partner strata give 0.233 for site x wave x tier, 0.277 for site x wave and 0.128 for site x tier. Both partner values sit inside this model-driven spread, so the partner test does not separate them.",
+    "pick": "X",
+    "reason": "X's screening estimates can be reproduced exactly and sit close to the joint MLE. Y's stated method, run on the same matrices, gives values on the opposite side of X, so Y's reported numbers do not follow from its own method. The partner term cannot be separated by the data (sampling and model uncertainty are large), and the difference there is small (about 5%). The exact joint MLE is slightly better than RG, because carriers of the other classes show no deletion false positives in the controls. It is given as own_answer, using X's partner term.",
+    "own_answer": {
+      "answer": {
+        "carrier_frequency_afr": 0.1028,
+        "carrier_frequency_eur": 0.0783,
+        "residual_carrier_risk_afr_negative": 0.0369,
+        "partner_carrier_frequency_full_roster": 0.2097,
+        "couple_reproductive_risk": 0.001936
+      },
+      "reasoning": "Calls are built from QC rules validated on the controls (T01 het VAF>=0.2; T02 log2<-0.3 with segdup<0.6 to remove the paralog artifact; class_03 = T03/T04 het unless trans across phase sets). True class proportions are the joint MLE (linear inversion = EM) using lot_A17 per-ancestry 4-class confusion matrices from the calibration controls, over all 800 screening rows. Residual = P(carrier | negative call). The partner term is X's site x wave-scaled prior under MAR, with all 500 rows weighted equally. Couple risk = residual x partner x 1/4."
+    },
+    "picked_agent": "gb07-team-a",
+    "own_answer_valid": true,
+    "mapping": {
+      "X": "gb07-team-a",
+      "Y": "gb07-team-b"
+    }
+  },
+  "not_chosen": [
+    {
+      "agent": "gb07-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "gb07-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "gb07-team-b",
+      "round": "revise",
+      "reason": "the referee's test supported the other answer: X's screening estimates can be reproduced exactly and sit close to the joint MLE. Y's stated method, run on the same matrices, gives values on the opposite side of X, so Y's reported numbers do not follow from its own method. The partner term cannot be separated by the data (sampling and model uncertainty are large), and the difference there is small (about 5%). The exact joint MLE is slightly better than RG, because carriers of the other classes show no deletion false positives in the controls. It is given as own_answer, using X's partner term."
+    },
+    {
+      "agent": "gb07-referee",
+      "round": "referee",
+      "reason": "the referee's test supported the other answer: X's screening estimates can be reproduced exactly and sit close to the joint MLE. Y's stated method, run on the same matrices, gives values on the opposite side of X, so Y's reported numbers do not follow from its own method. The partner term cannot be separated by the data (sampling and model uncertainty are large), and the difference there is small (about 5%). The exact joint MLE is slightly better than RG, because carriers of the other classes show no deletion false positives in the controls. It is given as own_answer, using X's partner term."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "gb07-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 112.68960050004534,
+      "cost_usd": 0.4756382,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 114.85687945899554,
+      "cost_usd": 0.17524079999999997,
+      "error": null
+    },
+    {
+      "agent": "gb07-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 179.76507208298426,
+      "cost_usd": 0.6651819999999998,
+      "error": null
+    },
+    {
+      "agent": "gb07-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 192.82757949992083,
+      "cost_usd": 0.7448577999999999,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 95.50069549994078,
+      "cost_usd": 0.1836473,
+      "error": null
+    },
+    {
+      "agent": "gb07-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 121.56714316701982,
+      "cost_usd": 0.4778394,
+      "error": null
+    },
+    {
+      "agent": "gb07-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 133.28393395792227,
+      "cost_usd": 0.470042,
+      "error": null
+    },
+    {
+      "agent": "gb07-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 144.58292204199824,
+      "cost_usd": 0.46501639999999994,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

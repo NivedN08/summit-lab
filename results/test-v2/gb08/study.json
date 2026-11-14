@@ -1,0 +1,409 @@
+{
+  "study": "gb08",
+  "status": "refereed",
+  "final": {
+    "agent": "gb08-team-b",
+    "team": "team-b",
+    "round": "analysis",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb08/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ]
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "gb08-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb08/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "advance_target": 0,
+        "lncrna_specific_lfc": -0.05,
+        "neighbor_mediated_lfc": -0.75
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "gb08-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb08/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "advance_target": 0,
+        "lncrna_specific_lfc": -0.18,
+        "neighbor_mediated_lfc": -0.65
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "gb08-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb08/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "advance_target": 0,
+        "lncrna_specific_lfc": -0.17,
+        "neighbor_mediated_lfc": -0.73
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "gb08-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb08/candidates/team-b-revise.json",
+      "valid": false,
+      "problems": [
+        "cannot read JSON: Extra data: line 1 column 1852 (char 1851)"
+      ],
+      "answer": {}
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "gb08-team-a",
+        "gb08-team-b"
+      ],
+      "fields": {
+        "advance_target": true,
+        "lncrna_specific_lfc": false,
+        "neighbor_mediated_lfc": false
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "gb08-team-a",
+        "gb08-team-b"
+      ],
+      "fields": {
+        "advance_target": true,
+        "lncrna_specific_lfc": false,
+        "neighbor_mediated_lfc": true
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Possible pitfall (from the library's literature review, not yet checked against this data): at a lncRNA locus, dCas9-KRAB CRISPRi silences chromatin over a window that often spreads to a neighbouring or bidirectional-promoter coding gene. A pooled-screen growth effect of LINC473-targeting CRISPRi guides may therefore be partly or wholly caused by concomitant KIN1 repression (a DNA-locus effect) and not by loss of the LINC473 transcript. Check: in the guide-level local expression table, for LINC473-targeting guides compare the KIN1 relative expression with the LINC473 relative expression, quantify how much KIN1 drops when LINC473 is knocked down, and use the guide map's distance-to-neighbour-TSS column to see which guides sit near the KIN1 TSS. If KIN1 is co-repressed: do not read the raw CRISPRi log fold change as the lncRNA-specific effect; base lncrna_specific_lfc on the transcript-directed CasRx data, and estimate neighbor_mediated_lfc from a model of the CRISPRi locus effect that conditions on KIN1 repression. The library reported the file and column names (local_expression.tsv with expr_rel_LINC473 / expr_rel_KIN1, guide_map with dist_neighbor_tss_bp); confirm them against the files. The library's guidance does not cover the single-guide follow-up growth file at all, so that file has had no pitfall review.",
+      "from": [
+        "sl-test-v2-923702a7d4c6"
+      ],
+      "reason": "This decides which dataset each requested quantity is estimated from. Reading the CRISPRi effect of LINC473 guides as transcript-specific would mis-assign a neighbour-gene effect and could flip advance_target.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-2bc8284fc84a"
+      }
+    },
+    {
+      "text": "Possible pitfall (literature-based, to be checked): CRISPRi guides are not equal-strength perturbations. Knockdown depends strongly on guide distance from the TSS (general expectation: strongest about -50 to +300 bp from the TSS), so guides far from the LINC473 TSS may knock LINC473 down weakly while guides near the KIN1 TSS repress KIN1 strongly. In addition, LINC473 and KIN1 knockdown are likely correlated across guides (shared promoter/chromatin), so a regression of growth on one gene's knockdown alone absorbs the other gene's effect. Check: relate the guide map distances to each TSS (dist_lnc_tss_bp, dist_neighbor_tss_bp as reported by the library) to the measured LINC473 and KIN1 relative expression; compute the across-guide correlation between the two knockdowns and the variance inflation factor of a joint model. If found: model growth as a function of the measured per-guide knockdown rather than averaging per nominal target, and fit one multiple regression with both repression terms, growth ~ (1 - expr_rel_LINC473) + (1 - expr_rel_KIN1), to get partial effects, instead of two separate single-gene regressions. Weak-knockdown guides should inform the slope, not dilute an average. Note a tension in the library's guidance: one source says to report the LINC473 coefficient of this joint CRISPRi model as the lncRNA effect, another says to take the lncRNA-specific effect from the CasRx data. Decide by the task's definitions (lncrna_specific_lfc is a transcript effect, not a local DNA-locus effect; neighbor_mediated_lfc is the KIN1 term in the local-locus model after accounting for LINC473 knockdown), state the choice, and report how well the two LINC473 estimates agree. If the two knockdowns are strongly collinear, report the resulting uncertainty in the split.",
+      "from": [
+        "sl-test-v2-e4374c4f690c",
+        "sl-test-v2-73e0a58c0738"
+      ],
+      "reason": "Per-target averaging or single-predictor regression would give a different neighbor_mediated_lfc than a joint dose-response model, and the -0.25 threshold on that quantity enters the advance decision.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-96c2838c879e"
+      }
+    },
+    {
+      "text": "Possible pitfall (literature-based, to be checked): CasRx (Cas13d) guides can cause collateral RNA degradation and can differ in how much of the dominant LINC473 isoform they cover. A guide that only partly overlaps the dominant isoform, or one with collateral activity, gives a misleading transcript-specific growth effect. Check: in the CasRx follow-up table (library reports casrx_followup.tsv with major_isoform_overlap, knockdown_efficiency and growth_lfc per guide), flag low-overlap and low-efficiency guides and look for guides with an anomalously strong growth effect at low knockdown. If found: weight or filter CasRx guides by isoform overlap, model growth_lfc against knockdown_efficiency, and extrapolate to efficiency = 1 to define lncrna_specific_lfc, rather than taking a plain mean over CasRx guides. Fix the filtering rule before looking at how it moves the estimate, and report the estimate with and without the flagged guides.",
+      "from": [
+        "sl-test-v2-cc6b54b71490"
+      ],
+      "reason": "lncrna_specific_lfc is defined at 100% knockdown of the dominant transcript; a plain mean over partial-knockdown or off-isoform guides estimates a different quantity, and the -0.08 threshold is close enough to zero that guide selection can change the call.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-6d0ba34d4124"
+      }
+    },
+    {
+      "text": "Possible pitfall (statistical, to be checked): both requested quantities are effects at 100% knockdown, but the data contain only partial knockdowns, and the knockdown measurements themselves (CasRx knockdown_efficiency, local expr_rel values) are noisy. Ordinary least squares of growth on a noisily measured knockdown attenuates the slope (regression dilution), which biases the extrapolated full-knockdown effect toward zero. Check: look at the spread and range of the knockdown values and establish whether each guide has one measurement or replicates (the library states they are single measurements per guide; verify). If measurement error in knockdown is material: consider an errors-in-variables fit (for example Deming or total least squares) for the extrapolation. Director's caveats: an errors-in-variables fit needs a defensible estimate of the measurement-error variance (or variance ratio) and can be unstable with few guides, so report the naive and the corrected estimates side by side, say which is primary and why, and state how the fit behaves at zero knockdown (free or fixed intercept) because that also changes the extrapolated value.",
+      "from": [
+        "sl-test-v2-84270a201c2a"
+      ],
+      "reason": "The choice of fit changes the magnitude of both extrapolated effects, and both sit against fixed decision thresholds (-0.08 and -0.25).",
+      "fact_ids": {
+        "team-a": "sl-test-v2-a2755f3d5fcc"
+      }
+    },
+    {
+      "text": "Possible pitfall (to be checked): pooled-screen log fold changes are distorted if counts are not normalised and low-count guides are not handled. Raw day10/day0 ratios carry library-size differences between samples, and guides with very low day-0 counts give noisy ratios. Check: in the CRISPRi count table (library reports crispri_counts.tsv with three replicates), compare per-replicate total counts, look for guides with very low day-0 counts (the library suggests about 30 as a rule of thumb; set the cut-off from the observed count distribution), and check replicate concordance. Then apply median or size-factor normalisation, compute log2(day10/day0) per replicate, centre on the matched controls as the task requires, and combine replicates before estimating any effect. Report how many guides were dropped and whether a replicate disagrees with the others.",
+      "from": [
+        "sl-test-v2-d755d153b2a9"
+      ],
+      "reason": "Every CRISPRi-based estimate, including the neighbour-mediated effect, rests on these log fold changes; skipping normalisation or matched-control centring shifts all of them.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-34367de3f0f4"
+      }
+    },
+    {
+      "text": "Possible pitfall (literature-based, to be checked): in CRISPRi non-coding screens a strong growth signal can come from low-specificity or high-GC guides with off-target fitness effects rather than from the intended target. Check: use the guide map's GC-fraction column (guide_gc_frac as reported by the library) and look for individual guides whose CRISPRi log fold change is an outlier relative to other guides with the same nominal target; cross-check against that guide's measured knockdown in the local expression table. A guide with a large growth effect but little measured knockdown of either LINC473 or KIN1 is suspect. If found: remove or down-weight such guides by a rule set in advance, require concordance between knockdown level and phenotype, and show the estimates with and without them.",
+      "from": [
+        "sl-test-v2-34f6bb7de932"
+      ],
+      "reason": "One off-target guide can dominate a regression fitted on a small number of guides and move either extrapolated effect across its threshold.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-2bfed3f3f214"
+      }
+    },
+    {
+      "text": "Possible pitfall (to be checked): local expression is reported relative to reference genes (the library reports RPLP0 and HPRT1 columns in local_expression.tsv). If a reference gene is itself shifted by the locus knockdown or by growth selection, every relative-expression value, and so every knockdown fraction, is biased. Check: confirm that the RPLP0 and HPRT1 relative-expression values stay near 1 across guides with no systematic shift (for example with knockdown strength or between targeting and control guides), and that the two references agree with each other. If one is unstable: derive the LINC473 and KIN1 knockdown fractions using only the stable reference, or a geometric mean of the stable references, and say what was done.",
+      "from": [
+        "sl-test-v2-6e32fb3f5ea1"
+      ],
+      "reason": "The knockdown fractions are the predictors in the locus model; a biased reference rescales them and therefore rescales the 100%-repression extrapolation.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-b5d68fbe6eda"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "gb08-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that a few of the non-targeting control guides, and a few of the ANKRD42 control guides, have screen log fold changes far from the rest of the controls, consistently across replicates. Your record says you centred on the non-targeting controls but does not say you looked at them one by one. Check the per-guide log fold change of every control guide in your data, and how your matched-control centre is affected by any that stand apart. Does it change your method?",
+      "from": [
+        "sl-test-v2-1b292d466afd"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-daa1f6be0d9d"
+    },
+    {
+      "to": "gb08-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found several targeting guides whose measured local knockdown is strong but whose screen growth looks like that of the controls, again with good replicate agreement. Your joint CRISPRi regression kept all locus guides in an ordinary least-squares fit. Check whether such guides exist in your data, which gene's knockdown they carry, and how much leverage they have on each coefficient of your joint fit. Does it change your method?",
+      "from": [
+        "sl-test-v2-1b292d466afd"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-bcd226093ae9"
+    },
+    {
+      "to": "gb08-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that guide GC fraction is associated with the screen log fold change among control guides that have no local knockdown, and that GC fraction is not balanced across the locus guides (the distal LINC473-only guides differ in GC from the proximal LINC473 and KIN1 guides). You recorded the high-GC pitfall as not found. Check, among the control guides only, whether log fold change depends on guide_gc_frac, and whether GC is aligned with the knockdown pattern in the locus guides. Does it change your method?",
+      "from": [
+        "sl-test-v2-c88b839e5a79"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-86cb20dd0ec3"
+    },
+    {
+      "to": "gb08-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: you noted that the low-overlap CasRx guides all sit on plate C. The other team found that plate is fully confounded with isoform-overlap class in the CasRx file, and that the plates in the single-guide follow-up file carry offsets that can be measured against the pooled screen. Check whether the plates of your retained high-overlap CasRx guides differ from one another, whether the follow-up file shows plate-level offsets relative to the screen, and whether your extrapolation is the same within each plate. Does it change your method?",
+      "from": [
+        "sl-test-v2-217fe10aab03",
+        "sl-test-v2-2bbba9298b16"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-b97e835e4022"
+    },
+    {
+      "to": "gb08-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team observed that in the low-overlap CasRx guides growth still scales with knockdown_efficiency, although those guides barely touch the dominant isoform. You excluded those guides as collateral or off-target. Check whether whatever produces that growth in the low-overlap guides could also be present in the high-overlap guides you kept, that is, whether part of the slope of growth on knockdown_efficiency among your retained guides could be something other than dominant-transcript loss. Does it change your method?",
+      "from": [
+        "sl-test-v2-217fe10aab03",
+        "sl-test-v2-2bbba9298b16"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-bb02e0bf984e"
+    },
+    {
+      "to": "gb08-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the task defines lncrna_specific_lfc as a pooled-screen matched-control day-10 effect, but your estimate is read directly from the CasRx growth_lfc values. The other team checked whether follow-up growth measurements are on the same scale as the pooled screen by comparing the single-guide follow-up file with the screen for the guides present in both. Check in your data whether follow-up growth and screen log fold change agree one-to-one for shared guides, and whether the CasRx assay shares that scale. Does it change your method?",
+      "from": [
+        "sl-test-v2-2bbba9298b16",
+        "sl-test-v2-4bb7a8d3b08e"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-8ddb1523db65"
+    },
+    {
+      "to": "gb08-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team did not model the low-overlap CasRx guides at all; it set them aside as collateral or off-target and estimated the transcript effect only from guides with major_isoform_overlap of at least 0.5. Your dominant-isoform coefficient is fitted jointly with a non-dominant term driven mainly by the plate C guides. Check what your dominant-isoform estimate is when it is fitted on the high-overlap guides alone (with your plate calibration), and whether the low-overlap guides are pulling the dominant-isoform coefficient through the shared intercept or plate terms. Does it change your method?",
+      "from": [
+        "sl-test-v2-c67e4dfc29c9",
+        "sl-test-v2-307194fe84d6"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-30fc49cba5a4"
+    },
+    {
+      "to": "gb08-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: you kept a nonzero CasRx intercept as a nonspecific term and recorded that your estimate depends on that choice. The other team compared free-intercept and through-origin fits and also checked, in the pooled CRISPRi regression, whether zero knockdown corresponds to zero growth effect. Check what independent evidence in your data (for example CasRx guides with little or no knockdown, or control wells on the same plates) supports a nonspecific CasRx offset separate from the plate offsets you already fixed, and whether the intercept and the plate offsets are separately identified. Does it change your method?",
+      "from": [
+        "sl-test-v2-bdc7ef8a97dd",
+        "sl-test-v2-307194fe84d6"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-c9512315e2dc"
+    },
+    {
+      "to": "gb08-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team treated knockdown_efficiency and the local expr_rel values as single noisy measurements per guide and compared ordinary least squares with an errors-in-variables fit, because noise in the knockdown measurement attenuates a slope that is then extrapolated to 100% knockdown. Your record shows no such check. Check the spread and range of the knockdown values in the CasRx and local-expression tables and whether measurement error in knockdown is large enough to matter for either of your extrapolated coefficients. Does it change your method?",
+      "from": [
+        "sl-test-v2-bdc7ef8a97dd",
+        "sl-test-v2-307194fe84d6"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-97a2c25f7deb"
+    },
+    {
+      "to": "gb08-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team kept every locus guide in its joint CRISPRi regression, whereas you removed ten guides, five of them targeting guides with strong measured knockdown and control-like growth. Check which gene's knockdown (LINC473, KIN1 or both) those five guides carry, whether the rule that removed them was independent of how well they fit the knockdown model, and how each coefficient behaves with all guides kept under your robust fit. Does it change your method?",
+      "from": [
+        "sl-test-v2-f1a4b0f4c1ec",
+        "sl-test-v2-307194fe84d6"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-2773b6038a2c"
+    },
+    {
+      "to": "gb08-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: you used the single-guide follow-up file to calibrate plate offsets and a slope against the screen, and then applied those offsets to the CasRx plates. The other team used the same file differently, as an independent check of how growth tracks KIN1 and LINC473 knockdown across the follow-up guides. Check whether the follow-up plates and the CasRx plates are demonstrably the same physical plates or batches (and not only plates with the same labels), whether plate in the follow-up file is itself confounded with which gene the guides repress, and whether the follow-up growth-versus-knockdown relation agrees with your screen coefficients. Does it change your method?",
+      "from": [
+        "sl-test-v2-f1a4b0f4c1ec"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-3f424e6760e6"
+    },
+    {
+      "to": "gb08-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team looked for a high-GC or off-target signal among the CRISPRi guides and recorded that it did not find one, while you fitted a GC covariate from the non-targeting and ANKRD42 guides. Check how many control guides the GC term rests on once your outlier guides are removed, whether the GC dependence is distinguishable from zero given their scatter, and how each locus coefficient behaves with and without the GC term. Does it change your method?",
+      "from": [
+        "sl-test-v2-307194fe84d6"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-test-v2-6acbd4e22b1e"
+    }
+  ],
+  "warning_signs_to_team_c": [],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": {
+    "difference": "Both agree neighbor_mediated_lfc ~ -0.73/-0.75 and advance_target=0. They differ on lncrna_specific_lfc: X fits CasRx growth = int + b_dom*kd*overlap + b_non*kd*(1-overlap) pooled across plates with no plate term, giving int+b_dom = -0.17; Y adds plate offsets (calibrated from guide_followup) and excludes the intercept, giving b_dom = -0.05. Plate is confounded with overlap (plate A = high-overlap guides).",
+    "test": "test.py: (1) fit the CasRx dominant/non-dominant decomposition separately within each plate, where plate cannot be confounded with overlap; (2) estimate plate offsets internally from CasRx (plate fixed effects) and independently from guide_followup vs pooled-screen LFC, and compare.",
+    "expected_if_x": "Within-plate b_dom near -0.16 in each plate, and no consistent plate offsets in guide_followup (plate terms near zero / not matching CasRx), meaning the pooled fit is unconfounded.",
+    "expected_if_y": "Within-plate b_dom near -0.05 in every plate, with real plate offsets that agree between the independent guide_followup calibration and CasRx.",
+    "outcome": "Within-plate b_dom = -0.048 (A), -0.043 (B), -0.050 (C); b_non ~ -0.27 to -0.30. Plate offsets from CasRx (A-C -0.060, B-C -0.027) match guide_followup offsets vs screen (A-C -0.060, B-C -0.027) exactly. The pooled no-plate fit's b_dom -0.158 comes from plate A's -0.06 batch offset being absorbed into the dominant-overlap term, since plate A holds the high-overlap guides.",
+    "pick": "Y",
+    "reason": "The dominant-transcript effect is ~-0.05 consistently within every plate, and independent follow-up data confirm the plate batch offsets that X's model ignores. So lncrna_specific_lfc ~ -0.05 (> -0.08). Neighbor effect ~ -0.75 is agreed by both, and advance_target=0 under either answer.",
+    "own_answer": null,
+    "picked_agent": "gb08-team-b",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "gb08-team-a",
+      "Y": "gb08-team-b"
+    }
+  },
+  "not_chosen": [
+    {
+      "agent": "gb08-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "gb08-team-a",
+      "round": "revise",
+      "reason": "the referee's test supported the other answer: The dominant-transcript effect is ~-0.05 consistently within every plate, and independent follow-up data confirm the plate batch offsets that X's model ignores. So lncrna_specific_lfc ~ -0.05 (> -0.08). Neighbor effect ~ -0.75 is agreed by both, and advance_target=0 under either answer."
+    },
+    {
+      "agent": "gb08-team-b",
+      "round": "revise",
+      "reason": "answer failed the format check: cannot read JSON: Extra data: line 1 column 1852 (char 1851)"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "gb08-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 129.90809816704132,
+      "cost_usd": 0.8369645,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 128.28519874997437,
+      "cost_usd": 0.2265938,
+      "error": null
+    },
+    {
+      "agent": "gb08-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 144.49166954192333,
+      "cost_usd": 0.5915347999999999,
+      "error": null
+    },
+    {
+      "agent": "gb08-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 240.9019176249858,
+      "cost_usd": 1.1529845,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 96.30024583404884,
+      "cost_usd": 0.18853749999999997,
+      "error": null
+    },
+    {
+      "agent": "gb08-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 276.20685362501536,
+      "cost_usd": 1.0186419,
+      "error": null
+    },
+    {
+      "agent": "gb08-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 294.10964791604783,
+      "cost_usd": 1.0013125,
+      "error": null
+    },
+    {
+      "agent": "gb08-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 55.52803170797415,
+      "cost_usd": 0.21474640000000003,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

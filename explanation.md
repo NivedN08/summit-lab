@@ -231,6 +231,15 @@ Both teams got the same eight items from the library, made the same choices, nam
 **O-5 · Nov 14, 15:03 · Measured (version 2, problem gb02) · The director's challenge found what both teams shared.**
 The two teams agreed again, although only team A had the library's briefing. The director (Fable 5.2) then read both method notes and the data's layout and wrote: "Moderate trust at best: the two teams agree, but both reach the answer through the same chr3 label flip chosen by a separation-maximising rule on only four chromosomes, and neither calibrated it against chance". It listed three assumptions both teams made, three pieces of data neither used (one a whole file), and three other readings of the task's wording, and sent eight questions. After re-checking, the teams no longer agreed, and the referee decided. The final answer still failed. So the challenge did what it is for, breaking a false agreement, and the lab no longer called that answer replicated; it did not find the right answer.
 
+**O-6 · Nov 14, 15:31 · Measured (test run, problem gb10) · Two wrong answers went in and a right one came out.**
+Both teams' first answers failed the grader. The director passed each team's warning signs to the other as questions. Team B changed its method and its new answer passed; team A kept an answer that still failed. The referee, who did not know which team was which and may not vote, ran a test and picked team B's. The lab reported a passing answer. Scored after the run, so no agent knew which answer was right.
+
+**O-7 · Nov 14, 15:31 · Measured (test run, problem gb09) · A question from the other team's warning signs rescued a wrong answer.**
+Team A's first answer passed and team B's failed. After the question round team B's revised answer passed and matched team A's, and the lab reported it as converged. Team A did not move to B's wrong answer: in the whole test run no step turned a passing answer into a failing one.
+
+**O-8 · Nov 14, 15:31 · Measured (test run, problem gb05) · The challenge did not break a false agreement this time.**
+Both teams agreed on a wrong answer. The director challenged it with questions; both teams re-checked and kept their answer; the lab reported it as replicated, and it failed. On the development problem gb02 the challenge did break a false agreement (O-5). So the challenge sometimes catches a shared blind spot and sometimes does not.
+
 ## 6. Ideas
 
 **N-1 · Nov 14, 11:30, updated 11:33 · Open · Enforce the memory boundary with infrastructure, not with a prompt.**
@@ -440,3 +449,42 @@ Command: `python3 -m lab.run lab --benchmark genebench --studies gb01,gb02 --run
 
 Other measures: 16 questions written, none blocked by the leak check; 6 of 14 replies said the question changed the method; no step turned a failing answer into a passing one or the reverse; 16 agent runs, 38 minutes of agent time, $8.79; no multi-minute waits on memory.
 What it shows: the new steps run with real agents, and the one false "replicated" of version 1 is gone. What it does not show: any gain in correct answers. These two problems have now been failed by the lab twice and by both models alone.
+
+**M-11 · Nov 14, 15:31 · Measured · The test: lab 3 of 8, the same as a vote over four Opus attempts; Fable alone did better.**
+Commands, all on Modal, each agent in its own sandbox: `python3 -m lab.run lab --benchmark genebench --studies gb03,...,gb10 --run-dir runs/test-v2 --memory past --backend modal --parallel 12 --max-searches 10`; `baseline ... --attempts 4 --model opus --run-dir runs/test-v2`; `baseline ... --attempts 2 --model fable --run-dir runs/test-v2-fable`; then `grade` and `measures`, run once, after every agent had exited. Design frozen beforehand (D-17). Records: `results/test-v2/`, `results/test-v2-fable/`.
+
+| Problem | Lab's label | Lab | Opus alone (4 attempts) | Vote over the 4 | Fable alone (2 attempts) |
+|---|---|---|---|---|---|
+| gb03 | unresolved | fail | 0 of 4 | fail | 0 of 2 |
+| gb04 | replicated | **pass** | 4 of 4 | pass | 2 of 2 |
+| gb05 | replicated | fail | 0 of 4 | fail | 0 of 2 |
+| gb06 | refereed | fail | 0 of 4 | fail | 0 of 2 |
+| gb07 | refereed | fail | 0 of 4 | fail | 0 of 2 |
+| gb08 | refereed | fail | 1 of 4 | fail | 2 of 2 |
+| gb09 | converged | **pass** | 2 of 4 | pass | 2 of 2 |
+| gb10 | refereed | **pass** | 3 of 4 | pass | 2 of 2 |
+| **Total** | | **3 of 8** | **10 of 32 attempts (31%)**; first attempts alone 2 of 8 | **3 of 8** | **8 of 16 attempts (50%)**; 4 of 8 problems |
+
+| Measure | Result on the eight test problems |
+|---|---|
+| Lab against one Opus attempt | 3 of 8 against an expected 2.5 of 8 (31%); the first attempts alone passed 2 of 8 |
+| Lab against the same-budget vote | 3 of 8 against 3 of 8: no difference. The lab cost about six single attempts per problem and only four exist, so the vote had the smaller budget |
+| Lab against the best single model | Fable 5.2 alone passed 4 of 8 problems on both attempts. The lab, whose analysts are Opus 5.5, passed 3. On this test the best single model beat the lab |
+| Agreement as evidence | replicated: 1 of 2 passed; converged: 1 of 1; refereed: 1 of 4; unresolved: 0 of 1 |
+| False agreement | 1 of 2 replicated answers was wrong (gb05, O-8) |
+| Rescues and damage | Question round: 2 team answers went from failing to passing, 0 the other way. Referee: 1 rescue, 0 damage. Challenge: 0 and 0. Third team: 0 and 0 |
+| Selection | On all 3 problems where any lab answer passed, the lab reported a passing one. (The rehearsal lab failed exactly here) |
+| Noticing to acting | 79 warning signs; 51 questions written, none blocked by the leak check; 20 of 66 replies changed a method |
+| Cost | Lab: 62 agent runs, 137 minutes of agent time, $27.06, about 17 minutes of wall time for all eight. Opus alone: 32 runs, 90 minutes, $18.10. Fable alone: 16 runs, 87 minutes, $7.94. Dollars are the command-line tool's estimate |
+| Memory and search | 245 facts written and 144 pass-downs delivered through the gateway on Modal; 318 reads; 56 Exa searches and 7 page reads by the eight library agents; every request carried an identity attached by Modal |
+| Faults | No agent failed or timed out. 30 of 607 gateway requests were refused as malformed |
+
+**What this shows.**
+- The lab made Opus reliable where Opus was unreliable. It passed every problem that a single Opus attempt passes at least half the time (gb04, gb09, gb10), including one where both teams started wrong (O-6).
+- It did not extend Opus's reach. On gb08, where Opus alone passed once in four tries, the lab failed; Fable alone passed twice in two.
+- A plain vote over four attempts did as well as the lab on this test, for less.
+- Every step that changed an answer changed it for the better or not at all: three rescues, no damage.
+
+**What it does not show.** Eight problems. A difference of one problem is 12.5 points, so "3 of 8 against 3 of 8" and "3 against 4" are not differences we can call real. One run per arm. The lab's analysts were Opus; a lab of Fable analysts was not tested, and after seeing these scores it could not be tested on these problems without bias.
+
+**With the two development problems** (version 2 failed both, M-10; Opus alone 0 of 8 attempts; Fable alone 0 of 4): lab 3 of 10, Opus alone 10 of 40 attempts (25%), Fable alone 8 of 20 (40%). Published context on the full 129 problems, with other harnesses: best model about a third; Claude Opus 4.8 between 9% and 16%.

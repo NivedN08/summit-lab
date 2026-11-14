@@ -1,0 +1,402 @@
+{
+  "study": "gb05",
+  "status": "replicated",
+  "final": {
+    "agent": "gb05-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb05/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ]
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "gb05-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb05/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_calibrated_carriers": 195,
+        "target_support_code": 1,
+        "expression_log_fc": 0.3206,
+        "subhap_log_or": -0.2674
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "gb05-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb05/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_calibrated_carriers": 195,
+        "target_support_code": 1,
+        "expression_log_fc": 0.308,
+        "subhap_log_or": -0.274
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "gb05-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb05/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_calibrated_carriers": 195,
+        "target_support_code": 1,
+        "expression_log_fc": 0.3206,
+        "subhap_log_or": -0.2674
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "gb05-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/test-v2/gb05/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_calibrated_carriers": 195,
+        "target_support_code": 1,
+        "expression_log_fc": 0.308,
+        "subhap_log_or": -0.274
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "gb05-team-a",
+        "gb05-team-b"
+      ],
+      "fields": {
+        "expression_log_fc": true,
+        "n_calibrated_carriers": true,
+        "subhap_log_or": true,
+        "target_support_code": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "gb05-team-a",
+        "gb05-team-b"
+      ],
+      "fields": {
+        "expression_log_fc": true,
+        "n_calibrated_carriers": true,
+        "subhap_log_or": true,
+        "target_support_code": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Library guidance (gb05), to be verified against the files: the cohort is not a random sample of the source population. sampling_design.tsv reportedly gives a sample_fraction for each cell of clinic_stratum x recruitment_stream x ancestry_group x age_band x case, so sampling depends on both outcome and stratum. An unweighted logistic regression then estimates a sample-conditional odds ratio, not the source-population odds ratio the task asks for; because the fractions differ by stratum and the stratum variables (e.g. ancestry) may correlate with structural-variant dosage, the bias is not confined to the intercept. Check: merge sample_fraction onto every cohort row by all five keys (using age_band, not continuous age), confirm every row matches exactly one fraction, and compare the weighted and unweighted log OR. If confirmed: fit an inverse-probability-weighted logistic model (weight = 1/sample_fraction) with design-based (sandwich/survey) standard errors, and report the weighted estimate as subhap_log_or.",
+      "from": [
+        "sl-test-v2-f8594abd7fa1"
+      ],
+      "reason": "The task asks for a source-population OR; ignoring the outcome-dependent sampling design would change the estimand and the reported subhap_log_or.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-758884956c69"
+      }
+    },
+    {
+      "text": "Library guidance (gb05), to be verified against file_notes.tsv: recruitment_stream and age_band are sampling-design strata, not baseline clinical covariates. Putting recruitment_stream (or the design cells) into the outcome model as covariates, instead of using them to build weights, changes the estimand and can over-adjust; adjusting for age_band instead of continuous age loses information (file_notes reportedly says to use continuous age for clinical adjustment). Check: read file_notes.tsv and list, before modelling, which variables are weighting strata and which are covariates. If confirmed: use clinic_stratum, recruitment_stream, ancestry_group, age_band and case only to build the sampling weights; adjust the outcome model for continuous age, sex and pc1-pc3 (ancestry_group may also be considered as a confounder of SV frequency), and not for recruitment_stream.",
+      "from": [
+        "sl-test-v2-00fe5b555179"
+      ],
+      "reason": "Which variables go into weights versus the covariate set directly changes the fitted odds ratio and whether it is the requested total effect.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-b876bd135f0e"
+      }
+    },
+    {
+      "text": "Library guidance (gb05), to be verified against the files: breakpoint_panel.tsv is a long-read calibration subset, not an association cohort. Running the clinical association only on panel samples (small and non-random), or treating panel calls as if they existed for everyone, gives a biased and imprecise OR. Full-cohort segment-B dosage has to come from a calibration model that maps the tag markers to the long-read segment-B copy index, trained on reliable panel samples and applied to every cohort sample (regression calibration: use the expected copies given markers, not hard-thresholded calls). Check: count the overlap of panel sample_ids with the cohort and tag-marker files, and cross-validate the marker-to-copy prediction (R^2 / concordance) within the panel. If the predicted dosage is shrunk or rescaled relative to the true copy number, rescale so that the OR is per true calibrated copy.",
+      "from": [
+        "sl-test-v2-2c811c890a03"
+      ],
+      "reason": "The task demands a full-cohort estimate per calibrated copy; how dosage is obtained for non-panel samples determines both bias and scale of subhap_log_or and expression_log_fc.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-69d9b2c089b4"
+      }
+    },
+    {
+      "text": "Library guidance (gb05), to be verified against the files: long-read breakpoint calls in this repeat-rich region are unreliable for some panel samples (signs: low molecule_count, low mean_mapq, high alignment_entropy, unbalanced pair_balance, high local_complexity), and copy_index_segment_B is a continuous index, not an integer. Training the calibration, or counting carriers, on unfiltered or unrounded values adds noise and miscounts n_calibrated_carriers. Check: look at the distribution of each QC field and of copy_index_segment_B (clusters near 0/1/2 and off-cluster outliers), and whether outliers concentrate in high-complexity or low-MAPQ samples. If confirmed: define a reliability filter from the QC fields with thresholds stated in advance and justified by the distributions, assign integer copies (round/cluster) among reliable samples only, and count carriers (>= 1 copy) only among reliable samples.",
+      "from": [
+        "sl-test-v2-a9fad88f7147"
+      ],
+      "reason": "n_calibrated_carriers is defined on reliable panel samples, and the calibration training set depends on the same filter; an unfiltered or unrounded panel changes the count and the calibration.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-7bf4c6688ef3"
+      }
+    },
+    {
+      "text": "Library guidance (gb05), to be verified against the files: the nested segment-B dosage sits inside a broader outer-orientation polymorphism (bp_alt_fraction reportedly measures outer orientation), so the two dosages are correlated. A marginal regression on B, or a B predictor built from markers that actually tag the outer orientation, attributes the outer effect to B. Check: in reliable panel samples, cross-tabulate integer B copies against outer-orientation dosage (bp_alt_fraction near 0/0.5/1), find which marker blocks predict B separately from outer, and check the correlation of predicted B and predicted outer dosage in the cohort. If confirmed: calibrate both B and outer dosage and fit the clinical model with both terms so the B coefficient is separated from the outer effect. Because the target is a total effect of B, do not put expression or other downstream consequences of B into the clinical model.",
+      "from": [
+        "sl-test-v2-34833f3c215c"
+      ],
+      "reason": "The task explicitly requires separating nested segment-B dosage from outer-orientation dosage while reporting a total effect; getting either wrong changes the sign or size of subhap_log_or.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-4333a6c2263a"
+      }
+    },
+    {
+      "text": "Library guidance (gb05), to be verified against the files: repeat-mediated inversions and copy-number variants are often recurrent or sit on several haplotype backgrounds, so marker tagging is weaker than for SNPs and can differ by ancestry. A tag model trained mostly on one ancestry can mis-predict the others and confound the OR with ancestry. Check: report calibration accuracy by ancestry_group within the reliable panel, and check whether segment-B frequency differs by ancestry group or PCs. If confirmed: include ancestry (PCs and/or ancestry_group) in the calibration model or fit ancestry-aware predictors, adjust the clinical model for PCs, and flag any ancestry group with poor tagging.",
+      "from": [
+        "sl-test-v2-ad42a002f644"
+      ],
+      "reason": "Ancestry-dependent tagging would bias the calibrated dosage differentially and confound the clinical association; this determines whether the calibration and outcome models need ancestry terms.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-d1ee4598acc1"
+      }
+    },
+    {
+      "text": "Library guidance (gb05), to be verified against the files: genes inside duplicated or copy-variable segments have multimapping reads, so short-read expression can track copy number through mapping artefacts rather than biology, and a gene can look expression-supported only because of mismapping. Check: for each candidate gene, regress log_expr on calibrated B dosage with and without the technical fields (multimapper_fraction / unique_fraction, tissue_source, expr_batch, assay_depth_millions, gc_metric); see whether the B effect is stable and whether multimapper_fraction itself rises with B copy. If confirmed: identify the supported gene as the one whose B effect survives adjustment for technical covariates (batch, tissue, depth, GC, uniqueness) and for the outer-orientation dosage, and take expression_log_fc from that adjusted model.",
+      "from": [
+        "sl-test-v2-79d208810213"
+      ],
+      "reason": "Choice of the expression-supported gene and its per-copy fold-change depends on whether mapping and technical artefacts are ruled out; this drives expression_log_fc and target_support_code.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-b146a1db8b01"
+      }
+    },
+    {
+      "text": "Library guidance (gb05), to be verified against the files: the expression panel is a subset of a case-enriched sample. If case status is related to expression, an unweighted expression-on-dosage regression in such a sample is a biased secondary-trait analysis. Check: test whether log_expr differs by case status and whether the case proportion in the expression panel differs from the source population. If confirmed: include case status as a covariate or weight expression samples by the inverse sampling fraction, and report how much the per-copy estimate changes between the approaches.",
+      "from": [
+        "sl-test-v2-48774fb79881"
+      ],
+      "reason": "The expression panel inherits the outcome-dependent sampling; without handling it, expression_log_fc may not reflect the source population.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-284fba89a7a9"
+      }
+    },
+    {
+      "text": "Library guidance (gb05), to be verified against the file notes: log_expr is reportedly already on the natural-log scale. The per-copy fold-change must be the regression slope of log_expr on the calibrated copy dosage in natural-log units, not a log2 value and not a slope on hard 0/1 carrier status. Likewise subhap_log_or must be per additional copy (additive dosage) on the natural-log scale. Check: confirm the dosage scale (0, 1, 2 copies) and the log base before reporting, and rescale slopes to per-copy natural-log units if needed.",
+      "from": [
+        "sl-test-v2-1caa25b22e75"
+      ],
+      "reason": "A wrong log base or a carrier-versus-copy coding would give numerically wrong expression_log_fc and subhap_log_or even with a correct model.",
+      "fact_ids": {
+        "team-a": "sl-test-v2-3ab7d22fe60d"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams put the outer-orientation dosage into the clinical outcome model as a covariate and reported the B coefficient from that joint model (-0.27) as the 'total-effect' odds ratio. Both saw that the B-only weighted estimate is about half the size (team-a: -0.13), but neither argued from the data whether the outer orientation is a confounder of B (to be adjusted) or part of the structure on which segment-B copies sit (so that conditioning on it turns a total effect into a partial one). 'Separating B from outer' can be satisfied in the calibration step alone.",
+      "Both teams assumed that reliability of a long-read call is unrelated to the segment-B copy number itself (reliable 483 samples = a representative training set). local_complexity is described as repeat complexity around the breakpoint, which could depend on genotype; neither team tested whether QC failure depends on B dosage, case status or ancestry.",
+      "Both teams assumed a single pooled marker-to-B calibration (ridge on all 60 markers) transports to all ancestries and from panel to non-panel cohort members, and that one pooled B log OR describes the source population, although team-a found per-ancestry estimates of opposite sign (EUR +0.31, EAS -1.06).",
+      "Both teams took the inverse-sample_fraction weights at face value. Fractions range from 0.002 to 0.84, so a few control rows carry weights in the hundreds; the sign of the estimate flips between unweighted (+0.11) and weighted (-0.27) fits, yet neither team showed how many observations the weighted estimate effectively rests on.",
+      "Both teams treated the expression slope as a sample-level quantity (unweighted OLS in the 560-sample expression panel, team-b without case status) although the task sentence attaches 'full-cohort source-population' to both the clinical association and the expression support, and how the expression panel was selected was not examined.",
+      "Both teams chose GENE2 over GENE1 on the multimapping argument alone, assuming a gene with multimapping reads cannot be the truly supported gene."
+    ],
+    "unused_evidence": [
+      "marker_info.tsv.gz: mean_impute_info (0.905 for M007-M015, 0.925 for M025-M036, 0.985 elsewhere) and position_kb were not used by either team. The low-information blocks sit inside interval_1 and interval_2, the intervals team-a found to tag outer and B respectively, so they probably mark the structural segments; whether the calibration leans on these lower-quality markers, and whether their quality differs between panel and non-panel samples or by ancestry, was not checked.",
+      "breakpoint_panel depth_log2_segment_B: an independent depth-based read-out of segment-B copies that exists for all 780 panel samples, including the 297 QC failures. Team-b used it only to validate rounding in clean samples; team-a's record does not mention it. It is the one field that could show whether QC-failed samples differ in B dosage from reliable ones.",
+      "expression_panel membership itself (560 of 1900, 42% overlap with the breakpoint panel) and its relation to case, ancestry, tissue_source and design stratum was not analysed as a selection step.",
+      "GENE3 is not discussed in either record beyond the implicit statement that it has no signal."
+    ],
+    "unresolved_weak_points": [
+      "Team-a named the ancestry heterogeneity of the B log OR (EUR +0.31, AFR -0.31, EAS -1.06) as its weakest point and kept the pooled estimate without finding out whether the heterogeneity comes from ancestry-specific tagging, from the weights, or from the outer adjustment. Reported, not resolved. Team-b did not report per-ancestry estimates at all.",
+      "Both teams named the imprecision and weight-dependence of the clinical log OR (SE 0.19-0.20, CI crosses 0), on which the sign and therefore target_support_code depend. Team-b bootstrapped but did not propagate calibration uncertainty. Reported, not resolved.",
+      "Team-a noted that GENE1 keeps a residual B effect after technical adjustment (0.44, B x multimapper interaction 0.39) so the choice of GENE2 rests on the multimapping profile only. Reported, not resolved.",
+      "Team-b said its QC thresholds were chosen by eye. This one is partly resolved by agreement: team-a's different thresholds give the same 483 reliable samples and 195 carriers, but neither team reported how many reliable samples sit near the rounding boundary."
+    ],
+    "second_readings": [
+      "'Total-effect odds ratio ... per additional calibrated segment-B copy': may mean the B effect without conditioning on the outer orientation (and certainly without conditioning on post-outcome design variables), with 'separating' done at the calibration stage; or the B effect conditional on outer dosage, as both teams reported. The two readings give about -0.13 versus -0.27.",
+      "'Full-cohort source-population ... molecular expression support': may require the expression slope to be weighted to the source population (team-a's own weighted value 0.286) rather than an unweighted, case-adjusted panel slope (0.308 / 0.321).",
+      "'Calibrated segment-B copy': may mean the long-read copy index after calibration to integer copies (both teams' reading), or a copy index that must first be put on a per-copy scale using the depth read-out before rounding; this matters only if cluster centres of copy_index_segment_B are not at integers.",
+      "'The expression-supported gene' presumes exactly one gene; if GENE1's slope at a normal multimapper fraction equals GENE2's, the data do not single one out and the choice needs an explicit rule."
+    ],
+    "verdict": "Moderate trust in n_calibrated_carriers (195, reached with two different threshold sets) and in the choice and rough size of the GENE2 slope; low trust in subhap_log_or and hence target_support_code, because its sign flips with the weights, differs across ancestry groups, has an interval that crosses zero, and its size roughly halves under the other reasonable reading of 'total effect' (no outer adjustment). The agreement reflects a shared recipe from the same library guidance, not independent confirmation.",
+    "questions": [
+      {
+        "to": "gb05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you named the per-ancestry heterogeneity of the B log OR (EUR +0.31, AFR -0.31, EAS -1.06) as your weakest point but only reported it. Refit the marker-to-B calibration separately within each ancestry group (or with ancestry-by-marker terms), compare those predicted dosages with your pooled ones, and then test the B-by-ancestry interaction formally in the weighted model, also once unweighted and once without the outer term. Does the heterogeneity come from tagging, from the weights, or from the outer adjustment, and does the result change your method?",
+        "from": [
+          "sl-test-v2-18f686f57557",
+          "sl-test-v2-d1d54ea14727"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-c8e4ae7d4900"
+      },
+      {
+        "to": "gb05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: the task asks for a 'total-effect' odds ratio, and your weighted B estimate is -0.13 without the outer-orientation term and -0.27 with it. In the reliable panel, tabulate integer B copies against integer outer dosage and report the outer coefficient with its interval from the joint model, then state from that evidence whether outer orientation acts as a separate confounder of B or as the background on which B copies sit, and therefore which of the two models estimates a total effect of B. Does it change your method?",
+        "from": [
+          "sl-test-v2-b85b6612226d",
+          "sl-test-v2-b57fd273c129"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-909d3a8e478b"
+      },
+      {
+        "to": "gb05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: the sign of your B log OR flips between the unweighted and the weighted fit, and the weights span roughly 1.2 to several hundred. Compute the effective sample size of the weighted fit, the share of total weight carried by the ten heaviest rows, and the B estimate when those rows are removed one at a time and when weights are capped or stabilised. Does the weighted sign rest on a handful of heavily weighted controls, and does it change your method?",
+        "from": [
+          "sl-test-v2-b85b6612226d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-775ed5f6cbeb"
+      },
+      {
+        "to": "gb05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your choice of GENE2 rests on GENE1's multimapping profile, yet GENE1 keeps a B slope of 0.44 with a B-by-multimapper interaction of 0.39. Evaluate the GENE1 slope at the multimapper fraction typical of the other genes (and in your low-multimapper subset) and compare it with the GENE2 slope; separately, test a B-by-case interaction for GENE2 to see whether your sample-level slope (0.308) and your source-population-weighted slope (0.286) differ for a real reason, given that the task attaches 'full-cohort source-population' to the expression support too. Does either result change your method?",
+        "from": [
+          "sl-test-v2-416745a755a0"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-6d3d4633f860"
+      },
+      {
+        "to": "gb05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: the task asks for a 'total-effect' odds ratio, and you fitted B jointly with the outer-orientation dosage; you also found 26 B carriers with outer dosage 0. Report the weighted B estimate with and without the outer term side by side, the outer coefficient with its interval, and the B-by-outer table in the reliable panel, then state from that evidence whether conditioning on outer dosage gives a total effect of B or a partial one. Does it change your method?",
+        "from": [
+          "sl-test-v2-69a93d10619f",
+          "sl-test-v2-13f5e19bdba3"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-56ca2d79abaa"
+      },
+      {
+        "to": "gb05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your record gives one pooled B log OR and adjusts for PCs but not ancestry_group, and it shows calibration accuracy by ancestry but no clinical estimate by ancestry. Fit the weighted model within each ancestry group and test the B-by-ancestry interaction, and repeat with the calibration fitted within ancestry. Is the pooled sign shared by the groups, and do the weights (with the effective sample size and the share of weight on the ten heaviest rows) or the tagging drive any difference? Does it change your method?",
+        "from": [
+          "sl-test-v2-3bb11b4c5128",
+          "sl-test-v2-69a93d10619f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-0f5856df7e4d"
+      },
+      {
+        "to": "gb05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your calibration assumes the 483 reliable samples are representative of the panel, but local_complexity describes repeats around the breakpoint and could depend on the genotype itself. Using depth_log2_segment_B, which exists for all 780 samples, compare the depth-based copy distribution (and case status and ancestry) between reliable and QC-failed samples, and among the 483 count how many copy_index values lie within 0.2 of a rounding boundary and whether depth agrees with the rounded call there. Does QC failure depend on segment-B dosage, and does that change the calibration or the carrier count?",
+        "from": [
+          "sl-test-v2-c01ed8ad438f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-a80f9e1669d1"
+      },
+      {
+        "to": "gb05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your expression model has no case-status term and no sampling weights, although the expression panel is a subset of a cohort that is 81% cases and the task attaches 'full-cohort source-population' to the expression support. Check whether log_expr of GENE2 differs by case status, whether expression-panel membership depends on case, ancestry or design stratum, and how the GENE2 slope moves when case is added, when a B-by-case term is added, and when inverse sample_fraction weights are used; also give the GENE1 slope at a multimapper fraction typical of the other genes. Does any of this change your method or your choice of gene?",
+        "from": [
+          "sl-test-v2-06d90f4ab380",
+          "sl-test-v2-ae33a9a50424",
+          "sl-test-v2-831c0ced3524"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-test-v2-61d4354156e6"
+      }
+    ]
+  },
+  "referee": null,
+  "not_chosen": [
+    {
+      "agent": "gb05-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "gb05-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "gb05-team-b",
+      "round": "challenge",
+      "reason": "agreed with gb05-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "gb05-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 106.19487299991306,
+      "cost_usd": 0.53286,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 87.75395879196003,
+      "cost_usd": 0.1530358,
+      "error": null
+    },
+    {
+      "agent": "gb05-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 151.43522650003433,
+      "cost_usd": 0.5924064,
+      "error": null
+    },
+    {
+      "agent": "gb05-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 166.4765385830542,
+      "cost_usd": 0.6735312,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 158.34011324995663,
+      "cost_usd": 0.3226113,
+      "error": null
+    },
+    {
+      "agent": "gb05-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 141.7164517500205,
+      "cost_usd": 0.5350842000000001,
+      "error": null
+    },
+    {
+      "agent": "gb05-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 144.70197245909367,
+      "cost_usd": 0.567178,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}
