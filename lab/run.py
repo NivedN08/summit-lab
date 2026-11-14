@@ -343,7 +343,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--run-dir", required=True)
     p.add_argument("--backend", choices=["claude", "mock"], default="claude")
     p.add_argument("--parallel", type=int, default=4)
-    p.add_argument("--timeout", type=int, default=3600, help="seconds per attempt")
+    p.add_argument("--timeout", type=int, default=1800, help="seconds per attempt (the same limit a lab analyst gets)")
     p.set_defaults(fn=cmd_baseline)
 
     p = sub.add_parser("grade", help="grade a finished run")

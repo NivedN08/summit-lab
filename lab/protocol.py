@@ -58,7 +58,7 @@ class Config:
     director_model: str = "fable"
     worker_model: str = "opus"
     timeouts: dict = dataclasses.field(default_factory=lambda: {
-        "library": 1800, "director": 900, "analyst": 3600, "referee": 2400, "baseline": 3600})
+        "library": 900, "director": 600, "analyst": 1800, "referee": 1200, "baseline": 1800})
     max_agents: int = 4          # agents running at once, shared across all studies
     max_searches: int = 15       # web search calls the library may make per study
     library: bool = True         # run the library and the director's briefing
@@ -230,8 +230,8 @@ class AgentRunner:
                 self.log.append("agent.finish", agent.id, **common, ok=bool(result.ok),
                                 seconds=round(float(result.seconds or 0), 2), cost_usd=result.cost_usd,
                                 session_id=result.session_id, error=result.error)
-            if result.ok:
-                break
+            if result.ok or "timed out" in (result.error or ""):
+                break      # a timed-out run is not retried: it would only spend the same time again
         return result
 
 
@@ -385,13 +385,18 @@ class StudyRun:
         """Template fields every brief may use."""
         s = self.study
         return {"statement": s.statement, "data_dir": str(s.data_dir), "max_searches": self.cfg.max_searches,
+                "time_limit_minutes": self.cfg.timeout("analyst") // 60,
                 "team_departments": f"{self.dept('team-a')}, {self.dept('team-b')}", **extra}
 
     def take(self, team: str, round_: str, result: AgentResult, workspace: pathlib.Path) -> Candidate | None:
         """Copy an agent's answer out of its workspace and check its format. None if the run failed."""
         if not result.ok:
-            self.log("candidate.none", team=team, round=round_, reason=result.error or "run failed")
-            return None
+            # An agent stopped by its time limit may still have left an answer.json (it is told to write one early).
+            if "timed out" in (result.error or "") and (workspace / "answer.json").is_file():
+                self.log("candidate.salvaged", team=team, round=round_, reason=result.error)
+            else:
+                self.log("candidate.none", team=team, round=round_, reason=result.error or "run failed")
+                return None
         name = result.result.get("answer_file") or "answer.json"
         source = (workspace / str(name)).resolve()
         if not source.is_relative_to(workspace.resolve()) or not source.is_file():
@@ -525,7 +530,8 @@ class StudyRun:
             (folder / "answer.json").write_text(json.dumps(scrub(doc, names, keep=("answer",)), indent=2))
             note = load_doc(self.dir / "candidates" / f"{cand.team}-{cand.round}-result.json")
             (folder / "method.json").write_text(json.dumps(scrub(note if isinstance(note, dict) else {}, names), indent=2))
-        brief = make_brief("referee", agent, **self.fields(candidates_dir=str(ws / "candidates")))
+        brief = make_brief("referee", agent, **self.fields(candidates_dir=str(ws / "candidates"),
+                                                           time_limit_minutes=self.cfg.timeout("referee") // 60))
         result = self.run_agent(agent, brief, "referee", [self.study.data_dir, TOOLS], "referee", "referee")
         verdict = dict(result.result) if result.ok else {"pick": "neither", "reason": f"referee run failed: {result.error}"}
         pick = str(verdict.get("pick") or "").strip().upper()

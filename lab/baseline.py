@@ -24,7 +24,7 @@ def attempt_dir(run_dir: pathlib.Path, study_id: str, k: int) -> pathlib.Path:
 
 
 def run_baselines(adapter: Adapter, backend: Backend, log: EventLog, run_dir: pathlib.Path, studies: list[Study],
-                  attempts: int, model: str, max_agents: int, timeout_s: int = 3600) -> dict:
+                  attempts: int, model: str, max_agents: int, timeout_s: int = 1800) -> dict:
     """Run `attempts` single agents per study, skipping attempts already done. Returns {study: {k: ok}}."""
     runner = AgentRunner(backend, log, max_agents)
     run_dir = pathlib.Path(run_dir).resolve()
@@ -34,7 +34,8 @@ def run_baselines(adapter: Adapter, backend: Backend, log: EventLog, run_dir: pa
 
     def one(study: Study, k: int) -> bool:
         agent = Agent(f"baseline-{study.id}-{k}", WORKER, "baseline", model)
-        brief = make_brief("baseline", None, statement=study.statement, data_dir=str(study.data_dir))
+        brief = make_brief("baseline", None, statement=study.statement, data_dir=str(study.data_dir),
+                           time_limit_minutes=timeout_s // 60)
         ws = attempt_dir(run_dir, study.id, k)
         result = runner.run(agent, brief, ws, readable=[study.data_dir], env=None, timeout_s=timeout_s,
                             study=study.id, phase=f"baseline-{k}", role="baseline",

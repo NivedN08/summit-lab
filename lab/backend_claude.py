@@ -138,6 +138,10 @@ class ClaudeBackend:
         out.setdefault("BASH_DEFAULT_TIMEOUT_MS", str(30 * 60 * 1000))
         out.setdefault("BASH_MAX_TIMEOUT_MS", str(3 * 60 * 60 * 1000))
         out["CLAUDE_CODE_DISABLE_AUTO_MEMORY"] = "1"
+        # Cap numeric libraries at two threads per process, so several agents can share one machine.
+        for var in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "VECLIB_MAXIMUM_THREADS",
+                    "NUMEXPR_NUM_THREADS"):
+            out.setdefault(var, "2")
         return out
 
     # ------------------------------------------------------------------------- running
@@ -187,6 +191,7 @@ class ClaudeBackend:
             return self._done(False, {}, start, costs, session, f"{problem2} after one repair attempt")
         finally:
             link.unlink(missing_ok=True)
+            stop_stragglers(ws)
 
     def _attempt(self, cmd, prompt: str, ws, env, prefix: pathlib.Path, deadline: float) -> dict:
         """Run the CLI once with `prompt` on stdin, killing its whole process group at the deadline."""
@@ -220,6 +225,27 @@ class ClaudeBackend:
         known = [c for c in costs if c is not None]
         return AgentResult(ok=ok, result=result, seconds=time.monotonic() - start,
                            cost_usd=sum(known) if known else None, session_id=session, error=error)
+
+
+def stop_stragglers(ws: pathlib.Path) -> int:
+    """Kill any process still working inside the workspace after its agent has ended
+    (an analysis script left running in the background). Returns how many were stopped."""
+    try:
+        listing = subprocess.run(["lsof", "-a", "-d", "cwd", "-Fpn"], capture_output=True, text=True, timeout=30).stdout
+    except (OSError, subprocess.SubprocessError):
+        return 0
+    stopped, pid = 0, None
+    for line in listing.splitlines():
+        if line.startswith("p"):
+            pid = int(line[1:])
+        elif line.startswith("n") and pid and pid != os.getpid():
+            if pathlib.Path(line[1:]) == ws or ws in pathlib.Path(line[1:]).parents:
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                    stopped += 1
+                except (ProcessLookupError, PermissionError):
+                    pass
+    return stopped
 
 
 def read_result(ws: pathlib.Path) -> tuple[dict, str | None]:
