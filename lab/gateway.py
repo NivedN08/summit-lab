@@ -81,13 +81,16 @@ class Gateway:
     """Threaded HTTP server that turns a token into an agent and calls memory and Exa for it."""
 
     def __init__(self, org: Org, memory: Memory, log: EventLog, exa_departments=(), blocked_terms=(),
-                 *, exa_call=default_exa_call, host: str = "127.0.0.1", port: int = 0):
+                 *, exa_call=default_exa_call, host: str = "127.0.0.1", port: int = 0,
+                 agents_may_pass_down: bool = True):
         self.org = org
         self.memory = memory
         self.log = log
         self.exa_departments = set(exa_departments)
         self.blocked_terms = [t.lower() for t in blocked_terms if t]
         self.exa_call = exa_call
+        # When False, no token can pass facts down: the lab delivers every pass-down itself, after checking it.
+        self.agents_may_pass_down = agents_may_pass_down
         self.host, self.port = host, port
         self._tokens: dict[str, str] = {}     # agent id -> token
         self._exa_log_lock = threading.Lock()
@@ -218,6 +221,8 @@ class Gateway:
         return 200, {"facts": [dataclasses.asdict(f) for f in facts]}
 
     def _memory_pass_down(self, agent: Agent, body: dict):
+        if not self.agents_may_pass_down:
+            raise Refused(403, "pass-downs are delivered by the lab, not by agents")
         if not agent.reads_everything:
             raise PermissionError(f"{agent.id} is a {agent.role}; only heads and the director pass down")
         to_department = _text(body, "to_department")

@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import pathlib
 import secrets
 import signal
@@ -38,11 +39,13 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 CLAUDE_BIN = "/opt/homebrew/bin/claude"
 STRIPPED_ENV = ("ANTHROPIC_API_KEY", "EXA_API_KEY", "PAST_API_KEY")
 FROM_HOST = ("USER", "LOGNAME", "LANG", "LC_ALL", "SHELL", "TERM")
-DEFAULT_PATH = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+# Agents get the same Python the lab itself runs on (it has the scientific packages), then the usual system paths.
+DEFAULT_PATH = os.environ.get("LAB_AGENT_PATH") or ":".join(
+    [str(pathlib.Path(sys.executable).parent), "/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/bin", "/usr/sbin", "/sbin"])
 TOOLS = "Bash,Read,Write,Edit,Glob,Grep"
 # Lab model name -> CLI model name. Names not listed are passed to the CLI unchanged.
-# "fable" is the CLI alias (claude-fable-5-1 on CLI 2.1.285; claude-fable-5-2 needs 2.1.290+).
-DEFAULT_MODELS = {"fable": "fable", "opus": "claude-opus-5-5", "haiku": "haiku"}
+# Fable 5.2 needs CLI 2.1.290 or newer (the bare alias "fable" gave 5.1 on 2.1.285).
+DEFAULT_MODELS = {"fable": "claude-fable-5-2", "opus": "claude-opus-5-5", "haiku": "haiku"}
 RESULT_NOTE = (
     "When you finish, write result.json in your working directory. It must contain one JSON object. "
     "You may write files only inside your working directory."
