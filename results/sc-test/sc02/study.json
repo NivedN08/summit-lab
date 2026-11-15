@@ -1,0 +1,532 @@
+{
+  "study": "sc02",
+  "status": "refereed",
+  "final": {
+    "agent": "sc02-team-b",
+    "team": "team-b",
+    "round": "revise",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc02/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc02-library": "opus",
+    "sc02-team-a": "opus",
+    "sc02-team-b": "opus",
+    "sc02-team-c": "opus",
+    "sc02-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "sc02-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc02/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_degs": 1576
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc02-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc02/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_degs": 1471
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc02-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc02/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_degs": 1566
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc02-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc02/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_degs": 1471
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc02-team-a",
+        "sc02-team-b"
+      ],
+      "fields": {
+        "n_degs": false
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "sc02-team-a",
+        "sc02-team-b"
+      ],
+      "fields": {
+        "n_degs": false
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Unit of replication: do not test individual cells as replicates (scanpy rank_genes_groups Wilcoxon/t-test, Seurat FindMarkers). Cells from one donor are not independent; cell-level tests give tiny p-values and a DEG count inflated by hundreds to thousands that grows with cell number, not donor number. Instead sum the raw counts of CD14 Mono cells per donor per condition into pseudobulk samples (at most 12 IFN-beta + 12 PBS columns) and test with a bulk negative-binomial method (DESeq2/PyDESeq2 or edgeR). Check that what is fed to the test is donor x condition columns, not cells.",
+      "from": [
+        "sl-sc-test-a695de313439"
+      ],
+      "reason": "The choice between cell-level and pseudobulk testing changes the DEG count by orders of magnitude; this is the single largest method decision.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-e39845030a39"
+      }
+    },
+    {
+      "text": "Raw counts, summed: pseudobulk DE needs raw integer counts aggregated by SUM (not mean), with no normalize_total/log1p before aggregation. The file /workspace/data/Parse_10M_PBMC_100K_subset.h5ad (100,000 cells x 40,352 genes) has no layers and no .raw, so everything rests on X (CSR float32; from the header its first values look like raw integers, but this was not verified). Before using it, check on the CD14 Mono subset that X.data are all non-negative integers (np.allclose(x, np.round(x))), that the max is well above ~10, and that pseudobulk library sizes scale with cell number. If X turns out to be normalized or logged, do not run a count model on it as is; try to invert the transform exactly and confirm integers, otherwise flag it.",
+      "from": [
+        "sl-sc-test-07c4dba0fc10",
+        "sl-sc-test-3ba74f15caa2"
+      ],
+      "reason": "A negative-binomial model on non-integer or averaged values gives invalid dispersions and a different DEG count; the file offers no separate counts layer to fall back on, so the team must verify X itself.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-961ad4e0975c"
+      }
+    },
+    {
+      "text": "Data layout (from the file header only, no analysis done): obs columns include donor (Donor1..Donor12), cytokine (91 levels, including 'IFN-beta' and 'PBS'), treatment ('PBS'/'cytokine'), cell_type (18 levels, including 'CD14 Mono' and 'CD16 Mono') and sample ('Donor1_IFN-beta' style, 1092 levels). var has gene symbols as index and a single column n_cells whose values (up to ~2 million) come from the full 10M-cell atlas, NOT from this 100k subset, so n_cells must not be used for any gene filtering. With roughly 92 cells per donor-condition spread over 18 cell types, CD14 Mono pseudobulks are expected to contain only a handful to a few dozen cells each, so the '<5 cells' donor rule is likely to remove donors; tabulate before assuming all 12 are kept.",
+      "from": [
+        "sl-sc-test-3ba74f15caa2"
+      ],
+      "reason": "Gives the exact column names and level strings needed for the subset, warns that var['n_cells'] is a trap for the gene filter, and tells the team to expect small pseudobulks where the donor exclusion matters.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-fb4744919549"
+      }
+    },
+    {
+      "text": "Donor exclusion rule ('fewer than 5 cells in either condition'): apply it to the right cell set and to both arms. After subsetting to cell_type=='CD14 Mono' and cytokine in {'IFN-beta','PBS'}, tabulate cells per donor x cytokine. A donor missing a condition entirely counts as 0 (<5). Remove the WHOLE donor (both pseudobulks) if either arm has fewer than 5 cells, so every kept donor has >=5 CD14 Mono cells in both arms and the design stays paired and balanced. Do not count cells over all cell types, and do not drop only the under-populated pseudobulk while keeping the donor's other arm. Use the task's threshold of 5 for the reported number; list which donors are dropped. A re-run with a stricter threshold (e.g. 10) is a useful sensitivity check only.",
+      "from": [
+        "sl-sc-test-92c17a979923"
+      ],
+      "reason": "Misapplying the rule changes which samples enter the model and therefore the DEG count; with small pseudobulks this rule is expected to actually exclude donors.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-53cdb3c48dbf"
+      }
+    },
+    {
+      "text": "Gene filter ('at least 10 total counts across all samples'): the set of genes tested changes the BH-adjusted p-values and so the DEG count. Build the pseudobulk matrix first (retained donors x {IFN-beta, PBS}, CD14 Mono only, i.e. after donor exclusion), then keep genes whose row sum across those pseudobulk columns is >= 10, and apply this before dispersion estimation, not after testing. Common mistakes: summing over all 100k cells or all cell types; filtering before donor exclusion; using var['n_cells'] (it comes from the full 10M atlas); or using a per-sample rule such as edgeR filterByExpr or 'count >= 10 in >= n samples' instead of a row-sum rule. Record genes before/after. The alternative reading (sum over all cells in the file) keeps far more genes and shifts padj, so note the sensitivity if you compute it.",
+      "from": [
+        "sl-sc-test-2b655fdb666b",
+        "sl-sc-test-3ba74f15caa2"
+      ],
+      "reason": "'Across all samples' is ambiguous and the order of filtering vs donor exclusion matters; each reading yields a different number of tested genes and a different DEG count.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-337427c61b5f"
+      }
+    },
+    {
+      "text": "Design formula: every donor contributes both an IFN-beta and a PBS pseudobulk (paired/blocked design). Fitting '~condition' alone leaves donor baseline variation in the dispersion, which inflates standard errors and changes how many genes pass padj<0.05 (it lowers power rather than raising false positives; one simulation found ~68% of true DEGs detected paired vs ~23% unpaired in DESeq2). The statistically correct model for paired data is '~ donor + condition' with the condition term last and the contrast IFN-beta vs PBS. However, the task text does not mention pairing, so it may have been scored with the simpler '~condition' design. Confirm each retained donor has exactly one pseudobulk per condition, run both designs, record both DEG counts and how far apart they are, and state clearly which design the reported number uses and why.",
+      "from": [
+        "sl-sc-test-fe29c1fa6f25"
+      ],
+      "reason": "The paired and unpaired designs give different DEG counts and the task does not say which was intended; the team must make this choice deliberately and document it.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-0a8a83822789"
+      }
+    },
+    {
+      "text": "Contrast and factor levels: after subsetting, the obs categoricals still carry 91 cytokine and 12 donor levels; unused levels or dropped donors can give a rank-deficient design or the wrong coefficient. Call remove_unused_categories() on donor and cytokine after subsetting. Reference levels default to alphabetical ('IFN-beta' sorts before 'PBS'), so request the contrast explicitly as ['cytokine','IFN-beta','PBS'] (numerator IFN-beta, denominator PBS). In a '~donor + condition' fit, make sure you extract the condition coefficient, not a donor coefficient; the design matrix should be full rank with n_donors + 1 columns. Some PyDESeq2 versions rewrite underscores in factor levels to hyphens, and the deprecated ref_level argument is ignored. Sanity check: canonical interferon-stimulated genes (ISG15, IFIT1, IFIT3, MX1, IFI44L, OAS1) should show large positive LFC and very small padj. The DEG count is symmetric in sign, but a wrong coefficient or rank-deficient design gives a completely different count.",
+      "from": [
+        "sl-sc-test-2492cd78a766"
+      ],
+      "reason": "Leftover categorical levels and implicit contrasts are easy silent errors in PyDESeq2 that would produce a wrong coefficient and a wrong count; the ISG sign check lets the team catch it.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-6dfc0aa3a497"
+      }
+    },
+    {
+      "text": "Which log2FC and which test: the '|log2FC| > 1' count depends on the LFC used. Unshrunken maximum-likelihood LFCs are large and noisy for low-count genes (a 10-total-count filter keeps many such genes in small pseudobulks); apeglm/ashr-shrunken LFCs pull them toward 0 and give a different count. Separately, a threshold test (results(lfcThreshold=1) / lfc_null=1) is a different, much stricter procedure than the default Wald test of LFC=0 followed by a post-hoc |LFC|>1 filter. The task wording ('adjusted p-value < 0.05 and |log2 fold change| > 1.0') matches the conventional post-hoc filter on the default results table: padj<0.05 from the default LFC=0 Wald test plus unshrunken |LFC|>1. Use that for the reported number; shrunken-LFC and threshold-test counts are sensitivity figures only and must not be silently substituted. Shrinkage does not change padj.",
+      "from": [
+        "sl-sc-test-eac59f5bc5a2"
+      ],
+      "reason": "Shrunken vs unshrunken LFC and post-hoc filter vs threshold test each give a different DEG count; the team needs to know which reading matches the task wording.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-11b5aa149bce"
+      }
+    },
+    {
+      "text": "padj NaN handling and filtering defaults: DESeq2/PyDESeq2 set padj to NA/NaN for genes removed by independent filtering (low mean count) and p-value to NA for Cook's-distance outliers. PyDESeq2 defaults are DeseqStats(alpha=0.05, cooks_filter=True, independent_filter=True) and DeseqDataSet(refit_cooks=True, min_replicates=7). These interact with the design: with '~condition' and >=7 donors per arm, outlier counts are replaced and refit; with '~donor + condition' there are no replicates per design cell, so outlier replacement does not occur. The independent-filter alpha should equal the padj cutoff, 0.05 (R's results() default is 0.1, so set it explicitly in R). NaN padj silently counts as not significant; make that explicit (e.g. fillna(1)). Keep package defaults with alpha=0.05 for the reported number; count genes with NaN pvalue/padj, and optionally re-run with independent_filter=False and cooks_filter=False to see how many DEGs these switches move.",
+      "from": [
+        "sl-sc-test-03a67ccd1d17"
+      ],
+      "reason": "Independent filtering, Cook's handling and the alpha setting change which genes get a padj and therefore the count, and they behave differently under the two candidate designs.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-e036c85a71f8"
+      }
+    },
+    {
+      "text": "Size factors: median-of-ratios normalization can be distorted here in two ways. (1) Sparse pseudobulks: with only ~5-30 cells per sample most genes have a zero in at least one sample, so median-of-ratios uses only the few genes non-zero in every sample, or fails with 'every gene contains at least one zero'. (2) IFN-beta shifts a large, mostly up-regulated block of genes, violating the assumption of balanced changes and biasing all LFCs, hence which genes cross |LFC|>1. Check how many genes have no zeros across the retained pseudobulks, compare the size factors with per-sample total counts and cell numbers, and check that the LFC histogram/MA plot mode sits at 0 for the bulk of genes. Keep default median-of-ratios for the headline number unless it fails outright; if the checks look bad, report it and run an alternative normalization (poscounts-type, library-size/TMM, or control genes restricted to stably expressed genes) as a sensitivity analysis.",
+      "from": [
+        "sl-sc-test-7542ebc34d5e"
+      ],
+      "reason": "With very small pseudobulks the default normalization may fail or be driven by a handful of genes; the team needs to know what to check and what the fallback is, since it shifts LFCs around the |LFC|>1 cutoff.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-946597c2170d"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "sc02-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team read the retained data as a paired experiment (every retained donor contributes exactly one IFN-beta and one PBS pseudobulk) and treated a donor term in the model as the default for such data. You kept the model without a donor term because the task text does not mention pairing. Check in your data how much of the variation between pseudobulks is explained by donor (for example whether pseudobulks group by donor or by condition, and what happens to the dispersion estimates when donor is in the model). What in the task text or the data supports your reading, and what would count against it? Does that change your method?",
+      "from": [
+        "sl-sc-test-466381df6b85",
+        "sl-sc-test-2b4a18f3d694",
+        "sl-sc-test-2742df70dff7"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-4154c4fa86da"
+    },
+    {
+      "to": "sc02-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team's reimplementation does find Cook's-distance outliers, and its count changes depending on whether outlier counts are replaced and refitted, only filtered, or left alone. You recorded that no gene exceeded your Cook's cutoff, so nothing was filtered or replaced. Check how your Cook's distances and cutoff are computed (which dispersion and which variance estimate enter the distance, the degrees of freedom of the cutoff, which samples are eligible, and the separate rules for replacing-and-refitting versus flagging) against the reference package's defaults for your design, where each condition has many replicates. Does your implementation do what the reference would do there? Does that change your method?",
+      "from": [
+        "sl-sc-test-8583c7409f1c",
+        "sl-sc-test-e32dd5bda45a"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-2cccfc3a2a6e"
+    },
+    {
+      "to": "sc02-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team also wrote its own DESeq2 reimplementation because the reference package was missing. When both implementations are run under the same design they do not give the same count, and the shift between the paired and the unpaired design is not the same size in the two. Check yours step by step against the reference definition: the grid or optimiser and bounds for gene-wise dispersion, the parametric trend fit and its iteration and fallback, the prior variance and the rule for dispersion outliers that are not shrunk, the Wald standard errors, and the independent-filtering rule (which quantiles of the mean are tried, how the threshold is chosen, which alpha). Test it on an input where the reference output is known or can be derived, and check whether the reference package can be obtained without network access (a wheel, a package cache or another environment under /root). Is your count stable under those checks? Does that change your method?",
+      "from": [
+        "sl-sc-test-6bc7861f825f",
+        "sl-sc-test-8583c7409f1c",
+        "sl-sc-test-6562e4fc8bb8",
+        "sl-sc-test-db39807c5f1d"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-78e50bf3cbb2"
+    },
+    {
+      "to": "sc02-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team noticed that a housekeeping gene (ACTB) passes the fold-change cutoff in its fit, and that the IFN-beta and PBS pseudobulks differ several-fold in sequencing depth, and it suspected that part of the down-regulated set is a depth artefact. You recorded a majority of down-regulated DEGs and a small set of zero-free genes driving the size factors, and kept your normalisation. Check where known stable genes (housekeeping, ribosomal) sit in your fold-change distribution and whether the genes near the fold-change cutoff are concentrated among low-count genes in the shallow pseudobulks. Does that change your method?",
+      "from": [
+        "sl-sc-test-8583c7409f1c",
+        "sl-sc-test-e32dd5bda45a"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-9ce31cd3f1bc"
+    },
+    {
+      "to": "sc02-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the two teams did not read the task the same way on the design. The other team observed that the task text names only the two conditions, the donor exclusion rule and the gene filter, and does not mention pairing or a donor covariate, and it treated the donor-blocked model as a sensitivity check rather than as the headline. You reported the donor-blocked model as the default. Check what in the task text or the data supports your reading (for example how strongly pseudobulks group by donor), and what would count against it. Does that change your method?",
+      "from": [
+        "sl-sc-test-2742df70dff7",
+        "sl-sc-test-db39807c5f1d",
+        "sl-sc-test-466381df6b85"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-bf83b22100c6"
+    },
+    {
+      "to": "sc02-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: you report Cook's outlier replacement under a design with a donor term, where each donor x condition cell holds a single pseudobulk, and your count changes between replace, filter and no handling. The other team recorded that in the reference package outlier replacement and outlier flagging each depend on how many replicates share the same design cell, so the default behaviour differs between a blocked and an unblocked design; in its own fit it found no gene above the Cook's cutoff. Check how your implementation counts replicates per design cell, how your Cook's distances and cutoff are computed, how many genes it flags or refits under your design, and whether the reference package would flag or replace anything there. Does that change your method?",
+      "from": [
+        "sl-sc-test-e32dd5bda45a",
+        "sl-sc-test-8583c7409f1c"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-f021fba9d0fe"
+    },
+    {
+      "to": "sc02-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that only a minority of the tested genes have no zero in any pseudobulk, and those are the genes that drive median-of-ratios size factors. It compared size factors with library size and with cells per sample, looked at where the centre of the fold-change distribution sits for well-expressed genes, and reran with alternative normalisations (library-size factors and a zero-tolerant variant), which moved its count. You recorded a housekeeping gene crossing the fold-change cutoff and suspected a depth artefact. Check in your data how many genes are zero-free, whether your size factors track library size, and whether the bulk of unchanged genes is centred at zero. Does that change your method?",
+      "from": [
+        "sl-sc-test-e32dd5bda45a",
+        "sl-sc-test-5d5dd86ca7d1",
+        "sl-sc-test-8583c7409f1c"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-aed567827d45"
+    },
+    {
+      "to": "sc02-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team also wrote its own DESeq2 reimplementation because the reference package was missing. When both implementations are run under the same design they do not give the same count, and the shift between the paired and the unpaired design is not the same size in the two. Your plan said the dispersion trend and shrinkage were approximated. Check yours step by step against the reference definition: the gene-wise dispersion optimiser and bounds, the parametric trend fit and its iteration and fallback, the prior variance and the rule for dispersion outliers that are not shrunk, the Wald standard errors, and the independent-filtering rule (which quantiles of the mean are tried, how the threshold is chosen, and whether its alpha equals the adjusted p-value cutoff). Test it on an input where the reference output is known or can be derived, and check whether the reference package can be obtained without network access (a wheel, a package cache or another environment under /root). Is your count stable under those checks? Does that change your method?",
+      "from": [
+        "sl-sc-test-6562e4fc8bb8",
+        "sl-sc-test-db39807c5f1d",
+        "sl-sc-test-6bc7861f825f",
+        "sl-sc-test-8583c7409f1c"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-abc014e487a7"
+    },
+    {
+      "to": "sc02-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: your notes say no pitfalls were passed down to you, while the other team worked from a list. Two items on it that your record does not show as checked: (1) that the gene filter is a row sum over the retained pseudobulks, applied after donor exclusion and before dispersion estimation; (2) how genes with a missing p-value or missing adjusted p-value (from Cook's flagging or independent filtering) are counted, and how many there are. Check both in your pipeline. Does either change your method?",
+      "from": [
+        "sl-sc-test-337427c61b5f",
+        "sl-sc-test-e036c85a71f8",
+        "sl-sc-test-6bc7861f825f"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-943be311acb0"
+    }
+  ],
+  "warning_signs_to_team_c": [],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": {
+    "difference": "Same cells, donor exclusion (Donor3 and Donor7 dropped), 20 pseudobulks and 14464 genes for both. They differ in the design formula: X fits ~condition (1566) and Y fits ~donor+condition (1471). Their reimplementations also disagree with each other: X gets 1450 for the paired design and Y gets 1731 for the unpaired one.",
+    "test": "pairtest.py: log2 CPM pseudobulks for the 208 genes with at least 20 counts in every sample. Centre each condition and optionally regress out log library size. Take the median per-gene correlation of PBS and IFN-beta residuals within the same donor across the 10 donors, and compare it with a null built by deranging the donor labels of the IFN samples (766 derangements).",
+    "expected_if_x": "If ~condition is adequate (no donor effect shared across conditions), the observed median correlation should fall inside the permutation null (about 0).",
+    "expected_if_y": "If samples are paired and donor blocking is needed, the observed median correlation should be well above the null.",
+    "outcome": "Observed median r = 0.167 raw and 0.202 after library-size adjustment. Null means were -0.02 and -0.024, null 99.9th percentiles were 0.148 and 0.162, and no permutation reached the observed value (p < 0.0013). The PBS and IFN-beta samples from one donor share a real donor effect.",
+    "pick": "Y",
+    "reason": "The data show significant within-donor dependence, so ~condition treats paired samples as independent. The task's rule of dropping donors lacking either condition also implies a matched design. That supports Y's ~donor+condition. Caveat: the two reimplementations give different counts for the same design (paired 1450 vs 1471). The design choice favours Y, but its exact count could not be checked against a reference DESeq2.",
+    "own_answer": null,
+    "picked_agent": "sc02-team-b",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "sc02-team-a",
+      "Y": "sc02-team-b"
+    }
+  },
+  "research": [
+    {
+      "round": "questions",
+      "questions": [
+        {
+          "question": "In DESeq2 and in PyDESeq2, how exactly are Cook's-distance outliers handled by default: what is the cutoff (which F quantile and degrees of freedom), how many replicates per unique design-matrix row are required for a sample to be eligible for p-value flagging and for count replacement with refitting, and what happens in a blocked design such as ~donor + condition where every unique design row has a single sample? Do DESeq2 and PyDESeq2 differ here?",
+          "why": "One team applied outlier replacement in a donor-blocked design and saw its count move; the other found no outliers at all. Knowing the reference rule tells both teams whether any Cook's handling should occur under each design.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "What is the exact default independent-filtering algorithm in PyDESeq2's DeseqStats and in DESeq2's results(): which quantile grid of the mean normalised count is tried, how is the threshold chosen (lowess fit of rejections and the rule relative to the maximum), which alpha is used by default in each, and how are genes with missing p-values treated in the BH adjustment?",
+          "why": "Both teams hand-coded independent filtering and the count is sensitive to it in both; a precise definition lets them align their implementations to the reference instead of to each other.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In PyDESeq2 (and where it differs, DESeq2), what are the default details of dispersion estimation that a hand-written reimplementation must match: bounds (min/max dispersion) and optimiser for gene-wise Cox-Reid estimates, the iterative parametric gamma-GLM trend fit and its fallback when it fails, how the prior variance is estimated, the rule for genes whose gene-wise dispersion is far above the trend (not shrunk), and whether any prior is placed on the log fold change before the Wald test?",
+          "why": "The two reimplementations disagree under the same design, and one team said its trend and shrinkage were approximated; the reference definitions let each team test its own code step by step.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In DESeq2 and in PyDESeq2, how exactly are Cook's-distance outliers handled by default: what is the cutoff (which F quantile and degrees of freedom), how many replicates per unique design-matrix row are required for a sample to be eligible for p-value flagging and for count replacement with refitting, and what happens in a blocked design such as ~donor + condition where every unique design row has a single sample? Do DESeq2 and PyDESeq2 differ here?",
+          "answer": "Cutoff in both packages: F quantile 0.99 with df (p, m-p), where p = number of design-matrix columns and m = number of samples (qf(.99,p,m-p) / scipy f.ppf(0.99,p,m-p)). P-value flagging: only samples whose exact design-matrix row appears at least 3 times are used for maxCooks (nOrMoreInCell n=3 / n_or_more_replicates(...,3)); a gene whose max Cook's distance over those samples exceeds the cutoff gets pvalue=NA. Replacement and refit: samples need at least 7 copies of their design row (DESeq minReplicatesForReplace=7 / DeseqDataSet min_replicates=7, refit_cooks=True). Flagged counts in those samples are replaced by int(trimmed mean (trim=0.2) of normalised counts over all samples x size factor), then dispersions and LFCs are refit for the replaced genes. Under ~donor + condition with one pseudobulk per donor x condition, every row is unique (count 1), so no sample is eligible for either step: nothing is flagged (R maxCooks=NA; PyDESeq2 use_for_max all False, so cooks_outlier is all False), nothing is replaced, and nothing is refit (R sufficientReps=FALSE; PyDESeq2 _replace_outliers returns early with replaced=False). Cook's handling should therefore change nothing in the donor-blocked design. Under ~condition with 7 or more donors per arm, both flagging and replacement/refit apply. Differences: (a) R applies the heuristic 'do not flag if 3 or more samples have counts larger than the max-Cook's sample's count' only when the design is a single 2-level factor; PyDESeq2 applies it to every design. (b) R replaceOutliers returns early if m <= p. Both compute Cook's distance using a robust trimmed method-of-moments dispersion (floor 0.04) and the hat diagonals of the final fit.",
+          "sources": [
+            "https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/dds.py",
+            "https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/misc.py",
+            "https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/dispersions.py",
+            "https://raw.githubusercontent.com/thelovelab/DESeq2/devel/R/core.R",
+            "https://raw.githubusercontent.com/thelovelab/DESeq2/devel/R/results.R"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc02-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-23ce33efd4e2"
+            },
+            "sc02-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-d2b98f83120a"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In DESeq2 and in PyDESeq2, how exactly are Cook's-distance outliers handled by default: what is the cutoff (which F quantile and degrees of freedom), how many replicates per unique design-matrix row are required for a sample to be eligible for p-value flagging and for count replacement with refitting, and what happens in a blocked design such as ~donor + condition where every unique design row has a single sample? Do DESeq2 and PyDESeq2 differ here? ANSWER: Cutoff in both packages: F quantile 0.99 with df (p, m-p), where p = number of design-matrix columns and m = number of samples (qf(.99,p,m-p) / scipy f.ppf(0.99,p,m-p)). P-value flagging: only samples whose exact design-matrix row appears at least 3 times are used for maxCooks (nOrMoreInCell n=3 / n_or_more_replicates(...,3)); a gene whose max Cook's distance over those samples exceeds the cutoff gets pvalue=NA. Replacement and refit: samples need at least 7 copies of their design row (DESeq minReplicatesForReplace=7 / DeseqDataSet min_replicates=7, refit_cooks=True). Flagged counts in those samples are replaced by int(trimmed mean (trim=0.2) of normalised counts over all samples x size factor), then dispersions and LFCs are refit for the replaced genes. Under ~donor + condition with one pseudobulk per donor x condition, every row is unique (count 1), so no sample is eligible for either step: nothing is flagged (R maxCooks=NA; PyDESeq2 use_for_max all False, so cooks_outlier is all False), nothing is replaced, and nothing is refit (R sufficientReps=FALSE; PyDESeq2 _replace_outliers returns early with replaced=False). Cook's handling should therefore change nothing in the donor-blocked design. Under ~condition with 7 or more donors per arm, both flagging and replacement/refit apply. Differences: (a) R applies the heuristic 'do not flag if 3 or more samples have counts larger than the max-Cook's sample's count' only when the design is a single 2-level factor; PyDESeq2 applies it to every design. (b) R replaceOutliers returns early if m <= p. Both compute Cook's distance using a robust trimmed method-of-moments dispersion (floor 0.04) and the hat diagonals of the final fit. HOW SURE: high. SOURCES: https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/dds.py, https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/misc.py, https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/dispersions.py, https://raw.githubusercontent.com/thelovelab/DESeq2/devel/R/core.R, https://raw.githubusercontent.com/thelovelab/DESeq2/devel/R/results.R."
+        },
+        {
+          "question": "What is the exact default independent-filtering algorithm in PyDESeq2's DeseqStats and in DESeq2's results(): which quantile grid of the mean normalised count is tried, how is the threshold chosen (lowess fit of rejections and the rule relative to the maximum), which alpha is used by default in each, and how are genes with missing p-values treated in the BH adjustment?",
+          "answer": "Filter statistic: baseMean over all genes. lower = mean(baseMean == 0); upper = 0.95 if lower < 0.95 else 1; theta = 50 equally spaced values from lower to upper; cutoffs = quantile(baseMean, theta), linear interpolation (R type 7 = numpy default). For each cutoff, BH is applied to the p-values of genes with baseMean >= cutoff (>=, not >). NA p-values (e.g. Cook's-flagged) are excluded from the BH count n: PyDESeq2 drops them explicitly and R p.adjust ignores NAs. They and all genes below the cutoff get padj = NA. numRej[i] = number of padj < alpha. Fit lowess(theta, numRej, f=1/5, 3 robustness iterations). If max(numRej) <= 10, use the first theta (effectively no filtering). Otherwise residual = numRej - fit over points with numRej > 0, thresh = max(fit) - sqrt(mean(residual^2)), and the chosen theta is the FIRST with numRej > thresh. R adds fallbacks (first numRej > 0.9*maxFit, then > 0.8*maxFit, else the first theta); PyDESeq2 goes straight to the first theta. Final padj = the BH column at that theta. Default alpha: PyDESeq2 DeseqStats alpha=0.05; DESeq2 results() alpha=0.1, so R must be called with alpha=0.05 to match a padj<0.05 cutoff. The method is BH in both. PyDESeq2 uses its own Python lowess, which approximates R's C lowess but is not guaranteed bit-identical. NaN padj should be counted as not significant.",
+          "sources": [
+            "https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/ds.py",
+            "https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/stats.py",
+            "https://raw.githubusercontent.com/thelovelab/DESeq2/devel/R/results.R"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc02-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-34ccaaa93f94"
+            },
+            "sc02-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-63ec192e0958"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What is the exact default independent-filtering algorithm in PyDESeq2's DeseqStats and in DESeq2's results(): which quantile grid of the mean normalised count is tried, how is the threshold chosen (lowess fit of rejections and the rule relative to the maximum), which alpha is used by default in each, and how are genes with missing p-values treated in the BH adjustment? ANSWER: Filter statistic: baseMean over all genes. lower = mean(baseMean == 0); upper = 0.95 if lower < 0.95 else 1; theta = 50 equally spaced values from lower to upper; cutoffs = quantile(baseMean, theta), linear interpolation (R type 7 = numpy default). For each cutoff, BH is applied to the p-values of genes with baseMean >= cutoff (>=, not >). NA p-values (e.g. Cook's-flagged) are excluded from the BH count n: PyDESeq2 drops them explicitly and R p.adjust ignores NAs. They and all genes below the cutoff get padj = NA. numRej[i] = number of padj < alpha. Fit lowess(theta, numRej, f=1/5, 3 robustness iterations). If max(numRej) <= 10, use the first theta (effectively no filtering). Otherwise residual = numRej - fit over points with numRej > 0, thresh = max(fit) - sqrt(mean(residual^2)), and the chosen theta is the FIRST with numRej > thresh. R adds fallbacks (first numRej > 0.9*maxFit, then > 0.8*maxFit, else the first theta); PyDESeq2 goes straight to the first theta. Final padj = the BH column at that theta. Default alpha: PyDESeq2 DeseqStats alpha=0.05; DESeq2 results() alpha=0.1, so R must be called with alpha=0.05 to match a padj<0.05 cutoff. The method is BH in both. PyDESeq2 uses its own Python lowess, which approximates R's C lowess but is not guaranteed bit-identical. NaN padj should be counted as not significant. HOW SURE: high. SOURCES: https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/ds.py, https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/stats.py, https://raw.githubusercontent.com/thelovelab/DESeq2/devel/R/results.R."
+        },
+        {
+          "question": "In PyDESeq2 (and where it differs, DESeq2), what are the default details of dispersion estimation that a hand-written reimplementation must match: bounds (min/max dispersion) and optimiser for gene-wise Cox-Reid estimates, the iterative parametric gamma-GLM trend fit and its fallback when it fails, how the prior variance is estimated, the rule for genes whose gene-wise dispersion is far above the trend (not shrunk), and whether any prior is placed on the log fold change before the Wald test?",
+          "answer": "Bounds: min_disp=1e-8; max_disp = max(10, n_samples) in both. Gene-wise step: maximise NB log-likelihood + Cox-Reid term (-0.5*logdet(X'WX), W = mu/(1+mu*alpha)) over log(alpha). The start value comes from rough/moment estimates, and mu comes from a linear model if #unique design rows == #columns, otherwise IRLS (minmu 0.5). PyDESeq2 uses scipy L-BFGS-B with bounds [log 1e-8, log max_disp] and an analytic gradient, plus a grid-search fallback if it fails. R uses a C++ backtracking line search (kappa_0=1, dispTol=1e-6, maxit=100) with grid refit for non-converged genes. Both clip results to [minDisp, maxDisp]. Trend (parametric): disp = a0 + a1/baseMean, fitted by a Gamma-family identity-link GLM. In R (parametricDispersionFit), only genes with dispGeneEst > 100*minDisp are used, start coefs are (0.1, 1), and each iteration fits only genes whose disp/fit ratio is in (1e-4, 15). It stops when sum(log(new/old)^2) < 1e-6 and the GLM converged. It errors if any coefficient <= 0 or there are more than 10 iterations, and DESeq() then falls back to fitType='local' (locfit on log scale, weighted by mean). PyDESeq2 minimises the gamma deviance-like loss mean(y/mu + log mu) with L-BFGS-B, starting at (1,1). Its first fit uses all non-zero genes (no 100*minDisp filter); genes with ratio < 1e-4 or >= 15 are dropped before the next iteration, with the same 1e-6 stopping rule. If the fit fails to converge or any coefficient is <= 1e-10, it falls back to a MEAN trend (trimmed mean, proportiontocut=0.001, of gene-wise dispersions > 10*min_disp), not local. Prior variance: varLogDispEsts = MAD(log genewise - log trend)^2 over non-zero genes with genewise >= 100*minDisp (MAD scaled to normal: 1.4826 in R, 1/norm.ppf(0.75) in PyDESeq2). prior_var = max(varLogDispEsts - trigamma((m-p)/2), 0.25). R alone switches to a Monte Carlo KL-matching estimate when 1 <= m-p <= 3; PyDESeq2 only warns. MAP step: Cox-Reid likelihood + (log alpha - log trend)^2/(2*prior_var), same optimiser and bounds. Shrinkage exception: if log(genewise) > log(trend) + 2*sqrt(varLogDispEsts) (outlierSD=2; uses varLogDispEsts, not prior_var), the final dispersion is the gene-wise estimate. LFC prior: none by default. DESeq2 betaPrior=FALSE; PyDESeq2 fits MLE LFCs by IRLS with only a negligible ridge of 1e-6 per coefficient (prior_LFC_var=None) and runs the Wald test (normal null, lfc_null=0) on these unshrunken LFCs. apeglm shrinkage (lfc_shrink) is optional and does not change p-values.",
+          "sources": [
+            "https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/dds.py",
+            "https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/dispersions.py",
+            "https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/default_inference.py",
+            "https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/ds.py",
+            "https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/stats.py",
+            "https://raw.githubusercontent.com/thelovelab/DESeq2/devel/R/core.R",
+            "https://raw.githubusercontent.com/thelovelab/DESeq2/devel/R/methods.R"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc02-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-80cd901900b8"
+            },
+            "sc02-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-89e8af99c8e7"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In PyDESeq2 (and where it differs, DESeq2), what are the default details of dispersion estimation that a hand-written reimplementation must match: bounds (min/max dispersion) and optimiser for gene-wise Cox-Reid estimates, the iterative parametric gamma-GLM trend fit and its fallback when it fails, how the prior variance is estimated, the rule for genes whose gene-wise dispersion is far above the trend (not shrunk), and whether any prior is placed on the log fold change before the Wald test? ANSWER: Bounds: min_disp=1e-8; max_disp = max(10, n_samples) in both. Gene-wise step: maximise NB log-likelihood + Cox-Reid term (-0.5*logdet(X'WX), W = mu/(1+mu*alpha)) over log(alpha). The start value comes from rough/moment estimates, and mu comes from a linear model if #unique design rows == #columns, otherwise IRLS (minmu 0.5). PyDESeq2 uses scipy L-BFGS-B with bounds [log 1e-8, log max_disp] and an analytic gradient, plus a grid-search fallback if it fails. R uses a C++ backtracking line search (kappa_0=1, dispTol=1e-6, maxit=100) with grid refit for non-converged genes. Both clip results to [minDisp, maxDisp]. Trend (parametric): disp = a0 + a1/baseMean, fitted by a Gamma-family identity-link GLM. In R (parametricDispersionFit), only genes with dispGeneEst > 100*minDisp are used, start coefs are (0.1, 1), and each iteration fits only genes whose disp/fit ratio is in (1e-4, 15). It stops when sum(log(new/old)^2) < 1e-6 and the GLM converged. It errors if any coefficient <= 0 or there are more than 10 iterations, and DESeq() then falls back to fitType='local' (locfit on log scale, weighted by mean). PyDESeq2 minimises the gamma deviance-like loss mean(y/mu + log mu) with L-BFGS-B, starting at (1,1). Its first fit uses all non-zero genes (no 100*minDisp filter); genes with ratio < 1e-4 or >= 15 are dropped before the next iteration, with the same 1e-6 stopping rule. If the fit fails to converge or any coefficient is <= 1e-10, it falls back to a MEAN trend (trimmed mean, proportiontocut=0.001, of gene-wise dispersions > 10*min_disp), not local. Prior variance: varLogDispEsts = MAD(log genewise - log trend)^2 over non-zero genes with genewise >= 100*minDisp (MAD scaled to normal: 1.4826 in R, 1/norm.ppf(0.75) in PyDESeq2). prior_var = max(varLogDispEsts - trigamma((m-p)/2), 0.25). R alone switches to a Monte Carlo KL-matching estimate when 1 <= m-p <= 3; PyDESeq2 only warns. MAP step: Cox-Reid likelihood + (log alpha - log trend)^2/(2*prior_var), same optimiser and bounds. Shrinkage exception: if log(genewise) > log(trend) + 2*sqrt(varLogDispEsts) (outlierSD=2; uses varLogDispEsts, not prior_var), the final dispersion is the gene-wise estimate. LFC prior: none by default. DESeq2 betaPrior=FALSE; PyDESeq2 fits MLE LFCs by IRLS with only a negligible ridge of 1e-6 per coefficient (prior_LFC_var=None) and runs the Wald test (normal null, lfc_null=0) on these unshrunken LFCs. apeglm shrinkage (lfc_shrink) is optional and does not change p-values. HOW SURE: high. SOURCES: https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/dds.py, https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/dispersions.py, https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/default_inference.py, https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/ds.py, https://raw.githubusercontent.com/scverse/PyDESeq2/main/src/pydeseq2/stats.py, https://raw.githubusercontent.com/thelovelab/DESeq2/devel/R/core.R, https://raw.githubusercontent.com/thelovelab/DESeq2/devel/R/methods.R."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc02-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "sc02-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "sc02-team-a",
+      "round": "revise",
+      "reason": "the referee's test supported the other answer: The data show significant within-donor dependence, so ~condition treats paired samples as independent. The task's rule of dropping donors lacking either condition also implies a matched design. That supports Y's ~donor+condition. Caveat: the two reimplementations give different counts for the same design (paired 1450 vs 1471). The design choice favours Y, but its exact count could not be checked against a reference DESeq2."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc02-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 36.69302595790941,
+      "cost_usd": 0.2057648,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 87.25854491698556,
+      "cost_usd": 0.1484336,
+      "error": null
+    },
+    {
+      "agent": "sc02-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 306.6482455410296,
+      "cost_usd": 0.49814320000000006,
+      "error": null
+    },
+    {
+      "agent": "sc02-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 459.4290990829468,
+      "cost_usd": 0.46783820000000004,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 121.59850408299826,
+      "cost_usd": 0.2706237,
+      "error": null
+    },
+    {
+      "agent": "sc02-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 220.29477833292913,
+      "cost_usd": 1.1935424000000001,
+      "error": null
+    },
+    {
+      "agent": "sc02-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 296.22451612504665,
+      "cost_usd": 0.6231626,
+      "error": null
+    },
+    {
+      "agent": "sc02-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 473.11779104103334,
+      "cost_usd": 0.4583926,
+      "error": null
+    },
+    {
+      "agent": "sc02-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 73.26143299997784,
+      "cost_usd": 0.20275259999999995,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

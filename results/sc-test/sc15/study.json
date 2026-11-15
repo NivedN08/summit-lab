@@ -1,0 +1,657 @@
+{
+  "study": "sc15",
+  "status": "unresolved",
+  "final": {
+    "agent": "sc15-team-c",
+    "team": "team-c",
+    "round": "third-team",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc15/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc15-library": "opus",
+    "sc15-team-a": "opus",
+    "sc15-team-b": "opus",
+    "sc15-team-c": "opus",
+    "sc15-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc15-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc15/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cell_types_captured": 17,
+        "total_clusters": 135,
+        "average_purity": 85.43
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc15-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc15/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cell_types_captured": 18,
+        "total_clusters": 33,
+        "average_purity": 87.01
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc15-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc15/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cell_types_captured": 18,
+        "total_clusters": 33,
+        "average_purity": 87.01
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc15-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc15/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cell_types_captured": 18,
+        "total_clusters": 70,
+        "average_purity": 86.96
+      }
+    },
+    {
+      "team": "team-c",
+      "agent": "sc15-team-c",
+      "round": "third-team",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc15/candidates/team-c-third-team.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cell_types_captured": 17,
+        "total_clusters": 34,
+        "average_purity": 86.69
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc15-team-a",
+        "sc15-team-b"
+      ],
+      "fields": {
+        "cell_types_captured": false,
+        "total_clusters": false,
+        "average_purity": true
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "sc15-team-a",
+        "sc15-team-b"
+      ],
+      "fields": {
+        "cell_types_captured": true,
+        "total_clusters": false,
+        "average_purity": true
+      },
+      "agree": false
+    },
+    {
+      "round": "third-team",
+      "between": [
+        "sc15-team-c",
+        "sc15-team-a"
+      ],
+      "fields": {
+        "cell_types_captured": false,
+        "total_clusters": true,
+        "average_purity": true
+      },
+      "agree": false
+    },
+    {
+      "round": "third-team",
+      "between": [
+        "sc15-team-c",
+        "sc15-team-b"
+      ],
+      "fields": {
+        "cell_types_captured": false,
+        "total_clusters": false,
+        "average_purity": true
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "PITFALL (purity is inflatable, and the metric code is easy to get wrong): cluster purity rises trivially with the number of clusters (one cell per cluster gives 100%), and the task's 'average purity' is an unweighted mean over clusters, so many tiny pure clusters raise it while hiding large mixed ones. A resolution chosen only to maximise purity is over-clustered and not a meaningful result. CHECK: over a resolution sweep tabulate n_clusters, distinct types captured, unweighted mean purity, cell-weighted purity, minimum cluster size and the purity of the 5 largest clusters, and see whether purity gains come only from cluster count. Verify the metric code: purity on a 0-100 scale; captured = number of DISTINCT dominant cell types (not number of clusters); total_clusters = exactly the clusters used to compute purity (the final labelling, including any sub-clusters); no empty/unused categories and no NaN labels in the type-by-cluster crosstab. IF FOUND: among solutions that reach at least 17 captured types with stable purity, prefer the one with the fewest clusters, and state cluster count and cell-weighted purity next to the reported figure. Never feed the cell_type labels into the clustering itself: labels may only score or choose among unsupervised partitions, and any such label-guided tuning must be disclosed.",
+      "from": [
+        "sl-sc-test-2ff9e01dff53"
+      ],
+      "reason": "All three reported numbers come from this metric code and from the choice of how many clusters to make; a counting error or an over-clustered solution changes the answer directly, and using labels inside the clustering would invalidate it.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-b8603b25df11"
+      }
+    },
+    {
+      "text": "PITFALL (resolution limit hides rare types): modularity-based Leiden/Louvain merges communities smaller than a scale set by total graph size. In a graph of about 100,000 cells at default resolution (~1.0), rare PBMC types (the library names HSPC, ILC, pDC, Plasmablast, cDC, NK CD56bright as the likely ones) can be absorbed into neighbours and never be the plurality of any cluster. Raising global resolution does not fix this cleanly: it shatters the large populations at the same time. CHECK: for every run build an 18-row capture table (one row per cell type: type size, the cluster holding most of that type, share of the type in that cluster, whether the type is dominant in any cluster) and run it across resolutions (e.g. 0.5 to 5); note which types remain uncaptured. IF FOUND: sub-cluster only the parent cluster(s) that contain the missing type (sc.tl.leiden with restrict_to, or re-run HVG + PCA + neighbours on that subset) instead of cranking global resolution; the CPM quality function is an alternative without this limit.",
+      "from": [
+        "sl-sc-test-7c14fa4fcbee"
+      ],
+      "reason": "The goal is 17 of 18 types, so the rare types decide success; this tells the team why a plain resolution sweep can stall below 17 and what to do instead.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-cd666eae0180"
+      }
+    },
+    {
+      "text": "PITFALL (fine T/NK subsets are not discrete RNA clusters): T-cell states vary continuously, CD4 vs CD8 is poorly resolved by RNA (low CD4 transcript), and in a large T-cell atlas unsupervised clusters mixed CD4 and CD8 whatever the feature selection or PCA/Harmony, being driven by metabolism, TCR, immunoglobulin and HLA transcripts rather than subset markers. Labels such as CD4/CD8 Naive vs Memory, Treg, MAIT, NKT and ILC were probably assigned by reference mapping or protein, so one global clustering is likely to leave several of them never dominant and to hold most of the impure clusters. CHECK: print the type-by-cluster confusion matrix restricted to the T/NK clusters; list which T/NK types have no cluster where they are the plurality and which clusters are below about 60% purity. IF FOUND: subset the T/NK compartment, re-select HVGs inside the subset (consider dropping TR*V, IG*, HLA, ribosomal and mitochondrial genes from the HVG list), recompute PCA and neighbours, and cluster that subset at higher resolution. Expect purity in this compartment to stay well below the myeloid and B-cell clusters, and say so.",
+      "from": [
+        "sl-sc-test-5580b881611a"
+      ],
+      "reason": "About half of the 18 labels are T/NK subsets; if they are not captured the 17-type goal fails, and they will dominate the average-purity figure, so the team needs a compartment-specific step rather than one global clustering.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-8c5b2d314003"
+      }
+    },
+    {
+      "text": "PITFALL (do not trust the supplied embedding): for abundant, very different cell types the feature choice barely matters, but for subtle differences (naive vs memory T, Treg, MAIT, NKT, NK CD56bright) the number of features and the selection method strongly change the clusters. The file's precomputed obsm['X_pca'] is described in its own metadata as a 'sample-based PCA' with 34.6% variance explained and lists only 100 hvg_genes, so it may rest on too few genes. CHECK: cluster once on the supplied X_pca and once on a pipeline recomputed from raw counts (normalize_total, log1p, 2000-4000 HVGs, 50 PCs) at a matched number of clusters, and compare types captured and purity; check whether known subset markers (e.g. FOXP3, SLC4A10, CCR7, NCAM1, KLRB1) are in the HVG set. IF FOUND: use the recomputed embedding. Never cluster on the 2-D UMAP.",
+      "from": [
+        "sl-sc-test-4d458db96f98"
+      ],
+      "reason": "Using the ready-made PCA or UMAP is the quickest route and may be unable to separate the fine subsets the task counts; the team should decide between supplied and recomputed embeddings by test, not by default.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-710a6b9e2be2"
+      }
+    },
+    {
+      "text": "PITFALL (preprocessing can silently drop rare-type signal): clustering raw counts, log-transforming twice, or keeping too few PCs removes it, because the PCs that separate rare populations explain little total variance and fall below an elbow-plot cut-off. Log-normalisation and Pearson residuals perform similarly overall, but Pearson residuals give marker genes of small populations high variance. CHECK: confirm X holds integer counts before normalising (X.data equals its rounded self; look at the maximum) and that it is not already logged; compare 30 vs 50 PCs and log1p-CP10k vs analytic Pearson residuals (scanpy.experimental.pp) on the per-type capture table (for each of the 18 types: is it dominant in any cluster). IF FOUND: normalise from raw counts exactly once, keep about 50 PCs rather than cutting at the elbow, and switch to Pearson-residual HVG/PCA if it captures a rare type that log-normalisation misses.",
+      "from": [
+        "sl-sc-test-bdaa71d9e8b7"
+      ],
+      "reason": "Normalisation state and number of PCs are set before any clustering and determine whether rare types can be separated at all; an error here cannot be repaired by tuning resolution later.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-badc37c8e550"
+      }
+    },
+    {
+      "text": "PITFALL (the kNN graph matters as much as resolution): the neighbour graph is fixed before Leiden runs. A larger n_neighbors gives a more global view and merges small populations into neighbours; going from k=15 to k=50 usually changes the cluster count more than a resolution change does. A population with fewer cells than a few multiples of k cannot hold its own neighbourhood. CHECK: note the size of the smallest cell type and compare it with k; rebuild neighbours at k=10, 15 and 30 on the same PCs and compare, at a matched number of clusters, which of the 18 types are dominant in at least one cluster. IF FOUND: use the smaller k (10-15) for the global graph or for the sub-clustering step aimed at the rare type, and record k, number of PCs and distance metric alongside resolution.",
+      "from": [
+        "sl-sc-test-3f473f35b9e9"
+      ],
+      "reason": "A team that only sweeps resolution leaves an equally strong parameter untested; k decides whether the smallest types can form a cluster of their own.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-6041c51181fe"
+      }
+    },
+    {
+      "text": "PITFALL (donor and stimulation can drive the clusters): this dataset is multi-donor, stimulated-vs-control PBMC (12 donors x 91 cytokine conditions, with a PBS control). Stimulation (interferon-type cytokines change hundreds of genes in every cell, monocytes most strongly) and donor identity can drive the top PCs, so cells group by condition or donor rather than by type. Splitting one type by state only adds clusters, but a shared response programme can also pull different types together, lowering purity or losing a captured type. CHECK: for each cluster compute the largest donor share and the largest cytokine share (and PBS vs cytokine share) and compare with the global shares; correlate the top PCs with donor and treatment; flag mixed-type clusters dominated by one cytokine or donor. IF FOUND: select HVGs batch-aware (batch_key = donor or sample), integrate the PCs with Harmony on donor (optionally also cytokine), re-cluster, and compare the per-type capture table against the unintegrated run; keep whichever captures more types at an equal number of clusters.",
+      "from": [
+        "sl-sc-test-e79879d9df26"
+      ],
+      "reason": "Tells the team to test for a condition/donor structure that would otherwise be mistaken for cell-type structure, and gives a decision rule for whether to integrate.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-3916ebc73200"
+      }
+    },
+    {
+      "text": "PITFALL (batch integration can over-correct and erase rare types): Harmony's objective is biased toward major cell types, so small populations can be blended into large neighbours; MNN, scVI and LIGER can alter the data considerably. Integrating by default may lose exactly the rare types needed to reach 17 of 18. CHECK: before vs after integration, at the same number of clusters, compare which of the 18 types are dominant in at least one cluster and the purity of the clusters dominated by rare types (HSPC, ILC, pDC, Plasmablast, cDC, NK CD56bright). A rare type that was dominant somewhere before integration and nowhere after is over-correction. IF FOUND: use the uncorrected PCA, or integrate on donor only with a weaker setting. Treat integration as an option that must be justified by the capture comparison, not as a required step.",
+      "from": [
+        "sl-sc-test-976f59ebeb5c"
+      ],
+      "reason": "Counterweight to the donor/stimulation item: integration is the standard reflex for multi-donor data and here it can cost the rare-type captures the goal depends on.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-583f9451bf53"
+      }
+    },
+    {
+      "text": "PITFALL (a mixed 'cycling' cluster): proliferating cells from different lineages (activated T, NK, B) share a cell-cycle programme that can be stronger than their type markers, so they form one cycling cluster. Cytokine-stimulated PBMC are likely to contain such cells, and the 18 labels have no 'proliferating' class, so that cluster would be a low-purity mix. CHECK: score S and G2M phases (sc.tl.score_genes_cell_cycle) or look at MKI67/TOP2A per cluster, and inspect the label composition of any cluster with high cycling scores. IF FOUND: sub-cluster that cluster on an HVG set with cell-cycle genes removed (or regress S/G2M scores before PCA) so that it splits by lineage, and compare the result with the original. Do not regress cell cycle blindly across the whole dataset, since regression can remove other biology.",
+      "from": [
+        "sl-sc-test-7f0879841d4c"
+      ],
+      "reason": "Gives a specific cause and remedy for a low-purity mixed cluster that resolution tuning alone would not explain or fix.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ad2228ab1522"
+      }
+    },
+    {
+      "text": "PITFALL (seed dependence): Leiden is stochastic and has no null model; a different random seed changes the partition, so a result of 17 or 18 captured types that rests on one small borderline cluster can flip between runs, and the reported cluster count and purity move with it. CHECK: re-run the chosen configuration with 3-5 random_state values (and, if cheap, on an 80% subsample) and record captured types, n_clusters and mean purity each time. IF FOUND: prefer a configuration whose capture count is the same across seeds, fix and report random_state, and report the range across seeds rather than the best seed.",
+      "from": [
+        "sl-sc-test-a949766beb32"
+      ],
+      "reason": "The pass mark is a threshold (17 of 18); the team should know whether its count is stable or an accident of one seed before reporting it.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-b62d7ba8dd4c"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "sc15-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team did not cluster the supplied X_pca. It rebuilt the embedding from the raw integer counts (library-size normalisation, log1p, HVG selection, scaling, PCA) because it did not know how the supplied embedding was made. Check what you know about the supplied X_pca: which genes, which normalisation, whether it was scaled or batch-corrected. Then check whether the types that never dominate on your graph (ILC, NKT) behave the same on an embedding recomputed from the counts, and whether the markers of those types are in the gene set behind each embedding. Does that change your method?",
+      "from": [
+        "sl-sc-test-6c5059550c05",
+        "sl-sc-test-b0362f921616"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-f9649ff6cf37"
+    },
+    {
+      "to": "sc15-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team also saw a type that never became the plurality of any cluster across its whole global resolution sweep. It did not answer that by raising the global resolution; it re-clustered only the parent cluster holding that type, on the same graph. You answered it by raising the global resolution for all cells. Check in your data where the cells of each uncaptured type sit at a moderate resolution (how many parent clusters, what share of each), and what happens to the rest of the partition when the global resolution is raised to reach them. Could the choice of which clusters to re-cluster be made without the labels? Does that change your method?",
+      "from": [
+        "sl-sc-test-9a773c09abd7",
+        "sl-sc-test-eec6453a06e5",
+        "sl-sc-test-cf0b1e3f6c0e"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-8dee0f4c3638"
+    },
+    {
+      "to": "sc15-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team worked from a warning that the unweighted mean purity can be driven by the number of clusters alone, and that many small clusters can hide large mixed ones. Across its sweep it tabulated, next to the unweighted mean, the cell-weighted purity, the minimum cluster size and the purity of the largest clusters, and it took the cluster count into account when choosing among partitions that meet the goal. Your notes say no pitfalls were passed down and record only the unweighted mean. Make that table for your scan. Also confirm that total_clusters counts exactly the non-empty clusters used for the purity mean and that captured counts distinct dominant types. Does that change which partition you report?",
+      "from": [
+        "sl-sc-test-b8603b25df11",
+        "sl-sc-test-eec6453a06e5"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-49c5710b6c12"
+    },
+    {
+      "to": "sc15-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team looked at the donor share and the cytokine share inside each cluster and saw clusters of a single cell type that are dominated by one donor or one stimulation. Your plan named donor effects as a check, but your notes record only a donor x cell type crosstab. Check in your reported partition how many clusters are donor-driven or cytokine-driven splits of one cell type, and how much of your cluster count they account for. Does that change your method?",
+      "from": [
+        "sl-sc-test-a9db4b5ef080",
+        "sl-sc-test-b0362f921616"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-b3eb385438d4"
+    },
+    {
+      "to": "sc15-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: both teams saw that the number of captured types from a global resolution changes with the random seed. The other team treated a count that holds on only one seed as a reason to change its method and reported only a configuration it had checked on several seeds. You reported one seed at a resolution whose neighbours fail on other seeds. Also, the two teams did not use the same graph or the same Leiden implementation (yours: sklearn kNN graph and leidenalg RBConfiguration). Check whether your graph is symmetric and how it is weighted, and whether any configuration in your scan meets the goal on every seed you try. Does that change what you report?",
+      "from": [
+        "sl-sc-test-4c15acdc5009",
+        "sl-sc-test-cf0b1e3f6c0e"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-1f0b1654875a"
+    },
+    {
+      "to": "sc15-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the task's first sentence asks to maximise cell type capture while maintaining high cluster purity; its goal line sets a threshold. The two teams did not weigh these two sentences the same way. Write down which of the two your chosen partition optimises, what you traded for it (types captured, number of clusters, purity), and which words of the task support that choice. Does that change your method?",
+      "from": [
+        "sl-sc-test-b0362f921616"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-91d5538b5a85"
+    },
+    {
+      "to": "sc15-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team clustered the supplied 50-d X_pca directly and did not recompute anything from the counts. You listed 'did not compare the supplied X_pca' as your weakest point, and your plan's pitfall says not to trust it without having looked at it. Check what the supplied X_pca is (which genes, which normalisation, scaled or batch-corrected) and run your own procedure on it: are the same types missing at your base resolution, do the same parent clusters hold them, and does your final result hold? Also check k other than 15. Does that change your method?",
+      "from": [
+        "sl-sc-test-b0362f921616",
+        "sl-sc-test-6c5059550c05"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-dbce0d69ef85"
+    },
+    {
+      "to": "sc15-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team reports a single global unsupervised partition in which the labels were used only to choose one resolution. In your partition the labels also chose which two clusters were split further. Check whether a label-free rule reaches the same capture: for example the same sub-clustering applied to every cluster, or a rule based on cluster size or on within-cluster heterogeneity. If only the label-chosen split works, is your result still within what the pitfall passed down to you allows (labels may score or choose among unsupervised partitions)? Does that change your method?",
+      "from": [
+        "sl-sc-test-b8603b25df11",
+        "sl-sc-test-3366b7741fc3",
+        "sl-sc-test-eec6453a06e5"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-4a37e621233f"
+    },
+    {
+      "to": "sc15-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team's list of types that fail to dominate under global clustering is not the same as yours, and it worked on a different embedding, a kNN graph built outside scanpy and leidenalg's RBConfiguration partition instead of igraph Leiden. So which rare types are hard may depend on the embedding, the graph and the Leiden implementation. Check, for each of the four rarest types and NKT, the size and purity of the cluster that captures it in your final partition on each seed, and whether that capture survives a change of graph weighting or Leiden implementation. Does that change your method or your confidence?",
+      "from": [
+        "sl-sc-test-eec6453a06e5",
+        "sl-sc-test-4c15acdc5009",
+        "sl-sc-test-9a773c09abd7"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-87e40bff9550"
+    },
+    {
+      "to": "sc15-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the task's first sentence asks to maximise cell type capture while maintaining high cluster purity; its goal line sets a threshold. The two teams did not weigh these two sentences the same way. Write down which of the two your chosen partition optimises, what you traded for it (types captured, number of clusters, purity), and which words of the task support that choice. Your notes also show that your cluster count and mean purity move with the seed and that you reported one seed: on what grounds was that seed chosen, and what would you report if the seed were not yours to choose? Does that change your method?",
+      "from": [
+        "sl-sc-test-3366b7741fc3",
+        "sl-sc-test-6c5059550c05"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-981822afc4b0"
+    }
+  ],
+  "warning_signs_to_team_c": [
+    {
+      "question": "QUESTION FROM THE DIRECTOR: the other team did not cluster the supplied X_pca. It rebuilt the embedding from the raw integer counts (library-size normalisation, log1p, HVG selection, scaling, PCA) because it did not know how the supplied embedding was made. Check what you know about the supplied X_pca: which genes, which normalisation, whether it was scaled or batch-corrected. Then check whether the types that never dominate on your graph (ILC, NKT) behave the same on an embedding recomputed from the counts, and whether the markers of those types are in the gene set behind each embedding. Does that change your method?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-d421140f2447"
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: the other team also saw a type that never became the plurality of any cluster across its whole global resolution sweep. It did not answer that by raising the global resolution; it re-clustered only the parent cluster holding that type, on the same graph. You answered it by raising the global resolution for all cells. Check in your data where the cells of each uncaptured type sit at a moderate resolution (how many parent clusters, what share of each), and what happens to the rest of the partition when the global resolution is raised to reach them. Could the choice of which clusters to re-cluster be made without the labels? Does that change your method?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-c234701c86f2"
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: the other team worked from a warning that the unweighted mean purity can be driven by the number of clusters alone, and that many small clusters can hide large mixed ones. Across its sweep it tabulated, next to the unweighted mean, the cell-weighted purity, the minimum cluster size and the purity of the largest clusters, and it took the cluster count into account when choosing among partitions that meet the goal. Your notes say no pitfalls were passed down and record only the unweighted mean. Make that table for your scan. Also confirm that total_clusters counts exactly the non-empty clusters used for the purity mean and that captured counts distinct dominant types. Does that change which partition you report?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-e1a307c3be66"
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: the other team looked at the donor share and the cytokine share inside each cluster and saw clusters of a single cell type that are dominated by one donor or one stimulation. Your plan named donor effects as a check, but your notes record only a donor x cell type crosstab. Check in your reported partition how many clusters are donor-driven or cytokine-driven splits of one cell type, and how much of your cluster count they account for. Does that change your method?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-48ff2f76c5fe"
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: both teams saw that the number of captured types from a global resolution changes with the random seed. The other team treated a count that holds on only one seed as a reason to change its method and reported only a configuration it had checked on several seeds. You reported one seed at a resolution whose neighbours fail on other seeds. Also, the two teams did not use the same graph or the same Leiden implementation (yours: sklearn kNN graph and leidenalg RBConfiguration). Check whether your graph is symmetric and how it is weighted, and whether any configuration in your scan meets the goal on every seed you try. Does that change what you report?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-483f4b063e2f"
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: the task's first sentence asks to maximise cell type capture while maintaining high cluster purity; its goal line sets a threshold. The two teams did not weigh these two sentences the same way. Write down which of the two your chosen partition optimises, what you traded for it (types captured, number of clusters, purity), and which words of the task support that choice. Does that change your method?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-3e875b2f6b73"
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: the other team clustered the supplied 50-d X_pca directly and did not recompute anything from the counts. You listed 'did not compare the supplied X_pca' as your weakest point, and your plan's pitfall says not to trust it without having looked at it. Check what the supplied X_pca is (which genes, which normalisation, scaled or batch-corrected) and run your own procedure on it: are the same types missing at your base resolution, do the same parent clusters hold them, and does your final result hold? Also check k other than 15. Does that change your method?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-332be1b0ace6"
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: the other team reports a single global unsupervised partition in which the labels were used only to choose one resolution. In your partition the labels also chose which two clusters were split further. Check whether a label-free rule reaches the same capture: for example the same sub-clustering applied to every cluster, or a rule based on cluster size or on within-cluster heterogeneity. If only the label-chosen split works, is your result still within what the pitfall passed down to you allows (labels may score or choose among unsupervised partitions)? Does that change your method?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-a0d5083ee340"
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: the other team's list of types that fail to dominate under global clustering is not the same as yours, and it worked on a different embedding, a kNN graph built outside scanpy and leidenalg's RBConfiguration partition instead of igraph Leiden. So which rare types are hard may depend on the embedding, the graph and the Leiden implementation. Check, for each of the four rarest types and NKT, the size and purity of the cluster that captures it in your final partition on each seed, and whether that capture survives a change of graph weighting or Leiden implementation. Does that change your method or your confidence?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-b6cd1d5871e3"
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: the task's first sentence asks to maximise cell type capture while maintaining high cluster purity; its goal line sets a threshold. The two teams did not weigh these two sentences the same way. Write down which of the two your chosen partition optimises, what you traded for it (types captured, number of clusters, purity), and which words of the task support that choice. Your notes also show that your cluster count and mean purity move with the seed and that you reported one seed: on what grounds was that seed chosen, and what would you report if the seed were not yours to choose? Does that change your method?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-8103dd918bd7"
+    }
+  ],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": {
+    "difference": "Both report 18/18 captured and about 87% mean purity. They differ only in total_clusters (X 70, Y 33), and that comes from method choice. X uses a label-free two-level rule: Leiden res2 on a 2000-HVG PCA, then every parent sub-clustered at res0.3. Y uses Leiden res1 on a 3000-HVG PCA and sub-clusters only the parents (chosen with the labels) that hold the uncaptured NKT and Plasmablast.",
+    "test": "I rebuilt both pipelines from raw counts. Code is in work/prep.py and work/test.py; the graph is a pynndescent k=15 kNN with UMAP fuzzy connectivities. I scored captured types, cluster count and mean purity against the cell_type labels. The question was whether either pipeline fails the task's real criteria (17 or more captured, high purity), and whether one gets better capture or purity than the other.",
+    "expected_if_x": "X's two-level rule reproduces 18/18 with purity at or above Y's. Y's targeted split either fails to capture all 18 or does so only at lower purity.",
+    "expected_if_y": "Y's targeted split reproduces 18/18 at similar or higher purity with far fewer clusters. X's uniform rule falls below 17, or its purity is only inflated by tiny clusters.",
+    "outcome": "Y pipeline: base 16/18, 21 clusters. After the NKT and Plasmablast parent splits: 18/18, 40 clusters, mean purity 86.68% (cell-weighted 82.55%). X pipeline: base 17/18, 33 clusters. After the uniform sub-split: 18/18, 87 clusters, mean purity 88.79% (cell-weighted 84.7%). Both meet the goal with comparable purity. The cluster count moves with implementation (Y 33 became 40, X 70 became 87), and the task puts no constraint on it.",
+    "pick": "neither",
+    "reason": "The task scores capture (17 or more) and high purity, and both answers satisfy it to the same degree when reproduced. The only disagreement is cluster count, which is a free choice the task text does not pin down, and which is not stable across implementations. The test cannot favour one side. I keep Y's numbers in eval_answer.json only as a parsimony tie-break (fewer clusters for equal capture and purity), not as a ruling.",
+    "own_answer": null,
+    "picked_agent": null,
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "sc15-team-b",
+      "Y": "sc15-team-a"
+    }
+  },
+  "research": [
+    {
+      "round": "questions",
+      "questions": [
+        {
+          "question": "How does the resolution parameter of scanpy's Leiden clustering with the igraph flavour (modularity objective on the weighted UMAP-connectivity graph) relate to the resolution parameter of leidenalg's RBConfigurationVertexPartition run on an unweighted or distance-weighted k-nearest-neighbour graph built with scikit-learn? Do edge weights, symmetrisation and directedness of the graph change the number of clusters obtained at a given resolution, and are resolutions comparable between the two set-ups?",
+          "why": "The teams used different graph constructions and Leiden implementations and needed very different resolutions and cluster counts to make rare types dominate; knowing whether the resolution scales are comparable tells them whether the gap is a property of the data or of the tooling.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In single-cell RNA-seq clustering practice, what label-free criteria are used to decide which clusters to sub-cluster in order to recover rare cell populations (for example iterative or hierarchical sub-clustering of every cluster, or rules based on cluster size, within-cluster variance or silhouette), and what does scanpy's restrict_to option in Leiden do to the graph and to the cluster labels?",
+          "why": "One team recovered missing types by sub-clustering parent clusters chosen with the annotation labels, the other used one global partition. Whether a recognised label-free rule exists decides whether targeted sub-clustering is a legitimate unsupervised method here.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In human PBMC single-cell RNA-seq with fine-grained annotation, are populations such as NKT cells and innate lymphoid cells generally separable from CD8 memory T, MAIT and NK cells by unsupervised graph clustering on a standard log-normalised HVG PCA, or do they usually require protein markers, reference mapping or sub-clustering of the T/NK compartment? Which preprocessing choices (number of HVGs, scaling, number of PCs, neighbours) are reported to help or hurt the recovery of such rare or continuous lymphocyte subsets?",
+          "why": "Both teams found that a T/NK-like subset never dominates any cluster under global clustering, and they disagree on whether a small innate population does. Knowing what is expected for such populations tells them whether to seek them through global resolution, sub-clustering or a different embedding.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "How does the resolution parameter of scanpy's Leiden clustering with the igraph flavour (modularity objective on the weighted UMAP-connectivity graph) relate to the resolution parameter of leidenalg's RBConfigurationVertexPartition run on an unweighted or distance-weighted k-nearest-neighbour graph built with scikit-learn? Do edge weights, symmetrisation and directedness of the graph change the number of clusters obtained at a given resolution, and are resolutions comparable between the two set-ups?",
+          "answer": "On the same undirected graph they are the same objective. igraph's modularity with resolution g is Q = 1/(2m) sum_ij (A_ij - g k_i k_j/2m) delta(c_i,c_j). RBConfiguration is the same sum without the 1/(2m) prefactor, so it has the same optimum; Traag (scanpy issue 1053) calls igraph modularity 'the equivalent of' RBConfigurationVertexPartition. The resolution multiplies the configuration null model, so it is relative to the graph, not an absolute scale. The two teams' graphs differ. scanpy's igraph flavour runs undirected on the symmetrised, weighted UMAP connectivities, where k_i are weighted strengths. scanpy's leidenalg flavour defaults to directed=True, and a raw scikit-learn kNN graph is directed (k out-edges per cell). The directed objective is a different function: Q = 1/m sum (A_ij - g k_out_i k_in_j/m). Edge weights, how the graph is symmetrised, directedness and k all change degrees, total weight m and within-community density, so the same resolution gives different cluster counts. Resolutions are only comparable within one graph construction. The teams' gap in resolution and cluster count is therefore largely a tooling and graph effect, not a property of the data. Compare set-ups at a matched number of clusters. The docs I read do not state the exact size of the effect; I inferred it from the formulas.",
+          "sources": [
+            "https://igraph.org/c/html/0.10.15/igraph-Community.html",
+            "https://github.com/scverse/scanpy/issues/1053",
+            "https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/tools/_leiden.py",
+            "https://scanpy.readthedocs.io/en/stable/generated/scanpy.tl.leiden.html",
+            "https://leidenalg.readthedocs.io/en/stable/intro.html"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc15-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-bbefcb3788eb"
+            },
+            "sc15-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-b42636a09306"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How does the resolution parameter of scanpy's Leiden clustering with the igraph flavour (modularity objective on the weighted UMAP-connectivity graph) relate to the resolution parameter of leidenalg's RBConfigurationVertexPartition run on an unweighted or distance-weighted k-nearest-neighbour graph built with scikit-learn? Do edge weights, symmetrisation and directedness of the graph change the number of clusters obtained at a given resolution, and are resolutions comparable between the two set-ups? ANSWER: On the same undirected graph they are the same objective. igraph's modularity with resolution g is Q = 1/(2m) sum_ij (A_ij - g k_i k_j/2m) delta(c_i,c_j). RBConfiguration is the same sum without the 1/(2m) prefactor, so it has the same optimum; Traag (scanpy issue 1053) calls igraph modularity 'the equivalent of' RBConfigurationVertexPartition. The resolution multiplies the configuration null model, so it is relative to the graph, not an absolute scale. The two teams' graphs differ. scanpy's igraph flavour runs undirected on the symmetrised, weighted UMAP connectivities, where k_i are weighted strengths. scanpy's leidenalg flavour defaults to directed=True, and a raw scikit-learn kNN graph is directed (k out-edges per cell). The directed objective is a different function: Q = 1/m sum (A_ij - g k_out_i k_in_j/m). Edge weights, how the graph is symmetrised, directedness and k all change degrees, total weight m and within-community density, so the same resolution gives different cluster counts. Resolutions are only comparable within one graph construction. The teams' gap in resolution and cluster count is therefore largely a tooling and graph effect, not a property of the data. Compare set-ups at a matched number of clusters. The docs I read do not state the exact size of the effect; I inferred it from the formulas. HOW SURE: high. SOURCES: https://igraph.org/c/html/0.10.15/igraph-Community.html, https://github.com/scverse/scanpy/issues/1053, https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/tools/_leiden.py, https://scanpy.readthedocs.io/en/stable/generated/scanpy.tl.leiden.html, https://leidenalg.readthedocs.io/en/stable/intro.html."
+        },
+        {
+          "question": "In single-cell RNA-seq clustering practice, what label-free criteria are used to decide which clusters to sub-cluster in order to recover rare cell populations (for example iterative or hierarchical sub-clustering of every cluster, or rules based on cluster size, within-cluster variance or silhouette), and what does scanpy's restrict_to option in Leiden do to the graph and to the cluster labels?",
+          "answer": "Published label-free rules exist. (1) Silhouette-based heterogeneity: SCISSORS uses silhouette scores to find heterogeneous clusters and re-clusters them. CHOIR maximises silhouette to define parent clusters, then sub-clusters them. (2) Recursive splitting of every cluster, keeping a split only if the sub-clusters differ significantly. IDclust uses DE thresholds (log2FC, adjusted P, fraction of cells expressing, number of DE genes) and stops when no interpretable split remains; iterClust works similarly. CHOIR instead uses a permutation-tested classifier (alpha 0.05, Bonferroni). (3) Iterative re-PCA on subsets (PanoView, which picks clusters with the lowest variance). Picking parent clusters because the annotation shows a type is missing is label-guided, not unsupervised, and must be disclosed. A defensible alternative is one rule applied uniformly, e.g. sub-cluster every cluster, or every cluster below a silhouette or above a size cut-off. scanpy's restrict_to=(obs_key, categories) only slices the existing connectivities to the rows and columns of cells in those categories. It does not recompute HVGs, PCA or neighbours. It then runs Leiden on that subgraph and writes labels to 'leiden_R' by default. Sub-clusters are named 'parent,0', 'parent,1', ... (the joined parent names plus a comma), and all other cells keep their original labels.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC10412410/",
+            "https://www.choirclustering.com/articles/CHOIR.html",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC11655290/",
+            "https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/tools/_utils_clustering.py",
+            "https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/tools/_leiden.py"
+          ],
+          "confidence": "high for restrict_to behaviour; medium for the criteria (SCISSORS details only partly read)",
+          "deliveries": {
+            "sc15-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-68d856f92fed"
+            },
+            "sc15-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-0701e196fa98"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In single-cell RNA-seq clustering practice, what label-free criteria are used to decide which clusters to sub-cluster in order to recover rare cell populations (for example iterative or hierarchical sub-clustering of every cluster, or rules based on cluster size, within-cluster variance or silhouette), and what does scanpy's restrict_to option in Leiden do to the graph and to the cluster labels? ANSWER: Published label-free rules exist. (1) Silhouette-based heterogeneity: SCISSORS uses silhouette scores to find heterogeneous clusters and re-clusters them. CHOIR maximises silhouette to define parent clusters, then sub-clusters them. (2) Recursive splitting of every cluster, keeping a split only if the sub-clusters differ significantly. IDclust uses DE thresholds (log2FC, adjusted P, fraction of cells expressing, number of DE genes) and stops when no interpretable split remains; iterClust works similarly. CHOIR instead uses a permutation-tested classifier (alpha 0.05, Bonferroni). (3) Iterative re-PCA on subsets (PanoView, which picks clusters with the lowest variance). Picking parent clusters because the annotation shows a type is missing is label-guided, not unsupervised, and must be disclosed. A defensible alternative is one rule applied uniformly, e.g. sub-cluster every cluster, or every cluster below a silhouette or above a size cut-off. scanpy's restrict_to=(obs_key, categories) only slices the existing connectivities to the rows and columns of cells in those categories. It does not recompute HVGs, PCA or neighbours. It then runs Leiden on that subgraph and writes labels to 'leiden_R' by default. Sub-clusters are named 'parent,0', 'parent,1', ... (the joined parent names plus a comma), and all other cells keep their original labels. HOW SURE: high for restrict_to behaviour; medium for the criteria (SCISSORS details only partly read). SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC10412410/, https://www.choirclustering.com/articles/CHOIR.html, https://pmc.ncbi.nlm.nih.gov/articles/PMC11655290/, https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/tools/_utils_clustering.py, https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/tools/_leiden.py."
+        },
+        {
+          "question": "In human PBMC single-cell RNA-seq with fine-grained annotation, are populations such as NKT cells and innate lymphoid cells generally separable from CD8 memory T, MAIT and NK cells by unsupervised graph clustering on a standard log-normalised HVG PCA, or do they usually require protein markers, reference mapping or sub-clustering of the T/NK compartment? Which preprocessing choices (number of HVGs, scaling, number of PCs, neighbours) are reported to help or hurt the recovery of such rare or continuous lymphocyte subsets?",
+          "answer": "Generally not separable by RNA alone. Hao et al. 2021 (CITE-seq of 211k PBMC) state that effector, regulatory, gamma-delta and MAIT T cells often cannot be separated by scRNA-seq alone, and they used protein (WNN) to define fine states. Gutierrez-Arcelus et al. 2019 show that MAIT, iNKT, gamma-delta T and NK cells sit on a continuous transcriptional 'innateness gradient' between adaptive T and NK cells, not in discrete clusters. Fine labels such as NKT and ILC are therefore likely protein- or reference-derived. Expect them to be spread across CD8 memory, MAIT and NK clusters in global clustering. Recovering them needs sub-clustering of the T/NK compartment with HVGs re-selected inside it, and may not be possible at all. On preprocessing, the reading did not settle the question quantitatively, and no source gave an HVG number for these subsets. Earlier library facts (not re-verified here) point to about 50 PCs rather than an elbow cut, smaller k (10-15), HVGs recomputed within the subset, and removing TCR, Ig, HLA, ribosomal and mitochondrial genes from the HVGs. Large k and too few PCs or HVGs hurt.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8238499/",
+            "https://www.nature.com/articles/s41467-019-08604-4"
+          ],
+          "confidence": "medium on separability; low on preprocessing specifics",
+          "deliveries": {
+            "sc15-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-4da5b910960e"
+            },
+            "sc15-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-9e5e020c6677"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In human PBMC single-cell RNA-seq with fine-grained annotation, are populations such as NKT cells and innate lymphoid cells generally separable from CD8 memory T, MAIT and NK cells by unsupervised graph clustering on a standard log-normalised HVG PCA, or do they usually require protein markers, reference mapping or sub-clustering of the T/NK compartment? Which preprocessing choices (number of HVGs, scaling, number of PCs, neighbours) are reported to help or hurt the recovery of such rare or continuous lymphocyte subsets? ANSWER: Generally not separable by RNA alone. Hao et al. 2021 (CITE-seq of 211k PBMC) state that effector, regulatory, gamma-delta and MAIT T cells often cannot be separated by scRNA-seq alone, and they used protein (WNN) to define fine states. Gutierrez-Arcelus et al. 2019 show that MAIT, iNKT, gamma-delta T and NK cells sit on a continuous transcriptional 'innateness gradient' between adaptive T and NK cells, not in discrete clusters. Fine labels such as NKT and ILC are therefore likely protein- or reference-derived. Expect them to be spread across CD8 memory, MAIT and NK clusters in global clustering. Recovering them needs sub-clustering of the T/NK compartment with HVGs re-selected inside it, and may not be possible at all. On preprocessing, the reading did not settle the question quantitatively, and no source gave an HVG number for these subsets. Earlier library facts (not re-verified here) point to about 50 PCs rather than an elbow cut, smaller k (10-15), HVGs recomputed within the subset, and removing TCR, Ig, HLA, ribosomal and mitochondrial genes from the HVGs. Large k and too few PCs or HVGs hurt. HOW SURE: medium on separability; low on preprocessing specifics. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC8238499/, https://www.nature.com/articles/s41467-019-08604-4."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc15-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "sc15-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "sc15-team-a",
+      "round": "revise",
+      "reason": "no two teams agreed and the referee picked neither; the reported answer is sc15-team-c's"
+    },
+    {
+      "agent": "sc15-team-b",
+      "round": "revise",
+      "reason": "no two teams agreed and the referee picked neither; the reported answer is sc15-team-c's"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc15-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 42.5287285419181,
+      "cost_usd": 0.1623428,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 140.31058533408213,
+      "cost_usd": 0.2538765,
+      "error": null
+    },
+    {
+      "agent": "sc15-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 445.92961704102345,
+      "cost_usd": 0.22524560000000002,
+      "error": null
+    },
+    {
+      "agent": "sc15-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 455.2687863750616,
+      "cost_usd": 0.4025755999999999,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 133.13811258296482,
+      "cost_usd": 0.22103240000000002,
+      "error": null
+    },
+    {
+      "agent": "sc15-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 145.85844845802058,
+      "cost_usd": 0.6565266000000001,
+      "error": null
+    },
+    {
+      "agent": "sc15-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 405.8378897920484,
+      "cost_usd": 0.403103,
+      "error": null
+    },
+    {
+      "agent": "sc15-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 607.984898207942,
+      "cost_usd": 0.5048900000000001,
+      "error": null
+    },
+    {
+      "agent": "sc15-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 513.459326375043,
+      "cost_usd": 0.2831026,
+      "error": null
+    },
+    {
+      "agent": "sc15-team-c",
+      "phase": "third-team",
+      "ok": true,
+      "seconds": 469.84635500004515,
+      "cost_usd": 0.42259080000000004,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

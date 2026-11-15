@@ -1,0 +1,533 @@
+{
+  "study": "sc23",
+  "status": "replicated",
+  "final": {
+    "agent": "sc23-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc23/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc23-library": "opus",
+    "sc23-team-a": "opus",
+    "sc23-team-b": "opus",
+    "sc23-team-c": "opus",
+    "sc23-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "sc23-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc23/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "labels": [
+          "CD4_T",
+          "CD8_T",
+          "NK",
+          "B",
+          "Myelomonocytic",
+          "Other/Unassigned"
+        ]
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc23-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc23/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "labels": [
+          "CD4_T",
+          "CD8_T",
+          "NK",
+          "B",
+          "Myelomonocytic",
+          "Other/Unassigned"
+        ]
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc23-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc23/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "labels": [
+          "CD4_T",
+          "CD8_T",
+          "NK",
+          "B",
+          "Myelomonocytic",
+          "Other/Unassigned"
+        ]
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc23-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc23/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "labels": [
+          "CD4_T",
+          "CD8_T",
+          "NK",
+          "B",
+          "Myelomonocytic",
+          "Other/Unassigned"
+        ]
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc23-team-a",
+        "sc23-team-b"
+      ],
+      "fields": {
+        "labels": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc23-team-a",
+        "sc23-team-b"
+      ],
+      "fields": {
+        "labels": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "File layout and denominator (read from file headers, not from an analysis; verify when you load it). GSE276492_combined.h5 has 5 samples as top-level groups: GSM8499463_S7, GSM8499464_S8, GSM8499465_S10, GSM8499466_S13, GSM8499467_S15. Each has assays/protein_read_counts/layers/read_counts (called cells x 48 antibodies; 2518, 5988, 6912, 4826 and 3714 cells = 23,958 in total) and a separate all_barcodes/protein_read_counts holding hundreds of thousands of raw, mostly non-cell barcodes. Only raw read counts exist; there is no normalized layer. Antibody names are in ca/id. The '>= 1.0% of all protein/AOC cells' denominator should be the called cells under assays/ pooled over all five samples, not all_barcodes. Check that your label counts, including Other/Unassigned, sum to that total. Low-quality or ambiguous cells go to Other/Unassigned and stay in the denominator; deleting them shrinks the denominator and inflates rare labels. Also tabulate each label's fraction per sample so you can see whether a pooled >=1% call comes from a single sample.",
+      "from": [
+        "sl-sc-test-1430d47024e8",
+        "sl-sc-test-65cef59506cc"
+      ],
+      "reason": "Using all_barcodes, or dropping QC-failed/unassigned cells, changes every percentage compared against the 1.0% cut-off and can flip which labels count as present.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-0d93fef74545"
+      }
+    },
+    {
+      "text": "Antibody panel (48 features, from ca/id): CD10, CD117, CD11b, CD11c, CD123, CD13, CD138, CD14, CD141, CD16, CD163, CD19, CD1c, CD2, CD22, CD25, CD3, CD30, CD303, CD304, CD33, CD34, CD366, CD38, CD4, CD44, CD45, CD45RA, CD45RO, CD49d, CD5, CD56, CD62L, CD62P, CD64, CD69, CD7, CD70, CD71, CD8, CD83, CD90, CD99, Fc\u03b5RI\u03b1, HLA-DR, plus three isotype controls IgG1, IgG2a, IgG2b. Fc\u03b5RI\u03b1 is stored HTML-escaped as 'Fc&#949;RI&#945;', so a plain name lookup will miss it. There is no CD20, CD15 or CD66b: B cells have to be called from CD19/CD22, and granulocytes cannot be gated directly. The panel is the TotalSeq-D Heme Oncology panel plus CD70.",
+      "from": [
+        "sl-sc-test-1430d47024e8"
+      ],
+      "reason": "Tells the team which markers exist for each label before designing gates, avoids a silent miss on the escaped Fc\u03b5RI\u03b1 name, and flags that three of the 48 features are isotype controls, not markers.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-177df01b4fc5"
+      }
+    },
+    {
+      "text": "The samples are probably from a myeloid malignancy, not healthy blood. This is the library's inference from the custom myeloid DNA panel and the heme-oncology antibody panel; it is not stated in the file, so confirm it in the data. If true, many cells may be immature blasts (CD34 and/or CD117 positive, CD33/CD13 positive, CD45 dim) that fit none of the mature labels and can aberrantly carry CD7, CD56, CD4, CD123 or CD11c; a healthy-PBMC gating scheme would scatter them across NK, CD4_T, pDC and cDC. Check: the fraction of cells positive for CD34 or CD117; how many cells you labelled NK, CD4_T, pDC or cDC are also CD34/CD117/CD33/CD13 positive; and whether there are CD71-bright erythroid or CD138-bright plasma cells. If found: gate immature/blast, erythroid and plasma cells out first, decide explicitly whether CD34/CD117-positive myeloid cells go to Myelomonocytic or to Other/Unassigned, state that choice, and report whether the present-label set is the same under both conventions.",
+      "from": [
+        "sl-sc-test-ff9fd301dc1a",
+        "sl-sc-test-1430d47024e8"
+      ],
+      "reason": "Blasts with aberrant markers can push a lymphoid or DC label over 1% falsely, and where blasts are placed can change the size of Myelomonocytic and Other/Unassigned.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-645182d5cb35"
+      }
+    },
+    {
+      "text": "Every antibody has a non-zero background peak (ambient/unbound antibody plus non-specific binding). Rules like 'count > 0', 'CLR > 0' or one cut-off shared by all markers call background positive and inflate rare labels such as pDC and cDC. Check: for each gating marker in each sample, look at the density of log or asinh counts for a negative and a positive mode, and compare with the three isotype controls (IgG1, IgG2a, IgG2b), which show the noise floor. Set a separate threshold per marker (valley between modes, or a two-component mixture on the log scale) and require specific markers to clearly exceed isotype level. Do not use the isotype controls as clustering features, and do not place a gate from isotypes alone: they mark the noise floor, not the positive boundary.",
+      "from": [
+        "sl-sc-test-716bab2de5f7"
+      ],
+      "reason": "Threshold placement decides the size of every rare label; a background-level threshold can move a label across the 1% line.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-43e40a47e5aa"
+      }
+    },
+    {
+      "text": "CLR normalization (the Mosaic default: per-cell centred log ratio across the antibody panel) is compositional. A cell bright for many markers (myeloid cells, blasts) gets a large geometric mean, which pushes its other markers down, while lymphocytes with few bright markers have their background pushed up. The CLR negative peak is therefore not at zero and sits at different values in different cell types. Check: plot lineage markers (CD3, CD19, CD14, CD56, CD123, CD11c) under CLR and under asinh or log of library-scaled counts, and see whether the negative peak moves between cell groups; re-run the labelling under a second normalization and compare label fractions. Do not gate on one global CLR cut-off. Treat any label whose >=1% status flips between normalizations as unresolved and settle it with explicit multi-marker gating.",
+      "from": [
+        "sl-sc-test-66b82be522af"
+      ],
+      "reason": "The file has raw counts only, so the team must pick a normalization; the default choice can shift gates differently in myeloid and lymphoid cells and change label fractions.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-13959b5b7355"
+      }
+    },
+    {
+      "text": "The five samples were stained and sequenced separately, so the negative and positive peaks of the same marker can sit at different values in each sample. Normalizing or thresholding the pooled matrix can make one sample's background look like another sample's positive population; Mosaic's NSP normalization also fits its background/signal model to total reads within a run. Check: overlay per-sample densities of CD3, CD19, CD14, CD4, CD8, CD56, CD123 and of total antibody reads per cell, and look for shifted peaks or very different depth. If found: normalize and set thresholds per sample (or align peaks across samples) before pooling labels, and check that clusters are not simply samples.",
+      "from": [
+        "sl-sc-test-a3af6c194e74"
+      ],
+      "reason": "A pooled threshold can mislabel whole samples' worth of cells, which changes pooled label fractions.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-513680a0b13f"
+      }
+    },
+    {
+      "text": "Some cells carry a cell-wide technical signal (antibody aggregates, dead or sticky cells, Fc-receptor binding on monocytes and other myeloid cells, doublets) and look positive for everything, including mutually exclusive lineage markers; they get mis-gated into T, B, NK or DC labels. Check: per cell, compare summed isotype counts (IgG1+IgG2a+IgG2b) and total antibody counts with the rest of the sample; count cells positive for exclusive pairs (CD3 with CD19, CD3 with CD14, CD19 with CD14) and see whether they are the high-isotype or high-total cells; check whether isotype signal is higher in CD14/CD64-positive cells. If found: require a marker to exceed the cell's own isotype/background level, label cross-lineage and high-isotype cells Other/Unassigned, and keep them in the denominator.",
+      "from": [
+        "sl-sc-test-5e92e3be085a"
+      ],
+      "reason": "Sticky cells and doublets can add false members to small labels; a few hundred such cells is enough to matter at a 1% cut-off.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ba73ec49b044"
+      }
+    },
+    {
+      "text": "No single marker in this panel is lineage-restricted for CD4_T, CD8_T or NK. CD4 is dim on monocytes and present on pDC; CD8 is dim on a subset of NK cells; CD56 is on NK-like T cells, on aberrant monocytes and on some AML blasts; CD16 is on non-classical monocytes and neutrophils as well as NK. Check: cross-tabulate CD3 against CD4, CD8, CD56 and CD16; within CD3-negative CD56+ or CD16+ cells check CD7 (NK are CD7+) and CD14/CD33/CD64/CD11b (myeloid); count CD3+ cells that are CD4+CD8+ or CD4-CD8-. Suggested rule: require CD3+ for both T labels (supported by CD5/CD2/CD7); define NK as CD3-negative, CD19-negative, CD14/CD64/CD33-negative with CD56+ and/or CD16+ and CD7+; send CD3+CD56+ cells to their T label; fix and state a rule for double-positive and double-negative T cells.",
+      "from": [
+        "sl-sc-test-924ee47eaadf"
+      ],
+      "reason": "Single-marker gates move monocytes, pDC and blasts into CD4_T or NK and move NK into CD8_T, which changes the fractions of exactly the labels being tested.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-20c33f48cf93"
+      }
+    },
+    {
+      "text": "cDC and monocytes share CD11c, HLA-DR, CD33 and dim CD4, so a bare 'CD11c+ HLA-DR+' rule labels monocytes as cDC (or all cDC as Myelomonocytic), and the cDC fraction then depends entirely on that rule. Fc\u03b5RI\u03b1 marks both cDC2 and basophils; CD1c is also found on some B cells and CD141 can be low-positive on monocytes (these last two are general immunology knowledge supplied by the library, not taken from its cited source). Check: within HLA-DR+ CD11c+ cells that are CD3/CD19/CD56-negative, split by CD14 and CD64 and look at CD1c, CD141 and Fc\u03b5RI\u03b1; confirm CD1c+ cells labelled cDC are CD19/CD22-negative and CD123-low. Suggested rule: cDC = HLA-DR+ CD11c+ with CD1c+ (cDC2) or CD141-high (cDC1), CD14-negative, CD64-low, CD123-negative/dim, lineage-negative; CD14+ or CD64-high cells go to Myelomonocytic. Report the cDC fraction under this strict rule and under the looser one.",
+      "from": [
+        "sl-sc-test-58f6d0bbd3d0"
+      ],
+      "reason": "The cDC/monocyte boundary is set by the rule chosen, so whether cDC reaches 1% can depend on the definition; the team should know this and report both.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-0834b0cc8842"
+      }
+    },
+    {
+      "text": "Calling pDC from CD123 alone over-counts. Basophils are CD123-bright but HLA-DR-negative and Fc\u03b5RI\u03b1-positive; monocytes can be CD123/HLA-DR bright; myeloid or monocytic blasts can be CD123-bright. pDC are also CD4-positive and CD3-negative, so a CD4 gate without CD3 puts them (and monocytes) into CD4_T. Check: among CD123-high cells, tabulate HLA-DR, CD303, CD304, Fc\u03b5RI\u03b1, CD34, CD64, CD14, CD11c, CD3, CD19, and count how many are HLA-DR+ with CD303 and/or CD304 and negative for CD3/CD19/CD14/CD64/CD34. Suggested rule: pDC = CD123-high AND HLA-DR+ AND (CD303+ or CD304+) AND lineage-negative (CD3, CD19, CD14, CD64 negative, CD11c low, CD34 negative); send CD123+ HLA-DR-negative Fc\u03b5RI\u03b1+ cells (basophils) and CD123+ CD34+ cells (blasts) elsewhere. Report the pDC fraction under strict and loose definitions.",
+      "from": [
+        "sl-sc-test-607bf89060e5"
+      ],
+      "reason": "pDC is a small population whose size is very sensitive to the definition, so the gate, not the data, could decide its 1% status unless the team uses a multi-marker rule and reports both variants.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-a55a7b498b6d"
+      }
+    },
+    {
+      "text": "Labelling whole clusters (Leiden/k-means on UMAP, as in the Mosaic workflow) merges rare populations such as pDC, cDC, NK or B cells into a larger neighbour when there are too few clusters, or splits one lineage when there are too many, so fractions near the 1% cut-off depend on clustering resolution. With about 24,000 cells, 1% is roughly 240 cells, so sampling error is small and the uncertainty lies in the method. Check: compute label fractions by direct per-cell marker gating and by cluster annotation at two or more resolutions; list every label whose fraction falls between about 0.5% and 2% under any of them; inspect each cluster's marker profile for mixed content and sub-cluster mixed ones. Base the final assignment on per-cell hierarchical gating (or sub-clustered, marker-verified clusters), and for each borderline label state its fraction under each variant and which definition decided presence.",
+      "from": [
+        "sl-sc-test-0f9d10b5c8ab"
+      ],
+      "reason": "The task asks for a per-cell assignment and a 1% decision; cluster-level labelling can hide or invent a rare label depending on resolution.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-731ecffc6b63"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams decided pDC and cDC with strict multi-marker rules whose exclusion gates (CD34/CD117-negative, CD11c-negative, myeloid-negative, CD14/CD64-negative) came from the same library note, not from the data. Neither team showed that the cells removed by those exclusion gates are a different population from the cells kept. Team A's own numbers show the pDC call crosses 1% depending only on which exclusion gates are in the rule.",
+      "Both teams treated the low calls in the shallow samples as biology. Depth differs about 4x between samples and most of team B's pDC cells come from the deepest sample; neither team tested whether rare, low-count markers (CD303, CD304, CD1c, CD141) are simply below detection in the shallow samples, which would bias the pooled pDC/cDC fraction downward.",
+      "Both teams started from per-cell CLR (team A added only a library-size log). Neither used a background-referenced scale, so positive/negative for low-count markers rests on GMM fits or cluster means inside called cells only.",
+      "Both teams sent a very large share of cells to Other/Unassigned (about 42% in team B; blasts + cross-lineage + 4,702 high-isotype cells in team A) and assumed this cannot move any label across 1%. Neither reported what labels those cells would otherwise receive.",
+      "Both teams pooled the five samples into one denominator of 23,958 called cells and assumed the called-cell set under assays/ is what 'all protein/AOC cells' means. This looks right from the file layout but was taken from a director note rather than tested.",
+      "Both teams assumed 'Other/Unassigned' belongs in the returned set when it is >= 1%."
+    ],
+    "unused_evidence": [
+      "all_barcodes/protein_read_counts (425k to 1.28M mostly non-cell barcodes per sample, same 48 antibodies, barcodes carry a '-1' suffix). It gives an empty-droplet/ambient background per antibody per sample. Neither team used it; it could settle where background ends for CD303, CD304, CD1c, CD141, CD123, CD34 and CD117, which are the markers that decide the two borderline labels.",
+      "Isotype controls IgG1, IgG2a, IgG2b: team B planned an isotype check but its notes list none. Team A used them to move 4,702 cells (about a fifth of all cells) to Other without testing whether isotype signal tracks Fc-receptor-bearing cells (CD64/CD16 positive monocytes, DC, NK), which would remove exactly the myeloid/DC labels preferentially. The first called cell in the first sample has hundreds of reads on nearly every antibody including the isotypes, so sticky cells exist, but that does not show the flag is lineage-neutral.",
+      "Markers neither team's rules clearly used for the borderline labels: Fc-epsilon-RI-alpha (cDC2/pDC/basophil), CD45RA and CD4 (pDC), CD141 (not in team B's cluster annotation), CD163, CD83, CD2, CD5, CD38.",
+      "Per-sample structure: sample_name per cell and five separate samples. Both teams tabulated per-sample fractions but neither tested the depth-versus-detection relation for rare labels.",
+      "DNA assays (dna_read_counts, dna_variants) are present but the task forbids using them for labelling; correctly left out."
+    ],
+    "unresolved_weak_points": [
+      "Team A named GMM thresholds on noisy markers (CD117, CD303), the large Other fraction, and pDC flipping to >= 1% under a looser rule. It reported the spread (pDC from far below to far above 1% by rule) but did not resolve which rule the data support; the choice of the strict rule followed the library's suggestion.",
+      "Team B named pDC reaching just under the cutoff at its loosest gate. It varied the cutoff level at three values but not the rule composition, the clustering (single k=40 KMeans, one normalization), or depth. Its first clustering (per-sample centred) put cDC within a few cells of 1% and it then changed the method; the change was justified by a different observation, but the borderline result was not followed up under the new method beyond three cutoffs.",
+      "Neither team's notes give the fractions, or the range across variants, for CD8_T, CD4_T, NK and B, so the margin of the 'present' calls is not on record. NK and B in a blast-rich sample with aberrant CD7/CD56 are not obviously far from 1%."
+    ],
+    "second_readings": [
+      "'Assign every cell to ONE of these labels' using marker signals can be read as best-matching label per cell (a marker-score or cluster-level assignment in which a cell goes to the label it most resembles) rather than a strict exclusion gate that defaults to Other. Under the first reading pDC and cDC get more cells; team A's looser rules and team B's first clustering sit at or over the cutoff.",
+      "'Which labels are meaningfully present' may be meant for the seven cell-type labels only, with Other/Unassigned a catch-all that is not reported; the literal wording lists Other/Unassigned among the labels, which supports including it. The teams should state which words decide this.",
+      "'>= 1.0% of all protein/AOC cells' is read by both as pooled called cells across the five samples. A per-sample reading (present if >= 1% in a sample) is less supported by the wording, but pDC concentrates in one sample where it would pass.",
+      "'Myelomonocytic' may or may not include CD33/CD13-positive blasts; team A showed this does not change the set."
+    ],
+    "verdict": "Moderate trust in the five-plus-Other core, low trust in the exclusion of pDC and cDC: both calls sit close to the 1% line and flip with the rule composition, the clustering, the isotype filter and possibly sequencing depth, and both teams' strict rules trace to the same library note rather than to a test on the data. The empty-barcode background and the depth effect are unused and could move either borderline label.",
+    "questions": [
+      {
+        "to": "sc23-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your pDC fraction falls from above 1% to far below it only as exclusion gates are added (myeloid-negative, CD34/CD117-negative, CD11c-negative), and those gates were suggested by the library, not derived from this data. You also report 42-51% of all cells as CD34/CD117 positive from GMM thresholds on markers you call noisy. Take the cells that pass CD123+ HLA-DR+ CD303/304+ and split them into kept versus removed by each exclusion gate. Compare the two groups on CD123, CD303, CD304, CD4, CD45RA, CD14, CD33, CD64, CD34, CD117 and the isotypes: do the removed cells have a clear positive mode in the excluding marker, or do they sit just above a threshold and otherwise look like the kept cells? Is there one discrete CD123-bright/CD303-bright population in the raw two-marker density, and how many cells is it per sample? Run the same split for cDC (loose versus strict). Does the result change which rule you treat as primary, or your method?",
+        "from": [
+          "sl-sc-test-7d5153f2ccaa",
+          "sl-sc-test-01d9d542faee"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-0fc6bfb55451"
+      },
+      {
+        "to": "sc23-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you moved 4,702 high-isotype cells (about a fifth of all cells) to Other and also required every marker to exceed the cell's own isotype level. Check whether isotype signal is lineage-neutral: correlate per-cell isotype counts with CD64, CD16, CD14, HLA-DR and with total reads, per sample. Then gate the 4,702 flagged cells as if the flag did not exist and tabulate which labels they would receive, and give every label's pooled fraction with and without the isotype flag and floor. Does any label change side of 1%? Does that change your method?",
+        "from": [
+          "sl-sc-test-01d9d542faee",
+          "sl-sc-test-49f7dc5357e6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-8a54225efe9c"
+      },
+      {
+        "to": "sc23-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: neither team used all_barcodes/protein_read_counts, which holds the non-cell barcodes for the same 48 antibodies in every sample, and depth differs about 4x between samples. Build a per-sample ambient profile from non-cell barcodes and check where your GMM thresholds for CD303, CD304, CD1c, CD141, CD123, CD34 and CD117 fall relative to it. Then test detection against depth: report pDC and cDC fractions per sample next to median reads, and downsample the deepest sample's counts to the depth of the shallowest and re-gate. How many pDC and cDC calls survive? If calls are lost with depth alone, is the pooled fraction a fair estimate, and does that change your method?",
+        "from": [
+          "sl-sc-test-49f7dc5357e6",
+          "sl-sc-test-0d93fef74545"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-913c54db7e61"
+      },
+      {
+        "to": "sc23-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your notes give fractions for pDC, cDC and Myelomonocytic but not for CD8_T, CD4_T, NK or B, so the margin of those 'present' calls is not on record. Make one table of all eight labels under every variant you ran (both normalizations, both blast conventions, strict and loose rules, with and without the isotype flag) with the minimum and maximum per label. Which label other than pDC and cDC comes closest to 1%, and are NK calls free of CD34/CD117/CD33-positive cells? Separately, your method is per-cell gating only: run an unsupervised clustering of all cells at two resolutions and report whether a cluster with a pDC profile and one with a cDC profile exist and how large each is. Do the table and the clusters agree with your gates, and does any disagreement change your method?",
+        "from": [
+          "sl-sc-test-36fa0f52c570"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-95e43987196f"
+      },
+      {
+        "to": "sc23-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your first clustering put cDC within a few cells of the 1% cutoff, and your final labels rest on one KMeans run (k=40, 20 PCs, one normalization). Check how the cDC and pDC fractions move over k (for example 20, 40, 80), several seeds, a graph-based clustering, and a second normalization that is not CLR. Then open every cluster you labelled Myelomonocytic or Other and look for a sub-group that is HLA-DR/CD11c high with CD1c, CD141 or Fc-epsilon-RI-alpha, or CD123 high with CD303/CD304: how many cells are in such sub-groups? Give the minimum and maximum for cDC and pDC over all of these. Does the range stay on one side of 1%, and does that change your method?",
+        "from": [
+          "sl-sc-test-7a1b69dbdd0e",
+          "sl-sc-test-0e365eed3cce"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-fdf3a6169018"
+      },
+      {
+        "to": "sc23-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your sensitivity check moved the cutoff level but not the composition of the rule, and the other team found that the pDC fraction ranges from far below to far above 1% depending only on which exclusion markers are in the rule. Write down your pDC and cDC gates exactly, then tabulate both fractions as each exclusion condition is removed one at a time. For the cells that each exclusion removes, compare CD123, CD303, CD304, CD4, CD45RA, HLA-DR, CD14, CD33 and CD34 with the cells kept: are they a different population or the same population on the other side of a threshold? Which composition isolates one discrete population in the data? Does that change your method?",
+        "from": [
+          "sl-sc-test-0e365eed3cce"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-a3940246e776"
+      },
+      {
+        "to": "sc23-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: 87 of your 161 pDC cells come from one sample, which is also the deepest, and depth differs about 4x across samples. Neither team used all_barcodes/protein_read_counts (non-cell barcodes, same 48 antibodies, per sample). Compare raw CD303, CD304, CD1c, CD141 and CD123 counts in called cells with the non-cell barcodes in each sample: in the shallow samples, is a positive population separable from background at all? Downsample the deepest sample to the shallowest sample's depth and re-run your pDC and cDC calls: how many survive? If detection falls with depth alone, is the pooled fraction a fair estimate, and does that change your method?",
+        "from": [
+          "sl-sc-test-0e365eed3cce",
+          "sl-sc-test-7a1b69dbdd0e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-51b56039630c"
+      },
+      {
+        "to": "sc23-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your plan listed an isotype-control check and your notes do not show one, and your notes give no fractions for CD8_T, CD4_T, NK or B. About 42% of cells went to Other, including 'low-CD45/flat-profile' cells. Report (a) the pooled and per-sample fraction of every label, and which present label is closest to 1%; (b) the split of Other into blast, erythroid and flat-profile cells per sample, and whether flat-profile cells are simply low-depth or high-isotype cells; (c) what labels the flat-profile cells receive from per-cell gating on their own markers; (d) whether the cells in your NK and B clusters are CD34/CD117/CD33-negative. Does any label change side of 1% once these are accounted for, and does that change your method?",
+        "from": [
+          "sl-sc-test-fea6a4ae72d5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-a39d142e7558"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In antibody-oligo (CITE-seq / Tapestri-type) protein data, are isotype-control counts known to be systematically higher on Fc-receptor-bearing cells (monocytes, dendritic cells, NK cells) than on lymphocytes, and how do published workflows use isotype controls: to exclude individual cells, or to subtract/model per-cell background (for example dsb-style denoising with empty droplets)?",
+          "why": "One team sends about a fifth of all cells to Other on an isotype flag and requires markers to exceed the per-cell isotype level; if isotype signal tracks Fc receptors, that step preferentially removes the myeloid and dendritic labels that sit at the cutoff.",
+          "passed": false,
+          "reasons": [
+            "contains another team's value for \"labels\""
+          ]
+        },
+        {
+          "question": "In flow-cytometric and single-cell protein studies of myeloid neoplasms, what immunophenotype defines plasmacytoid dendritic cells, and can genuine pDCs in these patients be CD34-positive, CD117-partial, CD11c-dim, CD33/CD13-dim or CD56/CD7-positive? Is CD123-bright plus HLA-DR plus CD303 and/or CD304 regarded as sufficient to count a cell as pDC, or are CD34 and CD11c negativity required?",
+          "why": "Whether pDC counts as present depends entirely on whether cells carrying the core pDC markers are excluded for co-expressing immature or myeloid markers; neither team showed it knew the convention for diseased marrow.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "What does the Mission Bio Mosaic documented protein workflow do to assign cell-type labels: which normalization is the default, which clustering method and default parameters are used, are labels given per cluster or per cell, and how does the vendor's guidance for its heme-oncology antibody panel identify dendritic-cell subsets and handle cells that match no lineage?",
+          "why": "The task asks for labels from protein marker signals on this platform; knowing whether the standard route is cluster-level best-match labelling or strict per-cell gating tells the teams which reading of 'assign every cell to one label' is the expected one and how rare populations are normally treated.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In flow-cytometric and single-cell protein studies of myeloid neoplasms, what immunophenotype defines plasmacytoid dendritic cells, and can genuine pDCs in these patients be CD34-positive, CD117-partial, CD11c-dim, CD33/CD13-dim or CD56/CD7-positive? Is CD123-bright plus HLA-DR plus CD303 and/or CD304 regarded as sufficient to count a cell as pDC, or are CD34 and CD11c negativity required?",
+          "answer": "The standard definition is CD123-bright, HLA-DR+ (low SSC, CD45-dim), with no lineage markers (CD3, CD19, CD56, CD14, CD11c, MPO). CD303 and CD304 are expected but can be missing on immature pDCs. CD64 is used to exclude monocytes, which can also be CD123/HLA-DR bright. In myeloid neoplasms, genuine pDCs can be CD34+ and CD117+ because they sit at early or intermediate maturation stages. In pDC-AML, pDCs are CD4+, CD56-negative and most often CD303+, CD304+ and CD34+, and some cases also carry CD7, CD5 or CD22. CD56 is rare in pDC-AML but typical of BPDCN. So CD34 negativity is not strictly required: CD34+ cells that are CD123-bright, HLA-DR+ and CD303/CD304+ can count as immature pDCs. Blasts are CD123-bright in about 14% of AML, and one lab separates blasts from pDCs using CD34 versus CD123. CD11c negativity is part of the standard definition. I found no source that accepts CD11c-dim or CD33/CD13-dim pDCs, although the sources I read did not discuss CD33 or CD13 on pDCs at all. In short, CD123-bright + HLA-DR + CD303/CD304 + lineage-negative (CD3/CD19/CD14/CD64/CD11c) counts as pDC. Normal marrow has about 0.29% pDCs and most AML about 0.03%.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC13748365/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC11171351/",
+            "https://haematologica.org/article/view/haematol.2020.253740",
+            "https://ashpublications.org/blood/article/146/Supplement%201/6925/555469/Plasmacytoid-dendritic-cell-associated-acute",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7955409/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc23-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-0654a7e9061f"
+            },
+            "sc23-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-db402b4fac94"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In flow-cytometric and single-cell protein studies of myeloid neoplasms, what immunophenotype defines plasmacytoid dendritic cells, and can genuine pDCs in these patients be CD34-positive, CD117-partial, CD11c-dim, CD33/CD13-dim or CD56/CD7-positive? Is CD123-bright plus HLA-DR plus CD303 and/or CD304 regarded as sufficient to count a cell as pDC, or are CD34 and CD11c negativity required? ANSWER: The standard definition is CD123-bright, HLA-DR+ (low SSC, CD45-dim), with no lineage markers (CD3, CD19, CD56, CD14, CD11c, MPO). CD303 and CD304 are expected but can be missing on immature pDCs. CD64 is used to exclude monocytes, which can also be CD123/HLA-DR bright. In myeloid neoplasms, genuine pDCs can be CD34+ and CD117+ because they sit at early or intermediate maturation stages. In pDC-AML, pDCs are CD4+, CD56-negative and most often CD303+, CD304+ and CD34+, and some cases also carry CD7, CD5 or CD22. CD56 is rare in pDC-AML but typical of BPDCN. So CD34 negativity is not strictly required: CD34+ cells that are CD123-bright, HLA-DR+ and CD303/CD304+ can count as immature pDCs. Blasts are CD123-bright in about 14% of AML, and one lab separates blasts from pDCs using CD34 versus CD123. CD11c negativity is part of the standard definition. I found no source that accepts CD11c-dim or CD33/CD13-dim pDCs, although the sources I read did not discuss CD33 or CD13 on pDCs at all. In short, CD123-bright + HLA-DR + CD303/CD304 + lineage-negative (CD3/CD19/CD14/CD64/CD11c) counts as pDC. Normal marrow has about 0.29% pDCs and most AML about 0.03%. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC13748365/, https://pmc.ncbi.nlm.nih.gov/articles/PMC11171351/, https://haematologica.org/article/view/haematol.2020.253740, https://ashpublications.org/blood/article/146/Supplement%201/6925/555469/Plasmacytoid-dendritic-cell-associated-acute, https://pmc.ncbi.nlm.nih.gov/articles/PMC7955409/."
+        },
+        {
+          "question": "What does the Mission Bio Mosaic documented protein workflow do to assign cell-type labels: which normalization is the default, which clustering method and default parameters are used, are labels given per cluster or per cell, and how does the vendor's guidance for its heme-oncology antibody panel identify dendritic-cell subsets and handle cells that match no lineage?",
+          "answer": "Protein.normalize_reads defaults to CLR (asinh, NSP and ANSP are the alternatives). The curated notebooks use NSP with random_state=42, then PCA (10 components) and UMAP (defaults n_neighbors=50, cosine metric, min_dist=0, taken only from a search snippet of the run_umap page, which I did not open). They then cluster the UMAP with graph-community, which is Louvain on a shared-nearest-neighbour graph, with k=5. The user reads a per-cluster heatmap and renames clusters by hand, so labels are per cluster. The automated cluster_and_label also works per cluster: graph-community k=5, random_state=42, merge='labeled', min_prob_diff=0.9, with the IgG1/IgG2a/IgG2b isotypes used to flag sticky cells. It gives each cluster the most likely type from a hierarchical 'truth' tree, which by default is a built-in PBMC tree, using NSP values clipped to 0-1 and a beta likelihood. The 'probability' method can call 'Unassigned' for cells that match nothing, and doublet clusters become 'Mixed'. The 'likelihood' method forces every cell into a truth type. assign_from_truth does the same labelling per cell. The web did not settle the vendor part: I found no Mission Bio or BioLegend guidance on identifying pDC or cDC subsets with the Heme Oncology panel, or on handling cells that match no lineage. BioLegend only says clusters were identified from protein expression on a UMAP.",
+          "sources": [
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.normalize_reads.html",
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.cluster_and_label.html",
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.assign_from_truth.html",
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.assay._Assay.cluster.html",
+            "https://missionbio.github.io/mosaic/notebooks/curated_notebooks/ge-protein.html",
+            "https://www.biolegend.com/en-us/products/totalseq-d-human-heme-oncology-cocktail-v10-20465"
+          ],
+          "confidence": "high for the Mosaic defaults and labelling mechanics; low for the vendor guidance on DC subsets, which I did not find",
+          "deliveries": {
+            "sc23-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-2fa86571432c"
+            },
+            "sc23-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-5202f976e7ee"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What does the Mission Bio Mosaic documented protein workflow do to assign cell-type labels: which normalization is the default, which clustering method and default parameters are used, are labels given per cluster or per cell, and how does the vendor's guidance for its heme-oncology antibody panel identify dendritic-cell subsets and handle cells that match no lineage? ANSWER: Protein.normalize_reads defaults to CLR (asinh, NSP and ANSP are the alternatives). The curated notebooks use NSP with random_state=42, then PCA (10 components) and UMAP (defaults n_neighbors=50, cosine metric, min_dist=0, taken only from a search snippet of the run_umap page, which I did not open). They then cluster the UMAP with graph-community, which is Louvain on a shared-nearest-neighbour graph, with k=5. The user reads a per-cluster heatmap and renames clusters by hand, so labels are per cluster. The automated cluster_and_label also works per cluster: graph-community k=5, random_state=42, merge='labeled', min_prob_diff=0.9, with the IgG1/IgG2a/IgG2b isotypes used to flag sticky cells. It gives each cluster the most likely type from a hierarchical 'truth' tree, which by default is a built-in PBMC tree, using NSP values clipped to 0-1 and a beta likelihood. The 'probability' method can call 'Unassigned' for cells that match nothing, and doublet clusters become 'Mixed'. The 'likelihood' method forces every cell into a truth type. assign_from_truth does the same labelling per cell. The web did not settle the vendor part: I found no Mission Bio or BioLegend guidance on identifying pDC or cDC subsets with the Heme Oncology panel, or on handling cells that match no lineage. BioLegend only says clusters were identified from protein expression on a UMAP. HOW SURE: high for the Mosaic defaults and labelling mechanics; low for the vendor guidance on DC subsets, which I did not find. SOURCES: https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.normalize_reads.html, https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.cluster_and_label.html, https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.assign_from_truth.html, https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.assay._Assay.cluster.html, https://missionbio.github.io/mosaic/notebooks/curated_notebooks/ge-protein.html, https://www.biolegend.com/en-us/products/totalseq-d-human-heme-oncology-cocktail-v10-20465."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc23-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc23-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc23-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc23-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc23-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 48.1458732499741,
+      "cost_usd": 0.215487,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 102.71955783304293,
+      "cost_usd": 0.16963460000000002,
+      "error": null
+    },
+    {
+      "agent": "sc23-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 114.61564700002782,
+      "cost_usd": 0.43021000000000004,
+      "error": null
+    },
+    {
+      "agent": "sc23-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 271.66404304199386,
+      "cost_usd": 0.41862400000000005,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 164.37739558308385,
+      "cost_usd": 0.3145444,
+      "error": null
+    },
+    {
+      "agent": "sc23-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 123.15222825005185,
+      "cost_usd": 0.6792102000000001,
+      "error": null
+    },
+    {
+      "agent": "sc23-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 327.81381745799445,
+      "cost_usd": 0.7005944,
+      "error": null
+    },
+    {
+      "agent": "sc23-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 344.44644249998964,
+      "cost_usd": 0.7937894,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

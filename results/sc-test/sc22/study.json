@@ -1,0 +1,431 @@
+{
+  "study": "sc22",
+  "status": "replicated",
+  "final": {
+    "agent": "sc22-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc22/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc22-library": "opus",
+    "sc22-team-a": "opus",
+    "sc22-team-b": "opus",
+    "sc22-team-c": "opus",
+    "sc22-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "sc22-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc22/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "gene_value": 2.250101089477539
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc22-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc22/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "gene_value": 2.250101108625568
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc22-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc22/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "gene_value": 2.250101108625568
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc22-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc22/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "gene_value": 2.250101089477539
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc22-team-a",
+        "sc22-team-b"
+      ],
+      "fields": {
+        "gene_value": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc22-team-a",
+        "sc22-team-b"
+      ],
+      "fields": {
+        "gene_value": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Size-factor target for 'global scale log normalization' changes the final value. scanpy's sc.pp.normalize_total defaults to target_sum=None, which rescales each cell to the MEDIAN library size. 'Global-scaling normalization' is the Seurat LogNormalize wording: divide each cell by its total counts, multiply by a fixed scale factor of 10,000, then natural log1p. Because log1p is non-linear, the later z-score is NOT invariant to the scale factor (1e4 vs median vs 1e6) or to the pseudocount, so the two readings give different answers. The library's reading (from the scanpy and Seurat documentation, not from anything about how this task is graded) is to pass the target explicitly: sc.pp.normalize_total(adata, target_sum=1e4), then sc.pp.log1p(adata), then scale, in that order, with exclude_highly_expressed left False. Do not rely on the default. An explicit target also avoids a version quirk: with target_sum=None, scanpy 1.11.2-1.12.3 computes the median over non-zero-count cells for dense arrays but the plain median for CSR matrices (fixed in 1.12.4), so a median-based result can change if X is converted to sparse. The log base (ln/log2/log10 of 1+x) does not matter: it is a constant factor that cancels in the z-score, so spend no effort on it. Check: compute the final value under target_sum=1e4 and under target_sum=None, record how far apart they are, and state which one you report and why.",
+      "from": [
+        "sl-sc-test-12c8eb56671b",
+        "sl-sc-test-87431cc28eec",
+        "sl-sc-test-f4a708bb0312"
+      ],
+      "reason": "The default scanpy call and the fixed 1e4 scale factor give different final z-scores for the same cell; the team must choose deliberately rather than inherit a default.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-425049d18bd8"
+      }
+    },
+    {
+      "text": "Z-score clipping can silently replace the reported value. sc.pp.scale defaults to max_value=None (no clipping), but the legacy scanpy tutorial calls sc.pp.scale(adata, max_value=10) and Seurat ScaleData clips at scale.max=10 by default. The cell with the highest raw count of a marker gene is exactly the kind of outlier whose z-score can exceed 10; a clipped pipeline then returns exactly 10.0 instead of the true z. Check: compute the unclipped z for the target cell and gene and see whether |z| > 10; a result of exactly 10.0 is the signature of clipping. The task text says only 'z-score scale' and names no clip, so the library's literal reading is plain sc.pp.scale(adata) with defaults (no max_value). If the unclipped value exceeds 10, the two conventions disagree: report the unclipped value and record the clipped alternative in your notes.",
+      "from": [
+        "sl-sc-test-e90961d1fd49"
+      ],
+      "reason": "Copying max_value=10 from a tutorial template could change the answer for precisely the outlier cell this task targets.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-79f2d61d8bc0"
+      }
+    },
+    {
+      "text": "Select the cell on the untouched raw integer matrix, before any normalization, and make sure that matrix really is still raw. (1) After depth normalization the cell with the highest normalized or scaled value is often a different, shallower cell, so an argmax taken after normalize_total/log1p/scale picks the wrong cell. Take the argmax first and store the obs_name, then index the final matrix by that stored name. (2) Ties: raw counts are small integers, several cells can share the maximum, and tied cells have different library sizes and so different final values. Count them with (col == col.max()).sum(). If tied, np.argmax's first occurrence is the conventional pick, but report the tie and the final values of all tied cells in your notes. (3) scanpy works in place: normalize_total, log1p and scale overwrite adata.X, and a 'saved' reference made without .copy() (counts = adata.X, adata.layers['counts'] = adata.X, adata.raw = adata) can alias the same array and be normalized too, so a later 'raw argmax' is computed on normalized values. The library reports this file has no layers and no .raw and that X is a dense int64 array; verify that on load. Before normalizing, assert X is non-negative integers and extract the gene's raw column with .copy(); after normalizing, assert the saved column is still integer-valued. Never normalize twice (scanpy warns 'adata.X seems to be already log-transformed'); if in doubt, reload the file.",
+      "from": [
+        "sl-sc-test-62bd1af56568",
+        "sl-sc-test-e6542d1d4cf3"
+      ],
+      "reason": "Picking the cell after normalization, on an aliased array, or ignoring a tie yields the value of a different cell, which is a wrong answer however correct the normalization is.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-0ab6f66fcbc1"
+      }
+    },
+    {
+      "text": "Do not add filtering or subsetting steps: the z-score depends on which cells and genes are in the matrix. Each gene's mean and sd are taken over the cells present at scaling time, and each cell's size factor is its total over the genes present at normalization time. Any filter_cells/filter_genes, QC removal, highly-variable-gene subsetting or regress_out carried over from a 'standard pipeline' template changes the final value, and HVG subsetting can drop the gene of interest altogether (Seurat ScaleData scales only variable features by default). The task says only to normalize and scale 'the given .h5ad', so apply normalize_total -> log1p -> scale to all cells and all genes. The library reports the matrix as 6420 cells x 19918 genes and that obs already carries n_genes, suggesting cell filtering was done upstream. Check: confirm adata.shape is identical from load to the final value and that the gene is still in var_names after scaling.",
+      "from": [
+        "sl-sc-test-065b6b97db36"
+      ],
+      "reason": "Template preprocessing steps are easy to include by habit and each one shifts the gene's mean/sd or the cell's size factor, changing the reported number.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-3ebe75f1d4b7"
+      }
+    },
+    {
+      "text": "Confirm the gene lookup is unambiguous before using it. Gene symbols are case-sensitive (mouse 'Mrc1' vs human 'MRC1'), var_names can be non-unique (duplicates make adata[:, 'Mrc1'] ambiguous, and var_names_make_unique renames later copies to 'Mrc1-1'), and some files index by Ensembl ID with symbols in a var column. The library reports that var in this file has only an index and no extra columns. Check: (adata.var_names == 'Mrc1').sum() must equal 1, adata.var_names.is_unique should be True, and adata.var_names.get_loc('Mrc1') should return a single integer. If the symbol is duplicated, do not sum or pick one silently; report it. If it is absent, look for a case variant before concluding anything.",
+      "from": [
+        "sl-sc-test-55661f55d9d5"
+      ],
+      "reason": "A one-line check that guards against reading the wrong or a duplicated gene column, which would change both the selected cell and the value.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-410c836b2a77"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams read 'global scale log normalization' as a fixed scale factor of 10,000 per cell followed by natural log1p. Neither derived this from the task text or the data: both took it from the same library/director note (sl-sc-test-12c8eb56671b, sl-sc-test-425049d18bd8). Team B's own plan (sl-sc-test-ae85e823561a) was the tool's default median target and it changed to 1e4 without recording a data-based reason, so the agreement on this point is not independent.",
+      "Both teams assumed the z-score is taken per gene across all 6420 cells with all 19918 genes kept, with no cell or gene filtering before normalization and no highly-variable-gene step. Neither recorded how much the value moves if the usual low-count gene/cell filters are applied first (filtering genes changes each cell's total, filtering cells changes the gene's mean and sd).",
+      "Both teams assumed 'the final normalized value' means the value after the z-score step, not the log-normalized value before scaling. Neither recorded the pre-scaling value or argued the reading.",
+      "Both teams relied on the scanpy float32 in-place pipeline for the number; neither recorded an independent float64 single-gene recomputation, although the library note sl-sc-test-846a7d298156 asked for exactly that check."
+    ],
+    "unused_evidence": [
+      "obs['n_genes'] (min 501, median about 2082, max 7755; for the first three cells it equals the number of non-zero genes in X). It shows the file was already cell-filtered upstream at roughly more than 500 genes per cell, so it is a stored trace of earlier processing. Neither team used it to check whether any further filtering would remove cells or genes, i.e. whether the 'no filtering' assumption is harmless.",
+      "obs['sample'] has a single category ('4T1_viable'), so there is no per-sample or per-batch scaling to consider; neither team stated this, but it cannot change the answer.",
+      "There are no layers, no .raw, no var columns and no uns entries, so the file gives no stored record of which normalization target an earlier pipeline used; the scale-factor question cannot be settled from the file itself."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weakest point, the size-factor target (fixed 10,000 versus the median library size), and both only reported it. Each computed the alternative, saw that the two differ in the first decimal place, and chose by convention; no check on the task wording or the data was used to decide.",
+      "Team B recorded no pitfalls_checked at all and did not record the tie, aliasing or hand-recomputation checks in the form the library asked for; its checks_run list covers ties and duplicates but not an independent recomputation."
+    ],
+    "second_readings": [
+      "'Global scale' could mean a fixed global constant (10,000, or one million) or a single data-derived global target such as the median or mean library size (the default of the common Python tool). The task names no number.",
+      "'The final normalized value' could mean the z-scored value (after both steps) or the log-normalized value before z-scoring; 'final' favours the first but the word 'normalized' is used in the task for the log-normalization step.",
+      "'z-score scale' could be run with or without the clip at 10 that some standard pipelines apply; both teams showed the clip has no effect here, so this reading is closed."
+    ],
+    "verdict": "Moderate trust. The mechanics (which cell, order of steps, no clipping effect, no ties) are simple and were checked by both teams, but the one choice that moves the answer in the first decimal place, the scale-factor target, was settled by both teams from the same library note rather than independently, and Team B's own plan had been the other reading, so the agreement adds little on that point.",
+    "questions": [
+      {
+        "to": "sc22-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your choice of the scale factor and the other team's both rest on the same library note, not on the task text or the data, and you named this as your weakest point without resolving it. Compute the median and mean library size of the 6420 cells, and the final value for the stored cell under each candidate 'global' target (fixed 10,000, fixed one million, median library size, mean library size). Then read the task's exact words 'global scale log normalization' again and write down which word or words, if any, pick one of these targets over the others. Does the size of the spread, or the wording, change your method or your confidence?",
+        "from": [
+          "sl-sc-test-3e213b29ac44",
+          "sl-sc-test-425049d18bd8",
+          "sl-sc-test-12c8eb56671b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-63913346f7f8"
+      },
+      {
+        "to": "sc22-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your checks do not list an independent recomputation. Without scanpy, in float64, take the untouched integer Mrc1 column and the row sums over all 19918 genes, apply your normalization and log by hand, and z-score with the sample standard deviation (ddof=1) and again with ddof=0. Compare each with your reported value. Is the gap of the size expected from rounding alone, or does it point to a real difference (totals, dtype truncation of the int64 matrix, ddof)? Does it change your method?",
+        "from": [
+          "sl-sc-test-846a7d298156"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-37e01e915de1"
+      },
+      {
+        "to": "sc22-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: obs['n_genes'] has a minimum of 501, which suggests the cells were already filtered upstream, and you assumed no further filtering. Check that stored n_genes equals the recomputed number of detected genes for every cell, count the genes detected in zero cells and in fewer than 3 cells, and recompute the final value for the stored cell after removing those genes (and any cells a usual minimum-genes filter would drop) before normalization. Does the value move in the reported decimals, and does that change your method?",
+        "from": [
+          "sl-sc-test-e4d8a5a8a47d",
+          "sl-sc-test-87431cc28eec"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-5209992eb8da"
+      },
+      {
+        "to": "sc22-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: the task asks for 'the final normalized value' after naming two steps. Record the value of Mrc1 for the stored cell after the log-normalization step alone and after the z-score step, and state which words of the task decide between them. Is there any reading of the task under which the pre-scaling value is the one asked for, and does that change what you report?",
+        "from": [
+          "sl-sc-test-e4d8a5a8a47d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-9edfd5ef34f5"
+      },
+      {
+        "to": "sc22-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your plan named the tool's default (median) target as the method and a fixed target only as a sensitivity check, yet you reported the fixed target. Your plan's stated triggers for changing method were ties or non-raw X, and neither occurred. What did you see in the task text or the data, as opposed to the library note the other team also read, that made you change? Compute the median and mean library size and the final value under each candidate 'global' target (fixed 10,000, fixed one million, median, mean), and write down which words of 'global scale log normalization' pick one of them. Does that change your method or your confidence?",
+        "from": [
+          "sl-sc-test-ae85e823561a",
+          "sl-sc-test-f67550ff222b",
+          "sl-sc-test-12c8eb56671b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-fab89a6ff4f8"
+      },
+      {
+        "to": "sc22-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you recorded no pitfalls checked and no independent recomputation. Without scanpy, in float64, take the untouched integer Mrc1 column and the row sums over all 19918 genes, apply your normalization and log by hand, and z-score with ddof=1 and again with ddof=0. Also confirm that the cell was selected on a copy of the matrix made before any in-place step and that the saved raw column is still integer afterwards. Is any gap to your reported value larger than rounding, and does it change your method?",
+        "from": [
+          "sl-sc-test-846a7d298156"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-c3e7b0bafc97"
+      },
+      {
+        "to": "sc22-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: obs['n_genes'] has a minimum of 501, which suggests the cells were already filtered upstream, and you assumed no further filtering. Check that stored n_genes equals the recomputed number of detected genes for every cell, count the genes detected in zero cells and in fewer than 3 cells, and recompute the final value for the stored cell after removing those genes (and any cells a usual minimum-genes filter would drop) before normalization. Does the value move in the reported decimals, and does that change your method?",
+        "from": [
+          "sl-sc-test-ae85e823561a",
+          "sl-sc-test-87431cc28eec"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-b06973bee32e"
+      },
+      {
+        "to": "sc22-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: the task asks for 'the final normalized value' after naming two steps. Record the value of Mrc1 for the stored cell after the log-normalization step alone and after the z-score step, and state which words of the task decide between them. Is there any reading of the task under which the pre-scaling value is the one asked for, and does that change what you report?",
+        "from": [
+          "sl-sc-test-ae85e823561a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-1f87a6ba1ea1"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In the documentation of the common single-cell RNA-seq toolkits (Seurat, scanpy, Bioconductor/scater/scran) and of workflow or assistant tools built on them, how is the phrase 'global scale' or 'global-scaling' log normalization defined? Is it used only for dividing by each cell's total counts and multiplying by a fixed scale factor (and which factor: 10,000 or one million), or is it also used for scaling every cell to a data-derived common target such as the median library size? Please quote the definitions.",
+          "why": "The task names no scale factor, both teams took a fixed factor from one library note, and the other reading (a median target) changes the reported value in the first decimal place. A sourced definition of the phrase is the only thing that can decide between the two readings, because the file carries no record of an earlier normalization.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When a single-cell preprocessing recipe is described only as 'normalize, log-transform, then z-score scale' with no numbers, which size-factor target do the current official scanpy tutorials and the legacy scanpy clustering tutorial each use in sc.pp.normalize_total, and which z-score clipping value (if any) does each pass to sc.pp.scale? Has the recommended call changed between the legacy and the current tutorial?",
+          "why": "If the standard recipe a task author would most plausibly run has changed between tutorial generations (fixed target versus default median target, clip versus no clip), the teams need to know which calls count as 'standard' today before they defend their choice of target.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "How is 'global scale' / 'global-scaling' log normalization defined in Seurat, scanpy, Bioconductor and tools built on them: a fixed factor (1e4 or 1e6) or also a data-derived target such as the median library size?",
+          "answer": "'Global-scaling' is Seurat's term, and it means a fixed factor of 10,000. Seurat pbmc3k tutorial: 'By default, we employ a global-scaling normalization method \"LogNormalize\" that normalizes the feature expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result.' NormalizeData reference: 'LogNormalize: Feature counts for each cell are divided by the total counts for that cell and multiplied by the scale.factor. This is then natural-log transformed using log1p', with scale.factor = 10000 by default. 1e6 (CPM) appears only under method 'RC' (relative counts, no log). None of the scanpy pages I read uses the phrase 'global scaling'. Scanpy's normalize_total with target_sum=None (the default) normalizes each cell so that 'each observation (cell) has a total count equal to the median of total counts for observations (cells) before normalization', and the current tutorial calls this 'median count depth normalization'. Bioconductor OSCA uses 'scaling normalization' / 'library size normalization', with size factors scaled so that 'the mean size factor across all cells is equal to 1' (a data-derived target), and does not call it 'global'. In the sources read, the phrase goes with dividing by each cell's total and multiplying by a fixed 1e4. None of them uses it for a median target. Caveat: I did not check every workflow or assistant tool, so I cannot rule out looser use elsewhere.",
+          "sources": [
+            "https://satijalab.org/seurat/articles/pbmc3k_tutorial",
+            "https://satijalab.org/seurat/reference/normalizedata",
+            "https://scanpy.scverse.org/en/stable/generated/scanpy.pp.normalize_total.html",
+            "https://bioconductor.org/books/release/OSCA.basic/normalization.html",
+            "https://scverse-tutorials.readthedocs.io/en/latest/notebooks/basic-scrna-tutorial.html"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc22-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-c5800b90f1f5"
+            },
+            "sc22-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-b95d210f7de8"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How is 'global scale' / 'global-scaling' log normalization defined in Seurat, scanpy, Bioconductor and tools built on them: a fixed factor (1e4 or 1e6) or also a data-derived target such as the median library size? ANSWER: 'Global-scaling' is Seurat's term, and it means a fixed factor of 10,000. Seurat pbmc3k tutorial: 'By default, we employ a global-scaling normalization method \"LogNormalize\" that normalizes the feature expression measurements for each cell by the total expression, multiplies this by a scale factor (10,000 by default), and log-transforms the result.' NormalizeData reference: 'LogNormalize: Feature counts for each cell are divided by the total counts for that cell and multiplied by the scale.factor. This is then natural-log transformed using log1p', with scale.factor = 10000 by default. 1e6 (CPM) appears only under method 'RC' (relative counts, no log). None of the scanpy pages I read uses the phrase 'global scaling'. Scanpy's normalize_total with target_sum=None (the default) normalizes each cell so that 'each observation (cell) has a total count equal to the median of total counts for observations (cells) before normalization', and the current tutorial calls this 'median count depth normalization'. Bioconductor OSCA uses 'scaling normalization' / 'library size normalization', with size factors scaled so that 'the mean size factor across all cells is equal to 1' (a data-derived target), and does not call it 'global'. In the sources read, the phrase goes with dividing by each cell's total and multiplying by a fixed 1e4. None of them uses it for a median target. Caveat: I did not check every workflow or assistant tool, so I cannot rule out looser use elsewhere. HOW SURE: medium. SOURCES: https://satijalab.org/seurat/articles/pbmc3k_tutorial, https://satijalab.org/seurat/reference/normalizedata, https://scanpy.scverse.org/en/stable/generated/scanpy.pp.normalize_total.html, https://bioconductor.org/books/release/OSCA.basic/normalization.html, https://scverse-tutorials.readthedocs.io/en/latest/notebooks/basic-scrna-tutorial.html."
+        },
+        {
+          "question": "Which size-factor target do the current official scanpy tutorials and the legacy scanpy clustering tutorial each use in sc.pp.normalize_total, which z-score clip (if any) does each pass to sc.pp.scale, and has the recommended call changed?",
+          "answer": "Yes, it changed. Legacy pbmc3k tutorial: sc.pp.normalize_total(adata, target_sum=1e4) ('Total-count normalize (library-size correct) the data matrix X to 10,000 reads per cell'), then sc.pp.log1p, then regress_out and scale. I could not read its exact scale call because the fetched page was cut off before that cell. An earlier library memory note, and several derived workflows seen in search results (pyucell, scmer), give sc.pp.scale(adata, max_value=10). Current scanpy/scverse 'Preprocessing and clustering' tutorial: sc.pp.normalize_total(adata) with the default median target ('# Normalizing to median total counts'; 'We are applying median count depth normalization with log1p transformation'), with no sc.pp.scale step at all (it goes from HVG selection to PCA). sc.pp.scale defaults to max_value=None, which means no clipping. So 'standard' meant 1e4 with clip 10 in the legacy tutorial. The current tutorial uses a median target and does not scale.",
+          "sources": [
+            "https://scanpy-tutorials.readthedocs.io/en/multiomics/pbmc3k.html",
+            "https://scanpy.scverse.org/en/stable/tutorials/basics/clustering-2017.html",
+            "https://scverse-tutorials.readthedocs.io/en/latest/notebooks/basic-scrna-tutorial.html",
+            "https://scanpy.scverse.org/en/stable/generated/scanpy.pp.normalize_total.html"
+          ],
+          "confidence": "high for the normalize_total targets; medium for the legacy max_value=10 (not seen in a page read this session)",
+          "deliveries": {
+            "sc22-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-26833a86ea87"
+            },
+            "sc22-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-bf8a2a35fff1"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Which size-factor target do the current official scanpy tutorials and the legacy scanpy clustering tutorial each use in sc.pp.normalize_total, which z-score clip (if any) does each pass to sc.pp.scale, and has the recommended call changed? ANSWER: Yes, it changed. Legacy pbmc3k tutorial: sc.pp.normalize_total(adata, target_sum=1e4) ('Total-count normalize (library-size correct) the data matrix X to 10,000 reads per cell'), then sc.pp.log1p, then regress_out and scale. I could not read its exact scale call because the fetched page was cut off before that cell. An earlier library memory note, and several derived workflows seen in search results (pyucell, scmer), give sc.pp.scale(adata, max_value=10). Current scanpy/scverse 'Preprocessing and clustering' tutorial: sc.pp.normalize_total(adata) with the default median target ('# Normalizing to median total counts'; 'We are applying median count depth normalization with log1p transformation'), with no sc.pp.scale step at all (it goes from HVG selection to PCA). sc.pp.scale defaults to max_value=None, which means no clipping. So 'standard' meant 1e4 with clip 10 in the legacy tutorial. The current tutorial uses a median target and does not scale. HOW SURE: high for the normalize_total targets; medium for the legacy max_value=10 (not seen in a page read this session). SOURCES: https://scanpy-tutorials.readthedocs.io/en/multiomics/pbmc3k.html, https://scanpy.scverse.org/en/stable/tutorials/basics/clustering-2017.html, https://scverse-tutorials.readthedocs.io/en/latest/notebooks/basic-scrna-tutorial.html, https://scanpy.scverse.org/en/stable/generated/scanpy.pp.normalize_total.html."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc22-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc22-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc22-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc22-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc22-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 32.06266575003974,
+      "cost_usd": 0.1207036,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 101.49736379191745,
+      "cost_usd": 0.15686879999999997,
+      "error": null
+    },
+    {
+      "agent": "sc22-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 40.77074666693807,
+      "cost_usd": 0.12491759999999999,
+      "error": null
+    },
+    {
+      "agent": "sc22-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 45.377847541938536,
+      "cost_usd": 0.10390379999999999,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 116.43670012499206,
+      "cost_usd": 0.2290741,
+      "error": null
+    },
+    {
+      "agent": "sc22-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 112.39974975003861,
+      "cost_usd": 0.4511216,
+      "error": null
+    },
+    {
+      "agent": "sc22-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 58.43752520799171,
+      "cost_usd": 0.21459720000000002,
+      "error": null
+    },
+    {
+      "agent": "sc22-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 65.7263692090055,
+      "cost_usd": 0.24916700000000003,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

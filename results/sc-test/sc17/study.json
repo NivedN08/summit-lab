@@ -1,0 +1,243 @@
+{
+  "study": "sc17",
+  "status": "replicated",
+  "final": {
+    "agent": "sc17-team-a",
+    "team": "team-a",
+    "round": "analysis",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc17/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc17-library": "opus",
+    "sc17-team-a": "opus",
+    "sc17-team-b": "opus",
+    "sc17-team-c": "opus",
+    "sc17-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc17-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc17/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "total": 19259,
+        "Adult": 11518,
+        "Aged": 7741
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc17-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc17/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "total": 19259,
+        "Adult": 11518,
+        "Aged": 7741
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc17-team-a",
+        "sc17-team-b"
+      ],
+      "fields": {
+        "total": true,
+        "Adult": true,
+        "Aged": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "FILE LAYOUT (from headers only, no values analysed): 158807664.node is an AnnData h5ad file despite its extension. X is a CSR sparse matrix stored as float32, shape 966768 nuclei x 32227 genes, with 172,451,705 stored entries. There is no .raw group and layers is empty, so X is the only matrix in the file. obs columns are: sample (categorical, 3 categories), total_counts (float32), n_genes (int64), n_genes_raw (int64), age_group (categorical, 2 categories). var holds only gene names.",
+      "from": [
+        "sl-sc-test-b7280dbabdde"
+      ],
+      "reason": "Tells the team how to open the file, that X is the only candidate for the raw matrix, and that two precomputed n_genes-like obs columns exist, which shapes every later check.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-f47967aa4972"
+      }
+    },
+    {
+      "text": "PITFALL: X being the only matrix does not prove it holds raw UMI counts; it is float32, and h5ad files often carry normalized, log1p or ambient-corrected values in X. CHECK before thresholding: on X.data confirm every value is integer-valued (np.all(X.data == np.round(X.data))), the minimum is >= 0 (no negatives), the maximum is a plausible UMI count rather than a log-scale value (log1p data tops out around <15), and the row sums of X match obs total_counts. IF all hold: float32 is harmless (integers are exact up to 2^24) and X can be used as the raw matrix. IF non-integer or negative values are found: X is not the raw count matrix, 'count > 0' and 'non-zero' stop being the same definition, and the result should be reported as not computable as specified from X alone (or, if proceeding, use strictly X > 0 and flag it) rather than silently thresholding transformed values.",
+      "from": [
+        "sl-sc-test-4395df6e57c3",
+        "sl-sc-test-4d57c1c45b47"
+      ],
+      "reason": "The task requires the raw integer count matrix; if X is transformed, the number of nuclei passing n_genes > 1000 may differ or be ill-defined, so this must be verified before anything is counted.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-f40bf7592029"
+      }
+    },
+    {
+      "text": "PITFALL: The file already has obs columns n_genes and n_genes_raw. Precomputed columns like these are often stale: scanpy writes obs n_genes only when filter_cells ran, possibly on a different matrix, gene set or processing stage, so the two columns may disagree with each other and with X. CHECK: recompute n_genes from X as (X > 0).sum(axis=1) and compare it elementwise with obs n_genes and with obs n_genes_raw; record how many nuclei differ and how many pass > 1000 under each. IF they mismatch: the task defines n_genes from the raw count matrix, so the value recomputed from a verified-raw X is authoritative; use the obs columns only as a cross-check and report the discrepancy.",
+      "from": [
+        "sl-sc-test-a67377257f52"
+      ],
+      "reason": "Taking a ready-made obs column as a shortcut could yield a different count than the task's definition; the comparison also serves as an independent check on whether X is really the raw matrix.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ca8453ca22d4"
+      }
+    },
+    {
+      "text": "PITFALL: The task's threshold is strict (n_genes > 1000), but scanpy's sc.pp.filter_cells(min_genes=N) keeps cells with n_genes >= N, so min_genes=1000 wrongly keeps nuclei with exactly 1000 detected genes. CHECK: count the nuclei with n_genes exactly equal to 1000; if non-zero, the two conventions give different answers. Use an explicit boolean mask n_genes > 1000 (equivalent to min_genes=1001), never min_genes=1000.",
+      "from": [
+        "sl-sc-test-8a3b5fd435b5"
+      ],
+      "reason": "An off-by-one at the boundary changes the integer counts the task asks for, and the default tool convention is the wrong one here.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-b6befe72ee21"
+      }
+    },
+    {
+      "text": "PITFALL: Any step that removes or alters genes or counts before n_genes is computed changes how many nuclei clear a fixed threshold: sc.pp.filter_genes(min_cells=...), highly-variable-gene subsetting, dropping mitochondrial/ribosomal genes, merging duplicated gene names, normalization, ambient-RNA correction, cell calling, doublet or mito filtering. Tutorial pipelines do several of these by reflex. CHECK: the matrix is still 966768 x 32227 at the moment n_genes is computed and nothing else has been run on it. Apply only the single filter the task asks for (n_genes > 1000) on the untouched matrix with all genes.",
+      "from": [
+        "sl-sc-test-02b572e314ad"
+      ],
+      "reason": "Habitual QC preprocessing would silently change the per-nucleus gene counts and therefore the answer; the task specifies exactly one filter.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-b6d04bef5dfe"
+      }
+    },
+    {
+      "text": "PITFALL: In a scipy sparse matrix, X.getnnz(axis=1), X.nnz and np.diff(X.indptr) count STORED entries, which include explicitly stored zeros, so they can overcount genes detected per nucleus. A CSR matrix read from disk can also be non-canonical (duplicate column indices within a row, unsorted indices); duplicates are logically summed, so even (X > 0).sum(axis=1) on an un-deduplicated matrix can count one gene twice. CHECK: (X.data == 0).sum() == 0; X.has_canonical_format is True (or X.nnz is unchanged after X.sum_duplicates()); and np.diff(X.indptr) equals np.asarray((X > 0).sum(axis=1)).ravel(). IF explicit zeros or duplicates are found: run X.sum_duplicates() then X.eliminate_zeros() before counting, and compute n_genes as (X > 0).sum(axis=1) rather than from indptr differences. If neither is present and there are no negative values, the stored-entry count, (X > 0) count and scanpy's n_genes_by_counts agree and can be used to cross-validate one another.",
+      "from": [
+        "sl-sc-test-e67f70f5d225",
+        "sl-sc-test-031569d0f920"
+      ],
+      "reason": "The fastest way to count genes per nucleus (stored entries per row) is only correct under conditions that must be checked; otherwise n_genes is inflated and nuclei near the threshold are misclassified.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-b326a3ef55c0"
+      }
+    },
+    {
+      "text": "PITFALL: At 966768 x 32227, any densifying operation (X.toarray(), np.asarray(X), X.A, conversion to pandas) needs roughly 125 GB and will crash or tempt subsampling, which makes the count wrong or non-deterministic; anndata backed='r' row-by-row iteration is also reported to leak memory. The sparse matrix has ~172M stored entries (about 2 GB in memory), so load it sparse and keep every operation sparse. IF memory is tight: read X/data, X/indices and X/indptr directly with h5py in row chunks and count data > 0 per row via indptr, over ALL rows - never subsample. Note that the file has a very large number of barcodes relative to its stored entries, so the fraction of nuclei passing the threshold, whatever it turns out to be, is not on its own a reason to doubt or alter the method.",
+      "from": [
+        "sl-sc-test-ced7cb0eac20"
+      ],
+      "reason": "Determines how the computation can be carried out at all on this file size, and guards against subsampling or 'correcting' the method because the pass rate looks unexpected.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-05f1e297cadf"
+      }
+    },
+    {
+      "text": "PITFALL: Per-group counts from a pandas categorical can silently lose cells: value_counts drops NaN by default, groupby drops NaN keys and (with observed=False) lists unused categories, and labels may differ in case or whitespace, so Adult + Aged may not equal total. CHECK: adata.obs['age_group'].isna().sum() == 0; the categories are exactly 'Adult' and 'Aged'; after filtering, Adult + Aged == total; use value_counts(dropna=False). Also cross-tabulate sample x age_group (there are 3 samples) to confirm each sample maps to a single age group. IF unlabelled or oddly labelled nuclei exist: report total as all nuclei passing the filter and state how those nuclei were handled rather than letting them vanish.",
+      "from": [
+        "sl-sc-test-64b8d6b9f9bf"
+      ],
+      "reason": "The answer needs three mutually consistent integers; label problems would make the Adult/Aged split wrong or inconsistent with the total.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-9ff79d35206f"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 0,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assume X is the raw UMI matrix. This was tested, not just assumed: values are non-negative integers stored as float32, row sums equal obs total_counts, and per-row non-zero counts equal both obs n_genes and obs n_genes_raw for every barcode. The file has no .raw group and an empty layers group (confirmed from the headers), so there is no other candidate matrix.",
+      "Both teams treat every one of the 966768 barcodes as a 'nucleus' in scope, with no cell calling, doublet or mito step before the threshold. The task lists a single filter, so this follows the text; neither team tested an alternative because the task gives none.",
+      "Both teams count one gene per matrix column. I checked the headers: the 32227 var names are all distinct, so counting columns and counting distinct gene names are the same thing.",
+      "Both teams assume each barcode is one independent record. The 966768 obs names are all distinct (team B checked; confirmed from the headers)."
+    ],
+    "unused_evidence": [
+      "obs 'sample' (3M, 21M1, 21M2) is not needed for the requested numbers; both teams used it only to confirm each sample maps to one age group. Ignoring it cannot change the counts.",
+      "obs 'total_counts', 'n_genes' and 'n_genes_raw' were used as cross-checks by both teams and match the recomputed values exactly. The existence of two identical gene-count columns is odd but harmless here, since both equal the value recomputed from X.",
+      "uns holds only a platform key string; var has no columns beyond gene names; obsm, obsp, varm, varp and layers are empty. Nothing else in the file bears on the question."
+    ],
+    "unresolved_weak_points": [
+      "Team A named the strict '>' versus '>=' convention. Resolved: it counted the nuclei sitting exactly on the threshold (11), showed the two conventions differ by that amount, and used the strict mask the task states.",
+      "Team B named the assumption that X is raw. Resolved as far as the file allows: integer values, matching obs columns including one named n_genes_raw, and no other matrix in the file.",
+      "Team B recorded no pitfalls checked and did not report the boundary count or a check for duplicate column indices within a row. This is covered by team A, which verified a canonical CSR with no explicit zeros and no duplicate indices; team B's total equals team A's strict-threshold total, not the '>=' total, so team B's mask was strict too."
+    ],
+    "second_readings": [
+      "'n_genes > 1000' could be mistaken for the common min_genes=1000 ('>=') convention; the task writes '>' explicitly, and both teams followed it.",
+      "'total' could in principle mean something other than Adult plus Aged if some barcodes had no age label; team A confirmed there are no missing codes and the two groups sum to the total, so the readings coincide.",
+      "'genes with count > 0' could mean distinct gene symbols rather than matrix columns; gene names are unique, so the readings coincide.",
+      "I found no second reading of the quantity, group, scale or time point that gives a different number on this file."
+    ],
+    "verdict": "I trust the agreed answer highly. The task is a fully specified deterministic count, both teams computed it from the full untouched matrix and matched the file's own precomputed columns, and each named weak point was checked on the data; my own look at the file headers (single matrix, unique gene names, unique barcodes, two age categories) turned up no unused evidence or alternative reading that could move the numbers, so I have no question worth a team's time.",
+    "questions": []
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "sc17-team-b",
+      "round": "analysis",
+      "reason": "agreed with sc17-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc17-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 29.689255584031343,
+      "cost_usd": 0.11912080000000001,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 96.82452958298381,
+      "cost_usd": 0.1580549,
+      "error": null
+    },
+    {
+      "agent": "sc17-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 46.614864374976605,
+      "cost_usd": 0.11899340000000001,
+      "error": null
+    },
+    {
+      "agent": "sc17-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 51.824824500014074,
+      "cost_usd": 0.1542966,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 54.282557250000536,
+      "cost_usd": 0.14882689999999998,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

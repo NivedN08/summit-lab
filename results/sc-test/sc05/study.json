@@ -1,0 +1,463 @@
+{
+  "study": "sc05",
+  "status": "converged",
+  "final": {
+    "agent": "sc05-team-a",
+    "team": "team-a",
+    "round": "revise",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc05/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc05-library": "opus",
+    "sc05-team-a": "opus",
+    "sc05-team-b": "opus",
+    "sc05-team-c": "opus",
+    "sc05-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc05-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc05/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "median_umis_per_cell": 1655,
+        "pct_counts_one": 73.91,
+        "median_hvg_prevalence": 110
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc05-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc05/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "median_umis_per_cell": 1655,
+        "pct_counts_one": 73.906,
+        "median_hvg_prevalence": 168
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc05-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc05/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "median_umis_per_cell": 1655,
+        "pct_counts_one": 73.91,
+        "median_hvg_prevalence": 168
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc05-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc05/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "median_umis_per_cell": 1655,
+        "pct_counts_one": 73.906,
+        "median_hvg_prevalence": 168
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc05-team-a",
+        "sc05-team-b"
+      ],
+      "fields": {
+        "median_umis_per_cell": true,
+        "pct_counts_one": true,
+        "median_hvg_prevalence": false
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "sc05-team-a",
+        "sc05-team-b"
+      ],
+      "fields": {
+        "median_umis_per_cell": true,
+        "pct_counts_one": true,
+        "median_hvg_prevalence": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "DATA FORMAT (from file headers only): the input is /workspace/data/og_raw_counts.h5ad, 11693 cells x 27946 genes. X is a CSC sparse matrix of int32 raw counts; there are no layers, and obs and var have no columns at all. There is no donor column: donor/sample identity could only come from the obs_names prefix (names look like 'sample1_cell10000'), and whether that prefix maps one-to-one to the 4 donors is unverified. var_names are gene symbols.",
+      "from": [
+        "sl-sc-test-74d0d63bb86a"
+      ],
+      "reason": "Tells the team that X is already raw integer counts (no normalised layer to confuse it with), that the expected cell count is 11693 (a sanity anchor for 'no cells dropped'), and that any per-donor/batch-aware step would rest on an unverified obs_names prefix rather than real metadata.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-710448edcfa4"
+      }
+    },
+    {
+      "text": "PITFALL: the 'median number of cells in which the 2,000 HVGs are detected' depends strongly on the HVG method, and the task names no flavor. Methods select very different gene sets, and flavor must match input scale: scanpy's default flavor='seurat' (and 'cell_ranger') expects log-normalised data and applies expm1 internally, so calling it directly on raw counts silently gives a meaningless ranking; 'seurat_v3' expects raw integer counts and only warns if given normalised data. If a log-normalised route is used, the scale factor is a further hidden choice (normalize_total defaults to the median count per cell, Seurat/tutorials use 1e4), and on shallow data where depth is far below the scale factor this changes which genes rank as variable. CHECK: before the HVG call, assert whether the matrix passed is integer-valued and whether adata.uns has 'log1p', and that this matches the flavor. Compute the HVG set and its median prevalence under at least seurat_v3 on raw counts and flavor='seurat' on log-normalised data, and report the overlap and both medians. IF they differ materially: prefer the method that needs no unstated steps for the data as given (raw counts with a fixed n_top_genes=2000 corresponds to seurat_v3 / Seurat vst, which needs no scale factor), and state the flavor, the input, and the alternative value explicitly rather than hiding the assumption.",
+      "from": [
+        "sl-sc-test-2a85ec014bf4",
+        "sl-sc-test-f88b2d7e4f93",
+        "sl-sc-test-5910ded2936c"
+      ],
+      "reason": "The choice of HVG flavor and its input is the single largest unstated decision in the task and directly determines the third reported number; the team needs to make it deliberately, avoid the silent flavor/input mismatch, and record the alternative.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-27f87788b019"
+      }
+    },
+    {
+      "text": "PITFALL: seurat_v3 HVG selection can fail or get silently swapped. It needs the optional scikit-misc package (loess), and the loess fit can raise 'reciprocal condition number' / 'near singularities' errors, attributed to an excess of all-zero genes in the cells being fitted, most often when batch_key is used. CHECK: try 'import skmisc' before the run and make sure the min-cells gene filter was applied first. IF it fails: install scikit-misc (pip install scikit-misc) rather than falling back to the default dispersion flavor; remove all-zero genes for the failing subset rather than altering span; if a different flavor or span is truly unavoidable, report it as a deviation.",
+      "from": [
+        "sl-sc-test-e7c214f8b90f"
+      ],
+      "reason": "A missing dependency or loess error commonly leads to a quiet fallback to another flavor or a changed span, which changes the HVG set and therefore the reported prevalence without anyone noticing.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-5ddda6ad6d45"
+      }
+    },
+    {
+      "text": "PITFALL: the three requested numbers can end up computed on different matrices, and habitual extra QC shifts all of them. The task states the gene filter (<10 cells) as a step before HVG selection, while median UMIs per cell and the percent of non-zero entries equal to 1 are worded as dataset-level statistics. Computing those two after gene filtering removes rare-gene entries (disproportionately counts of 1) and lowers cell totals. Cell filtering (min_genes, mito/MAD thresholds, doublet removal) is not requested and would change the median, the percentage and every gene's detection count. CHECK: compute median UMIs/cell and pct-equal-1 both on the unfiltered matrix and after the gene filter and see whether they differ at the reported precision; assert the number of cells is unchanged at the end. IF they differ: report the unfiltered-matrix value for the two dataset-level statistics as primary, note the post-filter value, and apply no cell filtering.",
+      "from": [
+        "sl-sc-test-584c919570dc"
+      ],
+      "reason": "Which matrix each statistic is computed on, and whether any unrequested cell QC is applied, changes all three reported values; the team should decide this explicitly and check sensitivity.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-69511b27169c"
+      }
+    },
+    {
+      "text": "PITFALL: gene-filter threshold semantics are easy to get wrong by one or by kind. 'Filter genes detected in fewer than 10 cells' means keep genes with n_cells >= 10: sc.pp.filter_genes(min_cells=10) is inclusive and correct, whereas min_counts=10 thresholds total UMIs instead, and a strict '> 10' drops genes detected in exactly 10 cells. The filter must run BEFORE HVG selection because the mean-variance trend (seurat_v3 loess) and the dispersion bins are fitted over all genes present, so the gene universe changes the ranking. CHECK: after filtering, assert the minimum over genes of (X > 0).sum(axis=0) is >= 10 and count how many genes sit exactly at 10. Compute HVG prevalence from the raw count matrix (cells with count > 0), not from normalised or scaled values, and not from a stale var['n_cells'] column computed before later subsetting.",
+      "from": [
+        "sl-sc-test-295976559e88"
+      ],
+      "reason": "An off-by-one or wrong-kind filter changes the gene universe the HVG ranking is fitted on, and taking prevalence from the wrong matrix or a stale column changes the third reported number.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-7aef39235cac"
+      }
+    },
+    {
+      "text": "PITFALL: the HVG set may not contain exactly 2,000 genes, and the final integers hide rounding choices. With dispersion-based flavors a mean-expression bin holding a single gene gets its normalised dispersion set to 1 and NaN dispersions can occur; with n_top_genes set, all mean/dispersion cutoffs are ignored. The median of 2,000 prevalence values is the mean of the two middle values and can end in .5, while the answer must be an int. CHECK: assert adata.var['highly_variable'].sum() == 2000; check for NaN in the ranking statistic; compute the median prevalence as a float and see whether it is fractional; confirm the median UMI is taken over per-cell sums of raw counts (axis=1). IF found: fix the selection so exactly 2000 genes are flagged; if the median is x.5, state the rounding rule used.",
+      "from": [
+        "sl-sc-test-f24639ad82db"
+      ],
+      "reason": "The answer format demands integers and exactly 2,000 genes; a silently short/long HVG set or an unstated rounding of a .5 median changes the reported value.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-da08f5f891e7"
+      }
+    },
+    {
+      "text": "PITFALL: counting non-zero entries with sparse .nnz / getnnz counts STORED values, including explicit zeros and un-summed duplicates, so both the denominator of 'percent of non-zero entries equal to 1' and per-gene detection counts can be inflated. CHECK: on X run (X.data == 0).sum(), X.has_canonical_format and (X.data < 0).sum(); compare X.nnz with X.count_nonzero(). IF any explicit zeros or duplicates exist: call X.sum_duplicates() and X.eliminate_zeros() first, define the percentage as 100 * (X.data == 1).sum() / (X.data != 0).sum(), and define detection as (X > 0) per gene. Report a percentage on the 0-100 scale, not a fraction.",
+      "from": [
+        "sl-sc-test-44234b68d14c"
+      ],
+      "reason": "Stored-entry counts are the natural shortcut for both the percentage and gene prevalence, and they are wrong if the sparse matrix holds explicit zeros or duplicates; the check is cheap and the percentage-vs-fraction scale affects the reported number.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-440ad2e5149f"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "sc05-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the two teams did not read 'identify the top 2,000 highly variable genes' the same way. The other team observed that the task names no flavor, and that a plain HVG call in the common toolkit with only the number of genes set runs the tool's default flavor, which is what a 'standard pipeline' would do. Check what in the task text or in the data supports your reading over a default call, and what would count against it. Does that change your method?",
+      "from": [
+        "sl-sc-test-5ae09e4af969",
+        "sl-sc-test-f14ee0bdeb45"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-cdf9b691afd8"
+    },
+    {
+      "to": "sc05-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team also wrote its own approximation of the variance-stabilising HVG method because the loess package was missing, using a different local-regression routine from yours, and the two approximations do not give the same gene set. Check your reimplementation step by step against the reference definition (what is regressed on what, span, degree, family, exact versus interpolated surface, how zero-variance genes are handled, the clipping value, the ranking and tie rule), and test it on an input where the reference output is known or can be derived. Also check whether the loess package can be obtained without network access (for example a wheel, a package cache or another environment under /root). Is your gene set stable under those checks, given the tie you found at the cutoff? Does it change your method?",
+      "from": [
+        "sl-sc-test-5ae09e4af969",
+        "sl-sc-test-9242e58a133b",
+        "sl-sc-test-dc85268ba745"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-c1c7dcf8b646"
+    },
+    {
+      "to": "sc05-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that the file has no cell metadata but the cell names carry a donor prefix identifying four samples, and that the cells look already prefiltered on per-cell UMI and gene counts. Check whether that holds in your data. Does the donor structure affect which genes rank as highly variable in your procedure, and does it change your method?",
+      "from": [
+        "sl-sc-test-f14ee0bdeb45",
+        "sl-sc-test-5ae09e4af969"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-1ee597259ab5"
+    },
+    {
+      "to": "sc05-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team recorded that selecting HVGs on log-normalised data requires a scale factor that the task never states (the normalisation function's own default is the median count per cell, tutorials use a fixed value), and that in this data the per-cell depth is far below the tutorial value. Check whether your selected gene set and its median detection count stay the same when the scale factor is changed between those two choices. The task text names a gene filter before HVG selection and no normalisation step: check which HVG procedures can be run on the data exactly as the task describes it. Does that change your method?",
+      "from": [
+        "sl-sc-test-4d1589928fd9",
+        "sl-sc-test-27f87788b019"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-879f8851868c"
+    },
+    {
+      "to": "sc05-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: your plan said to change method if the flavors diverged strongly and then pick the one matching the raw-count convention. You recorded that the flavors diverge strongly, and the other team found that only about half of the selected genes are shared between the default flavor and the raw-count flavor. What did you see in the data or the task text that led you to keep your first choice rather than apply your own rule? Does applying that rule now change your method?",
+      "from": [
+        "sl-sc-test-4d1589928fd9",
+        "sl-sc-test-f14ee0bdeb45"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-a7acf3684aa8"
+    },
+    {
+      "to": "sc05-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team also had to approximate the variance-stabilising HVG method without the loess package; it used an exact local quadratic fit with a fixed span on log10 variance versus log10 mean, with clipped standardised variance, and found a group of genes tied exactly at the cutoff rank. Its approximation and yours do not give the same gene set. Check which local regression yours used (degree, span, robustness iterations, clipping, tie rule) and whether each setting matches the reference definition; check whether the loess package can be obtained without network access (for example a wheel, a package cache or another environment under /root). Does that change your comparison between flavors, and your method?",
+      "from": [
+        "sl-sc-test-9242e58a133b",
+        "sl-sc-test-dc85268ba745",
+        "sl-sc-test-5ddda6ad6d45"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-0518fc21ae93"
+    },
+    {
+      "to": "sc05-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team checked several things your notes do not record: that exactly the requested number of genes is flagged and the ranking statistic has no NaN (dispersion-based flavors can give NaN or forced values in sparsely filled expression bins), whether the median over the selected genes is fractional before it is written as an integer, and whether the median UMIs per cell and the percentage of non-zero entries equal to one differ when computed before versus after the gene filter (it found they do differ slightly). Check each of these in your data, and state which matrix and what rounding precision your first two reported numbers use. Does any of it change your method?",
+      "from": [
+        "sl-sc-test-50d5c0deb667",
+        "sl-sc-test-da08f5f891e7",
+        "sl-sc-test-69511b27169c"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-79e1a0fdba85"
+    }
+  ],
+  "warning_signs_to_team_c": [],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": null,
+  "research": [
+    {
+      "round": "questions",
+      "questions": [
+        {
+          "question": "What exactly does scanpy's sc.pp.highly_variable_genes do with flavor='seurat_v3' (and Seurat's FindVariableFeatures with selection.method='vst'): which variables are regressed (log10 variance on log10 mean?), the loess span, degree, family and whether the surface is exact or interpolated, how zero-variance genes are treated, the clipping value for standardised values, how the standardised variance is computed, and how ties at the n_top_genes cutoff are ordered? Is there a documented way to reproduce it without the scikit-misc package, and how closely do statsmodels lowess or an exact local-quadratic fit reproduce its gene ranking?",
+          "why": "Neither team could run the reference implementation; each wrote a different approximation and the two disagree. Knowing the exact definition lets both teams validate their code against the same specification.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In scanpy, what does sc.pp.highly_variable_genes(adata, n_top_genes=2000) do when no flavor is given: which flavor is the default in current and recent versions, what input does it expect, and what happens (warning, error, or silent result) if it is called directly on raw integer counts after only a min_cells gene filter with no normalize_total/log1p step? Which flavor do the scanpy documentation and widely used best-practice guides recommend when the starting point is a raw count matrix and a fixed number of top genes is requested?",
+          "why": "The teams read an unqualified 'top 2,000 highly variable genes' on raw counts differently (default flavor after added normalisation versus the raw-count flavor). The tool's default behaviour and the documented convention for raw-count input bear directly on which reading needs no unstated steps.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "For scanpy's dispersion-based HVG flavors ('seurat', 'cell_ranger') on log-normalised data, how sensitive is the selected gene set to the normalize_total target_sum (the function default of the median count per cell versus a fixed 1e4), particularly for shallow, very sparse UMI data where most non-zero counts are one and per-cell depth is far below 1e4? Is there a documented tendency for these flavors to select genes detected in very few cells under such conditions, and how are single-gene or sparsely filled mean bins handled in the normalised dispersion?",
+          "why": "The log-normalised route depends on a scale factor the task does not state, and one team did not test it. Knowing how the scale factor and sparsity affect dispersion-based selection tells both teams whether that route gives a stable answer on shallow data.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "What exactly does scanpy's sc.pp.highly_variable_genes do with flavor='seurat_v3' (and Seurat's FindVariableFeatures with selection.method='vst'): which variables are regressed (log10 variance on log10 mean?), the loess span, degree, family and whether the surface is exact or interpolated, how zero-variance genes are treated, the clipping value for standardised values, how the standardised variance is computed, and how ties at the n_top_genes cutoff are ordered? Is there a documented way to reproduce it without the scikit-misc package, and how closely do statsmodels lowess or an exact local-quadratic fit reproduce its gene ranking?",
+          "answer": "Definition (scanpy 1.10.4 source, matching Seurat docs): for each gene, compute the mean and the variance with ddof=1 on raw counts. Genes with variance>0 are fitted with loess of y=log10(variance) on x=log10(mean): span=0.3, degree=2, family='gaussian' (so no robust iterations), surface='interpolate' (kd-tree, cell=0.2), statistics='approximate'. These are the skmisc loess defaults and the same as R stats::loess defaults, which Seurat vst uses with loess.span=0.3. Zero-variance genes are not fitted: their fitted log10 variance is set to 0 (reg_std=1), and their normalised variance comes out as 0. reg_std = sqrt(10**fitted). Each count is clipped to clip_val = mean + sqrt(N_cells)*reg_std, which is Seurat's clip.max='auto'=sqrt(ncells) applied to the z-score. variances_norm = [N*mean^2 + sum(clipped^2) - 2*mean*sum(clipped)] / ((N-1)*reg_std^2), i.e. the ddof=1 variance of the clipped standardised values (x-mean)/reg_std. Ranks = argsort(argsort(-variances_norm)) using numpy's default non-stable sort, so exact ties are ordered by the implementation, not by a documented rule. Ranks >= n_top_genes are set to NaN, and the n_top_genes lowest ranks are flagged (single batch). Reproduction without skmisc: no official or documented alternative exists. scanpy issue #993 offered a statsmodels lowess(frac=0.15) version as a 'close approximation' but gave no agreement figures. statsmodels lowess is local-LINEAR with it=3 robust bisquare iterations by default, so it is a different smoother (degree 1, robust, different span). An exact tricube local-quadratic fit (span 0.3, gaussian, no robust iterations, evaluated directly) matches the definition except for loess's kd-tree interpolation, so it should be very close. No source I read quantifies ranking agreement for either approximation.",
+          "sources": [
+            "https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/preprocessing/_highly_variable_genes.py",
+            "https://satijalab.org/seurat/reference/findvariablefeatures",
+            "https://has2k1.github.io/scikit-misc/stable/generated/skmisc.loess.loess.html",
+            "https://has2k1.github.io/scikit-misc/stable/generated/skmisc.loess.loess_model.html",
+            "https://has2k1.github.io/scikit-misc/stable/generated/skmisc.loess.loess_control.html",
+            "https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loess.html",
+            "https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loess.control.html",
+            "https://github.com/scverse/scanpy/issues/993",
+            "https://www.statsmodels.org/stable/generated/statsmodels.nonparametric.smoothers_lowess.lowess.html"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc05-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-d3bbaf081461"
+            },
+            "sc05-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-6b58e0e8b518"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What exactly does scanpy's sc.pp.highly_variable_genes do with flavor='seurat_v3' (and Seurat's FindVariableFeatures with selection.method='vst'): which variables are regressed (log10 variance on log10 mean?), the loess span, degree, family and whether the surface is exact or interpolated, how zero-variance genes are treated, the clipping value for standardised values, how the standardised variance is computed, and how ties at the n_top_genes cutoff are ordered? Is there a documented way to reproduce it without the scikit-misc package, and how closely do statsmodels lowess or an exact local-quadratic fit reproduce its gene ranking? ANSWER: Definition (scanpy 1.10.4 source, matching Seurat docs): for each gene, compute the mean and the variance with ddof=1 on raw counts. Genes with variance>0 are fitted with loess of y=log10(variance) on x=log10(mean): span=0.3, degree=2, family='gaussian' (so no robust iterations), surface='interpolate' (kd-tree, cell=0.2), statistics='approximate'. These are the skmisc loess defaults and the same as R stats::loess defaults, which Seurat vst uses with loess.span=0.3. Zero-variance genes are not fitted: their fitted log10 variance is set to 0 (reg_std=1), and their normalised variance comes out as 0. reg_std = sqrt(10**fitted). Each count is clipped to clip_val = mean + sqrt(N_cells)*reg_std, which is Seurat's clip.max='auto'=sqrt(ncells) applied to the z-score. variances_norm = [N*mean^2 + sum(clipped^2) - 2*mean*sum(clipped)] / ((N-1)*reg_std^2), i.e. the ddof=1 variance of the clipped standardised values (x-mean)/reg_std. Ranks = argsort(argsort(-variances_norm)) using numpy's default non-stable sort, so exact ties are ordered by the implementation, not by a documented rule. Ranks >= n_top_genes are set to NaN, and the n_top_genes lowest ranks are flagged (single batch). Reproduction without skmisc: no official or documented alternative exists. scanpy issue #993 offered a statsmodels lowess(frac=0.15) version as a 'close approximation' but gave no agreement figures. statsmodels lowess is local-LINEAR with it=3 robust bisquare iterations by default, so it is a different smoother (degree 1, robust, different span). An exact tricube local-quadratic fit (span 0.3, gaussian, no robust iterations, evaluated directly) matches the definition except for loess's kd-tree interpolation, so it should be very close. No source I read quantifies ranking agreement for either approximation. HOW SURE: high. SOURCES: https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/preprocessing/_highly_variable_genes.py, https://satijalab.org/seurat/reference/findvariablefeatures, https://has2k1.github.io/scikit-misc/stable/generated/skmisc.loess.loess.html, https://has2k1.github.io/scikit-misc/stable/generated/skmisc.loess.loess_model.html, https://has2k1.github.io/scikit-misc/stable/generated/skmisc.loess.loess_control.html, https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loess.html, https://stat.ethz.ch/R-manual/R-devel/library/stats/html/loess.control.html, https://github.com/scverse/scanpy/issues/993, https://www.statsmodels.org/stable/generated/statsmodels.nonparametric.smoothers_lowess.lowess.html."
+        },
+        {
+          "question": "In scanpy, what does sc.pp.highly_variable_genes(adata, n_top_genes=2000) do when no flavor is given: which flavor is the default in current and recent versions, what input does it expect, and what happens (warning, error, or silent result) if it is called directly on raw integer counts after only a min_cells gene filter with no normalize_total/log1p step? Which flavor do the scanpy documentation and widely used best-practice guides recommend when the starting point is a raw count matrix and a fixed number of top genes is requested?",
+          "answer": "In scanpy 1.10.4 (installed) and the current stable docs, the default is flavor='seurat'. It expects log-normalised (log1p) data and internally applies expm1 before computing dispersions. Integer-input checks (check_values) exist only on the seurat_v3 path. Called directly on raw counts after only a min_cells filter, the default flavor therefore raises no input warning or error. It silently returns a ranking computed on expm1(raw counts), which is meaningless, and counts above about 709 overflow to inf. With n_top_genes set, all mean and dispersion cutoffs are ignored. The docs state that seurat_v3/seurat_v3_paper expect count data and make n_top_genes mandatory, with 2000 as the internal default. These flavors mimic Seurat FindVariableFeatures(selection.method='vst'), whose default nfeatures is 2000. So for a raw count matrix with a fixed top-2000 request, the documented route that needs no unstated normalisation is seurat_v3. On scanpy's main branch the default flavor now goes through a settings 'preset', and I did not confirm its value. I could not read a best-practice guide this session (the sc-best-practices page failed to load, and the scanpy tutorial was cut off before its HVG step), so the 'widely used guides recommend' part is not settled from sources I read.",
+          "sources": [
+            "https://scanpy.readthedocs.io/en/stable/generated/scanpy.pp.highly_variable_genes.html",
+            "https://satijalab.org/seurat/reference/findvariablefeatures",
+            "https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/preprocessing/_highly_variable_genes.py"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc05-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-790390608b52"
+            },
+            "sc05-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-74892b895956"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In scanpy, what does sc.pp.highly_variable_genes(adata, n_top_genes=2000) do when no flavor is given: which flavor is the default in current and recent versions, what input does it expect, and what happens (warning, error, or silent result) if it is called directly on raw integer counts after only a min_cells gene filter with no normalize_total/log1p step? Which flavor do the scanpy documentation and widely used best-practice guides recommend when the starting point is a raw count matrix and a fixed number of top genes is requested? ANSWER: In scanpy 1.10.4 (installed) and the current stable docs, the default is flavor='seurat'. It expects log-normalised (log1p) data and internally applies expm1 before computing dispersions. Integer-input checks (check_values) exist only on the seurat_v3 path. Called directly on raw counts after only a min_cells filter, the default flavor therefore raises no input warning or error. It silently returns a ranking computed on expm1(raw counts), which is meaningless, and counts above about 709 overflow to inf. With n_top_genes set, all mean and dispersion cutoffs are ignored. The docs state that seurat_v3/seurat_v3_paper expect count data and make n_top_genes mandatory, with 2000 as the internal default. These flavors mimic Seurat FindVariableFeatures(selection.method='vst'), whose default nfeatures is 2000. So for a raw count matrix with a fixed top-2000 request, the documented route that needs no unstated normalisation is seurat_v3. On scanpy's main branch the default flavor now goes through a settings 'preset', and I did not confirm its value. I could not read a best-practice guide this session (the sc-best-practices page failed to load, and the scanpy tutorial was cut off before its HVG step), so the 'widely used guides recommend' part is not settled from sources I read. HOW SURE: medium. SOURCES: https://scanpy.readthedocs.io/en/stable/generated/scanpy.pp.highly_variable_genes.html, https://satijalab.org/seurat/reference/findvariablefeatures, https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/preprocessing/_highly_variable_genes.py."
+        },
+        {
+          "question": "For scanpy's dispersion-based HVG flavors ('seurat', 'cell_ranger') on log-normalised data, how sensitive is the selected gene set to the normalize_total target_sum (the function default of the median count per cell versus a fixed 1e4), particularly for shallow, very sparse UMI data where most non-zero counts are one and per-cell depth is far below 1e4? Is there a documented tendency for these flavors to select genes detected in very few cells under such conditions, and how are single-gene or sparsely filled mean bins handled in the normalised dispersion?",
+          "answer": "From scanpy 1.10.4 source (mathematical reasoning, not an empirical web study). 'seurat': X is put through expm1, which exactly inverts log1p, so changing target_sum from the median depth to 1e4 multiplies all normalised counts by a constant k. Dispersion = var/mean then scales by k, log-dispersion shifts equally for all genes, and the within-bin z-score is unchanged. target_sum affects 'seurat' only through the 20 equal-width bins on log1p(mean), which move non-linearly with k. The gene set changes only where genes cross bin boundaries, so it is moderately sensitive and mostly affects low-mean bins. 'cell_ranger': no expm1 is applied, so mean and var/mean are computed on the log1p values themselves, with percentile bins and median/MAD normalisation. Because log1p(k*x) is non-linear in k, cell_ranger is genuinely sensitive to target_sum, and more so on shallow data where k is large relative to depth. Bin handling: under 'seurat', a bin with a single gene has its std NaN, so the code sets dev=avg and avg=0, giving normalised dispersion exactly 1 (logged only at verbosity 4). Zero dispersion becomes NaN and is never selected (NaN treated as -inf in the top-n cut). Mean==0 is set to 1e-12. Bins with only a few genes give noisy z-scores. No source I read documents a tendency for these flavors to pick genes detected in very few cells on shallow, mostly-ones data, so that part is unsettled and should be checked empirically (overlap and median prevalence with target_sum=None vs 1e4).",
+          "sources": [
+            "https://scanpy.readthedocs.io/en/stable/generated/scanpy.pp.highly_variable_genes.html",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC10849523/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc05-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-980c8ace8551"
+            },
+            "sc05-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-38457b882a10"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: For scanpy's dispersion-based HVG flavors ('seurat', 'cell_ranger') on log-normalised data, how sensitive is the selected gene set to the normalize_total target_sum (the function default of the median count per cell versus a fixed 1e4), particularly for shallow, very sparse UMI data where most non-zero counts are one and per-cell depth is far below 1e4? Is there a documented tendency for these flavors to select genes detected in very few cells under such conditions, and how are single-gene or sparsely filled mean bins handled in the normalised dispersion? ANSWER: From scanpy 1.10.4 source (mathematical reasoning, not an empirical web study). 'seurat': X is put through expm1, which exactly inverts log1p, so changing target_sum from the median depth to 1e4 multiplies all normalised counts by a constant k. Dispersion = var/mean then scales by k, log-dispersion shifts equally for all genes, and the within-bin z-score is unchanged. target_sum affects 'seurat' only through the 20 equal-width bins on log1p(mean), which move non-linearly with k. The gene set changes only where genes cross bin boundaries, so it is moderately sensitive and mostly affects low-mean bins. 'cell_ranger': no expm1 is applied, so mean and var/mean are computed on the log1p values themselves, with percentile bins and median/MAD normalisation. Because log1p(k*x) is non-linear in k, cell_ranger is genuinely sensitive to target_sum, and more so on shallow data where k is large relative to depth. Bin handling: under 'seurat', a bin with a single gene has its std NaN, so the code sets dev=avg and avg=0, giving normalised dispersion exactly 1 (logged only at verbosity 4). Zero dispersion becomes NaN and is never selected (NaN treated as -inf in the top-n cut). Mean==0 is set to 1e-12. Bins with only a few genes give noisy z-scores. No source I read documents a tendency for these flavors to pick genes detected in very few cells on shallow, mostly-ones data, so that part is unsettled and should be checked empirically (overlap and median prevalence with target_sum=None vs 1e4). HOW SURE: medium. SOURCES: https://scanpy.readthedocs.io/en/stable/generated/scanpy.pp.highly_variable_genes.html, https://pmc.ncbi.nlm.nih.gov/articles/PMC10849523/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc05-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "sc05-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "sc05-team-b",
+      "round": "revise",
+      "reason": "agreed with sc05-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc05-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 31.55967575008981,
+      "cost_usd": 0.17750180000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 71.90311020903755,
+      "cost_usd": 0.1167801,
+      "error": null
+    },
+    {
+      "agent": "sc05-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 89.34625320800114,
+      "cost_usd": 0.1900462,
+      "error": null
+    },
+    {
+      "agent": "sc05-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 130.4456932079047,
+      "cost_usd": 0.25258200000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 106.30595816695131,
+      "cost_usd": 0.2064204,
+      "error": null
+    },
+    {
+      "agent": "sc05-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 177.18153145792894,
+      "cost_usd": 0.8015573999999999,
+      "error": null
+    },
+    {
+      "agent": "sc05-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 109.5840121669462,
+      "cost_usd": 0.3561984,
+      "error": null
+    },
+    {
+      "agent": "sc05-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 219.87372008396778,
+      "cost_usd": 0.4492896,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

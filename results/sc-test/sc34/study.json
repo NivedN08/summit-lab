@@ -1,0 +1,463 @@
+{
+  "study": "sc34",
+  "status": "replicated",
+  "final": {
+    "agent": "sc34-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc34/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc34-library": "opus",
+    "sc34-team-a": "opus",
+    "sc34-team-b": "opus",
+    "sc34-team-c": "opus",
+    "sc34-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc34-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc34/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "Ednrb": 0.19877324814363204,
+        "Edn1": 0.009380507963870835,
+        "Gja1": 0.0795721635601752,
+        "Fabp7": 0.37366313585329425,
+        "Pecam1": 0.2186883946949467,
+        "Isl1": 0.33403965444089256
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc34-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc34/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "Ednrb": 0.19877324814363206,
+        "Edn1": 0.009380507963870837,
+        "Gja1": 0.07957216356017521,
+        "Fabp7": 0.3736631358532943,
+        "Pecam1": 0.2186883946949467,
+        "Isl1": 0.33403965444089256
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc34-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc34/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "Ednrb": 0.19877324814363204,
+        "Edn1": 0.009380507963870835,
+        "Gja1": 0.0795721635601752,
+        "Fabp7": 0.37366313585329425,
+        "Pecam1": 0.2186883946949467,
+        "Isl1": 0.33403965444089256
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc34-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc34/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "Ednrb": 0.19877324814363206,
+        "Edn1": 0.009380507963870837,
+        "Gja1": 0.07957216356017521,
+        "Fabp7": 0.3736631358532943,
+        "Pecam1": 0.2186883946949467,
+        "Isl1": 0.33403965444089256
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc34-team-a",
+        "sc34-team-b"
+      ],
+      "fields": {
+        "Ednrb": true,
+        "Edn1": true,
+        "Gja1": true,
+        "Fabp7": true,
+        "Pecam1": true,
+        "Isl1": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc34-team-a",
+        "sc34-team-b"
+      ],
+      "fields": {
+        "Ednrb": true,
+        "Edn1": true,
+        "Gja1": true,
+        "Fabp7": true,
+        "Pecam1": true,
+        "Isl1": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Verify that the matrix really is raw UMI counts before normalizing. The library reports that the file (an AnnData/h5ad-style file named 158807664.node) stores X as a float32 CSR matrix of about 966768 nuclei x 32227 genes with about 172M stored values, and has no layers and no .raw, so X is the only candidate count matrix. Confirm this layout yourself on load. Then check that the stored values are all non-negative and integer-valued (e.g. np.all(data == np.round(data))) and look at the maximum value, ideally over all stored values and not only one chunk. If the values are not integers, X is not raw counts: do not apply CP10K/log1p on top of it and do not guess; report the discrepancy to the director.",
+      "from": [
+        "sl-sc-test-85a2cb11a68e"
+      ],
+      "reason": "Normalizing an already normalized or logged matrix runs without error and gives wrong means; this is the one check that tells the team whether the task's pipeline can be applied to X at all.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-0979d9a7fac7"
+      }
+    },
+    {
+      "text": "Compute total_umi and n_genes directly from the matrix, not from precomputed obs columns and not from sparse nnz. The library reports that obs already holds total_counts, n_genes and n_genes_raw, and that the two n_genes columns may differ (e.g. computed before and after a gene filter), so filtering on an obs column can keep a different set of nuclei than the task defines. Recompute total_umi as the row sum of X and n_genes as the number of entries with value > 0 per row. Do not use the per-row stored-entry count (indptr difference / nnz) unless you have confirmed there are no explicitly stored zeros ((X.data == 0).sum() == 0), because stored zeros inflate n_genes. Apply the filter as strictly n_genes > 1000 on the recomputed values, and record how many nuclei differ from the obs columns and how many nuclei are kept.",
+      "from": [
+        "sl-sc-test-decba306b9c2",
+        "sl-sc-test-1566d874b817"
+      ],
+      "reason": "The kept set of nuclei is the denominator of every reported mean; a different n_genes definition changes which nuclei pass the threshold and so changes all six values.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-152b523f146f"
+      }
+    },
+    {
+      "text": "Apply no filter other than n_genes > 1000. pct_mito is to be computed but is not used to remove nuclei. Do not add the usual tutorial steps: no pct_mito cutoff, no min_cells or other gene filtering before normalization, no doublet removal, no highly-variable-gene subsetting. Check that your code contains exactly one cell filter and no gene filter, and log the number of kept nuclei.",
+      "from": [
+        "sl-sc-test-e6aeed0fdeef"
+      ],
+      "reason": "Any extra cell filter changes the kept nuclei and any gene filter applied before normalization changes total_umi, both of which shift the means.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-54108a0fcb5c"
+      }
+    },
+    {
+      "text": "Make the CP10K step explicit: counts / total_umi * 10000, where total_umi is the sum over ALL genes in the matrix, mito genes included. If you use scanpy.pp.normalize_total, note that its default target_sum=None scales to the median depth, not 10000, and that exclude_highly_expressed changes the size factor; set target_sum=1e4 and exclude_highly_expressed=False, or normalize by hand. Check that each kept nucleus sums to 10000 after normalization, within float error.",
+      "from": [
+        "sl-sc-test-6d2a3a7dc00e"
+      ],
+      "reason": "Library defaults produce a different scaling from the one the task specifies and do so silently.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-be28710bb975"
+      }
+    },
+    {
+      "text": "The value to report for each gene is the mean of log1p(CP10K) over all kept nuclei, counting the nuclei where the gene is zero: (sum over kept nuclei of log1p(cp10k)) / (number of kept nuclei). Use the natural log (np.log1p), not log2 or log10. Pool the Adult and Aged nuclei into one mean; the task does not ask for a split by age_group. Do not average only over the stored non-zero entries, do not take log1p of the mean CP10K, and do not transform back with expm1.",
+      "from": [
+        "sl-sc-test-d63ebd249552"
+      ],
+      "reason": "These alternative formulas are easy to write by accident with sparse data and each gives a different number; mean of logs is not log of mean.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-1258aa9651fd"
+      }
+    },
+    {
+      "text": "Look up the six genes (Ednrb, Edn1, Gja1, Fabp7, Pecam1, Isl1) by exact, case-sensitive match against var_names and print which are found. The library reports that var_names are unique mouse gene symbols (e.g. Xkr4, mt-Nd1) and that 13 mito genes start with 'mt-'; confirm this on load. Report 0.0 only for a gene that is truly absent by exact match; do not substitute a case variant, alias or fuzzy match.",
+      "from": [
+        "sl-sc-test-8f0e11262bcd"
+      ],
+      "reason": "A wrong lookup either returns another gene's values or a false 0.0, and neither raises an error.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-0228d1e094ab"
+      }
+    },
+    {
+      "text": "Plan memory before loading and do not subsample. The library reports the file is about 1.45 GB with about 172M non-zeros over about 966768 x 32227, which cannot be densified; never call .toarray() on the full X. If memory is tight, stream rows in chunks (h5py over X/data, X/indices, X/indptr, or anndata with backed='r') and accumulate, in one pass, the row totals, n_genes, and the per-gene sums of log1p(cp10k) for the six target genes. Every nucleus must be processed; subsampling or processing only part of the file changes the answer.",
+      "from": [
+        "sl-sc-test-bb737a15efeb"
+      ],
+      "reason": "A memory crash can push the team towards shortcuts that alter the result; a streaming plan gives the exact answer on the full data.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-df3f7426be8f"
+      }
+    },
+    {
+      "text": "Do the arithmetic in float64. X is reported as float32, and with about a million nuclei, accumulating row totals, sums or means in float32 can lose precision. Cast to float64 before summing totals, dividing, taking log1p and averaging (e.g. np.sum(..., dtype=np.float64)). If you want to confirm, compare a float32 and a float64 run on one gene; where they differ by more than about 1e-6, report the float64 result.",
+      "from": [
+        "sl-sc-test-33c8acc53692"
+      ],
+      "reason": "The answer is a set of floats compared numerically, so accumulated float32 rounding error can move the reported digits.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-5816591c83ea"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams counted n_genes as the number of stored entries > 0 per CSR row and summed stored entries per row, which is only right if no row holds the same column index twice. Both took 'recomputed values match obs n_genes / total_counts' as confirmation, but obs columns built by the same per-entry counting would match even with duplicates. Neither team tested index uniqueness directly (I saw sorted, duplicate-free indices in 30 rows I looked at, 25 of them kept rows; that is a spot check, not a full one).",
+      "Both teams used the same implementation route: hand-written h5py chunked streaming of the CSR arrays. A chunk-boundary or row-offset slip is the one error this route can make, and two teams on the same route can make it the same way. Neither compared against an independent route (e.g. loading only the kept rows as one sparse matrix).",
+      "Both teams pooled Adult and Aged into one unweighted mean over nuclei. Sample 3M (Adult) supplies 11518 of the 19259 kept nuclei, 21M1 5130 and 21M2 2611, so the pooled mean is mostly the Adult sample. The answer format (one float per gene) supports pooling.",
+      "Both teams took total_umi over all 32227 genes including the 13 mt- genes as the CP10K denominator. The task text ('counts / total_umi') supports this."
+    ],
+    "unused_evidence": [
+      "obs['n_genes_raw'] sits beside obs['n_genes']; team A reports the two are identical to each other and to the recomputed value for every nucleus, so it carries no extra information for the filter. Team B's notes mention only one n_genes comparison.",
+      "obs['sample'] (3M, 21M1, 21M2) and obs['age_group'] are not used in the reported number. The task names age_group only to describe the data; nothing in the requested output is split by it.",
+      "pct_mito is asked for in step 1 but no step filters on it, so it does not enter the answer. Both teams computed it and applied no mito filter, which matches the text.",
+      "There are no layers, no raw group, no var columns and no obsm in the file; X is the only matrix. Nothing else in the file is left unused."
+    ],
+    "unresolved_weak_points": [
+      "Team B named possible duplicate column entries within a CSR row as its weakest point and only reported it; the supporting argument (totals match obs) does not rule it out.",
+      "Team A named the 2% keep rate as its only doubt and answered it by pointing to the obs columns agreeing; that settles whether n_genes is computed correctly, and the threshold itself is fixed by the task. Resolved as far as the task allows.",
+      "Team B recorded its values to 4 significant decimals only, so agreement between the teams is shown to about 1e-4, not to the 1e-6 that team A reports."
+    ],
+    "second_readings": [
+      "'n_genes > 1000' is strict. 11 nuclei have exactly 1000 genes (19270 pass >= 1000, 19259 pass > 1000). Both teams kept 19259, which matches the task's wording; a reference built with a 'minimum genes = 1000' style filter would keep 19270. With 11 of ~19000 nuclei the effect should be tiny, but neither team measured it.",
+      "'mean expression ... across kept nuclei' could be read per age group, since the task opens by naming age_group; the required output has one float per gene, so the pooled reading is the supported one.",
+      "'Use the raw UMI count matrix (integer counts)': X is float32 but integer-valued with max 7065 and totals up to 208223, all exactly representable; there is no other matrix. No second reading here."
+    ],
+    "verdict": "High trust. The task is a fully specified deterministic computation, the file holds a single integer-valued matrix with no alternative layer, all six genes match exactly once, the strict filter count (19259) matches what I see in obs, and the only open items are implementation checks (repeated CSR indices, an independent non-streamed recomputation, the 11 boundary nuclei) that I expect to confirm rather than move the answer.",
+    "questions": [
+      {
+        "to": "sc34-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you named duplicate column entries within a CSR row as your weakest point and did not test it. Agreement of your recomputed n_genes and totals with the obs columns does not rule it out, because obs columns made by counting stored entries would agree too. Check, for all rows or at least for the 19259 kept rows, that X/indices is strictly increasing within each row (no repeated column index). If any kept row has a repeated index, how do n_genes, the kept set and the six means change once repeated entries are summed? Does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-945b20542fdc"
+      },
+      {
+        "to": "sc34-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your recorded means carry 4 decimals, the other team's carry 6, so the two results are shown to agree only to about 1e-4. Both teams also used the same route, hand-written chunked streaming of the CSR arrays. Recompute the six means by a route that does not share your chunk logic (for example, read only the kept rows into one in-memory sparse matrix and normalize it there), report them to at least 6 decimals, and say whether the largest difference from your streamed values is at rounding level. Does that change your method?",
+        "from": [
+          "sl-sc-test-553217c04dfc",
+          "sl-sc-test-d51df0c64449"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-6ba682e29ebb"
+      },
+      {
+        "to": "sc34-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: 11 nuclei have exactly 1000 detected genes, so the strict filter the task writes (> 1000) keeps 19259 and an inclusive one (>= 1000) would keep 19270. Confirm your code uses the strict comparison on the recomputed n_genes, and report the largest change in any of the six means when those 11 nuclei are added. Is that change below the precision you report? Does that change your method?",
+        "from": [
+          "sl-sc-test-bc8e68ab4e1c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-6c02ea54816a"
+      },
+      {
+        "to": "sc34-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your n_genes is the number of stored entries > 0 per row, and you confirmed it against obs n_genes and n_genes_raw. That confirmation fails if a row stores the same column index twice, since obs columns built by counting entries would agree with you. Check, for all rows or at least the 19259 kept rows, that X/indices is strictly increasing within each row. If any kept row has a repeated index, how do n_genes, the kept set and the six means change once repeated entries are summed? Does that change your method?",
+        "from": [
+          "sl-sc-test-0d19f124bff8"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-9ab82afe3508"
+      },
+      {
+        "to": "sc34-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: both teams used the same route, hand-written chunked streaming of the CSR arrays, and your check that kept rows sum to 1e4 would not catch a row-offset or chunk-boundary slip that assigns a nucleus the wrong row. Recompute the six means by a route that does not share your chunk logic (for example, read only the kept rows into one in-memory sparse matrix and normalize it there) and report the largest absolute difference from your streamed values. Does that change your method?",
+        "from": [
+          "sl-sc-test-d51df0c64449"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-ffe15515c23d"
+      },
+      {
+        "to": "sc34-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: 11 nuclei have exactly 1000 detected genes, so the strict filter the task writes (> 1000) keeps 19259 and an inclusive one (>= 1000) would keep 19270. Report the largest change in any of the six means when those 11 nuclei are added, and say whether it is below the precision you report. Does that change your method or your confidence?",
+        "from": [
+          "sl-sc-test-80249e10ab7d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-64db7b5577de"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In the AnnData/scipy ecosystem, can a CSR matrix stored on disk in h5ad format contain repeated column indices within one row, and how do scipy's getnnz / (X > 0).sum(axis=1) and scanpy's filter_cells and normalize_total treat such repeated entries (counted separately or summed first)?",
+          "why": "Both teams counted detected genes per stored entry and one team named repeated entries as its untested weak point; knowing the tools' behaviour tells them whether a per-entry count can differ from the standard-tool count.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Does scanpy's sc.pp.filter_cells(min_genes=N) keep cells with exactly N detected genes (inclusive, >= N), and is there a standard way to express a strict '> N' gene-count filter?",
+          "why": "Some nuclei sit exactly on the threshold, so whether a conventional pipeline's filter is inclusive or strict decides how many nuclei are kept and whether the task's strict wording differs from the common tool default.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In the AnnData/scipy ecosystem, can a CSR matrix stored on disk in h5ad format contain repeated column indices within one row, and how do scipy's getnnz / (X > 0).sum(axis=1) and scanpy's filter_cells and normalize_total treat such repeated entries (counted separately or summed first)?",
+          "answer": "Yes, it can. The anndata on-disk format saves the in-memory data/indices/indptr arrays as they are. scipy allows duplicate entries and does not merge them when a matrix is built from (data, indices, indptr), though it does merge them for (data,(i,j)) input. getnnz(axis=1) is np.diff(indptr), so it counts every stored entry separately, duplicates and explicit zeros included. count_nonzero calls sum_duplicates() first. Comparisons such as X > 0 go through _scalar_binopt, which calls self.sum_duplicates() in place before comparing, so (X > 0).sum(axis=1) counts distinct genes after summing. scanpy filter_cells(min_genes) computes sum(X > 0, axis=1), so it also merges duplicates first, and its count can be lower than a per-entry or indptr-diff count. normalize_total gets per-row totals from a row sum, which adds duplicates together, then divides each stored value by its row factor, so CP10K comes out right either way. An elementwise log1p on X.data would be wrong for split duplicates. A per-entry count matches the standard tools only if the matrix has no duplicates (and no explicit zeros). Check by comparing np.diff(indptr) with the number of unique indices per row, or by calling sum_duplicates on a copy.",
+          "sources": [
+            "https://raw.githubusercontent.com/scipy/scipy/main/scipy/sparse/_compressed.py",
+            "https://github.com/scipy/scipy/blob/v1.17.0/scipy/sparse/_compressed.py",
+            "https://github.com/scipy/scipy/issues/5807",
+            "https://anndata.readthedocs.io/en/latest/fileformat-prose.html",
+            "https://raw.githubusercontent.com/scverse/scanpy/1.10.4/src/scanpy/preprocessing/_simple.py",
+            "https://raw.githubusercontent.com/scverse/scanpy/1.10.4/src/scanpy/preprocessing/_normalization.py"
+          ],
+          "confidence": "medium (high for getnnz, count_nonzero and filter_cells using X>0. The _scalar_binopt sum_duplicates code was seen only in a search excerpt because page fetches were cut short. The anndata spec page was cut off before any statement on canonical form)",
+          "deliveries": {
+            "sc34-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-64abd8e4a2ed"
+            },
+            "sc34-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-a9b7c94cbd23"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In the AnnData/scipy ecosystem, can a CSR matrix stored on disk in h5ad format contain repeated column indices within one row, and how do scipy's getnnz / (X > 0).sum(axis=1) and scanpy's filter_cells and normalize_total treat such repeated entries (counted separately or summed first)? ANSWER: Yes, it can. The anndata on-disk format saves the in-memory data/indices/indptr arrays as they are. scipy allows duplicate entries and does not merge them when a matrix is built from (data, indices, indptr), though it does merge them for (data,(i,j)) input. getnnz(axis=1) is np.diff(indptr), so it counts every stored entry separately, duplicates and explicit zeros included. count_nonzero calls sum_duplicates() first. Comparisons such as X > 0 go through _scalar_binopt, which calls self.sum_duplicates() in place before comparing, so (X > 0).sum(axis=1) counts distinct genes after summing. scanpy filter_cells(min_genes) computes sum(X > 0, axis=1), so it also merges duplicates first, and its count can be lower than a per-entry or indptr-diff count. normalize_total gets per-row totals from a row sum, which adds duplicates together, then divides each stored value by its row factor, so CP10K comes out right either way. An elementwise log1p on X.data would be wrong for split duplicates. A per-entry count matches the standard tools only if the matrix has no duplicates (and no explicit zeros). Check by comparing np.diff(indptr) with the number of unique indices per row, or by calling sum_duplicates on a copy. HOW SURE: medium (high for getnnz, count_nonzero and filter_cells using X>0. The _scalar_binopt sum_duplicates code was seen only in a search excerpt because page fetches were cut short. The anndata spec page was cut off before any statement on canonical form). SOURCES: https://raw.githubusercontent.com/scipy/scipy/main/scipy/sparse/_compressed.py, https://github.com/scipy/scipy/blob/v1.17.0/scipy/sparse/_compressed.py, https://github.com/scipy/scipy/issues/5807, https://anndata.readthedocs.io/en/latest/fileformat-prose.html, https://raw.githubusercontent.com/scverse/scanpy/1.10.4/src/scanpy/preprocessing/_simple.py, https://raw.githubusercontent.com/scverse/scanpy/1.10.4/src/scanpy/preprocessing/_normalization.py."
+        },
+        {
+          "question": "Does scanpy's sc.pp.filter_cells(min_genes=N) keep cells with exactly N detected genes (inclusive, >= N), and is there a standard way to express a strict '> N' gene-count filter?",
+          "answer": "Yes, it is inclusive. The source has cell_subset = number_per_cell >= min_number with number_per_cell = sum(X > 0, axis=1), and the docstring example says filter_cells(adata, min_genes=3) is the same as adata[adata.obs['n_genes'] >= 3]. There is no strict-inequality option. For '> N', mask directly with adata[adata.obs['n_genes'] > N] or with (X > 0).sum(1) > N, or, since gene counts are integers, use filter_cells(min_genes=N+1). The task's n_genes > 1000 is therefore min_genes=1001, and a default min_genes=1000 pipeline would also keep nuclei with exactly 1000 genes.",
+          "sources": [
+            "https://raw.githubusercontent.com/scverse/scanpy/1.10.4/src/scanpy/preprocessing/_simple.py",
+            "https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/preprocessing/_simple.py"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc34-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-dca3a5c09439"
+            },
+            "sc34-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-7f6766921eb7"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Does scanpy's sc.pp.filter_cells(min_genes=N) keep cells with exactly N detected genes (inclusive, >= N), and is there a standard way to express a strict '> N' gene-count filter? ANSWER: Yes, it is inclusive. The source has cell_subset = number_per_cell >= min_number with number_per_cell = sum(X > 0, axis=1), and the docstring example says filter_cells(adata, min_genes=3) is the same as adata[adata.obs['n_genes'] >= 3]. There is no strict-inequality option. For '> N', mask directly with adata[adata.obs['n_genes'] > N] or with (X > 0).sum(1) > N, or, since gene counts are integers, use filter_cells(min_genes=N+1). The task's n_genes > 1000 is therefore min_genes=1001, and a default min_genes=1000 pipeline would also keep nuclei with exactly 1000 genes. HOW SURE: high. SOURCES: https://raw.githubusercontent.com/scverse/scanpy/1.10.4/src/scanpy/preprocessing/_simple.py, https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/preprocessing/_simple.py."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc34-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc34-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc34-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc34-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc34-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 102.787159957923,
+      "cost_usd": 0.40901319999999997,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 79.41466891695745,
+      "cost_usd": 0.1110429,
+      "error": null
+    },
+    {
+      "agent": "sc34-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 53.89245695900172,
+      "cost_usd": 0.14356960000000002,
+      "error": null
+    },
+    {
+      "agent": "sc34-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 65.10083324997686,
+      "cost_usd": 0.1761182,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 114.45870750001632,
+      "cost_usd": 0.20430179999999998,
+      "error": null
+    },
+    {
+      "agent": "sc34-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 107.80033966701012,
+      "cost_usd": 0.3608652,
+      "error": null
+    },
+    {
+      "agent": "sc34-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 52.25601166707929,
+      "cost_usd": 0.19929919999999998,
+      "error": null
+    },
+    {
+      "agent": "sc34-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 54.380020417040214,
+      "cost_usd": 0.253968,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

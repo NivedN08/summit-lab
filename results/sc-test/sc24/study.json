@@ -1,0 +1,529 @@
+{
+  "study": "sc24",
+  "status": "replicated",
+  "final": {
+    "agent": "sc24-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc24/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc24-library": "opus",
+    "sc24-team-a": "opus",
+    "sc24-team-b": "opus",
+    "sc24-team-c": "opus",
+    "sc24-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc24-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc24/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cell_type_distribution": {
+          "Immune": 66.18,
+          "Epithelial/Cancer": 24.74,
+          "CAF": 9.08
+        }
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc24-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc24/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cell_type_distribution": {
+          "Immune": 66.67,
+          "Epithelial/Cancer": 24.25,
+          "CAF": 9.08
+        }
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc24-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc24/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cell_type_distribution": {
+          "Immune": 66.7,
+          "Epithelial/Cancer": 24.22,
+          "CAF": 9.08
+        }
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc24-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc24/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cell_type_distribution": {
+          "Immune": 66.67,
+          "Epithelial/Cancer": 24.25,
+          "CAF": 9.08
+        }
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc24-team-a",
+        "sc24-team-b"
+      ],
+      "fields": {
+        "cell_type_distribution": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc24-team-a",
+        "sc24-team-b"
+      ],
+      "fields": {
+        "cell_type_distribution": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Data shape and matrix state (from file headers; verify before relying on it): 157798551.node is an AnnData h5ad with 6420 cells x 19918 genes, mouse gene symbols (e.g. Sox17, Mrpl15, so markers are Title-case such as Ptprc, Epcam, Col1a1), a single sample '4T1_viable' (4T1 mouse mammary carcinoma, viable-cell suspension). obs holds only 'sample' and 'n_genes'; no clusters, embeddings or neighbours are stored. adata.X is dense float32 and var has 'mean' and 'std' columns plus uns['log1p'], which suggests X is log-normalised and then z-scored; integer counts are in layers['raw_counts']. On z-scored data every gene has negative and positive values in every cell, so 'X > 0' thresholds, fraction-of-cells-expressing, log fold changes, sc.tl.score_genes and rank_genes_groups run on X give wrong or sign-flipped results. Check: print X.min(), X.max() and per-gene mean/std of X (about 0 and 1 means scaled) and confirm layers['raw_counts'] holds integers. If scaled: rebuild a log-normalised matrix from layers['raw_counts'] (normalize_total + log1p) and use that, or the raw counts, for all marker inspection, dotplots, scoring and differential expression; use scaled values only for PCA/clustering.",
+      "from": [
+        "sl-sc-test-4d5d7516b47b",
+        "sl-sc-test-ea7f58ebc8cb"
+      ],
+      "reason": "Which matrix is used decides whether every marker check is valid; using the stored X as if it were expression would silently corrupt all thresholds, fractions and scores, and the team must build its own clustering because none is stored.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-e3df89bc6df1"
+      }
+    },
+    {
+      "text": "Annotate at cluster level, not cell by cell from a single marker. Per-cell rules such as 'Ptprc>0 = Immune' or 'Epcam>0 = Epithelial' fail because of dropout: a marker is missing in a large share of true-positive cells, leaving cells unassigned or assigned by noise. The opposite error is under-clustering, where a rare population (fibroblasts are usually a small minority in an unsorted tumour suspension) is merged into a big cluster and disappears. Check: cluster on log-normalised data (HVG, PCA, neighbours, Leiden) at two or three resolutions; per cluster inspect mean expression and fraction-expressing for panels of several positive and negative markers; verify that Col1a1/Dcn/Pdgfra-positive cells form their own cluster at higher resolution and that the three percentages are stable across resolutions. Assign labels per cluster and sub-cluster any cluster whose markers are mixed; if results move with resolution, use the finer resolution at which clusters are marker-pure.",
+      "from": [
+        "sl-sc-test-b6270e50ec5f"
+      ],
+      "reason": "The choice between per-cell gating and cluster-level labelling, and the clustering resolution, directly changes the reported percentages, especially for the smallest compartment.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-06056a8ec216"
+      }
+    },
+    {
+      "text": "Do not assign cells by the highest of three gene-set scores (argmax of sc.tl.score_genes or similar). Such scores are uncalibrated: they depend on signature size, on the expression level of the signature genes (control-gene binning biases highly expressed markers) and on the matrix used (a scaled X makes it worse), so comparing three scores is biased and low-count cells are assigned almost at random. Check: cross-tabulate score-argmax labels against cluster-level marker labels and look at score distributions per cluster. Use scores only as a per-cluster summary computed on log-normalised data, take the final label from the cluster's dominant marker programme, and if the two approaches disagree by more than a few percent of cells inspect the disagreeing clusters by hand.",
+      "from": [
+        "sl-sc-test-44d365f9650c"
+      ],
+      "reason": "Score-argmax is the most common shortcut for a three-compartment split and can shift the percentages without any visible error.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-b73bda01884f"
+      }
+    },
+    {
+      "text": "Common 'CAF/mesenchymal' markers are not fibroblast-specific: Vim, S100a4 (FSP1), Acta2, Fn1, Sparc, Thy1 and EMT signatures are also expressed by EMT-like carcinoma cells, macrophages, T cells (Thy1), pericytes and smooth muscle. 4T1 cancer cells are a hybrid epithelial/mesenchymal line that keeps Cdh1, Epcam and keratins (Krt8, Krt18) while expressing vimentin, so a Vim/S100a4/EMT-based rule moves cancer cells and myeloid cells into CAF and inflates it. Check: for putative CAF clusters require a fibroblast matrix programme (Col1a1, Col1a2, Col3a1, Dcn, Lum, Pdgfra, Pdgfrb, Pdpn, Fap) together with absence of Ptprc and of Epcam/Krt8/Krt18/Cdh1 at cluster level; cross-tabulate Vim-high cells against Epcam/Krt and Ptprc. Define CAF by collagen/Pdgfr genes with negative selection for immune and epithelial markers, define Epithelial/Cancer by Epcam/Krt8/Krt18/Cdh1 (not by absence of Vim), and never use Vim, S100a4 or Acta2 alone.",
+      "from": [
+        "sl-sc-test-14de77c81ab8"
+      ],
+      "reason": "The marker panel chosen for CAF versus cancer cells determines where a mesenchymal-like cancer line lands; a wrong panel moves cells between two of the three reported compartments.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-39cc7801713b"
+      }
+    },
+    {
+      "text": "Two sources of false lineage calls. (1) Cell-cycle genes can dominate clustering and produce a 'proliferating' cluster (Mki67, Top2a, Birc5, Cdk1 high) that mixes cycling cancer cells with cycling immune or stromal cells; labelling the whole cluster as cancer misassigns the others. (2) MHC class II genes (H2-Aa, H2-Ab1, Cd74) and interferon-response genes are induced in cancer cells and fibroblasts and are not valid Immune markers. Check: inside any Mki67/Top2a-high cluster look at Ptprc, Epcam/Krt8/Krt18 and Col1a1/Dcn separately and sub-cluster it (or regress cell-cycle scores), assigning each part to its own compartment; confirm Immune clusters with lineage-restricted genes (Ptprc, Lyz2, Csf1r, Cd3e, Cd79a, Nkg7, S100a8) rather than MHC-II/IFN genes.",
+      "from": [
+        "sl-sc-test-29bc1a34eacb"
+      ],
+      "reason": "A mixed cycling cluster or an MHC-II-based immune call would move whole clusters to the wrong compartment.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-1578cca60ba7"
+      }
+    },
+    {
+      "text": "Neutrophils and other granulocytic myeloid cells have very low RNA content (few UMIs and few genes per cell), so standard QC (min_genes 200-500, low-count filters) or dismissing a low-count cluster as 'low quality/empty droplets' silently removes a real Immune population. 4T1 tumours secrete G-CSF and are known for heavy granulocytic/myeloid infiltration (CD11b+ macrophage-like and Gr-1+ granulocytic cells, fewer lymphocytes), so such a population can be substantial; Ptprc is also often undetected per cell in low-count cells. Check: plot total counts and n_genes per cluster; for any low-count cluster look at S100a8, S100a9, Csf3r, Cxcr2, Il1b, Retnlg, G0s2, Lcn2, Ngp alongside Ptprc on raw counts. If found: keep these cells and label them Immune; do not apply extra cell-level QC filters before computing percentages. Background biology only, not a result: the relative size of a compartment is not by itself evidence of mislabelling, so decide every cluster by its markers and do not reassign myeloid clusters merely because a compartment looks larger or smaller than expected.",
+      "from": [
+        "sl-sc-test-9ea423a6571e",
+        "sl-sc-test-6a4a919e7d2e"
+      ],
+      "reason": "Whether a low-count cluster is kept as Immune or discarded as junk changes both the Immune count and the denominator; the teams also need to know not to rebalance labels by intuition about compartment sizes.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-1c60dab0b681"
+      }
+    },
+    {
+      "text": "Ambient RNA and heterotypic doublets make cells appear to express another lineage's markers. Highly abundant transcripts (keratins and other cancer-cell genes, neutrophil S100a8/S100a9, reporter transgenes) are present at low level in every droplet, most visibly in low-UMI cells, so 'any count > 0' rules misassign cells; doublets co-express Ptprc with Epcam/Krt or Col1a1 and form small intermediate clusters with high counts. Check: compare cluster-level mean and fraction-expressing rather than presence/absence; look for clusters with markers of two lineages and unusually high total counts and n_genes (doublets) versus a low uniform background in all clusters (ambient). Base labels on which marker programme is dominant per cluster; do not create an extra class and do not drop the cells - assign a doublet cluster to its dominant lineage and note its size.",
+      "from": [
+        "sl-sc-test-edb47fe9aacb"
+      ],
+      "reason": "It tells the teams how to treat mixed-marker clusters and low-level cross-lineage signal, which otherwise leads to dropped cells or misassigned ones.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ba3ab740632d"
+      }
+    },
+    {
+      "text": "The gene list contains a reporter transgene 'Kate2' (fluorescent protein), the last gene in var. Which cell population carries the reporter is not stated in the file, transgene detection in 3' droplet data is incomplete (many labelled cells have zero reads), and abundant reporter RNA leaks into other droplets as ambient signal. Check: on raw counts, tabulate Kate2 mean and fraction-positive per cluster next to Epcam/Krt8/Krt18, Ptprc and Col1a1 to see which lineage it marks and how complete it is. Use Kate2 only as supporting cluster-level evidence for the compartment in which it is enriched; never use it as a per-cell positive or negative gate.",
+      "from": [
+        "sl-sc-test-8b16fbe47e20"
+      ],
+      "reason": "A reporter gene invites a simple per-cell gate that would misclassify both unlabelled-looking positive cells and ambient-contaminated negative cells.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-cac92db031f6"
+      }
+    },
+    {
+      "text": "A whole-tumour suspension contains stromal cells that fit none of the three requested labels cleanly: endothelial cells (Pecam1, Cdh5, Kdr, Emcn) and mural cells/pericytes/smooth muscle (Rgs5, Pdgfrb, Acta2, Myh11, Des, Notch3, Mcam). Pericytes share Pdgfrb/Acta2 with CAFs and are often reported as 'vascular CAFs'; where these cells are placed shifts the CAF percentage, which is sensitive because that compartment is usually small. Check: within Ptprc-negative, Epcam/Krt-negative clusters compare Pecam1/Cdh5 and Rgs5/Myh11 against Pdgfra/Dcn/Lum/Col1a1 and count each group. A three-way scheme forces a choice; the library's stated convention is that non-immune, non-epithelial mesenchymal stroma (fibroblasts plus mural cells) goes to CAF and endothelial cells also go with the stromal (CAF) compartment rather than Immune or Epithelial/Cancer. This is a judgement call, so report the size of each such group so the effect of the choice is visible.",
+      "from": [
+        "sl-sc-test-2a76ab721ede"
+      ],
+      "reason": "Cells outside the three named compartments must still be placed somewhere, and the placement rule is a choice that changes the answer; the teams need a stated convention and must report its effect.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-db546868f289"
+      }
+    },
+    {
+      "text": "The task asks for percentages of ALL cells in three compartments, so any cell removed (QC filter, doublet removal, an 'unassigned'/'other' label, dropping endothelial or ambiguous clusters) changes the denominator and all three percentages. Check: the three counts must sum to adata.n_obs (6420 per the file header) and the percentages to 100. Assign every cell to exactly one of the exact strings Immune, Epithelial/Cancer, CAF (ambiguous cells take the label of their cluster); if doublets or junk are flagged, still count them in the compartment of their cluster and report how many cells were ambiguous so sensitivity can be judged.",
+      "from": [
+        "sl-sc-test-659cbb4bd515"
+      ],
+      "reason": "The denominator and the no-fourth-class rule are part of how the reported numbers are defined; filtering or leaving cells unassigned would change all three values.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-9c3219e6155c"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams label whole Leiden clusters and treat every per-cell disagreement as ambient RNA. The task says 'classify all cells ... using canonical marker genes' and 'treat gene names case-insensitively', which also fits a fixed marker dictionary scored per cell. Team B saw CAF move by about 2 points under per-cell argmax and team A saw 3.6% of cells disagree, but in a different direction (immune cells with keratin), so the size of this effect depends on the panel and was not pinned down by either team.",
+      "Both teams threw X away and worked only on a matrix rebuilt from raw_counts. Neither showed what the same marker scoring gives on X as supplied (z-scored), which is the matrix a marker-based reference would see if it used the file as delivered.",
+      "Both teams used the same clustering recipe (log CP10k, 2000 HVGs, 30 PCs, kNN, Leiden), so any cell that this recipe places in the wrong cluster (cycling cells, doublets, low-UMI cells) is misplaced by both teams in the same way. Agreement on CAF = 583 cells is therefore agreement of one pipeline with itself.",
+      "Both teams assume every collagen-high, Epcam/keratin-low cluster is host fibroblast. The cancer line is a hybrid epithelial/mesenchymal line and the compartment is named 'Epithelial/Cancer'; neither team tested whether any CAF-labelled cluster carries the tumour reporter.",
+      "Both teams put endothelial cells (26) and pericytes (23) in CAF on the library's stated convention; this is a choice, not a finding."
+    ],
+    "unused_evidence": [
+      "The reporter transgene Kate2 is a gene in var. Team A looked at it per cluster but reported only that it is enriched in epithelial clusters, not its level in the CAF, pericyte and endothelial clusters. Team B did not use it at all. It is the only evidence in the file that separates cancer origin from host origin independently of the marker panels.",
+      "X (z-scored) with var['mean'] and var['std']. I checked on 5 rows that X*std+mean equals log1p of counts scaled to 10,000 per cell, with no clipping (max z about 42) and all 19,918 genes kept, so the teams' rebuilt matrix is the author's matrix; the open point is only what scoring on the scaled values gives.",
+      "obs['n_genes'] has minimum 501, so a >500-genes filter was applied upstream and no further cell filter is implied; there are no mt- genes, so mitochondrial QC is impossible. Neither changes the answer, but it means low-gene cells (e.g. many neutrophils) are already gone and the denominator of 6420 is fixed.",
+      "obs['sample'] has one level (4T1_viable): no batch structure to use."
+    ],
+    "unresolved_weak_points": [
+      "Team A: placement of the 49 endothelial and pericyte cells (about 0.8 pt) was reported, not resolved; and the low-UMI ribosomal cluster (about 92 cells) was resolved only by switching to resolution 2, where it splits 58 epithelial / 33 myeloid, with no check that the split is stable or supported per cell.",
+      "Team B: the 93-cell low-Ptprc Krt8+ cluster was assigned whole to Epithelial/Cancer; this is the entire 0.5-pt difference between the two teams on Immune and Epithelial/Cancer and was not examined further.",
+      "Team B: 'the evaluator's choice of cluster vs cell-level annotation' was named as the weakest point and left as a range (CAF 9-11%); its plan said to change to cell-level scoring only if clusters were mixed, and the 93-cell cluster may be exactly that.",
+      "Team B recorded no pitfall checks: its Immune panel contains Cd74 (MHC class II, flagged by the library as not immune-restricted) and it reported no lineage check inside proliferating clusters and no pericyte count."
+    ],
+    "second_readings": [
+      "'Classify all cells' can mean a label per cell from marker scores (argmax of a fixed marker dictionary), not a label per cluster. The instruction about case-insensitive gene names suggests a fixed dictionary matched against var names.",
+      "'Annotate the major cell populations' and then 'classify into three compartments' can mean: first name cell types (T, myeloid, neutrophil, cancer, fibroblast, endothelial, pericyte), then collapse. Under that reading endothelial cells have no natural home and the CAF figure depends on the collapse rule.",
+      "'Epithelial/Cancer' can be read as 'cancer cells whatever their phenotype', in which case reporter-positive mesenchymal-like cells belong there and not in CAF.",
+      "'Percentage of total cells' is unambiguous here: all 6420 cells, both teams used that denominator."
+    ],
+    "verdict": "Moderate-to-good trust: the two answers differ by only about 0.5 points and the rebuilt matrix matches the author's normalisation, but the agreement comes from one shared clustering recipe and one shared reading (per-cluster labels, endothelial and pericytes in CAF, collagen-high clusters assumed to be host cells). The untested points that could move a compartment by 1-2 points are the per-cell reading of 'classify all cells' (not yet tried on the supplied scaled matrix), the reporter level in CAF-labelled clusters, and the roughly 92-cell mixed cluster.",
+    "questions": [
+      {
+        "to": "sc24-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: the task says 'classify all cells' with 'canonical marker genes' matched case-insensitively, which can also be read as a fixed marker dictionary scored per cell. You found 3.6% of cells change label under score argmax, mostly immune cells with keratin; the other team found that per-cell argmax moves about 2 points into CAF. These two findings do not point the same way. Compute the three percentages per cell (argmax of your marker scores, no clustering) twice: once on your log-normalised matrix and once on X exactly as supplied (z-scored), and tabulate from which cluster label to which per-cell label the cells move. State which words of the task support per-cluster over per-cell labelling. Does the result change your method or your confidence?",
+        "from": [
+          "sl-sc-test-b4a54010bef6",
+          "sl-sc-test-5ba626edab03"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-e78d3e82924d"
+      },
+      {
+        "to": "sc24-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you reported Kate2 only for the epithelial clusters. The compartment is named 'Epithelial/Cancer' and the cancer line is a hybrid epithelial/mesenchymal line, so a cancer cell with a collagen programme would be labelled CAF by your panel. For every cluster you labelled CAF (fibroblast, pericyte and endothelial separately), report the fraction of cells with a Kate2 raw count above zero and the mean raw count, next to the same figures for the immune clusters (the ambient baseline) and the epithelial clusters, with total UMI per cell alongside. Is any CAF-labelled cluster, or a sub-group inside one, closer to the epithelial level than to the ambient level? Does that change your method?",
+        "from": [
+          "sl-sc-test-4a056e9615fd",
+          "sl-sc-test-39cc7801713b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-e52f46a34594"
+      },
+      {
+        "to": "sc24-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: the whole difference between your answer and the other team's (about 0.5 points between Immune and Epithelial/Cancer) is the low-UMI ribosomal cluster of about 92 cells, which you split 58 epithelial / 33 myeloid by moving to resolution 2 while the other team kept it whole as epithelial. Check whether that split is a property of the cells or of one partition: rerun Leiden at resolution 2 with several seeds and sub-cluster that cluster alone, and for each of the 92 cells list raw counts of lineage-restricted genes (Ptprc, Lyz2, Csf1r, S100a8 against Epcam, Krt8, Krt18, Cdh1, Kate2) and total UMI. How many cells carry both programmes, and how many neither? Does that change how you assign them?",
+        "from": [
+          "sl-sc-test-4a056e9615fd",
+          "sl-sc-test-ec47997cf311"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-d7b45dd63481"
+      },
+      {
+        "to": "sc24-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: both teams used the same clustering recipe, so a cell misplaced by that recipe is misplaced in both answers. You checked that the two Mki67-high clusters are one myeloid and one epithelial, but not whether cells of a third lineage sit inside them or inside other large clusters. Count the cells outside your CAF clusters that have raw counts in at least three fibroblast matrix genes (Col1a1, Col1a2, Dcn, Lum, Pdgfra) and zero counts in Ptprc and in Epcam/Krt8/Krt18, and list which clusters they sit in; do the mirror count for Ptprc-family-positive cells inside the CAF and epithelial clusters. Are these numbers large enough to move any percentage, and does that change your method?",
+        "from": [
+          "sl-sc-test-999be38646b8",
+          "sl-sc-test-b6270e50ec5f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-b372e39b48fc"
+      },
+      {
+        "to": "sc24-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you named 'the evaluator's choice of cluster vs cell-level annotation' as your weakest point and left it as a range. The task says 'classify all cells' with 'canonical marker genes' matched case-insensitively, which can also be read as a fixed marker dictionary scored per cell. Compute the three percentages per cell (argmax of your scores, no clustering) twice: on your log-normalised matrix and on X exactly as supplied (z-scored); and tabulate which cluster the cells that change label come from. The other team saw the per-cell disagreements fall mostly on immune cells with keratin, not on CAF, so also repeat the per-cell call with Cd74 and Pdgfrb left out of your panels. State which words of the task support per-cluster over per-cell labelling. Does the result change your method or your confidence?",
+        "from": [
+          "sl-sc-test-5ba626edab03",
+          "sl-sc-test-e59d629fe421"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-06c9c6af05e9"
+      },
+      {
+        "to": "sc24-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your plan said to change method if a cluster was mixed. The other team found that the low-UMI cluster of about 92 cells, which you kept whole as Epithelial/Cancer (your 93-cell low-Ptprc Krt8+ cluster), separates at a finer resolution into an epithelial part and a myeloid part; this is the whole 0.5-point difference between the two answers. Sub-cluster that cluster alone and, for each of its cells, list raw counts of lineage-restricted genes (Ptprc, Lyz2, Csf1r, S100a8 against Epcam, Krt8, Krt18, Cdh1, Kate2) and total UMI. How many cells carry the myeloid programme only, the epithelial programme only, both, or neither? Does that trigger your own rule for changing method?",
+        "from": [
+          "sl-sc-test-ec47997cf311",
+          "sl-sc-test-4a056e9615fd"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-7860acd5be5f"
+      },
+      {
+        "to": "sc24-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: the file contains the tumour reporter gene Kate2 and your method did not use it. The compartment is named 'Epithelial/Cancer' and the cancer line is a hybrid epithelial/mesenchymal line, so a cancer cell with a collagen programme would score highest for CAF in your panel. For every cluster you labelled CAF, report the fraction of cells with a Kate2 raw count above zero and the mean raw count, next to the same figures for your immune clusters (the ambient baseline) and your epithelial clusters, with total UMI per cell alongside. Is any CAF-labelled cluster, or a sub-group inside one, closer to the epithelial level than to the ambient level? Does that change your method?",
+        "from": [
+          "sl-sc-test-39cc7801713b",
+          "sl-sc-test-4a056e9615fd"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-233e1992372f"
+      },
+      {
+        "to": "sc24-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your notes list no pitfall checks. Your Immune panel includes Cd74, which the library flagged as induced in cancer cells and fibroblasts, and you report an endothelial cluster but no pericytes, while the other team counted 23 pericytes inside its CAF total. For each of your 23 clusters, tabulate the three mean scores and the gap between the highest and second-highest, with Cd74 removed from the Immune panel; then look inside every Mki67/Top2a-high cluster at Ptprc, Epcam/Krt8/Krt18 and Col1a1/Dcn separately, and locate the Rgs5/Pdgfrb-high cells and say which cluster and compartment they are in. Does any cluster change compartment, have a near-tie, or contain more than one lineage? Does that change your method?",
+        "from": [
+          "sl-sc-test-29bc1a34eacb",
+          "sl-sc-test-2a76ab721ede",
+          "sl-sc-test-2cfe306488e4"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-0652223b1588"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "When a single-cell analysis task asks to 'annotate major cell populations using canonical marker genes' and to assign every cell to one of a few broad compartments, what is the standard documented procedure in widely used tutorials and best-practice guides: scoring a marker gene set per cell and taking the highest-scoring compartment, or clustering first and labelling whole clusters? Is the marker scoring normally done on log-normalised values or on z-scored (scaled) values?",
+          "why": "Both teams chose cluster-level labels on a rebuilt log-normalised matrix; if the common convention for this kind of instruction is per-cell scoring, or scoring on the scaled matrix, the smallest compartment could shift by more than the gap between the teams.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How does scanpy's sc.tl.score_genes behave when the expression matrix it is given is already z-scored per gene (every gene has mean 0 and unit variance): how are the control genes binned and sampled in that case, what does the use_raw default do when no raw attribute exists, and is the resulting score still comparable between gene sets of different sizes?",
+          "why": "The teams are being asked to repeat their marker scoring on a scaled matrix; if the tool's control-gene binning degenerates on scaled input, they need to know whether a difference they see is a real effect of the reading or an artefact of the scoring function.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In published single-cell studies of mouse mammary tumours that divide cells into immune, epithelial/cancer and cancer-associated fibroblast compartments, how are carcinoma cells that have undergone partial epithelial-to-mesenchymal transition (low keratin and Epcam, expressing collagens) distinguished from true host fibroblasts, and which fibroblast genes are regarded as not expressed by such carcinoma cells?",
+          "why": "Both teams assumed every collagen-high, keratin-low cluster is host fibroblast; knowing which genes reliably separate mesenchymal-like cancer cells from fibroblasts tells them whether their CAF panel can misplace cancer cells.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When a single-cell analysis task asks to 'annotate major cell populations using canonical marker genes' and to assign every cell to one of a few broad compartments, what is the standard documented procedure in widely used tutorials and best-practice guides: scoring a marker gene set per cell and taking the highest-scoring compartment, or clustering first and labelling whole clusters? Is the marker scoring normally done on log-normalised values or on z-scored (scaled) values?",
+          "answer": "Labelling whole clusters is the standard for manual marker-based annotation. The Clarke et al. guideline describes a workflow that starts from clustered data. Its manual step studies the marker genes of each cluster. It allows automatic marker-based labelling of 'cells or clusters', but no read guide recommends per-cell argmax of marker scores for broad compartments. Marker expression and gene-set scores are computed on log-normalised values: OSCA averages log-expression values, and scanpy's DE functions expect logarithmized data. Scaled values are used for PCA and clustering, not for scoring. So the teams' choice (cluster labels on a rebuilt log-normalised matrix) matches the documented convention.",
+          "sources": [
+            "https://doi.org/10.31219/osf.io/ndafw",
+            "https://bioconductor.org/books/release/OSCA.basic/cell-type-annotation.html",
+            "https://www.sc-best-practices.org/cellular_structure/annotation.html"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc24-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-a091609ec443"
+            },
+            "sc24-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-9cca32dd8c9a"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a single-cell analysis task asks to 'annotate major cell populations using canonical marker genes' and to assign every cell to one of a few broad compartments, what is the standard documented procedure in widely used tutorials and best-practice guides: scoring a marker gene set per cell and taking the highest-scoring compartment, or clustering first and labelling whole clusters? Is the marker scoring normally done on log-normalised values or on z-scored (scaled) values? ANSWER: Labelling whole clusters is the standard for manual marker-based annotation. The Clarke et al. guideline describes a workflow that starts from clustered data. Its manual step studies the marker genes of each cluster. It allows automatic marker-based labelling of 'cells or clusters', but no read guide recommends per-cell argmax of marker scores for broad compartments. Marker expression and gene-set scores are computed on log-normalised values: OSCA averages log-expression values, and scanpy's DE functions expect logarithmized data. Scaled values are used for PCA and clustering, not for scoring. So the teams' choice (cluster labels on a rebuilt log-normalised matrix) matches the documented convention. HOW SURE: medium. SOURCES: https://doi.org/10.31219/osf.io/ndafw, https://bioconductor.org/books/release/OSCA.basic/cell-type-annotation.html, https://www.sc-best-practices.org/cellular_structure/annotation.html."
+        },
+        {
+          "question": "How does scanpy's sc.tl.score_genes behave when the expression matrix it is given is already z-scored per gene (every gene has mean 0 and unit variance): how are the control genes binned and sampled in that case, what does the use_raw default do when no raw attribute exists, and is the resulting score still comparable between gene sets of different sizes?",
+          "answer": "From the source code: genes in the pool are binned by mean expression across cells. The bin is rank(mean, method='min') // round(n_genes/(n_bins-1)), with n_bins=25. For each bin containing a set gene, up to ctrl_size=50 random genes are drawn (set genes are removed from the controls). The score is mean(set genes) minus mean(control genes) per cell. On z-scored input every gene's mean is about 0, so the bins come from floating-point noise and the control genes are effectively a random sample of all genes. Their per-cell mean is about 0, so the score reduces to the mean z-score of the set genes. The degenerate binning therefore adds little artefact by itself. However, the scores are not well comparable between sets of different sizes: averaging more genes shrinks the spread of the score, and every gene gets equal weight whatever its real expression level, so argmax across sets is biased. use_raw=None resolves to True only if adata.raw exists. Otherwise adata.X (or the given layer) is used, so with no raw the scaled X is scored. This last point comes from the docs and the check_use_raw call, not from reading check_use_raw itself.",
+          "sources": [
+            "https://raw.githubusercontent.com/scverse/scanpy/1.9.6/scanpy/tools/_score_genes.py",
+            "https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/tools/_score_genes.py",
+            "https://scanpy.readthedocs.io/en/stable/generated/scanpy.tl.score_genes.html"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc24-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-9e23cd74261c"
+            },
+            "sc24-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-a6146fae64ed"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How does scanpy's sc.tl.score_genes behave when the expression matrix it is given is already z-scored per gene (every gene has mean 0 and unit variance): how are the control genes binned and sampled in that case, what does the use_raw default do when no raw attribute exists, and is the resulting score still comparable between gene sets of different sizes? ANSWER: From the source code: genes in the pool are binned by mean expression across cells. The bin is rank(mean, method='min') // round(n_genes/(n_bins-1)), with n_bins=25. For each bin containing a set gene, up to ctrl_size=50 random genes are drawn (set genes are removed from the controls). The score is mean(set genes) minus mean(control genes) per cell. On z-scored input every gene's mean is about 0, so the bins come from floating-point noise and the control genes are effectively a random sample of all genes. Their per-cell mean is about 0, so the score reduces to the mean z-score of the set genes. The degenerate binning therefore adds little artefact by itself. However, the scores are not well comparable between sets of different sizes: averaging more genes shrinks the spread of the score, and every gene gets equal weight whatever its real expression level, so argmax across sets is biased. use_raw=None resolves to True only if adata.raw exists. Otherwise adata.X (or the given layer) is used, so with no raw the scaled X is scored. This last point comes from the docs and the check_use_raw call, not from reading check_use_raw itself. HOW SURE: high. SOURCES: https://raw.githubusercontent.com/scverse/scanpy/1.9.6/scanpy/tools/_score_genes.py, https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/tools/_score_genes.py, https://scanpy.readthedocs.io/en/stable/generated/scanpy.tl.score_genes.html."
+        },
+        {
+          "question": "In published single-cell studies of mouse mammary tumours that divide cells into immune, epithelial/cancer and cancer-associated fibroblast compartments, how are carcinoma cells that have undergone partial epithelial-to-mesenchymal transition (low keratin and Epcam, expressing collagens) distinguished from true host fibroblasts, and which fibroblast genes are regarded as not expressed by such carcinoma cells?",
+          "answer": "The pages read do not settle this; the read limit truncated the results sections. What they do say: common CAF markers (SMA/Acta2, FSP1/S100a4, Fap) are 'neither all-encompassing nor completely specific' (Bartoschek 2018, MMTV-PyMT). CAFs may arise from cancer cells via EMT (Sebastian 2020, 4T1). Bartoschek isolated CAFs by negative selection (EpCAM-, CD45-, CD31-, NG2-) and traced one CAF subclass to the transformed epithelium. So in mouse mammary tumours some collagen-expressing 'CAF-like' cells are thought to be of tumour-epithelial origin. No read source named the fibroblast genes these carcinoma cells lack. A practical check (my inference, not sourced): require Pdgfra, Dcn and Lum at cluster level, and look for residual Epcam, Krt8, Krt18 or Cdh1, or reporter-transgene (Kate2) signal, in collagen-high clusters.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6279758/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7281266/"
+          ],
+          "confidence": "low",
+          "deliveries": {
+            "sc24-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-589904edcf4f"
+            },
+            "sc24-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-b25b68e4cc5c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In published single-cell studies of mouse mammary tumours that divide cells into immune, epithelial/cancer and cancer-associated fibroblast compartments, how are carcinoma cells that have undergone partial epithelial-to-mesenchymal transition (low keratin and Epcam, expressing collagens) distinguished from true host fibroblasts, and which fibroblast genes are regarded as not expressed by such carcinoma cells? ANSWER: The pages read do not settle this; the read limit truncated the results sections. What they do say: common CAF markers (SMA/Acta2, FSP1/S100a4, Fap) are 'neither all-encompassing nor completely specific' (Bartoschek 2018, MMTV-PyMT). CAFs may arise from cancer cells via EMT (Sebastian 2020, 4T1). Bartoschek isolated CAFs by negative selection (EpCAM-, CD45-, CD31-, NG2-) and traced one CAF subclass to the transformed epithelium. So in mouse mammary tumours some collagen-expressing 'CAF-like' cells are thought to be of tumour-epithelial origin. No read source named the fibroblast genes these carcinoma cells lack. A practical check (my inference, not sourced): require Pdgfra, Dcn and Lum at cluster level, and look for residual Epcam, Krt8, Krt18 or Cdh1, or reporter-transgene (Kate2) signal, in collagen-high clusters. HOW SURE: low. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC6279758/, https://pmc.ncbi.nlm.nih.gov/articles/PMC7281266/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc24-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc24-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc24-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc24-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc24-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 35.95142204198055,
+      "cost_usd": 0.1533372,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 111.01812625001185,
+      "cost_usd": 0.165794,
+      "error": null
+    },
+    {
+      "agent": "sc24-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 88.08590683306102,
+      "cost_usd": 0.1921966,
+      "error": null
+    },
+    {
+      "agent": "sc24-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 138.15297187503893,
+      "cost_usd": 0.3770146000000001,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 152.33622004208155,
+      "cost_usd": 0.28278240000000004,
+      "error": null
+    },
+    {
+      "agent": "sc24-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 122.51858433405869,
+      "cost_usd": 0.5607975999999999,
+      "error": null
+    },
+    {
+      "agent": "sc24-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 133.07746133301407,
+      "cost_usd": 0.5120001999999999,
+      "error": null
+    },
+    {
+      "agent": "sc24-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 136.44374466699082,
+      "cost_usd": 0.3743312,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

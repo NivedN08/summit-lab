@@ -534,3 +534,28 @@ Commands: `python3 -m lab.run lab --benchmark biodsa --studies bd01,bd02,bd03,bd
 | Faults | none | one sandbox lost by Modal, retried successfully |
 
 What this shows: version 3 runs end to end with real agents, including search by verified identity, budgets, and research on demand; web search is now a real part of the work (on GeneBench the library opened 7 pages in a whole run). What it does not show: seven tasks cannot say whether the lab beats Fable alone. The lab costs about 27 single attempts per BioDSA-1K task; a vote over repeats would not help a model that gives the same answer every time, but the cost gap is real.
+
+**M-13 · Nov 14, 19:15 · Measured · scBench test: the lab with Opus analysts ties Fable alone, 23 of 33.**
+Commands: `python3 -m lab.run lab --benchmark scbench --studies sc02,...,sc36 (all but sc01, sc07, sc08) --run-dir runs/sc-test --memory past --backend modal --parallel 10 --model opus` (director on Fable, D-21), `baseline ... --attempts 2` (Fable), then `grade` and `measures` after every agent had exited. Scored by scBench's own grader. Records: `results/sc-test/`.
+
+| | 33 test tasks |
+|---|---|
+| Lab (Opus analysts, Fable director) | 23 of 33 |
+| Fable alone | 44 of 66 attempts (67%); 23 of 33 tasks on the first attempt; 23 of 33 by vote |
+| Opus alone | running; this is the like-for-like comparison and will be added here |
+| Lab right where Fable alone was wrong twice | sc29 (settled by a third team) |
+| Lab wrong where Fable alone was right twice | sc14 (reported as unresolved) |
+| By label (tasks, passed) | replicated 21, 16; converged 3, 1; refereed 6, 4; third-team 1, 1; unresolved 2, 1 |
+| False agreement | 5 of 21 replicated answers failed; the two first answers agreed in 23 tasks and were both wrong in 6 |
+| Challenge of agreed answers | 23 challenged, 21 drew questions, 1 changed the agreed answer; rescued 0, damaged 0 |
+| Question round | rescued 4, damaged 2 |
+| Referee | rescued 3, damaged 1 |
+| Third team | rescued 2, damaged 0 |
+| Selection | some lab answer passed in 25 tasks; the lab shipped a passing one in 23 (missed sc11, sc14) |
+| Web search | library 389 calls, research on demand 262, team A 0; 2 refused by the budget |
+| Research on demand | 88 questions, 12 blocked by the leak check, 150 findings delivered; the revision round after it rescued 3, damaged 1 |
+| Cost | lab 300 runs, 814 minutes of agent time, $101.33 ($3.07 a task); Fable alone 66 runs, 179 minutes, $9.23 ($0.14 an attempt) |
+
+What this shows. A lab whose analysts are the weaker model reached the same score as the stronger model working alone, on 33 tasks it had never been tuned on. The steps after the first answers did net good: 9 rescues against 4 damages. Agreement is evidence but not proof: 16 of 21 replicated answers passed (76%), against 7 of 12 for every other label (58%).
+
+What it does not show. It is not a win: 23 against 23, at eleven times the cost. Until the Opus-alone number is in, we cannot say how much the lab added to its own analysts. One run per arm. The challenge step, which costs a director run and a round of replies on every agreed answer, changed nothing in the score here.

@@ -1,0 +1,522 @@
+{
+  "study": "sc11",
+  "status": "converged",
+  "final": {
+    "agent": "sc11-team-a",
+    "team": "team-a",
+    "round": "revise",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc11/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc11-library": "opus",
+    "sc11-team-a": "opus",
+    "sc11-team-b": "opus",
+    "sc11-team-c": "opus",
+    "sc11-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "sc11-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc11/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "C"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc11-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc11/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "B"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc11-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc11/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "C"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc11-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc11/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "C"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc11-team-a",
+        "sc11-team-b"
+      ],
+      "fields": {
+        "answer": false
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "sc11-team-a",
+        "sc11-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "DATA LAYOUT (from file headers only, no analysis): GSE276492_combined.h5 is a Mission Bio Tapestri scDNA+protein (Mosaic-style) HDF5 with 5 samples as top-level groups (GSM8499463..GSM8499467). In each sample, assays/protein_read_counts/layers/read_counts is called cells x 48 antibodies (2518, 3714, 4826, 5988 and 6912 cells; antibody names in ca/id, same order in every sample). The 48 antibodies are 45 CD/HLA markers plus 3 isotype controls (IgG1, IgG2a, IgG2b). 'AOC' means antibody-oligo conjugate. CLR, NSP and asinh are exactly the options of Mosaic's Protein.normalize_reads. In the library's sandbox missionbio.mosaic, diptest, unidip and R were not installed and pip had no network; this was observed there only, so first try 'import missionbio.mosaic' and 'import diptest' in your own environment and use the real packages if present, otherwise implement NSP and the dip test by hand.",
+      "from": [
+        "sl-sc-test-3c6e2e7bba6c",
+        "sl-sc-test-dddec85660c3"
+      ],
+      "reason": "Tells the team where the cell-level protein matrix is, that there are 5 samples and 3 isotype controls, and that the named methods map to a specific tool whose package may be missing, which determines how each method must be implemented.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-b6746b130baa"
+      }
+    },
+    {
+      "text": "PITFALL (wrong matrix): each sample has two protein matrices: all_barcodes/protein_read_counts (425k-1.28M barcodes, overwhelmingly empty/non-cell) and assays/protein_read_counts (2.5k-6.9k called cells). Normalizing or dip-testing all_barcodes makes every antibody look bimodal (empty barcodes vs cells) or zero-dominated and makes CLR/NSP parameters describe background. CHECK: the matrix has thousands of rows, not hundreds of thousands; protein barcodes equal the barcodes of the same sample's assays/dna_read_counts; look at total protein reads per cell for a low-count clump. IF FOUND: use assays/protein_read_counts restricted to DNA-called barcodes for all three methods; all_barcodes may serve only as an optional background reference, never as the tested population; apply any cell filter identically before all three normalizations.",
+      "from": [
+        "sl-sc-test-4024fe298677"
+      ],
+      "reason": "Using the all-barcodes matrix would make the bimodal-marker count meaningless for every method and could change which method ranks first.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-4f21d98fa07b"
+      }
+    },
+    {
+      "text": "PITFALL (pooling samples): the file holds 5 separate patient samples. Pooling all cells into one distribution per antibody creates multimodality from between-sample shifts in staining, depth and cell composition, which is not a positive/negative split, and it inflates n. Mosaic normalizes protein reads per sample, and NSP's linear fit and scale factor are sample-specific. CHECK: after each normalization compare per-sample medians/quantiles of every antibody; run the dip test both per sample and pooled. IF FOUND (pooled significant where single samples are not, or sample medians differ): normalize and test per sample, and fix in advance one rule for turning 5 per-sample results into one marker count per method (e.g. total significant marker-sample pairs, or markers significant in a majority of samples); report whether the top method is the same per sample, under that rule, and pooled.",
+      "from": [
+        "sl-sc-test-1339b4e5837c"
+      ],
+      "reason": "Pooled versus per-sample handling changes both the normalization and the n of the test, and so can change the counts and the method ranking; the aggregation rule must be chosen before seeing results.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-83b23f637e89"
+      }
+    },
+    {
+      "text": "PITFALL (which CLR): 'CLR' names several transforms that give different marker distributions: (i) per cell across antibodies (original CITE-seq; log counts centred on the cell's own mean log count; what a Tapestri/Mosaic-style CLR is believed to do), (ii) per antibody across cells (Seurat default margin; effectively log1p(x/constant) per marker with no cell-depth correction), plus formula variants log((x+1)/geomean(x+1)) versus Seurat's log1p(x / exp(sum(log1p(x[x>0]))/length(x))). The dip test is invariant only to affine maps, so these variants can give different bimodal-marker counts. CHECK: compute the CLR count under per-cell and per-antibody versions and both formula variants, with all 48 antibodies (isotypes included) in the per-cell geometric mean. IF FOUND (count differs): use the per-cell, across-antibody log-ratio with a +1 pseudocount (log1p(x) minus the per-cell mean of log1p(x)) as the primary definition, state it explicitly, and report the alternatives as sensitivity. CAVEAT: the exact Mosaic CLR formula could not be retrieved (only 'Centered Log Ratio, per sample' is documented), so the log1p form is an assumption, not a verified fact.",
+      "from": [
+        "sl-sc-test-dc8f3b3e5b9a",
+        "sl-sc-test-dddec85660c3"
+      ],
+      "reason": "The CLR definition is ambiguous and the variants are not affine-equivalent, so the choice can change method A's count and the final ranking.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-e093f8acff24"
+      }
+    },
+    {
+      "text": "PITFALL (NSP is not public): NSP (Noise corrected and Scaled Protein) is a proprietary Mission Bio Mosaic algorithm; a home-made version can differ enough to decide the A/B/C ranking. What the docs specify: Gaussian jitter (mean 0, sd 0.5) is added to raw read counts, an arcsinh is applied, per-cell background and signal are each assumed to depend linearly on the cell's total protein reads, a linear model is fitted to background and to signal and that depth dependence is removed; optionally reads are first divided by a scale factor for over-sequenced runs (reset to 1 if it would leave >5% of cells with 0 reads); it is run per sample; a correct run shows signal and background distinct and both flat versus read depth. Not documented (unknown): how background versus signal antibodies are chosen per cell, and any further internal steps. CHECK: after your NSP, regress per-cell background level and signal level against log total reads (slope ~0 after correction, clearly non-zero before); rerun with 3+ jitter seeds and at least one alternative reasonable background definition (e.g. isotype controls vs lowest-expressed antibodies per cell). IF FOUND (NSP count moves across seeds/variants by as much as the gap between methods): say the ranking is implementation-sensitive, report the range, and base the answer on the variant that follows the documented steps most literally, not on whichever variant wins.",
+      "from": [
+        "sl-sc-test-20a96e88ad9d",
+        "sl-sc-test-dddec85660c3"
+      ],
+      "reason": "Method B has to be re-implemented from a partial description; the team needs the documented steps and a way to tell whether their implementation choices, rather than the data, drive the ranking.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-3745357b7908"
+      }
+    },
+    {
+      "text": "PITFALL (asinh parameter and depth): asinh(x/c) is linear below about c and logarithmic above. With c=1 on raw integer counts, separate spikes remain at 0,1,2 (false modes); a large c (5 as in CyTOF, 150+ as in flow) compresses the negative population and can merge or split peaks. Mosaic's asinh option exposes only a jitter (sd 0.5), i.e. plain arcsinh of jittered counts. Unlike CLR and NSP, asinh does not remove per-cell total-read differences, so structure in total reads per cell (low-quality cells, doublets, cell-size classes) is copied into every antibody. CHECK: dip test and histogram of log total protein reads per cell per sample; correlation of each asinh-normalized antibody with log total reads; rerun asinh with cofactor 1 and 5, with and without jitter. IF FOUND (count changes with cofactor, or markers are bimodal only because total reads are): use plain arcsinh of sd-0.5-jittered counts as the primary asinh definition, report the cofactor sensitivity, and note which asinh calls are depth-driven rather than marker-specific.",
+      "from": [
+        "sl-sc-test-da0c6de5702e"
+      ],
+      "reason": "Method C has an unstated cofactor and jitter choice that can change its count, and its lack of depth correction can add depth-driven calls.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-1ed4cbdb8bfd"
+      }
+    },
+    {
+      "text": "PITFALL (discrete counts and the dip test): Hartigan's dip test assumes continuous data. Integer AOC counts have atoms at 0,1,2,3... which any per-marker monotone transform (asinh, or a per-marker CLR) preserves, so low-count antibodies get spuriously significant dips (even 11 tied values at 3 levels give p=0.044). Mosaic adds N(0, sd=0.5) jitter to the counts for asinh and NSP only, not for CLR; a per-cell CLR breaks ties implicitly through each cell's geometric mean, so the three methods are not compared like-for-like unless ties are handled deliberately. CHECK: per antibody, the fraction of cells with raw count <= 3 and the number of distinct normalized values; run the dip test with and without sd-0.5 jitter on the counts; see whether the isotype controls become 'bimodal'. IF FOUND (markers significant only without jitter, or low-count/isotype markers significant): treat those as discreteness artefacts, use jittered counts for asinh and NSP as the tool specifies, state what was done for CLR, and report how each method's count changes with and without jitter.",
+      "from": [
+        "sl-sc-test-a762c6a63c37"
+      ],
+      "reason": "Tie handling differs by method and can create false significant markers unevenly across the three methods, which directly affects the comparison.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-3f2f712151f4"
+      }
+    },
+    {
+      "text": "PITFALL (CLR compositional artefacts): per-cell CLR divides every antibody by the cell's geometric mean over the whole panel, so a few abundant, strongly bimodal lineage antibodies shift the denominator in one cell type and imprint a mirror-image split on unrelated or non-expressed antibodies, including isotype controls; CLR also does not remove protein-specific background and the negative population is not centred at zero. CHECK: use the 3 isotype controls (IgG1, IgG2a, IgG2b) as negative controls, which should be unimodal under every method; for each CLR-significant marker test whether its two modes simply track the cell's mean log count or another marker's positive/negative status; compare the same marker under asinh/NSP. IF FOUND (isotypes or clearly non-expressed markers bimodal under a method): report the count with and without isotype controls, flag those calls as normalization artefacts, and say whether excluding them changes which method has the most bimodal markers.",
+      "from": [
+        "sl-sc-test-364108d6c4a9"
+      ],
+      "reason": "Gives the team a negative control (isotypes) for telling real positive/negative splits from normalization artefacts, and a decision on whether isotypes count as markers.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-82f124ca45ec"
+      }
+    },
+    {
+      "text": "PITFALL (hand-written dip test): if no dip-test package is available, hand-written code is error-prone (the original published Fortran had a bug) and p-values depend strongly on n with no closed form; the reference implementation interpolates a table in sqrt(n)*D or simulates P = mean(D_obs <= dip(runif(n))) with B=2000 uniform samples of the same n. CHECK before use: (a) dip is unchanged by x -> a*x+b and x -> -x; (b) uniform samples give roughly uniform p (about 5% below 0.05); (c) N(0,1) samples with n~5000 give p near 1; (d) a 50/50 mixture of N(0,1) and N(4,1) gives p near 0; (e) the minimum possible dip is 1/(2n). Build the null by simulating the dip of uniform samples at each sample's actual n (B>=2000; one null per n can be reused for all markers and methods). IF FOUND (a validation fails, or p-values came from a table for the wrong n): fix the implementation first; use one identical null, seed, cell set and marker set for all three normalizations so differences come only from the normalization.",
+      "from": [
+        "sl-sc-test-f1d074db950c"
+      ],
+      "reason": "The whole answer rests on dip p-values; an unvalidated implementation or a null for the wrong n would corrupt all three counts.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-b02deb2116f4"
+      }
+    },
+    {
+      "text": "PITFALL (large n saturates the test): the dip test's critical value shrinks with n, so with 2.5k-6.9k cells per sample (about 24k pooled) it rejects unimodality for nearly unimodal distributions with small shoulders; p<0.05 may then be met by most of the 48 antibodies under every normalization, so counts saturate or tie, and raw dip values are not comparable across different n. Also 48 markers x 3 methods (x 5 samples) at alpha 0.05 is uncorrected multiple testing. CHECK: count significant markers per method; if counts are near 48 or within 1-3 of each other, also compare the dip statistic itself, repeat on equal-size random subsamples (e.g. 1000-2000 cells, several seeds) and with Benjamini-Hochberg adjustment, and see whether the ranking is stable. IF FOUND (ranking changes with n, seed or BH): keep the task's stated criterion (dip p<0.05) as the primary count, report that the margin is fragile and which method wins under each variant; do not quietly switch criteria to break a tie.",
+      "from": [
+        "sl-sc-test-03624000c61e"
+      ],
+      "reason": "Warns that the counts may tie or saturate and sets out how to test ranking stability without abandoning the task's stated criterion.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-b5e0d9c29d8c"
+      }
+    },
+    {
+      "text": "PITFALL (significant dip is not the same as clean positive/negative): a significant dip test means 'not unimodal', so tri-modal markers, a small outlier clump or a shoulder also reject, while a rare positive population (a few % of cells) or overlapping modes look like a skewed tail and are missed. The dip count can therefore over- and under-state 'clear bimodal separation', and differently per normalization. CHECK: for every significant marker inspect the density and fit a 2-component Gaussian mixture, recording minor-component fraction and separation (e.g. Ashman's D > 2); list markers that are significant but have more than 2 KDE peaks or a minor fraction below about 2%, and markers with an obvious rare positive tail that are not significant. IF FOUND: keep dip p<0.05 as the task's counting rule, report the stricter count (dip significant AND 2-component separation) alongside it and whether the top method is the same under both; if they disagree, say so explicitly.",
+      "from": [
+        "sl-sc-test-46036ede7c3b"
+      ],
+      "reason": "The task asks for 'clear bimodal separation (positive/negative populations)'; the team needs a secondary check on whether the dip-based ranking holds under that reading.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-2c9bbf5e26c2"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "sc11-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the two teams built NSP in different ways. The other team worked from the vendor's description of NSP: Gaussian jitter on the raw counts, an arcsinh, then a linear model of each cell's background level and signal level against that cell's total protein reads, with that depth dependence removed, run per sample on called cells. Your NSP is a z-score of log counts against empty droplets. Check your NSP step by step against that description: which steps does it contain and which not? After your NSP, are per-cell background and signal levels flat against total reads within a sample? Does that change your method?",
+      "from": [
+        "sl-sc-test-dfc2552e921d",
+        "sl-sc-test-3745357b7908",
+        "sl-sc-test-eaa449a25feb"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-0a863225653e"
+    },
+    {
+      "to": "sc11-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that the number of significant markers under its home-made NSP changed a great deal when only the definition of background was changed. Check whether that holds for yours: rerun your NSP with at least one other reasonable background definition and with several jitter seeds. How does the spread of your NSP count across those variants compare with your margin between methods? Does that change your method or your confidence?",
+      "from": [
+        "sl-sc-test-26aae93353aa"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-f22401f3abb9"
+    },
+    {
+      "to": "sc11-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team used the three isotype controls (IgG1, IgG2a, IgG2b) as negative controls and found that they are called bimodal far more often under one of the three normalizations than under the other two, and that many antibodies have most cells at counts of 3 or less. Check in your data: under each normalization, are the isotype controls dip-significant, pooled and per sample? How do your three counts change when isotypes are excluded, and when a call also has to show two separated populations with a non-trivial minor fraction? Does that change your method?",
+      "from": [
+        "sl-sc-test-2f2486a215d5",
+        "sl-sc-test-563c60b989b6"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-3d833780b15e"
+    },
+    {
+      "to": "sc11-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the two teams did not use the same asinh cofactor, and you recorded that your result depends on it. Check what supports one cofactor over another here: the task text, what the software that offers exactly these three normalizations does for its asinh option, and how the isotype controls and the lowest-count antibodies behave under each cofactor after jitter. Is your choice of cofactor supported by any of these? Does that change your method?",
+      "from": [
+        "sl-sc-test-b28ccdefb4c6",
+        "sl-sc-test-1ed4cbdb8bfd"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-58a118055fe1"
+    },
+    {
+      "to": "sc11-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team normalized and tested each sample separately because it saw that the samples differ strongly from one another in how many markers are significant, and it treated pooling as mixing sample effects into the marker distributions. You recorded the depth difference between samples yourself. Check which of your pooled-significant markers stay significant inside most individual samples under each method, and whether pooled modes follow sample identity. Is the order of the three methods the same pooled, per sample and by majority of samples? Does that change which count you treat as primary?",
+      "from": [
+        "sl-sc-test-dfc2552e921d",
+        "sl-sc-test-4695244319fe"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-020b9a346749"
+    },
+    {
+      "to": "sc11-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the two teams did not simulate the same number of uniform null samples for the dip p-value, and the other team repeated the test over several jitter seeds and equal-size subsamples. With the number of null simulations you used, how fine is your p-value near 0.05, and how many of your calls sit close to the cut? Check whether your three counts, and their order, are stable across more null simulations, several jitter seeds, a different jitter distribution, and subsamples of equal size. Does that change your method?",
+      "from": [
+        "sl-sc-test-dfc2552e921d",
+        "sl-sc-test-03624000c61e"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-ebc0d598c2ec"
+    },
+    {
+      "to": "sc11-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team did not take background from antibodies inside each called cell. It estimated background per sample from the non-cell barcodes stored under all_barcodes and scaled each antibody against that. You recorded that your NSP count depends strongly on how background is defined, and you tried two definitions, both within called cells. Check whether an empty-barcode background can be built in your data and what your NSP count becomes with it, per sample and pooled. Does the range of your NSP variants then still stay clear of the other methods' counts? Does that change your method or your confidence?",
+      "from": [
+        "sl-sc-test-eaa449a25feb",
+        "sl-sc-test-26aae93353aa"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-e581e7bcb8b4"
+    },
+    {
+      "to": "sc11-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: your NSP takes background from the mean of three isotype controls per cell, in data where you recorded that many antibodies have most cells at counts of 3 or less, and then divides by a fitted signal-minus-background term. Check whether this step adds per-cell noise that blurs populations which are visible before it: for markers significant under another normalization but not under your NSP, is the positive/negative split still visible in the raw counts? Check also the documented diagnostic for a correct run: background and signal distinct, and both flat against read depth. Does that change your method?",
+      "from": [
+        "sl-sc-test-3745357b7908",
+        "sl-sc-test-dfc2552e921d"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-dc1fe3f394c4"
+    },
+    {
+      "to": "sc11-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team used a different asinh cofactor and a different jitter (uniform on [0,1), applied to the counts before every one of the three transformations) and found that the order of methods in its hands depended on the cofactor and on tie handling. You tested another cofactor and jitter on/off. Check whether your order of the three methods holds for every combination of cofactor, jitter type and NSP variant, not only one at a time. Does that change your method?",
+      "from": [
+        "sl-sc-test-b28ccdefb4c6",
+        "sl-sc-test-beebd949a0e4"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-258a4721141f"
+    },
+    {
+      "to": "sc11-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the task asks for 'the number of markers' out of the panel, and the other team read this as one count per marker on all cells together, while your primary count is marker-sample pairs. You also wrote that a per-antibody CLR would change the picture. Check what in the task text and in the convention of the software that offers these three normalizations supports your unit of counting and your CLR axis. Is the top method the same for every combination of counting unit (pairs, majority of samples, pooled) and CLR axis? If not, which combination do you treat as primary and why? Does that change your method?",
+      "from": [
+        "sl-sc-test-eaa449a25feb",
+        "sl-sc-test-ab026e2de2fd"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-819e2e1a71ea"
+    }
+  ],
+  "warning_signs_to_team_c": [],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": null,
+  "research": [
+    {
+      "round": "questions",
+      "questions": [
+        {
+          "question": "In Mission Bio's Mosaic package, how exactly does the NSP ('Noise corrected and Scaled Protein') normalization work in the source code (missionbio.demultiplex.protein.nsp and Protein.normalize_reads with method='NSP')? In particular: how are background and signal defined for each cell (isotype controls, lowest-expressed antibodies, a mixture model, or empty/non-cell barcodes), what is regressed on what (raw or log total reads), is the result scaled, and does it use only called cells or also non-cell barcodes?",
+          "why": "The teams wrote two unrelated approximations of NSP (within-cell background with regression on read depth versus an empty-droplet z-score) and their NSP counts differ enough to decide the answer; the exact definition of background and scaling would tell both teams which approximation is closer.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In Mission Bio Mosaic's Protein.normalize_reads, what exactly do method='CLR' and method='asinh' compute? For CLR: is the geometric mean taken per cell across antibodies or per antibody across cells, and what pseudocount is used? For asinh: is it a plain arcsinh of jittered counts or is there a cofactor/divisor, and what are the default jitter and scale values? When several samples are in one object, is normalization applied per sample or on all cells together?",
+          "why": "The teams used different asinh cofactors and one team found the method order depends on it; one team also noted that the CLR axis changes the count strongly, and the teams differ on pooled versus per-sample normalization. The tool's defaults settle which definition is the reference.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How do the standard Hartigan dip test implementations (R diptest::dip.test and the Python diptest package) compute the p-value: interpolation in a precomputed table of uniform-null quantiles or Monte Carlo simulation, and with how many replicates by default? How do they recommend handling ties or discrete (integer count) data, and is the p-value reliable when the sample size is in the thousands to tens of thousands?",
+          "why": "Both teams hand-wrote the dip test; one used far fewer null simulations than the other and has a very small margin near the 0.05 cut, and the teams broke integer ties with different jitter. Knowing the reference p-value procedure and tie guidance tells them whether their significance counts are comparable.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In Mission Bio's Mosaic package, how exactly does the NSP normalization work in the source code (missionbio.demultiplex.protein.nsp and Protein.normalize_reads with method='NSP')? How are background and signal defined per cell, what is regressed on what, is the result scaled, and does it use only called cells or also non-cell barcodes?",
+          "answer": "Not fully settled: Mosaic's NSP source is not public (the MissionBio/mosaic GitHub repo holds only docs and installers). Documented: NSP(jitter=0.5, random_state=None, sample_size=inf, max_zero_read_cells=0.05). Gaussian jitter (sd 0.5) is added to the counts and arcsinh is applied. Per-cell background and signal are assumed to depend linearly on the cell's total read counts; a linear model is fitted to each, and the counts are corrected for that dependence. An optional scale-down factor for over-sequenced runs is estimated from peak amplification and reset to 1 if more than 5% of cells would be left with 0 reads. transform() takes only the (#cells x #antibodies) matrix of the Protein assay (called cells). It has no input for non-cell barcodes and no isotype argument. Undocumented: how background vs signal is chosen per cell (isotypes, lowest antibodies or a mixture model), whether total reads enter raw or logged, and the final scaling. Of the two team approaches, within-cell background with regression on read depth matches the docs. An empty-droplet z-score (dsb-like) does not, because NSP never receives non-cell barcodes.",
+          "sources": [
+            "https://missionbio.github.io/mosaic/pages/missionbio.demultiplex.protein.nsp.NSP.html",
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.demultiplex.protein.nsp.NSP.scaling_factor.html",
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.demultiplex.protein.nsp.NSP.plot.html",
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.normalize_reads.html",
+            "https://github.com/MissionBio/mosaic"
+          ],
+          "confidence": "medium (documented parts high; background/signal definition and regressor form not settled)",
+          "deliveries": {
+            "sc11-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-55a0d7ab2a02"
+            },
+            "sc11-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-3c9de06863aa"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In Mission Bio's Mosaic package, how exactly does the NSP normalization work in the source code (missionbio.demultiplex.protein.nsp and Protein.normalize_reads with method='NSP')? How are background and signal defined per cell, what is regressed on what, is the result scaled, and does it use only called cells or also non-cell barcodes? ANSWER: Not fully settled: Mosaic's NSP source is not public (the MissionBio/mosaic GitHub repo holds only docs and installers). Documented: NSP(jitter=0.5, random_state=None, sample_size=inf, max_zero_read_cells=0.05). Gaussian jitter (sd 0.5) is added to the counts and arcsinh is applied. Per-cell background and signal are assumed to depend linearly on the cell's total read counts; a linear model is fitted to each, and the counts are corrected for that dependence. An optional scale-down factor for over-sequenced runs is estimated from peak amplification and reset to 1 if more than 5% of cells would be left with 0 reads. transform() takes only the (#cells x #antibodies) matrix of the Protein assay (called cells). It has no input for non-cell barcodes and no isotype argument. Undocumented: how background vs signal is chosen per cell (isotypes, lowest antibodies or a mixture model), whether total reads enter raw or logged, and the final scaling. Of the two team approaches, within-cell background with regression on read depth matches the docs. An empty-droplet z-score (dsb-like) does not, because NSP never receives non-cell barcodes. HOW SURE: medium (documented parts high; background/signal definition and regressor form not settled). SOURCES: https://missionbio.github.io/mosaic/pages/missionbio.demultiplex.protein.nsp.NSP.html, https://missionbio.github.io/mosaic/pages/methods/missionbio.demultiplex.protein.nsp.NSP.scaling_factor.html, https://missionbio.github.io/mosaic/pages/methods/missionbio.demultiplex.protein.nsp.NSP.plot.html, https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.normalize_reads.html, https://github.com/MissionBio/mosaic."
+        },
+        {
+          "question": "In Mission Bio Mosaic's Protein.normalize_reads, what exactly do method='CLR' and method='asinh' compute (CLR geometric-mean axis and pseudocount; asinh cofactor, default jitter and scale), and is normalization per sample or pooled?",
+          "answer": "Signature: normalize_reads(method='CLR', jitter=0.5, scale=None, sample_size=1000, random_state=None). Jitter ~ N(0, 0.5) applies only to NSP and asinh, never to CLR. scale applies only to NSP. asinh has no cofactor parameter, so it is arcsinh(counts + N(0,0.5) jitter), i.e. cofactor 1 (the code itself is not public). Mosaic's CLR code is not public. Mission Bio's own R package tapestri_multiomics defines clr_by_cell = ln((counts+1)/geomean(counts+1)): pseudocount +1, geometric mean across the antibodies of each cell. It also has clr_by_feature; per-cell is the likely Mosaic convention, but this is not confirmed. normalize_reads is a method of a single sample's Protein assay. The Mosaic multisample notebook subsets each sample to its DNA barcodes and normalizes inside a for-sample loop, so normalization is per sample, not pooled.",
+          "sources": [
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.normalize_reads.html",
+            "https://rdrr.io/github/MissionBio/tapestri_multiomics/src/R/protein_normalization.R",
+            "https://missionbio.github.io/mosaic/notebooks/curated_notebooks/dna-protein-multisample.html"
+          ],
+          "confidence": "medium (defaults, jitter scope and per-sample usage high; exact CLR axis inferred from Mission Bio's R package, not Mosaic code)",
+          "deliveries": {
+            "sc11-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-aa275e2998d6"
+            },
+            "sc11-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-11eb9d2cdf3f"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In Mission Bio Mosaic's Protein.normalize_reads, what exactly do method='CLR' and method='asinh' compute (CLR geometric-mean axis and pseudocount; asinh cofactor, default jitter and scale), and is normalization per sample or pooled? ANSWER: Signature: normalize_reads(method='CLR', jitter=0.5, scale=None, sample_size=1000, random_state=None). Jitter ~ N(0, 0.5) applies only to NSP and asinh, never to CLR. scale applies only to NSP. asinh has no cofactor parameter, so it is arcsinh(counts + N(0,0.5) jitter), i.e. cofactor 1 (the code itself is not public). Mosaic's CLR code is not public. Mission Bio's own R package tapestri_multiomics defines clr_by_cell = ln((counts+1)/geomean(counts+1)): pseudocount +1, geometric mean across the antibodies of each cell. It also has clr_by_feature; per-cell is the likely Mosaic convention, but this is not confirmed. normalize_reads is a method of a single sample's Protein assay. The Mosaic multisample notebook subsets each sample to its DNA barcodes and normalizes inside a for-sample loop, so normalization is per sample, not pooled. HOW SURE: medium (defaults, jitter scope and per-sample usage high; exact CLR axis inferred from Mission Bio's R package, not Mosaic code). SOURCES: https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.normalize_reads.html, https://rdrr.io/github/MissionBio/tapestri_multiomics/src/R/protein_normalization.R, https://missionbio.github.io/mosaic/notebooks/curated_notebooks/dna-protein-multisample.html."
+        },
+        {
+          "question": "How do the standard Hartigan dip test implementations (R diptest::dip.test and Python diptest) compute the p-value, with how many replicates by default; how do they recommend handling ties/discrete data; is the p-value reliable at n in the thousands to tens of thousands?",
+          "answer": "R dip.test(x, simulate.p.value=FALSE, B=2000): by default the p-value comes from linear interpolation in sqrt(n)*D over the qDiptab table of uniform-null dip quantiles (1,000,001 simulated U[0,1] samples per tabulated n). For n beyond the largest tabulated n, it uses the last n as asymptotic, which is accurate because sqrt(n)*D is nearly n-free. With simulate.p.value=TRUE it computes P = mean(D <= dip(runif(n))) over B=2000 replicates. Python diptest.diptest(x, boot_pval=False, n_boot=10000) by default interpolates its tabulated critical values; boot_pval=True uses 10000 uniform bootstrap samples. Neither package provides a ties option or a jitter recommendation. Hartigan & Hartigan state that a unimodal F may have an atom only at the mode, so integer counts with many tied values violate the null and inflate significance; ties should be broken (jitter or a continuous transform), and the same tie handling should be used for every method. At n of thousands to tens of thousands the p-value is numerically reliable (table or simulation), but the test has high power against small shoulders. A simulated p-value has Monte Carlo SE of about sqrt(0.05*0.95/B), roughly 0.005 at B=2000 and 0.015 at B=200, so markers near 0.05 can flip with small B.",
+          "sources": [
+            "https://github.com/cran/diptest/blob/master/R/dipTest.R",
+            "https://github.com/cran/diptest/blob/master/man/qDiptab.Rd",
+            "https://www.stat.math.ethz.ch/CRAN/web/packages/diptest/refman/diptest.html",
+            "https://github.com/RUrlus/diptest",
+            "https://raw.githubusercontent.com/RUrlus/diptest/stable/src/diptest/diptest.py",
+            "https://stats.stackexchange.com/questions/203556/hartigans-dip-test-significant-for-bimodality-with-clearly-unimodal-data"
+          ],
+          "confidence": "high (p-value procedures and defaults read from source); medium on tie guidance (not stated in package docs, inferred from the theory)",
+          "deliveries": {
+            "sc11-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-fa4cbb1ce5e7"
+            },
+            "sc11-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-a6d4735d1088"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How do the standard Hartigan dip test implementations (R diptest::dip.test and Python diptest) compute the p-value, with how many replicates by default; how do they recommend handling ties/discrete data; is the p-value reliable at n in the thousands to tens of thousands? ANSWER: R dip.test(x, simulate.p.value=FALSE, B=2000): by default the p-value comes from linear interpolation in sqrt(n)*D over the qDiptab table of uniform-null dip quantiles (1,000,001 simulated U[0,1] samples per tabulated n). For n beyond the largest tabulated n, it uses the last n as asymptotic, which is accurate because sqrt(n)*D is nearly n-free. With simulate.p.value=TRUE it computes P = mean(D <= dip(runif(n))) over B=2000 replicates. Python diptest.diptest(x, boot_pval=False, n_boot=10000) by default interpolates its tabulated critical values; boot_pval=True uses 10000 uniform bootstrap samples. Neither package provides a ties option or a jitter recommendation. Hartigan & Hartigan state that a unimodal F may have an atom only at the mode, so integer counts with many tied values violate the null and inflate significance; ties should be broken (jitter or a continuous transform), and the same tie handling should be used for every method. At n of thousands to tens of thousands the p-value is numerically reliable (table or simulation), but the test has high power against small shoulders. A simulated p-value has Monte Carlo SE of about sqrt(0.05*0.95/B), roughly 0.005 at B=2000 and 0.015 at B=200, so markers near 0.05 can flip with small B. HOW SURE: high (p-value procedures and defaults read from source); medium on tie guidance (not stated in package docs, inferred from the theory). SOURCES: https://github.com/cran/diptest/blob/master/R/dipTest.R, https://github.com/cran/diptest/blob/master/man/qDiptab.Rd, https://www.stat.math.ethz.ch/CRAN/web/packages/diptest/refman/diptest.html, https://github.com/RUrlus/diptest, https://raw.githubusercontent.com/RUrlus/diptest/stable/src/diptest/diptest.py, https://stats.stackexchange.com/questions/203556/hartigans-dip-test-significant-for-bimodality-with-clearly-unimodal-data."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc11-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "sc11-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "sc11-team-b",
+      "round": "revise",
+      "reason": "agreed with sc11-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc11-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 38.23276700009592,
+      "cost_usd": 0.17192819999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 74.97274416708387,
+      "cost_usd": 0.19208360000000002,
+      "error": null
+    },
+    {
+      "agent": "sc11-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 201.10079383302946,
+      "cost_usd": 0.6021631999999999,
+      "error": null
+    },
+    {
+      "agent": "sc11-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 392.1265028750058,
+      "cost_usd": 0.515611,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 129.0251557501033,
+      "cost_usd": 0.2419605,
+      "error": null
+    },
+    {
+      "agent": "sc11-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 111.65192762506194,
+      "cost_usd": 0.5593712,
+      "error": null
+    },
+    {
+      "agent": "sc11-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 137.98701749998145,
+      "cost_usd": 0.4772176,
+      "error": null
+    },
+    {
+      "agent": "sc11-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 319.27327995793894,
+      "cost_usd": 0.45875560000000004,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

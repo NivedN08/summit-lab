@@ -1,0 +1,385 @@
+{
+  "study": "sc12",
+  "status": "replicated",
+  "final": {
+    "agent": "sc12-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc12/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc12-library": "opus",
+    "sc12-team-a": "opus",
+    "sc12-team-b": "opus",
+    "sc12-team-c": "opus",
+    "sc12-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc12-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc12/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "has_normalized_matrix": 1,
+        "fraction_finite_normalized_values": 1.0
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc12-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc12/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "has_normalized_matrix": 1,
+        "fraction_finite_normalized_values": 1.0
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc12-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc12/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "has_normalized_matrix": 1,
+        "fraction_finite_normalized_values": 1.0
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc12-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc12/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "has_normalized_matrix": 1,
+        "fraction_finite_normalized_values": 1.0
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc12-team-a",
+        "sc12-team-b"
+      ],
+      "fields": {
+        "has_normalized_matrix": true,
+        "fraction_finite_normalized_values": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc12-team-a",
+        "sc12-team-b"
+      ],
+      "fields": {
+        "has_normalized_matrix": true,
+        "fraction_finite_normalized_values": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "DATA LAYOUT (read from HDF5 headers only, no values analysed): GSE276492_combined.h5 is a Mission Bio Tapestri DNA+protein file holding 5 samples as top-level groups (GSM8499463_S7 ... GSM8499467_S15). For each sample the called-cell protein table is at <sample>/assays/protein_read_counts/layers/read_counts (int64, cells x 48 antibodies; 2518, 5988, 6912, 4826 and 3714 cells), with antibody names at .../ca/id and barcodes at .../ra/barcode. A much larger unfiltered table sits at <sample>/all_barcodes/protein_read_counts (hundreds of thousands of barcodes, mostly empty droplets). The 48-antibody panel includes three isotype controls named IgG1, IgG2a, IgG2b. Counts are reads, not UMIs, and the file contains no normalized layer. PITFALL: normalizing the all_barcodes table instead of the called-cell table gives a matrix dominated by empty near-zero rows. CHECK: the matrix you normalize has one row per called cell (rows equal the length of assays/protein_read_counts/ra/barcode for that sample) and 48 columns, oriented cells x antibodies. Use all_barcodes only as a background reference if you choose a background-based method.",
+      "from": [
+        "sl-sc-test-8db3988b15aa",
+        "sl-sc-test-ab49c8727541"
+      ],
+      "reason": "The file is not a standard AnnData/10x h5; without the paths the team may pick the wrong table (unfiltered barcodes) or the wrong orientation, which changes both the normalized matrix and the denominator of any finiteness check.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-d3759099d20f"
+      }
+    },
+    {
+      "text": "PITFALL: the h5 is a merged multi-sample file (5 samples). Reading only the first group silently normalizes about a fifth of the data, and methods that estimate anything across cells (per-antibody CLR, NSP, dsb, z-scoring) mix sample-specific depth and staining differences if run on the pooled matrix; cell barcodes can also repeat across samples. CHECK: every sample group gets a normalized layer of the same shape as its counts; antibody id order is identical across samples; barcodes are unique after prefixing with the sample name. Normalize each sample separately, prefix barcodes, then concatenate. Compute any whole-dataset summary such as the fraction of finite values as pooled finite count divided by pooled matrix size, not as an unweighted mean of per-sample fractions.",
+      "from": [
+        "sl-sc-test-7a5b8b9305a1"
+      ],
+      "reason": "Decides the scope of the normalized matrix (all five samples versus one) and how the reported fraction is aggregated across samples of different size.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-14f572684cb3"
+      }
+    },
+    {
+      "text": "PITFALL: a textbook centred log-ratio (log(x) minus mean log(x), with no pseudocount) or any plain log applied to antibody read counts returns -Inf/NaN wherever a count is zero; muon documents that its flavor='standard' CLR 'may yield infinite values if the input contains zeros'. Non-finite values produced this way are an artefact of the formula, not a property of the data. CHECK: count zeros in read_counts before normalizing; after normalizing, compute np.isfinite(dense_matrix).sum() / dense_matrix.size on the full cells x antibodies matrix that is actually stored (not on sparse .data only, and not after np.nan_to_num). If zeros are present, use a variant that is defined at zero (log1p-based 'seurat'-style CLR, CLR on counts+1, or asinh) rather than patching non-finite values afterwards, and report the fraction measured on the final stored layer.",
+      "from": [
+        "sl-sc-test-da71d4882bf4"
+      ],
+      "reason": "The choice of formula directly determines whether the normalized matrix is well-formed, and the way the finiteness fraction is measured (dense full matrix, no masking) determines one of the two requested numbers.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-5bf344b363ac"
+      }
+    },
+    {
+      "text": "PITFALL: Tapestri cells are called from the DNA library, not from protein, so a called cell can have zero or very few antibody reads. Dividing by a per-cell total, size factor or geometric mean that is zero gives NaN/Inf for that whole row, and z-scoring an antibody column with zero variance gives NaN for that whole column. CHECK: per-cell total protein reads (minimum, number of cells with total == 0, number of antibodies detected per cell) and per-antibody variance within each sample. If such cells or columns exist, use a normalization that is defined at zero (pseudocount CLR or asinh), do not add a z-score step without guarding zero-variance columns, and state explicitly whether such cells were kept or dropped, because dropping them changes the denominator of any 'fraction finite' check.",
+      "from": [
+        "sl-sc-test-a8b1f1f95b49"
+      ],
+      "reason": "A second, independent source of non-finite values (whole rows or columns) that the team would not anticipate from RNA-style workflows; also flags that cell filtering changes the denominator of the reported fraction.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-2629220ba4de"
+      }
+    },
+    {
+      "text": "PITFALL: implementation traps that corrupt the normalized layer without raising an error. (1) The counts are int64, so in-place division or assignment back into the integer array truncates values. (2) Mission Bio Mosaic's asinh/NSP methods add random Gaussian jitter (sd 0.5) to the counts, which makes output non-reproducible unless random_state is set and makes some jittered counts negative, so a hand-written log applied after jitter yields NaN. (3) NSP additionally rescales reads and resets its scale to 1 if more than 5% of cells would end with zero reads. CHECK: cast counts to float64 before normalizing; the normalized layer is float, has exactly the same shape as the counts, and is stored as a named layer alongside the untouched raw counts; fix the random seed.",
+      "from": [
+        "sl-sc-test-489410d1844e"
+      ],
+      "reason": "These are silent failures that affect whether a correct normalized layer exists and whether it is finite and reproducible; the checks define what 'well-formed' should mean operationally.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-7992bc514369"
+      }
+    },
+    {
+      "text": "METHOD CHOICE for antibody counts. (a) The RNA recipe (scale each cell to a common total, then log1p) is a poor fit: with a few dozen pre-selected antibodies the counts are strongly compositional, one or two abundant markers dominate the per-cell total, and OSCA says library-size factors for ADTs introduce composition bias. CHECK: per cell, the share of protein reads taken by the top 1-3 antibodies. Prefer a ratio-based method (CLR with pseudocount, Mosaic NSP/asinh, or control/median-based size factors) over normalize_total+log1p. (b) 'CLR' means two different things and tools default differently: within each cell across antibodies (original CITE-seq, Mosaic, Seurat margin=2, muon axis=1) versus per antibody across cells (Seurat default margin=1, muon default axis=0). Per-cell CLR corrects per-cell depth but assumes total antibody signal is comparable across cells; per-antibody CLR fails when sequencing depth per cell varies a lot. A transposed matrix silently swaps the two. CHECK: confirm orientation (n_cells x 48) and which axis the function centres on; for an unshifted per-cell CLR the row means of the output are about 0. Choose the axis deliberately and record the axis and pseudocount used.",
+      "from": [
+        "sl-sc-test-16f2a7ecd570",
+        "sl-sc-test-aa83b565ddbf"
+      ],
+      "reason": "The task asks for 'a reasonable method'; this tells the team which common default is not reasonable for antibody data and removes the axis ambiguity that makes two runs both labelled 'CLR' produce different matrices.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-8b12a5b0ae57"
+      }
+    },
+    {
+      "text": "PITFALL (only if you consider dsb / background-based normalization): dsb looks applicable because unfiltered barcodes and isotype controls exist, but it standardizes each antibody by the mean and standard deviation of background droplets, so an antibody with zero spread in the chosen background gives a division by zero, and a badly chosen background (one that includes real cells, or only near-zero barcodes) distorts every value. In this file the all_barcodes barcode strings are stored with a different width than the called-cell barcodes, so cells cannot be excluded from the background without first reconciling the formats. CHECK: background barcodes exclude called cells after matching barcode formats; every antibody has non-zero SD in the background; result is finite. If these cannot be met, fall back to pseudocount CLR.",
+      "from": [
+        "sl-sc-test-f6faa8978157"
+      ],
+      "reason": "The presence of an all_barcodes table invites a background-based method; the barcode-format mismatch and zero-SD division are file-specific traps that would otherwise cost time or produce non-finite values.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-41af6444a6d6"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 4,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams chose the same transform (per-cell CLR as log1p(x) minus the cell's mean of log1p) and so share the assumption that a 'reasonable method' means one defined at zero counts. Team B also tried log-CPM; team A tried no second transform.",
+      "Both assumed the matrix to normalize is assays/protein_read_counts (DNA-called cells x 48 antibodies) pooled over all 5 samples, with every called cell and all 48 antibodies (including the 3 isotype controls) kept, so the denominator is 23958 x 48.",
+      "Both assumed 'fraction' means a 0-1 proportion of entries passing np.isfinite on the dense matrix, pooled over samples rather than averaged per sample.",
+      "Both assumed that computing the matrix in memory satisfies 'a normalized matrix/layer exists'. Team A's plan says it stores a named layer; team B's note only says it 'applied' CLR and does not say the result was stored and re-read."
+    ],
+    "unused_evidence": [
+      "assays/dna_variants/ra/filtered (a per-cell uint8 flag) and the n_passing_cells metadata: neither team says whether any called cells are flagged, or whether dropping them would change the denominator.",
+      "all_barcodes/protein_read_counts (hundreds of thousands of barcodes per sample) and the three isotype-control antibodies: the inputs for a background-based normalization. Both teams set this aside; team A listed 'dsb background issues' as checked but not found, team B did not mention it.",
+      "ca/antibody_id and ca/antibody_sequence, and the per-sample protein metadata (read-pair counts, pipeline_version, panel_name): unused. They look descriptive only and are unlikely to affect finiteness.",
+      "The DNA assays (dna_read_counts, dna_variants layers): unused, and out of scope for a protein normalization, except as the source of the cell filter flag above."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weak point: the finite fraction depends on the normalization chosen, and a transform without a pseudocount would give a value below 1 because 9-62% of counts per sample are zero. Neither resolved it; both only reported it. Team B partly addressed it by testing a second transform, team A did not.",
+      "Team A flagged cells with only 1-2 total protein reads as noisy but kept them without testing whether a low-depth filter changes the result.",
+      "Team B recorded no pitfalls as checked (its note says none were passed down), so the library's zero-count and dense-matrix checks were not explicitly confirmed by that team, although its 'no zero-total cells' check overlaps with them."
+    ],
+    "second_readings": [
+      "'Normalize protein values using a reasonable method' could mean the platform's own default protein normalization instead of a generic CLR; the two differ only if that default is not defined at zero counts.",
+      "'verify the normalized matrix is well-formed' could be read as covering more than finiteness (shape equal to the raw matrix, numeric float dtype, no all-constant rows or columns), but only the finite fraction is returned.",
+      "'has_normalized_matrix ... if a normalized matrix/layer exists' could be read as a check on a stored layer in a data object, not on an in-memory array.",
+      "'fraction' could be reported per sample or pooled, and on a 0-1 or a percent scale; the key name points to a pooled 0-1 proportion, which is what both teams used."
+    ],
+    "verdict": "I trust the agreed answer highly: the 'exists' flag is a matter of having produced the matrix, and any normalization that is defined at zero counts gives the same finite fraction, which team B confirmed with a second transform and both teams confirmed by finding no zero-total cells or zero-variance antibodies. The only way it breaks is if the intended method has no pseudocount, which the task's 'reasonable' and 'well-formed' wording argues against; the questions are confirmations, not expected to move the answer.",
+    "questions": [
+      {
+        "to": "sc12-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you computed the finite fraction under one transform only, and you named method dependence as your weakest point. Compute the same pooled fraction on the same 23958 x 48 matrix under at least one other transform from a different family that you would also call reasonable for antibody read counts, and record each value. Do the values agree, and does the result change your method or your confidence?",
+        "from": [
+          "sl-sc-test-2fe2cfe2c12d",
+          "sl-sc-test-76ff335e2050"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-2172ed003d3a"
+      },
+      {
+        "to": "sc12-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: each sample carries a per-cell 'filtered' flag under assays/dna_variants/ra, and you found cells with only 1-2 total protein reads. Check that the protein barcodes match the DNA-variant barcodes row for row, count how many called cells are flagged in each sample, and recompute your fraction with flagged cells and with the lowest-depth cells excluded. Does either exclusion change the fraction, and does it change which cells you keep?",
+        "from": [
+          "sl-sc-test-2fe2cfe2c12d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-f643d4812256"
+      },
+      {
+        "to": "sc12-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your note says you applied the transform but not that the result was stored and re-read. Confirm from the stored object that a normalized layer exists alongside the raw counts, that its shape equals the raw matrix (all called cells x 48 antibodies), that it is a floating-point dense array, and that the fraction was computed as np.isfinite(layer).sum() / layer.size on that stored layer, not on sparse .data or after any NaN patching. Does anything differ from what you reported, and does it change your method?",
+        "from": [
+          "sl-sc-test-cf1f1bdc7bfb",
+          "sl-sc-test-8a9df125a4d4"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-8d9d54829f90"
+      },
+      {
+        "to": "sc12-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you recorded no pitfalls as checked. Count the zero entries in the called-cell read_counts per sample, the minimum per-cell total, and the antibodies with zero variance within a sample, and state how your transform behaves at a zero count. Also count the cells flagged in assays/dna_variants/ra/filtered and say whether you kept them. Do these checks change your method or the denominator of your fraction?",
+        "from": [
+          "sl-sc-test-8a9df125a4d4",
+          "sl-sc-test-0dff969491e9"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-39b586f235be"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In the vendor analysis package for single-cell DNA+protein droplet data whose protein normalization function offers CLR, NSP and asinh options, what exact formula does the default CLR option use, and how does it treat antibody read counts of zero (is a pseudocount added before the log)?",
+          "why": "Both teams named method dependence as their weakest point. Knowing whether the platform's own default transform is defined at zero counts settles whether the 'reasonable method' reading and the platform-default reading can give different results.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In the vendor analysis package for single-cell DNA+protein droplet data whose protein normalization function offers CLR, NSP and asinh options, what exact formula does the default CLR option use, and how does it treat antibody read counts of zero (is a pseudocount added before the log)?",
+          "answer": "The web does not fully settle this for the Python package itself. Mosaic's Protein.normalize_reads docs (default method='CLR') name the method 'Centered Log Ratio' but give no formula, and the Mosaic GitHub repo does not publish the Python source. The docs also say jitter applies only to NSP and asinh, not to CLR. Mission Bio's own public R packages (tapestriR and tapestri_multiomics, R/protein_normalization.R) do define the vendor's CLR exactly: counts = counts + 1 (a pseudocount of 1), then ln(x / geometric_mean(x)). clr_by_feature applies this to each row; clr_by_cell divides by the column-wise geometric means (exp(colMeans(log(x)))). Because the +1 is added before the log, a zero count becomes ln(1/g), which is finite, so the output is finite everywhere. Under that convention, the vendor-default reading and a reasonable pseudocount CLR (or asinh) both give a fully finite matrix (fraction finite = 1). Only a textbook CLR with no pseudocount would produce -Inf at zeros. The +1 convention in Mosaic Python is inferred from the vendor's R code, not documented.",
+          "sources": [
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.normalize_reads.html",
+            "https://rdrr.io/github/MissionBio/tapestriR/src/R/protein_normalization.R",
+            "https://github.com/MissionBio/mosaic",
+            "https://missionbio.github.io/mosaic/v2.4.1/examples/basics.html"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc12-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-45ee98a1df70"
+            },
+            "sc12-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-204f27a09cba"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In the vendor analysis package for single-cell DNA+protein droplet data whose protein normalization function offers CLR, NSP and asinh options, what exact formula does the default CLR option use, and how does it treat antibody read counts of zero (is a pseudocount added before the log)? ANSWER: The web does not fully settle this for the Python package itself. Mosaic's Protein.normalize_reads docs (default method='CLR') name the method 'Centered Log Ratio' but give no formula, and the Mosaic GitHub repo does not publish the Python source. The docs also say jitter applies only to NSP and asinh, not to CLR. Mission Bio's own public R packages (tapestriR and tapestri_multiomics, R/protein_normalization.R) do define the vendor's CLR exactly: counts = counts + 1 (a pseudocount of 1), then ln(x / geometric_mean(x)). clr_by_feature applies this to each row; clr_by_cell divides by the column-wise geometric means (exp(colMeans(log(x)))). Because the +1 is added before the log, a zero count becomes ln(1/g), which is finite, so the output is finite everywhere. Under that convention, the vendor-default reading and a reasonable pseudocount CLR (or asinh) both give a fully finite matrix (fraction finite = 1). Only a textbook CLR with no pseudocount would produce -Inf at zeros. The +1 convention in Mosaic Python is inferred from the vendor's R code, not documented. HOW SURE: medium. SOURCES: https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.normalize_reads.html, https://rdrr.io/github/MissionBio/tapestriR/src/R/protein_normalization.R, https://github.com/MissionBio/mosaic, https://missionbio.github.io/mosaic/v2.4.1/examples/basics.html."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc12-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc12-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc12-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc12-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc12-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 38.03519187506754,
+      "cost_usd": 0.1568796,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 84.47731220803689,
+      "cost_usd": 0.12929649999999998,
+      "error": null
+    },
+    {
+      "agent": "sc12-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 53.04151633393485,
+      "cost_usd": 0.1637536,
+      "error": null
+    },
+    {
+      "agent": "sc12-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 48.28925200004596,
+      "cost_usd": 0.1504792,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 72.53274016699288,
+      "cost_usd": 0.1955723,
+      "error": null
+    },
+    {
+      "agent": "sc12-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 77.34540804103017,
+      "cost_usd": 0.3812748000000001,
+      "error": null
+    },
+    {
+      "agent": "sc12-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 46.818821833934635,
+      "cost_usd": 0.209247,
+      "error": null
+    },
+    {
+      "agent": "sc12-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 72.40035320806783,
+      "cost_usd": 0.2054646,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,599 @@
+{
+  "study": "sc29",
+  "status": "third-team",
+  "final": {
+    "agent": "sc29-team-c",
+    "team": "team-c",
+    "round": "third-team",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc29/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc29-library": "opus",
+    "sc29-team-a": "opus",
+    "sc29-team-b": "opus",
+    "sc29-team-c": "opus",
+    "sc29-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc29-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc29/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_clusters": 22
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc29-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc29/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_clusters": 57
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc29-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc29/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_clusters": 57
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc29-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc29/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_clusters": 20
+      }
+    },
+    {
+      "team": "team-c",
+      "agent": "sc29-team-c",
+      "round": "third-team",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc29/candidates/team-c-third-team.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_clusters": 19
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc29-team-a",
+        "sc29-team-b"
+      ],
+      "fields": {
+        "n_clusters": false
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "sc29-team-a",
+        "sc29-team-b"
+      ],
+      "fields": {
+        "n_clusters": false
+      },
+      "agree": false
+    },
+    {
+      "round": "third-team",
+      "between": [
+        "sc29-team-c",
+        "sc29-team-a"
+      ],
+      "fields": {
+        "n_clusters": false
+      },
+      "agree": false
+    },
+    {
+      "round": "third-team",
+      "between": [
+        "sc29-team-c",
+        "sc29-team-b"
+      ],
+      "fields": {
+        "n_clusters": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "ENVIRONMENT AND FILE LAYOUT (seen by the library; verify on your side). The analysis environment has scanpy 1.10.4, umap-learn 0.5.7, scikit-learn 1.5.2, networkx 3.7, igraph 0.11.8, leidenalg 0.10.2 and h5py 3.12.1, but NOT missionbio.mosaic and NOT the python-louvain or louvain packages. The Mission Bio workflow therefore has to be re-implemented by hand, and sc.tl.louvain will fail. Louvain is available as networkx.algorithms.community.louvain_communities(G, weight=..., resolution=1, seed=...) or igraph Graph.community_multilevel. GSE276492_combined.h5 is a Tapestri SDK 3.1.2 HDF5 read with h5py; the protein data sit at <GSM group>/assays/protein_read_counts/ with layers/read_counts (cells x antibodies), ra/barcode, ra/sample_name and ca/id (antibody names).",
+      "from": [
+        "sl-sc-test-cddb37852e9d"
+      ],
+      "reason": "Saves the team from planning around a package that is not installed and tells them which Louvain implementations actually exist, which decides how the last step is coded.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-5d41609833f8"
+      }
+    },
+    {
+      "text": "PITFALL (wrong matrix). Each sample group in the file has two protein matrices: all_barcodes/protein_read_counts (about 425k to 1.28M raw barcodes, mostly empty droplets) and assays/protein_read_counts (about 2.5k to 6.9k called cells). Clustering the raw barcodes gives a meaningless cluster count. CHECK: the matrix you load has thousands, not hundreds of thousands, of rows and comes from the 'assays' group. Use assays/protein_read_counts/layers/read_counts only; this corresponds to Mosaic's ms.load(raw=False), whose documentation says raw=True loads all barcodes and should never be used for analysis.",
+      "from": [
+        "sl-sc-test-2c2a67a1cb22"
+      ],
+      "reason": "Picking the all_barcodes matrix would change the input by two orders of magnitude and make the cluster count meaningless.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-a5967cc27419"
+      }
+    },
+    {
+      "text": "PITFALL (five samples in one file). GSE276492_combined.h5 is not one sample: it holds 5 Tapestri samples as top-level groups (GSM8499463_S7, GSM8499464_S8, GSM8499465_S10, GSM8499466_S13, GSM8499467_S15), each with its own assays/protein_read_counts (library-reported sizes 2518, 5988, 6912, 4826, 3714 cells x 48 antibodies; 23958 cells in total). The cluster count depends on whether one sample, each sample, or all cells pooled are clustered. The task says 'a dataset' and asks for one number, which reads as one workflow over the whole file (Mosaic's multi-sample convention, ms.load(single=False), gives one merged group); do not silently take only the first group. CHECK: list the top-level groups; verify all 5 groups have the same 48 antibody ids in the same order before stacking; check for duplicate barcodes across groups (barcodes are 18-mers that can repeat across samples) and make them unique by suffixing the sample name; stack in a fixed, documented order. Per-cell CLR is identical whether samples are pooled before or after normalising, but PCA, UMAP and Louvain are not. After clustering, cross-tabulate cluster against sample. Do not add batch correction (the task does not ask for it); state explicitly which cells went into the reported n_clusters, and give the per-sample counts and any sample-driven clusters as a caveat in notes.",
+      "from": [
+        "sl-sc-test-ee2fc74ae431",
+        "sl-sc-test-0aff2495eac2"
+      ],
+      "reason": "Which cells enter the workflow (first group, each sample, or all pooled) is the largest single decision behind the reported number, and it is invisible unless the team inspects the file's top-level groups.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-49062c5791b5"
+      }
+    },
+    {
+      "text": "PITFALL ('CLR' is not one formula). The original CITE-seq CLR is per cell: each cell's antibody counts relative to that cell's geometric mean across antibodies. Seurat's default (margin=1) instead normalises each antibody across cells, with log1p(x / exp(sum(log1p(x[x>0]))/n)), which is always >= 0; muon.prot.pp.clr defaults to axis=0 with flavor='seurat'. These give different PCA spaces and different clusters. For Tapestri data the per-cell version is the relevant one (it corrects for per-cell antibody read depth); Mosaic's normalize_reads default method is 'CLR', and its jitter option applies only to NSP/asinh. GUIDANCE: compute CLR per cell across the 48 antibodies with a +1 pseudocount, i.e. log1p(x) minus the per-cell mean over antibodies of log1p(x); do not use a per-antibody (across-cells) CLR and do not add jitter. CHECK: row (per-cell) means of the normalised matrix are about 0, and there are no NaN/inf values from zero counts.",
+      "from": [
+        "sl-sc-test-f65d30334f83"
+      ],
+      "reason": "The axis and formula of CLR change the PCA input and therefore the clusters; common library defaults (Seurat, muon) use the other axis.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ecff01a1be1d"
+      }
+    },
+    {
+      "text": "PITFALL (habitual extra preprocessing). Steps added around the four named ones change the answer: z-scoring features before PCA (sc.pp.scale), dropping the isotype controls (the 48-antibody panel includes IgG1, IgG2a, IgG2b), filtering cells, or batch-correcting samples. The Mosaic workflow runs PCA directly on the CLR 'normalized_counts' layer with all antibodies; scale_data is a separate optional method and not part of the described pipeline. CHECK: the PCA input is the unscaled CLR matrix of shape (n_cells, 48), PCA only mean-centres (sklearn PCA default), and the output is (n_cells, 10). Remove any scaling, feature selection, antibody removal or batch correction the task did not ask for; if you think isotype removal is warranted, report it only as a sensitivity result.",
+      "from": [
+        "sl-sc-test-e2484ec2ceb2"
+      ],
+      "reason": "Scaling or dropping features is a reflex from scRNA-seq pipelines and would silently move the result away from the workflow the task describes.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-59ba988024ba"
+      }
+    },
+    {
+      "text": "PITFALL (UMAP parameters the task does not state). Mosaic's Protein.run_umap overrides UMAP defaults to n_neighbors=50, metric='cosine', min_dist=0, whereas plain umap-learn defaults to min_dist=0.1 and metric='euclidean', and scanpy's sc.tl.umap inherits its metric from sc.pp.neighbors. The task sets n_neighbors=20 and cosine but says nothing about min_dist, so a re-implementation with min_dist=0.1, or with cosine set in the wrong place, gives a looser embedding and can give a different cluster count than the Mosaic workflow. GUIDANCE: to mirror the standard workflow use umap.UMAP(n_neighbors=20, metric='cosine', min_dist=0, n_components=2) on the 10-PC matrix. CHECK: print the UMAP parameters actually used and confirm cosine is applied to the 10-PC input, not to the 2-D output; report whether min_dist=0 versus 0.1 changes n_clusters.",
+      "from": [
+        "sl-sc-test-fb2aa5d0114e"
+      ],
+      "reason": "min_dist is an unstated parameter where the vendor workflow and the generic library default differ, and clustering is done on the embedding itself, so it feeds directly into the count.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-71fbd97a38c2"
+      }
+    },
+    {
+      "text": "PITFALL (what 'graph-community clustering on the UMAP' means). The task's four steps are the Mission Bio Mosaic protein workflow: normalize_reads('CLR') -> run_pca(attribute='normalized_counts', components=10) -> run_umap(attribute='pca', n_neighbors=20, metric='cosine') -> cluster(attribute='umap', method='graph-community', k=...). Mosaic's 'graph-community' is not scanpy's usual Louvain: it is Louvain run on a shared-nearest-neighbour graph built from the k nearest neighbours of the 2-D UMAP coordinates. Running sc.pp.neighbors on the PCA and then Louvain clusters the PCA kNN graph, never touches the UMAP, and is a different method with a different count. GUIDANCE: build the kNN on the UMAP coordinate array (n_cells x 2), weight edges by shared neighbours (Jaccard/SNN), then run Louvain on that graph (networkx louvain_communities or igraph community_multilevel, since sc.tl.louvain is unavailable here). CHECK: the graph given to Louvain is built from the UMAP embedding array, not from the PCA neighbour graph or UMAP's internal fuzzy graph.",
+      "from": [
+        "sl-sc-test-404509916b01",
+        "sl-sc-test-cddb37852e9d"
+      ],
+      "reason": "The default scanpy habit clusters the PCA graph; the task explicitly asks for clustering on the UMAP representation, and the two give different cluster counts.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ddd7406e0f15"
+      }
+    },
+    {
+      "text": "PITFALL (the clustering neighbour count k is unstated and drives the answer). The number of Louvain clusters depends mostly on the neighbour count k of the graph built on the UMAP, and the task does not give it; n_neighbors=20 is the UMAP parameter, not necessarily the clustering k. Mosaic's own notebook says 'the higher the k value, the smaller the number of clusters -> adjust if necessary'; its examples use k=400 on UMAP (analysis walkthrough) and 30 neighbours (Tapestri Insights metadata). The Mosaic v3.17 documentation for _Assay.cluster(method='graph-community') documents k (nearest neighbours for the shared-nearest-neighbour graph) and a random_state kwarg but gives no default k, so there is no documented 'standard' value to copy, and Mosaic is not installed, so its signature cannot be inspected. CHECK: on the same seeded UMAP, tabulate n_clusters for k in about {15, 20, 30, 50, 100, 200, 400} with Louvain resolution kept at 1.0, and see whether the count is stable in any range. GUIDANCE from the library: do not report a number from an arbitrary k without saying so; absent evidence of a Mosaic default, the most literal reading of the task is to reuse k=20 (the only neighbour number it gives) for the SNN graph; state the chosen k and the k-sensitivity table in notes.",
+      "from": [
+        "sl-sc-test-f4f203364816",
+        "sl-sc-test-0435dd02d2f3"
+      ],
+      "reason": "k is the parameter with the largest effect on n_clusters and the task leaves it open; the team needs to know there is no documented default, what values the vendor examples use, and that the choice must be explicit and justified.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-422de9c9b8c2"
+      }
+    },
+    {
+      "text": "PITFALL (stochastic steps). UMAP is stochastic and so is Louvain (networkx louvain_communities has seed=None by default), so n_clusters from one unseeded run is not reproducible. UMAP can also create false tears in clusters, giving a finer clustering than is really present, so Louvain on a 2-D UMAP is seed-sensitive by construction. Setting random_state in umap-learn forces a single-threaded, reproducible layout, but results can still differ across umap-learn/numba/pynndescent versions. CHECK: repeat the full pipeline with at least 5-10 different UMAP and Louvain seeds and tabulate n_clusters; note the mode and the range. GUIDANCE: fix seeds (random_state=42 is the value Mosaic notebooks use), report the modal count, and flag in notes if the count varies by more than +-1 across seeds, because then no single integer is robust.",
+      "from": [
+        "sl-sc-test-1fe2cbe39489"
+      ],
+      "reason": "A single unseeded run can land on a different integer each time; the team needs a seeding convention and a stability check before committing to one number.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-d54eb8ec2530"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "sc29-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: both teams saw that the cluster count is set by the unstated neighbour number k of the graph built on the UMAP, but the two teams did not choose the same k and did not justify it on the same ground. One possible ground is a number that appears in the task text for a different step; another is a value seen in the vendor tool's own examples or defaults. Neither team had the tool installed. Write down which words of the task ('standard dimensionality reduction and clustering workflow', 'n_neighbors=20' attached to the UMAP step, no k given for step 4) support your k and which count against it, and what evidence would make you move to the tool's own convention if the library can establish one. Does that change your method or your confidence?",
+      "from": [
+        "sl-sc-test-b5d32d7c45af",
+        "sl-sc-test-db088272b3ed",
+        "sl-sc-test-0435dd02d2f3"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-d889b83225b1"
+    },
+    {
+      "to": "sc29-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team repeated its pipeline over several UMAP seeds and several Louvain runs and saw the count move from run to run, so it did not report a single run. It used a different Louvain implementation from yours (igraph multilevel rather than networkx), which was fast enough to repeat. You reported one seeded run because of time. Check whether your count at your chosen k holds across several UMAP seeds and Louvain seeds, and whether a faster implementation gives the same partition on the same graph. Does that change what you report?",
+      "from": [
+        "sl-sc-test-8b51b991f3b6",
+        "sl-sc-test-db088272b3ed",
+        "sl-sc-test-d54eb8ec2530"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-effa29129d06"
+    },
+    {
+      "to": "sc29-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: you set UMAP min_dist=0, which the task does not state; the other team did not record changing min_dist from the library default. Also, the two teams' k-sweeps do not give the same counts at the k values both tried, so something other than k differs between the pipelines. Check how your count at your chosen k changes with min_dist left at the umap-learn default, and what in the task text or the tool's convention supports min_dist=0. Does that change your method?",
+      "from": [
+        "sl-sc-test-b78986db70f6",
+        "sl-sc-test-e063629500aa"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-e2cef0ed4e3d"
+    },
+    {
+      "to": "sc29-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team recorded that total protein reads per cell span an extremely wide range, from almost nothing to millions, and that some barcodes are shared across samples. You checked for zero-count cells but not the range. Check whether the cells at the extremes of total counts sit in their own small clusters after per-cell CLR, and how many of your clusters are very small. Does that change your method or how you read your count?",
+      "from": [
+        "sl-sc-test-e063629500aa"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-0bbd79fc6c34"
+    },
+    {
+      "to": "sc29-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team worked from a library note saying that the vendor tool's 'graph-community' method is not Louvain on a plain kNN graph: it is Louvain on a shared-nearest-neighbour graph, built from the k nearest neighbours of the 2-D UMAP coordinates with edges weighted by shared neighbours (Jaccard). Your notes say 'kNN graph' and do not record a weighting. Check how your graph is built: is it symmetric, is it weighted, and by what? Rerun your k-sweep on a Jaccard-weighted shared-nearest-neighbour graph and compare with your current one. Does that change your method?",
+      "from": [
+        "sl-sc-test-ddd7406e0f15",
+        "sl-sc-test-404509916b01",
+        "sl-sc-test-e063629500aa"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-5fd2d58fb342"
+    },
+    {
+      "to": "sc29-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: both teams saw that the cluster count is set by the unstated neighbour number k of the graph built on the UMAP, but the two teams did not choose the same k and did not justify it on the same ground. You called your k the tool's tutorial default. The lab's library reported that the tool's documentation for graph-community documents k but gives no default value, and that the tool's own examples do not all use the same k. The tool is not installed here. Write down exactly where your value comes from (a function default, or a value passed in one example, and on which attribute that example clustered), how sure you are of that recollection, and which words of the task support a tool convention over a number given in the task text. Does that change your method or your confidence?",
+      "from": [
+        "sl-sc-test-db088272b3ed",
+        "sl-sc-test-0435dd02d2f3",
+        "sl-sc-test-f4f203364816"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-36df60fdcc62"
+    },
+    {
+      "to": "sc29-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the two teams' k-sweeps do not give the same counts at the k values both tried, so something other than k differs between the pipelines. The other team recorded these unstated choices: PCA on unscaled CLR values, UMAP min_dist set explicitly rather than left at the library default, Louvain resolution 1 with a fixed seed in networkx. Write down what you used for each (PCA input scaled or not, min_dist, Louvain resolution and whether edge weights were passed to it), and check how your count at your chosen k moves when each is changed one at a time. Does that change your method?",
+      "from": [
+        "sl-sc-test-b78986db70f6",
+        "sl-sc-test-b5d32d7c45af"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-fac25d12d62b"
+    },
+    {
+      "to": "sc29-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team cross-tabulated cluster against sample on the pooled cells and found that many of its clusters are dominated by a single sample, so part of the pooled cluster count reflects sample rather than cell population. Your plan listed 'per-sample vs combined' as a check but your notes do not report it. Check whether that holds in your clustering, and read the task again ('a dataset', one number asked): which cells does the task intend to be clustered together? Does that change your method?",
+      "from": [
+        "sl-sc-test-49062c5791b5",
+        "sl-sc-test-0aff2495eac2"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-d8f75b3502de"
+    }
+  ],
+  "warning_signs_to_team_c": [
+    {
+      "question": "QUESTION FROM THE DIRECTOR: both teams saw that the cluster count is set by the unstated neighbour number k of the graph built on the UMAP, but the two teams did not choose the same k and did not justify it on the same ground. One possible ground is a number that appears in the task text for a different step; another is a value seen in the vendor tool's own examples or defaults. Neither team had the tool installed. Write down which words of the task ('standard dimensionality reduction and clustering workflow', 'n_neighbors=20' attached to the UMAP step, no k given for step 4) support your k and which count against it, and what evidence would make you move to the tool's own convention if the library can establish one. Does that change your method or your confidence?",
+      "delivered": false,
+      "reasons": [
+        "a number within 1 percent of another team's value for \"n_clusters\""
+      ],
+      "fact_id": null
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: the other team repeated its pipeline over several UMAP seeds and several Louvain runs and saw the count move from run to run, so it did not report a single run. It used a different Louvain implementation from yours (igraph multilevel rather than networkx), which was fast enough to repeat. You reported one seeded run because of time. Check whether your count at your chosen k holds across several UMAP seeds and Louvain seeds, and whether a faster implementation gives the same partition on the same graph. Does that change what you report?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-98b8457b759e"
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: you set UMAP min_dist=0, which the task does not state; the other team did not record changing min_dist from the library default. Also, the two teams' k-sweeps do not give the same counts at the k values both tried, so something other than k differs between the pipelines. Check how your count at your chosen k changes with min_dist left at the umap-learn default, and what in the task text or the tool's convention supports min_dist=0. Does that change your method?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-8d4d785f98f5"
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: the other team recorded that total protein reads per cell span an extremely wide range, from almost nothing to millions, and that some barcodes are shared across samples. You checked for zero-count cells but not the range. Check whether the cells at the extremes of total counts sit in their own small clusters after per-cell CLR, and how many of your clusters are very small. Does that change your method or how you read your count?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-7a6886e39524"
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: the other team worked from a library note saying that the vendor tool's 'graph-community' method is not Louvain on a plain kNN graph: it is Louvain on a shared-nearest-neighbour graph, built from the k nearest neighbours of the 2-D UMAP coordinates with edges weighted by shared neighbours (Jaccard). Your notes say 'kNN graph' and do not record a weighting. Check how your graph is built: is it symmetric, is it weighted, and by what? Rerun your k-sweep on a Jaccard-weighted shared-nearest-neighbour graph and compare with your current one. Does that change your method?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-1fa8a537ba00"
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: both teams saw that the cluster count is set by the unstated neighbour number k of the graph built on the UMAP, but the two teams did not choose the same k and did not justify it on the same ground. You called your k the tool's tutorial default. The lab's library reported that the tool's documentation for graph-community documents k but gives no default value, and that the tool's own examples do not all use the same k. The tool is not installed here. Write down exactly where your value comes from (a function default, or a value passed in one example, and on which attribute that example clustered), how sure you are of that recollection, and which words of the task support a tool convention over a number given in the task text. Does that change your method or your confidence?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-bfb2522460c9"
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: the two teams' k-sweeps do not give the same counts at the k values both tried, so something other than k differs between the pipelines. The other team recorded these unstated choices: PCA on unscaled CLR values, UMAP min_dist set explicitly rather than left at the library default, Louvain resolution 1 with a fixed seed in networkx. Write down what you used for each (PCA input scaled or not, min_dist, Louvain resolution and whether edge weights were passed to it), and check how your count at your chosen k moves when each is changed one at a time. Does that change your method?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-f40a5552f3af"
+    },
+    {
+      "question": "QUESTION FROM THE DIRECTOR: the other team cross-tabulated cluster against sample on the pooled cells and found that many of its clusters are dominated by a single sample, so part of the pooled cluster count reflects sample rather than cell population. Your plan listed 'per-sample vs combined' as a check but your notes do not report it. Check whether that holds in your clustering, and read the task again ('a dataset', one number asked): which cells does the task intend to be clustered together? Does that change your method?",
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-7dd7ad9adb38"
+    }
+  ],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": {
+    "difference": "Both teams used the same pipeline (pooled cells, CLR as log1p minus the cell mean, PCA10, UMAP cosine nn=20 min_dist=0, Jaccard SNN plus Louvain on the UMAP). They differ only in the neighbour count k of the clustering graph. X uses k=20, reusing the UMAP n_neighbors, and reports 57. Y uses k=300, taken from vendor examples, and reports 20. The task does not give the clustering k.",
+    "test": "test.py: I reran the shared pipeline on the pooled 23,958 cells with UMAP seeds 42 and 1, built SNN graphs at k=20 and k=300, and ran Louvain with 2 seeds each. I recorded cluster counts and ARI across Louvain seeds and across UMAP seeds. Plan: if one k gave a number that reproduced and the other gave an unstable or implementation-dependent number, that would favour the reproducible side. If both reproduced, the split comes from an unstated parameter that the data cannot settle.",
+    "expected_if_x": "k=20 gives a stable count near 57, and k=300 does not reproduce Y's number or is unstable.",
+    "expected_if_y": "k=300 gives a stable count near 20, and k=20 does not reproduce near 57 or is too unstable to be meaningful.",
+    "outcome": "k=20 gave 58/56 clusters on both UMAP seeds (ARI across Louvain seeds 0.78-0.79, across UMAP seeds 0.65). k=300 gave 15/15 (ARI 0.99 and 0.96). Each team's number follows from its own k: X's reproduces closely and Y's roughly (15 against Y's 18-21). k=300 gives a much more stable partition, but stability does not show which k the task means.",
+    "pick": "neither",
+    "reason": "The disagreement comes entirely from the clustering-graph k, which the task text leaves open. Both numbers come out of the same pipeline with a different k. No check on the data can tell us which k the task author intended. k=20 is the only neighbour number in the task text, while k=300 gives far more stable clusters, so both readings are defensible.",
+    "own_answer": null,
+    "picked_agent": null,
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "sc29-team-a",
+      "Y": "sc29-team-b"
+    }
+  },
+  "research": [
+    {
+      "round": "questions",
+      "questions": [
+        {
+          "question": "In the source code of Mission Bio's Mosaic Python package, what does _Assay.cluster(attribute, method='graph-community') do when called: what is the default value of k if none is passed, how is the graph built from the k nearest neighbours (plain kNN or shared-nearest-neighbour, Jaccard-weighted or not, which distance), which Louvain implementation and resolution does it call, and what is the default random_state?",
+          "why": "Both teams found the cluster count is determined by k and by how the graph is weighted, and they chose different k and different graph constructions without being able to inspect the tool. The tool's actual default and construction would settle which implementation is the 'standard workflow'.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In Mission Bio's official Mosaic protein analysis notebooks and vignettes (the standard DNA+protein workflow using normalize_reads('CLR'), run_pca with 10 components, run_umap on the PCA with n_neighbors=20 and cosine metric), what k value is passed to cluster(attribute='umap', method='graph-community') in the step that follows, and is that value the same across Mosaic versions and across the different example notebooks?",
+          "why": "One team justified its k as the tutorial convention while the library's earlier note reported other values in other examples and no documented default. Knowing which k accompanies exactly this parameter combination in the vendor's standard workflow resolves the main disagreement.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In Mission Bio's Mosaic package, what defaults does run_umap pass to umap-learn when only attribute, n_neighbors and metric are given (min_dist, n_components, random_state, init), does run_pca centre or scale the normalized protein counts before PCA, and how exactly is normalize_reads(method='CLR') computed (pseudocount, natural log or other base, centred per cell across antibodies or per antibody across cells)?",
+          "why": "The teams differ or are silent on UMAP min_dist and PCA scaling, and their counts disagree even at the same graph k. Louvain on a 2-D UMAP is sensitive to how tight the embedding is, so the tool's defaults for these unstated settings are needed to reproduce the standard workflow.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In the source code of Mission Bio's Mosaic Python package, what does _Assay.cluster(attribute, method='graph-community') do: default k, graph construction (kNN vs SNN, Jaccard or not, distance), Louvain implementation and resolution, default random_state?",
+          "answer": "Not settled by the web. Mosaic's Python source is not publicly available: the MissionBio/mosaic GitHub repo holds docs and notebooks, and searches found no assay.py. The v3.17 API docs say only that graph-community is 'Louvain on a shared nearest neighbor graph', that k is 'the number of nearest neighbors to consider in the shared nearest neighbor graph generation', and that it accepts a random_state for reproducibility. The docs state no default k, no edge weighting (Jaccard or otherwise), no distance metric, no Louvain library, no resolution and no default random_state. The only safe conclusions are that the graph is a shared-nearest-neighbour graph built on the given attribute (e.g. the UMAP coordinates) and that k must be supplied or inferred.",
+          "sources": [
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.assay._Assay.cluster.html",
+            "https://github.com/MissionBio/mosaic"
+          ],
+          "confidence": "high that the docs leave these unstated; the internals themselves are unknown",
+          "deliveries": {
+            "sc29-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-69afb97d8c57"
+            },
+            "sc29-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-f19b90cfe406"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In the source code of Mission Bio's Mosaic Python package, what does _Assay.cluster(attribute, method='graph-community') do: default k, graph construction (kNN vs SNN, Jaccard or not, distance), Louvain implementation and resolution, default random_state? ANSWER: Not settled by the web. Mosaic's Python source is not publicly available: the MissionBio/mosaic GitHub repo holds docs and notebooks, and searches found no assay.py. The v3.17 API docs say only that graph-community is 'Louvain on a shared nearest neighbor graph', that k is 'the number of nearest neighbors to consider in the shared nearest neighbor graph generation', and that it accepts a random_state for reproducibility. The docs state no default k, no edge weighting (Jaccard or otherwise), no distance metric, no Louvain library, no resolution and no default random_state. The only safe conclusions are that the graph is a shared-nearest-neighbour graph built on the given attribute (e.g. the UMAP coordinates) and that k must be supplied or inferred. HOW SURE: high that the docs leave these unstated; the internals themselves are unknown. SOURCES: https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.assay._Assay.cluster.html, https://github.com/MissionBio/mosaic."
+        },
+        {
+          "question": "In Mission Bio's official Mosaic protein notebooks (CLR, run_pca 10 components, run_umap on PCA with n_neighbors=20 and cosine), what k is passed to cluster(attribute='umap', method='graph-community'), and is it the same across versions and notebooks?",
+          "answer": "No vendor notebook I could read uses exactly this parameter combination, so no vendor k is tied to it, and k is not consistent across examples. v3.17 Code Snippets: normalize_reads() (CLR default), run_pca(components=5), run_umap(attribute='pca') (Protein defaults n_neighbors=50, cosine, min_dist=0), then cluster(attribute='pca', method='graph-community', k=100). v3.17 curated Single Sample DNA+Protein notebook: normalize_reads('NSP') and cluster(attribute='umap', method='graph-community', k=300, random_state=42), with the comment 'the higher the k value, the smaller the number of clusters --> adjust if necessary'. The k=300 line comes from a search snippet; the page text I could read was cut off before the protein section. v3.1.1 curated notebooks: NSP, with an initial 45-PC run before choosing PCs. The overview's Tapestri Insights metadata says 'graph-community on pca with Neighbours set to 30'. An earlier library note reports k=400 on UMAP in the v2.4 walkthrough. The vendor treats k as a tunable parameter; the n_neighbors=20/cosine combination appears to come from the task, not a vendor notebook.",
+          "sources": [
+            "https://missionbio.github.io/mosaic/notebooks/code-snippets.html",
+            "https://missionbio.github.io/mosaic/notebooks/curated_notebooks/dna-protein.html",
+            "https://missionbio.github.io/mosaic/v3.1.1/notebooks/curated_notebooks/dna-protein.html",
+            "https://missionbio.github.io/mosaic/notebooks/overview.html",
+            "https://missionbio.github.io/mosaic/v2.4.1/examples/analysis-walkthrough.html"
+          ],
+          "confidence": "medium (high that k varies across examples; the k=300 line is from a snippet)",
+          "deliveries": {
+            "sc29-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-5279948811b8"
+            },
+            "sc29-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-a1a12e610ee9"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In Mission Bio's official Mosaic protein notebooks (CLR, run_pca 10 components, run_umap on PCA with n_neighbors=20 and cosine), what k is passed to cluster(attribute='umap', method='graph-community'), and is it the same across versions and notebooks? ANSWER: No vendor notebook I could read uses exactly this parameter combination, so no vendor k is tied to it, and k is not consistent across examples. v3.17 Code Snippets: normalize_reads() (CLR default), run_pca(components=5), run_umap(attribute='pca') (Protein defaults n_neighbors=50, cosine, min_dist=0), then cluster(attribute='pca', method='graph-community', k=100). v3.17 curated Single Sample DNA+Protein notebook: normalize_reads('NSP') and cluster(attribute='umap', method='graph-community', k=300, random_state=42), with the comment 'the higher the k value, the smaller the number of clusters --> adjust if necessary'. The k=300 line comes from a search snippet; the page text I could read was cut off before the protein section. v3.1.1 curated notebooks: NSP, with an initial 45-PC run before choosing PCs. The overview's Tapestri Insights metadata says 'graph-community on pca with Neighbours set to 30'. An earlier library note reports k=400 on UMAP in the v2.4 walkthrough. The vendor treats k as a tunable parameter; the n_neighbors=20/cosine combination appears to come from the task, not a vendor notebook. HOW SURE: medium (high that k varies across examples; the k=300 line is from a snippet). SOURCES: https://missionbio.github.io/mosaic/notebooks/code-snippets.html, https://missionbio.github.io/mosaic/notebooks/curated_notebooks/dna-protein.html, https://missionbio.github.io/mosaic/v3.1.1/notebooks/curated_notebooks/dna-protein.html, https://missionbio.github.io/mosaic/notebooks/overview.html, https://missionbio.github.io/mosaic/v2.4.1/examples/analysis-walkthrough.html."
+        },
+        {
+          "question": "What defaults does Mosaic run_umap pass to umap-learn when only attribute, n_neighbors and metric are given; does run_pca centre or scale; how exactly is normalize_reads('CLR') computed?",
+          "answer": "Partly settled. run_umap: the v3.17 docs say Protein.run_umap sets the defaults n_neighbors=50, metric='cosine', min_dist=0 and passes the other kwargs to UMAP. Supplying n_neighbors=20 and metric='cosine' therefore leaves min_dist=0. n_components, init and random_state are not overridden in the docs, so they are presumably umap-learn's defaults (2, 'spectral', None); this is an inference that the closed source could contradict. run_pca: kwargs are passed to PCA and no scaling is documented, so it presumably only mean-centres (sklearn PCA behaviour); scale_data is a separate method. CLR: normalize_reads defaults to method='CLR', and jitter applies only to NSP and asinh. The docs do not give the formula (pseudocount, log base, per-cell or per-antibody), so this is unsettled from vendor sources. An earlier library note argues for per-cell CLR with log1p minus the mean over antibodies, but that is not vendor-confirmed.",
+          "sources": [
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.run_umap.html",
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.assay._Assay.run_pca.html",
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.normalize_reads.html"
+          ],
+          "confidence": "high for min_dist=0 and CLR being the default; medium for PCA being centre-only; low (unsettled) for the CLR formula",
+          "deliveries": {
+            "sc29-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-70c9de8cc1c1"
+            },
+            "sc29-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-e29036bfcd1a"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What defaults does Mosaic run_umap pass to umap-learn when only attribute, n_neighbors and metric are given; does run_pca centre or scale; how exactly is normalize_reads('CLR') computed? ANSWER: Partly settled. run_umap: the v3.17 docs say Protein.run_umap sets the defaults n_neighbors=50, metric='cosine', min_dist=0 and passes the other kwargs to UMAP. Supplying n_neighbors=20 and metric='cosine' therefore leaves min_dist=0. n_components, init and random_state are not overridden in the docs, so they are presumably umap-learn's defaults (2, 'spectral', None); this is an inference that the closed source could contradict. run_pca: kwargs are passed to PCA and no scaling is documented, so it presumably only mean-centres (sklearn PCA behaviour); scale_data is a separate method. CLR: normalize_reads defaults to method='CLR', and jitter applies only to NSP and asinh. The docs do not give the formula (pseudocount, log base, per-cell or per-antibody), so this is unsettled from vendor sources. An earlier library note argues for per-cell CLR with log1p minus the mean over antibodies, but that is not vendor-confirmed. HOW SURE: high for min_dist=0 and CLR being the default; medium for PCA being centre-only; low (unsettled) for the CLR formula. SOURCES: https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.run_umap.html, https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.assay._Assay.run_pca.html, https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.protein.Protein.normalize_reads.html."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc29-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "sc29-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "sc29-team-a",
+      "round": "revise",
+      "reason": "sc29-team-c's blind answer agreed with the other team"
+    },
+    {
+      "agent": "sc29-team-b",
+      "round": "revise",
+      "reason": "agreed with sc29-team-c, whose blind answer is reported"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc29-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 44.09343766607344,
+      "cost_usd": 0.18602180000000001,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 95.7252543750219,
+      "cost_usd": 0.2105439,
+      "error": null
+    },
+    {
+      "agent": "sc29-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 187.9162646670593,
+      "cost_usd": 0.29110919999999996,
+      "error": null
+    },
+    {
+      "agent": "sc29-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 1237.0980815830408,
+      "cost_usd": 0.211353,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 114.74532679200638,
+      "cost_usd": 0.2052466,
+      "error": null
+    },
+    {
+      "agent": "sc29-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 131.67527574999258,
+      "cost_usd": 0.6402591999999999,
+      "error": null
+    },
+    {
+      "agent": "sc29-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 232.96759645803832,
+      "cost_usd": 0.24358599999999997,
+      "error": null
+    },
+    {
+      "agent": "sc29-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 750.3014452499337,
+      "cost_usd": 0.3568174,
+      "error": null
+    },
+    {
+      "agent": "sc29-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 267.6636320829857,
+      "cost_usd": 0.2050596,
+      "error": null
+    },
+    {
+      "agent": "sc29-team-c",
+      "phase": "third-team",
+      "ok": true,
+      "seconds": 731.5431847089203,
+      "cost_usd": 0.3179056,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

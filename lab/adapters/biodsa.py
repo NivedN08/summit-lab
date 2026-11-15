@@ -415,12 +415,21 @@ def upload(study_ids: list[str] | None = None) -> list[str]:
 
 def volume_listing(sub_path: str) -> dict[str, int]:
     """File name -> size in bytes for one folder of the Volume; {} if there is none."""
+    import time
     import modal
     from modal.volume import FileEntryType
-    try:
-        entries = modal.Volume.from_name(VOLUME).listdir(sub_path)
-    except (modal.exception.NotFoundError, FileNotFoundError):
-        return {}
+    entries = None
+    for wait in (0, 5, 15, 30, 60):   # Modal limits how often a Volume may be listed; wait and retry
+        time.sleep(wait)
+        try:
+            entries = modal.Volume.from_name(VOLUME).listdir(sub_path)
+            break
+        except (modal.exception.NotFoundError, FileNotFoundError):
+            return {}
+        except modal.exception.ResourceExhaustedError:
+            continue
+    if entries is None:
+        raise RuntimeError(f"Modal kept refusing to list {VOLUME}:{sub_path} (rate limit)")
     return {pathlib.PurePosixPath(e.path).name: e.size for e in entries if e.type == FileEntryType.FILE}
 
 

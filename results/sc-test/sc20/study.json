@@ -1,0 +1,496 @@
+{
+  "study": "sc20",
+  "status": "replicated",
+  "final": {
+    "agent": "sc20-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc20/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc20-library": "opus",
+    "sc20-team-a": "opus",
+    "sc20-team-b": "opus",
+    "sc20-team-c": "opus",
+    "sc20-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc20-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc20/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "average_cluster_purity": 66.33
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc20-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc20/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "average_cluster_purity": 66.33
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc20-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc20/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "average_cluster_purity": 66.33
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc20-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc20/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "average_cluster_purity": 67.66
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc20-team-a",
+        "sc20-team-b"
+      ],
+      "fields": {
+        "average_cluster_purity": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc20-team-a",
+        "sc20-team-b"
+      ],
+      "fields": {
+        "average_cluster_purity": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Data layout (read from file headers only, no analysis): 156291668.node is an AnnData .h5ad file with 11693 cells x 22790 genes. obs has only two columns: popv_prediction (categorical, 18 cell types, the only cell-type label column) and sample (4 samples). obsm holds X_pca (50-d), X_scvi_popv (20-d), X_scanvi_popv (20-d), X_umap_scvi_popv and X_umap_scanvi_popv. uns and obsp are empty, so there is no precomputed neighbour graph and no existing cluster column: you must build the kNN graph and run the clustering yourself.",
+      "from": [
+        "sl-sc-test-148462b991a9"
+      ],
+      "reason": "Tells the team how to open the file, which column is the cell-type label, and that no clustering exists to reuse, so the whole clustering step is their own choice.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-58e607ae72bb"
+      }
+    },
+    {
+      "text": "Build the kNN graph on the stored obsm['X_scvi_popv'] exactly as it is, for all 11693 cells in one clustering. scanpy's sc.pp.neighbors with use_rep=None silently uses X_pca when it exists, and it does exist in this file; X_scanvi_popv (label-supervised, so its clusters look purer) and the 2-D UMAP coordinates are different embeddings and are not what the task asks for. Do not scale the embedding, run PCA on it, retrain scVI, re-normalise X, filter cells or genes, or cluster the 4 samples separately ('sample' is a batch variable scVI already corrected, not a grouping for purity). Call sc.pp.neighbors(adata, use_rep='X_scvi_popv') without n_pcs, then check adata.uns['neighbors']['params']['use_rep'] == 'X_scvi_popv' and that the embedding has shape (11693, 20).",
+      "from": [
+        "sl-sc-test-e24bcaa0ca61",
+        "sl-sc-test-d81e6a1ea445"
+      ],
+      "reason": "A default neighbours call would cluster the wrong embedding without any error, and any extra preprocessing or filtering changes the graph and the cell denominator, so the purity would be for a different analysis than the one asked.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ec175a5c7a16"
+      }
+    },
+    {
+      "text": "The task does not name a clustering algorithm, and k-means, Louvain and Leiden on the same embedding give different cluster counts and purities; k-means also needs a hand-picked k (for example k=18 to match the number of cell types), which directly sets the purity. The standard for single-cell embeddings in the scanpy / scvi-tools tutorials and sc-best-practices is graph-based Leiden on a kNN graph of the embedding. Make default Leiden on the X_scvi_popv kNN graph the primary result; if you try another algorithm, report it only as a sensitivity check.",
+      "from": [
+        "sl-sc-test-1d86007e4e30"
+      ],
+      "reason": "The algorithm choice is unstated and changes the number; the team needs a principled default rather than an arbitrary or label-informed choice.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-371b4d09bf5d"
+      }
+    },
+    {
+      "text": "Purity rises mechanically with the number of clusters (it reaches 100% when every cell is its own cluster), so the value depends on the unstated resolution and neighbour count, and tuning either to raise purity is invalid. Compute purity at several Leiden resolutions (e.g. 0.25, 0.5, 0.8, 1.0, 1.5, 2.0), recording n_clusters and purity for each. If the value moves by more than about 1-2 points, do not pick the best-looking one: report as the primary answer the value at the tool defaults that the standard scanpy / scvi-tools workflow uses when nothing is specified (sc.pp.neighbors n_neighbors=15, sc.tl.leiden resolution=1.0) and state the sensitivity range beside it. The popv_prediction labels are fine-grained (several CD4/CD8 naive/memory T subtypes), so default-resolution clusters that merge adjacent T subtypes legitimately have purity well below 100%; do not treat that as a bug or raise the resolution to fix it.",
+      "from": [
+        "sl-sc-test-102f5f18ea5b",
+        "sl-sc-test-d92547d054df"
+      ],
+      "reason": "Resolution and n_neighbors are the largest free parameters in this task; without a rule the team could report almost any value or tune toward a high purity.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-2634abebfbd7"
+      }
+    },
+    {
+      "text": "Leiden output is not stable across backend, version and seed. scanpy's legacy default is flavor='leidenalg', n_iterations=-1, directed graph, random_state=0; newer scanpy warns that the default is moving to flavor='igraph' (n_iterations=2, undirected) and to an unseeded rng in 2.0, and results differ between scanpy 1.9 and 1.10 even for the same call. Print the scanpy, leidenalg and igraph versions; run Leiden with both flavors and with several seeds (e.g. 0, 1, 42) at the same resolution and tabulate n_clusters and purity. If purity varies, fix random_state=0 explicitly, keep the plain default sc.tl.leiden(adata) settings as the primary result, and report the spread across flavors and seeds as the uncertainty.",
+      "from": [
+        "sl-sc-test-1d827168a3fe"
+      ],
+      "reason": "The same nominal 'default Leiden' call can give different cluster counts in different environments, so the team must pin and report the configuration and know how wide the spread is.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-68933084c97a"
+      }
+    },
+    {
+      "text": "Use the task's definition of purity, not a library function with the same name. 'Cluster purity' in bluster (neighborPurity), ROGUE and silhouette-like scores does not use cell-type labels and is not what is asked. Build a cluster-by-cell-type contingency table (pd.crosstab of the cluster labels against adata.obs['popv_prediction']), take row max divided by row sum for each cluster, then take the UNWEIGHTED mean over clusters (each cluster counts once regardless of size) and multiply by 100. The textbook overall purity is cell-weighted (sum of majority-type counts divided by total cells) and gives a different number when cluster sizes are unequal; compute both, answer with the unweighted per-cluster mean, and mention the weighted value only as a side note.",
+      "from": [
+        "sl-sc-test-523582090dd0",
+        "sl-sc-test-20abe01234f7"
+      ],
+      "reason": "Two different aggregates and several unrelated metrics share the name 'purity'; choosing the wrong one gives a different number from what the task defines.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-eec4521931bc"
+      }
+    },
+    {
+      "text": "Check scale and denominators before reporting. The task wants a percentage on a 0-100 scale, while value_counts(normalize=True) and crosstab(normalize='index') return proportions on 0-1; multiply by 100 once, not twice. popv_prediction is a pandas categorical: missing labels (NaN) are dropped by crosstab/value_counts, which changes the per-cluster denominator, and groupby on categoricals with observed=False can add empty rows. Assert adata.obs['popv_prediction'].isna().sum() == 0, that the contingency table sums to 11693, that every cluster's row sum equals its cluster size, and that the final value lies between 100/18 and 100. If any labels are missing, divide the majority count by the full cluster size including unlabeled cells and state that choice.",
+      "from": [
+        "sl-sc-test-4c2cc9ed745b"
+      ],
+      "reason": "A correct clustering can still yield a wrong answer through a 0-1 vs 0-100 slip or a silently shrunken denominator; these assertions catch both.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-5f54ef8b5df1"
+      }
+    },
+    {
+      "text": "Tiny or singleton clusters distort an unweighted average of per-cluster purity: a cluster of 1-20 cells is almost always near 100% pure yet counts as much as a cluster of 2000 cells, so a few fragments (from high resolution, a disconnected kNN graph or outlier cells) push the average up. Print the cluster size table with per-cluster purity, flag clusters with fewer than about 20 cells, and recompute the mean with and without them. Keep all clusters in the reported number (the task definition has no size filter), but do not raise resolution or shrink n_neighbors in ways that create fragments, and note how much the tiny clusters contribute.",
+      "from": [
+        "sl-sc-test-c40b6474256d"
+      ],
+      "reason": "Because the task's average is unweighted, a handful of fragment clusters can move the answer; the team needs to see this and avoid settings that create them.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-bf4f31c61d37"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams ran the identical call (scanpy neighbors with n_neighbors=15, Euclidean, on the 20-d X_scvi_popv; Leiden via leidenalg, resolution 1.0, random_state 0) in the same environment. Their agreement shows the call is reproducible, not that these unstated settings are the ones the task intends.",
+      "Both teams assumed 'clustering' means graph-based Leiden. Neither actually ran Louvain, k-means or any other algorithm on the embedding; team A lists 'algorithm choice' as checked but its checks_run contains no other algorithm.",
+      "Both teams applied their own monkeypatch for the scanpy 1.10.4 / scipy csr_array.getnnz crash and assumed it leaves the neighbour graph unchanged. Neither records a test of the patched graph against an independently built one.",
+      "Both teams held n_neighbors at 15 and the metric at Euclidean; neither varied them, although the neighbour graph is fixed before Leiden and can move the cluster count as much as resolution does.",
+      "Both teams took 'average' as the unweighted mean over clusters and treated the single seed-0 partition as the representative default.",
+      "Both teams used all 11693 cells and all 18 popv_prediction labels with no filtering; this matches the file (obs has only popv_prediction and sample) and looks sound."
+    ],
+    "unused_evidence": [
+      "obs['sample'] (4 samples): neither team looked at whether clusters are driven by sample or whether the purity differs by sample. It is probably not needed for the asked quantity, but it was not inspected.",
+      "obsm['X_scanvi_popv'], obsm['X_pca'] and the two UMAP embeddings: correctly not used as the clustering input, since the task names X_scvi_popv. Team A asserted use_rep; team B does not record doing so.",
+      "var columns vst.mean / vst.variance / vst.variable (Seurat-style HVG flags) and X: not relevant to clustering a precomputed embedding. They do indicate the object came through an R/Seurat workflow, so the reference clustering may not have used scanpy's legacy Leiden defaults.",
+      "Several of the 20 latent dimensions are near zero in the sampled rows (collapsed scVI dimensions). Harmless for Euclidean kNN, but neither team noted it."
+    ],
+    "unresolved_weak_points": [
+      "Team A: 'Leiden result depends on scanpy/leidenalg versions and seed'. Reported, not resolved. Its own numbers show the problem: the seed/flavor range it reports (66.8-68.2) does not contain its primary value (66.33), so seed 0 with leidenalg sits below every other run it tried. That is only three seeds and one alternative flavor.",
+      "Team B: 'Choice of clustering resolution/algorithm is unspecified'. Reported, not resolved. Team B ran three resolutions only, no seeds, no alternative flavor, no alternative algorithm, and its pitfalls_checked list is empty, so the library's pitfalls on backend/seed instability and metric-code checks have no recorded result for this team.",
+      "Team B states the getnnz monkeypatch had 'no effect on results' but lists no check that supports it."
+    ],
+    "second_readings": [
+      "'Average cluster purity' can be read as the unweighted mean over clusters (both teams) or as overall/cell-weighted purity; team A found these differ by about 1.5 points. The task's per-cluster definition followed by 'average' favours the unweighted reading, but neither team argued it from the text.",
+      "'Perform clustering' names no algorithm, resolution, neighbour count or seed. Default Leiden is one reasonable reading; Louvain, the newer igraph-flavor Leiden default, or a different resolution are others, and the teams' own sweeps show a spread of several points across them.",
+      "'Cell type' can only mean popv_prediction here (the sole label column), so there is no second reading on the label."
+    ],
+    "verdict": "The agreed value is very likely a correct execution of one specific pipeline (default scanpy Leiden, seed 0, unweighted mean), but the agreement is weak evidence: both teams ran the same call with the same environment patch, so it shows reproducibility rather than independent confirmation. The real risk is the unstated clustering settings: the teams' own sweeps show the value moves by a few points with seed, backend and resolution, and the primary value lies below team A's own seed/flavor range, so I trust the method moderately and the exact number less.",
+    "questions": [
+      {
+        "to": "sc20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your reported range across seeds and the igraph flavor does not contain your primary value, so the seed-0 leidenalg run is lower than every other run you tried. Run the same call at resolution 1.0 with at least 20 seeds for each flavor (leidenalg and igraph), tabulate n_clusters and unweighted purity for every run, and also run the plain default call twice in fresh processes to confirm it is bit-identical. Where does the seed-0 value sit in that distribution, and does that change your method or how you state the answer?",
+        "from": [
+          "sl-sc-test-01a0503db9be",
+          "sl-sc-test-68933084c97a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-9fb0dd6acd95"
+      },
+      {
+        "to": "sc20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you added a shim for the scipy csr_array.getnnz crash and assumed the neighbour graph is unaffected, and the other team did the same. Build the 15-nearest-neighbour graph on X_scvi_popv a second way that does not pass through the patched code (for example exact kNN with scikit-learn, then the same connectivity weighting), and compare it with the shimmed graph: number of stored neighbours per row, symmetry of connectivities, share of identical edges, and the purity from default Leiden on each. Do the two graphs agree, and does the result change your method?",
+        "from": [
+          "sl-sc-test-01cf1c44bf3e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-9bc5513e0937"
+      },
+      {
+        "to": "sc20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you swept resolution, seed and flavor but held the neighbour count and distance metric fixed. Rebuild the graph with n_neighbors 10, 15, 20 and 30 (and once with the cosine metric), keep Leiden at its defaults, and record n_clusters and purity for each. Is the movement larger or smaller than your seed spread, and does it change your method or the uncertainty you report?",
+        "from": [
+          "sl-sc-test-01a0503db9be",
+          "sl-sc-test-2634abebfbd7"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-620955606044"
+      },
+      {
+        "to": "sc20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you list algorithm choice as checked, but your checks contain no run of any algorithm other than Leiden. On the same embedding, run Louvain at its defaults if it is installed, and k-means for a few values of k (set without looking at purity), and record n_clusters and purity for each. How far do these sit from the Leiden value, and what in the task text supports your choice over them? Does it change your method?",
+        "from": [
+          "sl-sc-test-371b4d09bf5d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-1b3859071982"
+      },
+      {
+        "to": "sc20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you ran one seed and one Leiden backend, and the library's pitfall on backend, version and seed instability has no recorded result from you. Print the scanpy, leidenalg and igraph versions, then run resolution 1.0 with at least 20 seeds for each flavor (leidenalg and igraph) and tabulate n_clusters and unweighted purity for every run. Where does the seed-0 value sit in that distribution, and does that change your method or how you state the answer?",
+        "from": [
+          "sl-sc-test-7bd6034c3727",
+          "sl-sc-test-1d827168a3fe"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-f13fbca304bf"
+      },
+      {
+        "to": "sc20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you wrote that the getnnz monkeypatch had no effect on results, but no check in your list supports that, and the other team used a patch of its own. Build the 15-nearest-neighbour graph on X_scvi_popv a second way that does not pass through the patched code (for example exact kNN with scikit-learn, then the same connectivity weighting), and compare it with your patched graph: stored neighbours per row, symmetry, share of identical edges, and the purity from default Leiden on each. Do they agree, and does the result change your method?",
+        "from": [
+          "sl-sc-test-7bd6034c3727"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-75a413838183"
+      },
+      {
+        "to": "sc20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your recorded checks cover duplicate names and NaN in the embedding but not the purity table itself. Assert that use_rep was X_scvi_popv (not the scANVI embedding or X_pca), then print the cluster-by-popv_prediction table and confirm: no missing labels, the table sums to the total number of cells, every cluster counted in the mean is non-empty, no unused category enters the mean as a zero or NaN row, the size of the smallest cluster, and whether any cluster has two labels tied for the top count. Does anything there change your method?",
+        "from": [
+          "sl-sc-test-d7c3fa726ae0",
+          "sl-sc-test-523582090dd0"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-6e21412bef2b"
+      },
+      {
+        "to": "sc20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you named the unspecified algorithm and settings as your weakest point but tested only three resolutions. On the same embedding, record n_clusters and purity for n_neighbors 10, 15, 20 and 30 with default Leiden, for Louvain at its defaults if it is installed, and for the cell-weighted mean next to the unweighted mean. Which of these readings does the task text support and which does it rule out, and does the result change your method or the uncertainty you report?",
+        "from": [
+          "sl-sc-test-d7c3fa726ae0",
+          "sl-sc-test-1d86007e4e30"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-def888acb334"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In scanpy 1.10.x used with scipy 1.14 or later, sc.pp.neighbors can fail with an AttributeError about csr_array having no getnnz. Which code path triggers this, how was it fixed upstream (which release, what the replacement code computes), and is replacing getnnz with a count of stored non-zeros per row or in total exactly equivalent to the fixed behaviour, so that the resulting distances and connectivities graphs are unchanged?",
+          "why": "Both teams monkeypatched this crash and assumed the neighbour graph is unaffected; knowing the upstream fix tells them whether their patches are equivalent to it.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "For the same kNN graph and the same call sc.tl.leiden(adata, resolution=1.0, random_state=0), how reproducible is the partition across scanpy versions (1.9, 1.10, 1.11), leidenalg and igraph versions, and operating systems? And is sc.pp.neighbors itself deterministic across versions and platforms for a dataset of roughly ten thousand cells (when does it use exact kNN versus approximate pynndescent, and is the approximate search seeded)?",
+          "why": "The answer is a single-seed result that sits at the edge of the seed-to-seed range; whether a reference run elsewhere would reproduce the same partition decides how much weight the exact number can bear.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When an analysis or benchmark says 'average cluster purity' with per-cluster purity defined as the share of the most common label, is the conventional aggregate the unweighted mean of per-cluster purities or the cell-weighted (overall) purity as in the standard information-retrieval definition? Are there single-cell references that define it explicitly one way or the other?",
+          "why": "The two aggregates differ on this data by more than a typical grading tolerance, and neither team justified its choice from a definition.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In scanpy 1.10.x used with scipy 1.14 or later, sc.pp.neighbors can fail with an AttributeError about csr_array having no getnnz. Which code path triggers this, how was it fixed upstream (which release, what the replacement code computes), and is replacing getnnz with a count of stored non-zeros per row or in total exactly equivalent to the fixed behaviour, so that the resulting distances and connectivities graphs are unchanged?",
+          "answer": "Trigger: sc.pp.neighbors -> _get_indices_distances_from_sparse_matrix -> _ind_dist_shortcut in scanpy/neighbors/_common.py, which calls D.getnnz(axis=1) on the kNN distance matrix. scipy's csr_matrix still has getnnz, so the call fails only when D is a csr_array. pynndescent>=0.7 returns csr_array from PyNNDescentTransformer, so it fails whenever pynndescent is used: transformer='pynndescent', or by default with the euclidean metric from 8192 cells, which includes this 11,693-cell dataset. Upstream fix: scanpy PR #4451 'fix: support pynndescent 0.7', merged 2026-10-29, which closes #4444. It stops using getnnz/.A1. The pages I read do not show which release number ships it. The replacement the maintainers point to is np.diff(D.indptr), the per-row count of stored entries including explicit zeros. That is exactly what getnnz(axis=1) returns, per the scipy docs ('Number of stored values, including explicit zeros'). The shortcut checks that this count is the same in every row and then just reshapes D.indices and D.data; if the counts differ it falls back to the slow path. Equivalence: a patch using np.diff(indptr) or csr_array._getnnz(axis=1) per row is exactly equivalent, so distances and connectivities are unchanged. Two patches are not guaranteed equivalent. (a) count_nonzero, or anything that drops explicit zeros: it differs when duplicate cells give stored zero distances. (b) Total nnz divided by n_obs used without checking every row: it matches only when all rows have the same count, and otherwise reshapes wrongly instead of falling back. Separately, pinning pynndescent<0.7 also avoids the crash but may produce a different approximate kNN graph than 0.7.",
+          "sources": [
+            "https://github.com/scverse/scanpy/issues/4444",
+            "https://github.com/scverse/scanpy/pull/4451",
+            "https://github.com/scverse/scanpy/issues/2773",
+            "https://github.com/scverse/scanpy/blob/1.10.x/src/scanpy/neighbors/_common.py",
+            "https://github.com/scverse/scanpy/blob/main/src/scanpy/neighbors/_common.py",
+            "https://docs.scipy.org/doc/scipy-1.12.0/reference/generated/scipy.sparse.csr_array.getnnz.html"
+          ],
+          "confidence": "high (code path, semantics); medium (exact release number not verified; the 8192 threshold is stated for current scanpy in #4444 and I believe it holds for 1.10, but I could not confirm it in the 1.10 source text I read)",
+          "deliveries": {
+            "sc20-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-86dbba78e0f5"
+            },
+            "sc20-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-99cfae72a441"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In scanpy 1.10.x used with scipy 1.14 or later, sc.pp.neighbors can fail with an AttributeError about csr_array having no getnnz. Which code path triggers this, how was it fixed upstream (which release, what the replacement code computes), and is replacing getnnz with a count of stored non-zeros per row or in total exactly equivalent to the fixed behaviour, so that the resulting distances and connectivities graphs are unchanged? ANSWER: Trigger: sc.pp.neighbors -> _get_indices_distances_from_sparse_matrix -> _ind_dist_shortcut in scanpy/neighbors/_common.py, which calls D.getnnz(axis=1) on the kNN distance matrix. scipy's csr_matrix still has getnnz, so the call fails only when D is a csr_array. pynndescent>=0.7 returns csr_array from PyNNDescentTransformer, so it fails whenever pynndescent is used: transformer='pynndescent', or by default with the euclidean metric from 8192 cells, which includes this 11,693-cell dataset. Upstream fix: scanpy PR #4451 'fix: support pynndescent 0.7', merged 2026-10-29, which closes #4444. It stops using getnnz/.A1. The pages I read do not show which release number ships it. The replacement the maintainers point to is np.diff(D.indptr), the per-row count of stored entries including explicit zeros. That is exactly what getnnz(axis=1) returns, per the scipy docs ('Number of stored values, including explicit zeros'). The shortcut checks that this count is the same in every row and then just reshapes D.indices and D.data; if the counts differ it falls back to the slow path. Equivalence: a patch using np.diff(indptr) or csr_array._getnnz(axis=1) per row is exactly equivalent, so distances and connectivities are unchanged. Two patches are not guaranteed equivalent. (a) count_nonzero, or anything that drops explicit zeros: it differs when duplicate cells give stored zero distances. (b) Total nnz divided by n_obs used without checking every row: it matches only when all rows have the same count, and otherwise reshapes wrongly instead of falling back. Separately, pinning pynndescent<0.7 also avoids the crash but may produce a different approximate kNN graph than 0.7. HOW SURE: high (code path, semantics); medium (exact release number not verified; the 8192 threshold is stated for current scanpy in #4444 and I believe it holds for 1.10, but I could not confirm it in the 1.10 source text I read). SOURCES: https://github.com/scverse/scanpy/issues/4444, https://github.com/scverse/scanpy/pull/4451, https://github.com/scverse/scanpy/issues/2773, https://github.com/scverse/scanpy/blob/1.10.x/src/scanpy/neighbors/_common.py, https://github.com/scverse/scanpy/blob/main/src/scanpy/neighbors/_common.py, https://docs.scipy.org/doc/scipy-1.12.0/reference/generated/scipy.sparse.csr_array.getnnz.html."
+        },
+        {
+          "question": "For the same kNN graph and the same call sc.tl.leiden(adata, resolution=1.0, random_state=0), how reproducible is the partition across scanpy versions (1.9, 1.10, 1.11), leidenalg and igraph versions, and operating systems? And is sc.pp.neighbors itself deterministic across versions and platforms for a dataset of roughly ten thousand cells (when does it use exact kNN versus approximate pynndescent, and is the approximate search seeded)?",
+          "answer": "Leiden: in scanpy 1.10.x the defaults are still flavor='leidenalg', directed=True, n_iterations=-1, random_state=0, the same as 1.9; there is only a FutureWarning about moving to igraph. Given an identical connectivities matrix, leidenalg was deterministic across 4 different CPUs in issue #2014. The 1.9.3 vs 1.10.4 difference reported in #3422 was closed as not planned and attributed to duplicated data (I saw that only in a search snippet). So with the same graph and the same leidenalg/igraph, the partition should reproduce. I found no source guaranteeing identical partitions across leidenalg/igraph versions. Neighbors: scanpy uses exact brute-force sklearn kNN only for the euclidean metric with fewer than 8192 cells; at about 11.7k cells it uses approximate pynndescent. pynndescent is seeded (random_state=0), but its numba-parallel search is not bitwise reproducible across CPUs, thread counts or package versions. Issue #2014 shows Leiden clusters on an X_scVI embedding changing across CPU models in an identical container; disabling the numba JIT or rounding the connectivities made it stable. In #2956 the maintainers say the neighbour graph is not guaranteed reproducible across machines, versions or thread counts (snippet only). Conclusion: a reference run elsewhere may well give a slightly different graph and partition. The exact single-seed number should be treated as one draw within the seed-to-seed spread.",
+          "sources": [
+            "https://github.com/scverse/scanpy/issues/2014",
+            "https://github.com/scverse/scanpy/issues/3422",
+            "https://github.com/scverse/scanpy/issues/2956",
+            "https://github.com/scverse/scanpy/blob/1.10.x/src/scanpy/tools/_leiden.py",
+            "https://github.com/scverse/scanpy/issues/4444"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc20-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-674c215d6aa2"
+            },
+            "sc20-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-c296b8f7036e"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: For the same kNN graph and the same call sc.tl.leiden(adata, resolution=1.0, random_state=0), how reproducible is the partition across scanpy versions (1.9, 1.10, 1.11), leidenalg and igraph versions, and operating systems? And is sc.pp.neighbors itself deterministic across versions and platforms for a dataset of roughly ten thousand cells (when does it use exact kNN versus approximate pynndescent, and is the approximate search seeded)? ANSWER: Leiden: in scanpy 1.10.x the defaults are still flavor='leidenalg', directed=True, n_iterations=-1, random_state=0, the same as 1.9; there is only a FutureWarning about moving to igraph. Given an identical connectivities matrix, leidenalg was deterministic across 4 different CPUs in issue #2014. The 1.9.3 vs 1.10.4 difference reported in #3422 was closed as not planned and attributed to duplicated data (I saw that only in a search snippet). So with the same graph and the same leidenalg/igraph, the partition should reproduce. I found no source guaranteeing identical partitions across leidenalg/igraph versions. Neighbors: scanpy uses exact brute-force sklearn kNN only for the euclidean metric with fewer than 8192 cells; at about 11.7k cells it uses approximate pynndescent. pynndescent is seeded (random_state=0), but its numba-parallel search is not bitwise reproducible across CPUs, thread counts or package versions. Issue #2014 shows Leiden clusters on an X_scVI embedding changing across CPU models in an identical container; disabling the numba JIT or rounding the connectivities made it stable. In #2956 the maintainers say the neighbour graph is not guaranteed reproducible across machines, versions or thread counts (snippet only). Conclusion: a reference run elsewhere may well give a slightly different graph and partition. The exact single-seed number should be treated as one draw within the seed-to-seed spread. HOW SURE: medium. SOURCES: https://github.com/scverse/scanpy/issues/2014, https://github.com/scverse/scanpy/issues/3422, https://github.com/scverse/scanpy/issues/2956, https://github.com/scverse/scanpy/blob/1.10.x/src/scanpy/tools/_leiden.py, https://github.com/scverse/scanpy/issues/4444."
+        },
+        {
+          "question": "When an analysis or benchmark says 'average cluster purity' with per-cluster purity defined as the share of the most common label, is the conventional aggregate the unweighted mean of per-cluster purities or the cell-weighted (overall) purity as in the standard information-retrieval definition? Are there single-cell references that define it explicitly one way or the other?",
+          "answer": "The conventional 'purity' is cell-weighted. Manning et al., IR book eq. 182, defines it as the sum over clusters of the majority-class count divided by N. Tan et al. define overall purity as sum_i (m_i/m) p_i. Single-cell clustering papers that give a formula use the same weighted form; for example GRACE (PLoS ONE 2023) uses Purity = (1/N) sum_j max |y \u2229 c_j|, though I saw that formula only in a search snippet. Tools implement both: spine.math.metrics.pur defaults to per_cluster=True ('average equally over predicted clusters'), and per_cluster=False gives the cell-weighted version. I found no single-cell reference that explicitly defines the phrase 'average cluster purity'. The task wording ('average cluster purity, where purity for each cluster is ...') reads most literally as the unweighted mean over clusters, whereas plain 'purity' conventionally means the weighted value. The web does not settle which one the task intends. Report the unweighted mean as primary, since it follows the wording, and the weighted value alongside it.",
+          "sources": [
+            "https://nlp.stanford.edu/IR-book/html/htmledition/evaluation-of-clustering-1.html",
+            "http://davide.eynard.it/teaching/2014_PAMI/handout-lecture-e4.pdf",
+            "https://spine.readthedocs.io/latest/api/generated/spine.math.metrics.html",
+            "https://doi.org/10.1371/journal.pone.0284527"
+          ],
+          "confidence": "high that textbook purity is weighted; low on which one the task intends",
+          "deliveries": {
+            "sc20-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-7cdd4b0b1294"
+            },
+            "sc20-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-1588bd9a785d"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When an analysis or benchmark says 'average cluster purity' with per-cluster purity defined as the share of the most common label, is the conventional aggregate the unweighted mean of per-cluster purities or the cell-weighted (overall) purity as in the standard information-retrieval definition? Are there single-cell references that define it explicitly one way or the other? ANSWER: The conventional 'purity' is cell-weighted. Manning et al., IR book eq. 182, defines it as the sum over clusters of the majority-class count divided by N. Tan et al. define overall purity as sum_i (m_i/m) p_i. Single-cell clustering papers that give a formula use the same weighted form; for example GRACE (PLoS ONE 2023) uses Purity = (1/N) sum_j max |y \u2229 c_j|, though I saw that formula only in a search snippet. Tools implement both: spine.math.metrics.pur defaults to per_cluster=True ('average equally over predicted clusters'), and per_cluster=False gives the cell-weighted version. I found no single-cell reference that explicitly defines the phrase 'average cluster purity'. The task wording ('average cluster purity, where purity for each cluster is ...') reads most literally as the unweighted mean over clusters, whereas plain 'purity' conventionally means the weighted value. The web does not settle which one the task intends. Report the unweighted mean as primary, since it follows the wording, and the weighted value alongside it. HOW SURE: high that textbook purity is weighted; low on which one the task intends. SOURCES: https://nlp.stanford.edu/IR-book/html/htmledition/evaluation-of-clustering-1.html, http://davide.eynard.it/teaching/2014_PAMI/handout-lecture-e4.pdf, https://spine.readthedocs.io/latest/api/generated/spine.math.metrics.html, https://doi.org/10.1371/journal.pone.0284527."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc20-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc20-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc20-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc20-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc20-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 36.48533141694497,
+      "cost_usd": 0.1392498,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 77.10099854099099,
+      "cost_usd": 0.1859553,
+      "error": null
+    },
+    {
+      "agent": "sc20-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 195.9351913749706,
+      "cost_usd": 0.1264052,
+      "error": null
+    },
+    {
+      "agent": "sc20-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 233.30088566604536,
+      "cost_usd": 0.1713692,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 102.83345287502743,
+      "cost_usd": 0.22932639999999999,
+      "error": null
+    },
+    {
+      "agent": "sc20-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 141.06110949988943,
+      "cost_usd": 0.7350526,
+      "error": null
+    },
+    {
+      "agent": "sc20-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 298.4487938339589,
+      "cost_usd": 0.3037866,
+      "error": null
+    },
+    {
+      "agent": "sc20-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 514.138592833071,
+      "cost_usd": 0.43702,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

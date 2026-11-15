@@ -1,0 +1,490 @@
+{
+  "study": "sc27",
+  "status": "replicated",
+  "final": {
+    "agent": "sc27-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc27/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc27-library": "opus",
+    "sc27-team-a": "opus",
+    "sc27-team-b": "opus",
+    "sc27-team-c": "opus",
+    "sc27-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc27-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc27/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc27-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc27/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc27-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc27/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc27-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc27/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc27-team-a",
+        "sc27-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc27-team-a",
+        "sc27-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Data layout of 156266814.node, read from the file header only (no values were inspected, so verify it): it is an AnnData h5ad with 11693 cells x 27946 genes. X is a float32 CSR matrix; uns['log1p'] exists but is an empty dict; layers['counts'] is an int32 CSC matrix. obs has only popv_prediction (18 PBMC cell-type labels including T, B, NK, classical and non-classical monocytes, DC, pDC, platelet, plasma cell, stem cell) and popv_prediction_score (1-6). var has gene symbols as its index and no columns. There is no .raw, no obsm and no QC column.",
+      "from": [
+        "sl-sc-test-dcc42b0b6395"
+      ],
+      "reason": "Tells the team how to open the file, that raw counts and cell-type labels are available for checks, and that QC metrics and PCA must be computed by them.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-4f26b16087d8"
+      }
+    },
+    {
+      "text": "Pitfall, double normalization: the file header suggests X is already normalized and log1p-transformed (float32 X, uns['log1p'] present, raw integers in layers['counts']). Running normalize_total + log1p on X again would double-transform the data, which compresses high-expression genes and changes both the HVG ranking and the PC loadings. Check before preprocessing: print X.max(), whether X values are integers, whether np.expm1(X).sum(1) is constant across cells (e.g. 1e4), and whether layers['counts'] holds non-negative integers. If X is already log-normalized, do not normalize/log it again: either use X as the log-normalized matrix, or rebuild it once from layers['counts'] (normalize_total target_sum=1e4, then log1p) and confirm the two agree.",
+      "from": [
+        "sl-sc-test-8c8f9ef20c6d"
+      ],
+      "reason": "The state of X decides which preprocessing steps are correct; getting it wrong changes the HVG set and the PC1 loadings the answer is read from.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-f4853ed611d1"
+      }
+    },
+    {
+      "text": "Pitfall, HVG flavor vs input matrix: scanpy highly_variable_genes flavor='seurat' and 'cell_ranger' expect log-normalized data, while flavor='seurat_v3' expects raw integer counts; feeding the wrong matrix silently gives a different gene set (seurat_v3 only warns 'expects raw count data, but non-integers were found'). Confirm which matrix each HVG call sees: for seurat_v3 pass layer='counts'; for seurat use the log-normalized X. Use about 2000 top genes. Also, uns['log1p'] in this file is an empty dict with no 'base' key, which in some scanpy versions may raise KeyError 'base' in highly_variable_genes(flavor='seurat'); if that happens, set adata.uns['log1p']['base'] = None (this last point is from background knowledge and was not verified against a source).",
+      "from": [
+        "sl-sc-test-0b67aeab4450"
+      ],
+      "reason": "HVG selection is a required step and the gene set feeds straight into PC1; this also prevents a likely crash on this specific file.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-9bd166308db2"
+      }
+    },
+    {
+      "text": "Pitfall, scaling without clipping: scaling every HVG to unit variance up-weights low-expressed and rare-population genes, and without clipping a handful of extreme cells (the labels include rare platelets, plasma cells, pDC and stem cells) can pull a leading PC toward a tiny population instead of the main axis. Use sc.pp.scale(adata, max_value=10) as in the standard scanpy workflow. Check the distribution of PC1 scores (is the variance carried by fewer than about 2 percent of cells?) and rerun without max_value to see whether the PC1 top 20 changes. If PC1 is driven by a few outlier cells or changes with clipping, report the clipped (max_value=10) result as the standard one and state the sensitivity.",
+      "from": [
+        "sl-sc-test-c75798b680c0"
+      ],
+      "reason": "The task asks for 'standard' scaling; whether clipping is applied can change which genes top PC1.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-923d8412d2fe"
+      }
+    },
+    {
+      "text": "Pitfall, reading PC1 loadings from the wrong place or misaligned: scanpy stores loadings in adata.varm['PCs'] (rows = var_names, column 0 = PC1). sc.pp.pca by default restricts to var['highly_variable'] when that column exists, so non-HVG genes get loading 0, and a matrix scaled on all genes vs on the HVG subset gives different PCs. Check: assert adata.varm['PCs'].shape[0] == adata.n_vars; build pd.Series(adata.varm['PCs'][:,0], index=adata.var_names) and sort by absolute value; confirm the top 20 are all HVGs with non-zero loadings; confirm PC1 is the component with the largest uns['pca']['variance_ratio']. If anything is off, subset to HVGs (or keep the mask), scale, rerun PCA and re-extract.",
+      "from": [
+        "sl-sc-test-f560f6133933"
+      ],
+      "reason": "The answer is read directly from the top-20 loading list, so a misaligned or wrongly restricted loading vector gives the wrong genes.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-9909fd32a520"
+      }
+    },
+    {
+      "text": "Pitfall, one-sided loading lists: a principal component is a contrast with arbitrary sign, so the top 20 genes by absolute loading may all come from one pole and hide what sits at the other end; naming the axis from one pole alone can mislabel it. Report the sign of each of the top 20 genes, and separately list the top ~20 positive and top ~20 negative loading genes; then see which cells sit at each end of obsm['X_pca'][:,0]. If the top 20 is one-sided, interpret PC1 using both poles and the cells at each extreme, not the gene list alone.",
+      "from": [
+        "sl-sc-test-f57785a7f6a0"
+      ],
+      "reason": "The task's top-20-by-absolute-loading list may show only half of the axis; looking at both poles changes how the axis is named.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-a0f0a2c4e08b"
+      }
+    },
+    {
+      "text": "Pitfall, naming the axis from gene-family names: gene families in a loadings list do not by themselves identify the axis. Ribosomal protein (RPL/RPS) genes differ strongly between hematopoietic cell types, so their presence can reflect cell-type identity rather than a translation/ribosome-biogenesis program; likewise a few immediate-early genes (FOS, JUN, DUSP1) or a few cell-cycle genes do not by themselves make a stress or proliferation axis. A handling/stress signature can also be real without being PC1 of the whole dataset: in published PBMC scRNA-seq, sampling-time stress correlated with PC1 only when PCA was run within each cell subtype, while across all PBMC cell type was the largest driver of variance. Check: count how many of the top 20 fall in each class (RPL/RPS, lineage/surface markers, IEG/heat-shock, cell-cycle such as MKI67/TOP2A); see whether any IEG/stress genes load on the same pole as lineage markers of one cell class; then test what PC1 actually separates by grouping PC1 scores by obs['popv_prediction'] and computing between-cell-type vs within-cell-type variance (eta-squared / one-way ANOVA R2). Decision rule: if PC1 variance is mostly between annotated cell types, name the axis by which cell types sit at each pole; if it is mostly within cell types, a program-type axis (translation, stress, cell cycle) is supported. Call PC1 a stress axis only if it varies mainly within cell types and the top loadings are dominated by IEG/heat-shock genes on one pole with no lineage markers.",
+      "from": [
+        "sl-sc-test-857badbf22c2",
+        "sl-sc-test-abcd6ae46bb8"
+      ],
+      "reason": "The answer options differ in exactly this respect (identity axis vs program axis), and the gene list alone can be read either way; this gives a data-driven test to decide between them.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-5150ebd6d8f5"
+      }
+    },
+    {
+      "text": "Pitfall, technical variation in leading PCs: the log-normalize + HVG + PCA pipeline can put technical variation (sequencing depth, number of detected genes, fraction of zeros) into leading PCs, and this file has no QC columns to guard against it. Check: compute total_counts and n_genes_by_counts from layers['counts'] (plus percent MT- and percent RPL/RPS) and take the Spearman correlation with PC1 score, both overall and within each popv_prediction cell type. If the correlation is strong within cell types, PC1 is partly technical: interpret it via cell-type separation and confirm the top-20 gene class is unchanged across pipeline variants rather than adding non-standard steps. If the correlation appears only between cell types, it is likely confounded with cell identity (cell types differ in RNA content) and is not a reason to relabel the axis.",
+      "from": [
+        "sl-sc-test-9cb286f86674"
+      ],
+      "reason": "A depth-driven PC1 could be mistaken for a biological program; this check tells the team whether PC1 is biology or technical before they name it.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-21499d807caf"
+      }
+    },
+    {
+      "text": "Pitfall, single-run fragility: the PC1 top-20 list depends on arbitrary choices (HVG flavor and number, clipping, solver, gene pre-filtering), so one run can give an unrepresentative list. Run at least three variants, e.g. (1) flavor='seurat' on log-normalized X with n_top_genes=2000, (2) flavor='seurat_v3' on layers['counts'] with n_top_genes=2000, (3) scanpy default mean/dispersion thresholds; each after sc.pp.filter_genes(min_cells=3), with sc.pp.scale(max_value=10) and svd_solver='arpack'. Compare the gene classes in the top 20 and the correlation of PC1 scores between variants (use absolute correlation, because the sign is arbitrary). If the variants disagree on the axis, report the disagreement and prefer the plain scanpy-tutorial pipeline as 'standard'; if they agree, the conclusion is robust.",
+      "from": [
+        "sl-sc-test-69d2bc20adc4"
+      ],
+      "reason": "The task says only 'standard preprocessing', so the team must choose parameters; this tells them how to check that the conclusion does not depend on that choice and which pipeline to fall back on.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-79b088fbdcdd"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 7,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams selected HVGs only with the dispersion-based flavor on the log-normalized X. The count-based flavor that both had planned as the robustness check failed for the same reason (missing package) in both teams, so 'robust to HVG flavor' was never tested; the variants actually run (other n_top, default thresholds, no clip) all stay inside the same flavor.",
+      "Both teams named the axis from the positive pole alone. All 20 top |loadings| have the same sign, so the list says what one end of PC1 is and nothing about the other end. That the other end is 'adaptive' rests on a single gene correlation in team A and on nothing measured in team B.",
+      "Both teams treated 'myeloid vs lymphoid' as the same thing as 'adaptive vs innate'. Natural killer cells (and part of the gamma-delta / MAIT compartment) are lymphoid but innate; neither team checked on which side of PC1 they sit.",
+      "Both teams pooled the 4 samples (sample1-4 in the cell names) with no batch handling and assumed PC1 is the same axis inside each sample. Team B looked at PC1 by sample; team A did not record doing so.",
+      "Both teams assumed the gene names are correctly aligned to the columns of X while concluding that the cell labels are not aligned to the rows. The coherent myeloid list supports the gene alignment, and I confirmed that X and layers/counts agree cell by cell (same non-zeros per cell, expm1 of X sums to 1e4, scaling matches the count total), so the expression matrix itself is internally consistent."
+    ],
+    "unused_evidence": [
+      "layers/counts (raw integer counts, stored CSC): planned for a count-based HVG variant by both teams, used by neither. Depth is low (median about 1,650 counts per cell), which is where dispersion-based and count-based HVG sets differ most.",
+      "obs['popv_prediction_score'] (integer 1-6; 6,214 of 11,693 cells have the top value): used by neither team. It could show whether the labels are scrambled for all cells or only poor for low-consensus cells.",
+      "obs['popv_prediction'] marginal frequencies: both teams discarded the labels as scrambled, but a permutation leaves the label counts intact (about 16% of cells carry monocyte or dendritic labels, about 5% NK). Those proportions can still be compared with the share of cells at each end of PC1 without needing row alignment.",
+      "Sample identity in the cell names (4 samples, 2,494-3,317 cells each): not used in the method by either team; only team B looked at PC1 by sample.",
+      "The 13 MT- and 103 RPL/RPS genes present in var: both teams counted zero ribosomal genes in the top 20 but neither recorded whether those genes were in the HVG set at all, which is what decides whether option C was ever in the running."
+    ],
+    "unresolved_weak_points": [
+      "Team A: 'labels unreliable, negative pole characterised only via CD3E'. Reported, not resolved: no negative-loading list, no B-cell or NK marker check, and the between/within cell-type variance test from the library decision rule was dropped rather than replaced by a label-free version.",
+      "Team B: 'could not validate with labels, reliance on gene identity alone'. Reported, not resolved: no validation of any kind replaced the labels (no marker correlation, no de novo grouping), and its notes list no pitfalls checked, including the loadings-alignment check.",
+      "Both: the HVG-flavor robustness check failed and was substituted by variants that do not change the flavor."
+    ],
+    "second_readings": [
+      "'Adaptive vs innate' versus 'myeloid vs lymphoid': the option is about immune arm, the teams' evidence is about lineage. The two differ for NK cells and innate-like T cells. Among the four options this probably does not change the letter, but it is the part of the wording the teams did not test.",
+      "'Standard preprocessing (HVG selection, scaling)' could mean starting from the counts layer with a count-based HVG method, or using X as given. I checked that X is exactly log1p CP10k of the counts layer, so the normalization step is equivalent either way; only the HVG flavor differs between the readings.",
+      "'Top 20 genes with highest absolute loadings' was read the same way by both teams (sorted by |loading|, sign kept). No second reading that matters.",
+      "'Major biological axis' could be read as what separates the cells along PC1 (score distribution) rather than what the top genes are. Both teams answered from gene identity; neither showed the score distribution or what sits at the opposite end."
+    ],
+    "verdict": "I trust the agreed answer fairly highly: the two teams' top-loading lists coincide, contain no ribosomal, immediate-early or cell-cycle genes, and the expression matrix is internally consistent with the counts layer, so none of the other three options has any support. What remains untested is the opposite pole of PC1 (including where innate lymphocytes sit), any label-free confirmation that PC1 separates cell types, and a count-based HVG flavor; I expect these to confirm the letter, not change it.",
+    "questions": [
+      {
+        "to": "sc27-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your top 20 are all on one pole, and you described the other pole through one gene only. List the 20 most negative PC1 loadings, and report the PC1 loading sign and the PC1-score correlation for T-cell, B-cell and NK-cell marker genes separately. On which side do NK-like cells (lymphoid but innate) fall, and is the negative pole one lineage or all lymphocytes? Does the result change how you name the axis among the four options, or your confidence?",
+        "from": [
+          "sl-sc-test-4c9732f21e52",
+          "sl-sc-test-d448e173cba1"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-654c9386081d"
+      },
+      {
+        "to": "sc27-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you dropped the between-versus-within cell-type variance test because the labels look scrambled, and nothing replaced it. Run a label-free version: group cells by a de novo partition or by marker gating built from genes that are not in your top 20, and compute how much of the PC1 variance lies between those groups. Also use what survives a scramble: compare the share of cells in the high-PC1 mode with the share of cells carrying monocyte or dendritic labels in obs, and check whether labels track markers better among cells with the highest popv_prediction_score. Is PC1 mostly between cell types, and does that change your method?",
+        "from": [
+          "sl-sc-test-d448e173cba1",
+          "sl-sc-test-5150ebd6d8f5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-62237768a4e8"
+      },
+      {
+        "to": "sc27-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your planned count-based HVG variant failed and the variants you ran instead all use the same dispersion-based flavor on log X. Run at least one HVG selection on layers['counts'] that does not need the missing package (another flavor available in your toolkit, or your own mean-variance fit), then scale and PCA as before. Record how many RPL/RPS and MT- genes are in each HVG set, the gene classes in the top 20, and the absolute correlation of PC1 scores between variants. Also run the pipeline inside each of the 4 samples in the cell names. Is PC1 the same axis in every case, and does that change your method?",
+        "from": [
+          "sl-sc-test-cb5b2325a883",
+          "sl-sc-test-69d2bc20adc4"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-358e26ebb4db"
+      },
+      {
+        "to": "sc27-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your reading of PC1 rests on the identity of the top-loading genes alone, all on one pole, and you measured nothing about the other pole. List the 20 most negative PC1 loadings, and report the PC1 loading sign and the PC1-score correlation for T-cell, B-cell and NK-cell marker genes separately. On which side do NK-like cells (lymphoid but innate) fall, and is the opposite pole one lineage or all lymphocytes? Does the result change how you name the axis among the four options, or your confidence?",
+        "from": [
+          "sl-sc-test-a38586bb0be8",
+          "sl-sc-test-2491d21e6b8e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-02cc3ba54809"
+      },
+      {
+        "to": "sc27-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you set the labels aside as scrambled and validated PC1 with nothing else. Run a label-free check: group cells by a de novo partition or by marker gating built from genes that are not in your top 20, and compute how much of the PC1 variance lies between those groups and whether the score distribution is two separated modes or a continuum. Also use what survives a scramble: compare the share of cells in the high-PC1 mode with the share of cells carrying monocyte or dendritic labels in obs, and check whether labels track markers better among cells with the highest popv_prediction_score. Is PC1 mostly between cell types, and does that change your method?",
+        "from": [
+          "sl-sc-test-2491d21e6b8e",
+          "sl-sc-test-857badbf22c2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-9121381ee9eb"
+      },
+      {
+        "to": "sc27-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your plan said to change method if results differ by HVG flavor, but the flavor check failed and you varied only the number of genes. Run at least one HVG selection on layers['counts'] that does not need the missing package, and also the variants you did not record: with a min_cells gene filter, without the max_value clip, and with a deterministic solver. For each, record how many RPL/RPS and MT- genes are in the HVG set, the gene classes in the top 20, and the absolute correlation of PC1 scores with your primary run. Is PC1 the same axis in every case, and does that change your method?",
+        "from": [
+          "sl-sc-test-f8fcf000c2dd",
+          "sl-sc-test-69d2bc20adc4"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-d77abd3197a3"
+      },
+      {
+        "to": "sc27-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your notes list no pitfalls checked. Confirm where your loadings came from: that the loadings matrix has one row per gene in var order, that the top 20 are all HVGs with non-zero loadings, that the component you read is the one with the largest variance ratio, and that scaling was applied to the same gene set the PCA used. Does your top-20 list survive these checks unchanged?",
+        "from": [
+          "sl-sc-test-f560f6133933"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-464517017408"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In scanpy, which highly-variable-gene flavors operate on raw counts and which of them run without the scikit-misc package (for example the experimental Pearson-residuals HVG function), and how closely do their gene sets usually agree with flavor='seurat_v3'?",
+          "why": "Both teams' count-based HVG robustness check failed for lack of that package and was replaced by variants of a single flavor; a dependency-free count-based alternative would let them actually test flavor sensitivity.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In the popV cell-type annotation tool, what does the integer prediction score stored alongside the consensus prediction mean (how is it computed, what is its range), and which score values are conventionally treated as reliable annotations?",
+          "why": "The data carries this score column and neither team used it; knowing its meaning tells the teams whether restricting to high-score cells is a valid way to test if the labels are misaligned or merely low-confidence.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When all of the top absolute loadings of a principal component in single-cell RNA-seq have the same sign, what is the recommended practice for characterising the opposite pole of that component (for example inspecting the most negative loadings, score distributions, or gene-set tests on signed loadings)?",
+          "why": "Both teams named a two-sided axis from a one-sided gene list; a standard procedure for describing the other pole would settle whether the naming is justified.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In scanpy, which highly-variable-gene flavors operate on raw counts and which of them run without the scikit-misc package (for example the experimental Pearson-residuals HVG function), and how closely do their gene sets usually agree with flavor='seurat_v3'?",
+          "answer": "sc.pp.highly_variable_genes expects log-normalized data for 'seurat' and 'cell_ranger', and raw counts only for 'seurat_v3'/'seurat_v3_paper'. The docs say those two count flavors require scikit-misc. The dependency-free count-based option is sc.experimental.pp.highly_variable_genes(flavor='pearson_residuals', n_top_genes=..., layer='counts'). It expects raw counts and ranks genes by the variance of analytic NB Pearson residuals (theta=100, clipping at sqrt(n_obs)); its docs list no scikit-misc requirement. The pages read give no numeric overlap with seurat_v3. A 2023 preprint (seen as a search snippet only) says SCTransform and scanpy Pearson residuals usually rank the same genes highest, but scores within the top 2000 can be unstable. The teams should therefore measure the overlap (Jaccard) and the agreement of the PC1 top-20 directly rather than assume a value.",
+          "sources": [
+            "https://scanpy.scverse.org/en/latest/api/generated/scanpy.pp.highly_variable_genes.html",
+            "https://scanpy.scverse.org/en/stable/generated/scanpy.experimental.pp.highly_variable_genes.html",
+            "https://link.springer.com/article/10.1186/s13059-021-02451-7",
+            "https://scanpy.scverse.org/en/stable/tutorials/experimental/pearson_residuals.html"
+          ],
+          "confidence": "high for flavor inputs and dependencies; low for the overlap (not settled by the pages read)",
+          "deliveries": {
+            "sc27-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-ef70c650a3a3"
+            },
+            "sc27-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-0355c9b8e19c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In scanpy, which highly-variable-gene flavors operate on raw counts and which of them run without the scikit-misc package (for example the experimental Pearson-residuals HVG function), and how closely do their gene sets usually agree with flavor='seurat_v3'? ANSWER: sc.pp.highly_variable_genes expects log-normalized data for 'seurat' and 'cell_ranger', and raw counts only for 'seurat_v3'/'seurat_v3_paper'. The docs say those two count flavors require scikit-misc. The dependency-free count-based option is sc.experimental.pp.highly_variable_genes(flavor='pearson_residuals', n_top_genes=..., layer='counts'). It expects raw counts and ranks genes by the variance of analytic NB Pearson residuals (theta=100, clipping at sqrt(n_obs)); its docs list no scikit-misc requirement. The pages read give no numeric overlap with seurat_v3. A 2023 preprint (seen as a search snippet only) says SCTransform and scanpy Pearson residuals usually rank the same genes highest, but scores within the top 2000 can be unstable. The teams should therefore measure the overlap (Jaccard) and the agreement of the PC1 top-20 directly rather than assume a value. HOW SURE: high for flavor inputs and dependencies; low for the overlap (not settled by the pages read). SOURCES: https://scanpy.scverse.org/en/latest/api/generated/scanpy.pp.highly_variable_genes.html, https://scanpy.scverse.org/en/stable/generated/scanpy.experimental.pp.highly_variable_genes.html, https://link.springer.com/article/10.1186/s13059-021-02451-7, https://scanpy.scverse.org/en/stable/tutorials/experimental/pearson_residuals.html."
+        },
+        {
+          "question": "In the popV cell-type annotation tool, what does the integer prediction score stored alongside the consensus prediction mean (how is it computed, what is its range), and which score values are conventionally treated as reliable annotations?",
+          "answer": "popv_prediction_score counts how many of popV's classifiers (eight in the paper) agree with the consensus label. With the Cell Ontology, each method's vote is spread along the ontology path from the root to its predicted term, majority voting is done on these spread votes, and the score is the vote count for the chosen term. Its range runs up to the number of methods used; the 1-6 seen in this file suggests six methods or fast mode, which is an inference. The popV docs say one dissenting classifier is still highly reliable, while more than two dissenting classifiers means less reliable results. So scores of N or N-1 (here 6 and 5) are reliable, and restricting to high-score cells is a valid confidence filter.",
+          "sources": [
+            "https://popv.readthedocs.io/en/stable/",
+            "https://www.nature.com/articles/s41588-024-01993-3/figures/4",
+            "https://www.nature.com/articles/s41588-024-01993-3"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc27-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-a6e078c8059e"
+            },
+            "sc27-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-a91ce4934bbb"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In the popV cell-type annotation tool, what does the integer prediction score stored alongside the consensus prediction mean (how is it computed, what is its range), and which score values are conventionally treated as reliable annotations? ANSWER: popv_prediction_score counts how many of popV's classifiers (eight in the paper) agree with the consensus label. With the Cell Ontology, each method's vote is spread along the ontology path from the root to its predicted term, majority voting is done on these spread votes, and the score is the vote count for the chosen term. Its range runs up to the number of methods used; the 1-6 seen in this file suggests six methods or fast mode, which is an inference. The popV docs say one dissenting classifier is still highly reliable, while more than two dissenting classifiers means less reliable results. So scores of N or N-1 (here 6 and 5) are reliable, and restricting to high-score cells is a valid confidence filter. HOW SURE: high. SOURCES: https://popv.readthedocs.io/en/stable/, https://www.nature.com/articles/s41588-024-01993-3/figures/4, https://www.nature.com/articles/s41588-024-01993-3."
+        },
+        {
+          "question": "When all of the top absolute loadings of a principal component in single-cell RNA-seq have the same sign, what is the recommended practice for characterising the opposite pole of that component (for example inspecting the most negative loadings, score distributions, or gene-set tests on signed loadings)?",
+          "answer": "No formal single-cell standard was found. The tool defaults show the common practice: scanpy's sc.pl.pca_loadings has include_lowest=True by default, so it shows both the highest and the lowest (most negative) loading genes for each PC. The other pole should be described from the most negative loadings, together with which cells or cell types sit at each extreme of the PC scores. Gene-set tests on the signed loading vector (PCGSE, Frost et al. 2015) can be added. A two-sided name taken from a one-sided top-|loading| list is justified only if the negative-loading genes and the low-score cells confirm the other pole.",
+          "sources": [
+            "https://scanpy.scverse.org/en/stable/api/generated/scanpy.pl.pca_loadings.html",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4543476/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc27-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-3f27aba981df"
+            },
+            "sc27-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-68c6b5718d27"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When all of the top absolute loadings of a principal component in single-cell RNA-seq have the same sign, what is the recommended practice for characterising the opposite pole of that component (for example inspecting the most negative loadings, score distributions, or gene-set tests on signed loadings)? ANSWER: No formal single-cell standard was found. The tool defaults show the common practice: scanpy's sc.pl.pca_loadings has include_lowest=True by default, so it shows both the highest and the lowest (most negative) loading genes for each PC. The other pole should be described from the most negative loadings, together with which cells or cell types sit at each extreme of the PC scores. Gene-set tests on the signed loading vector (PCGSE, Frost et al. 2015) can be added. A two-sided name taken from a one-sided top-|loading| list is justified only if the negative-loading genes and the low-score cells confirm the other pole. HOW SURE: medium. SOURCES: https://scanpy.scverse.org/en/stable/api/generated/scanpy.pl.pca_loadings.html, https://pmc.ncbi.nlm.nih.gov/articles/PMC4543476/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc27-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc27-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc27-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc27-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc27-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 39.20263779105153,
+      "cost_usd": 0.13605440000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 96.45348100003321,
+      "cost_usd": 0.1531091,
+      "error": null
+    },
+    {
+      "agent": "sc27-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 71.13167145801708,
+      "cost_usd": 0.2013914,
+      "error": null
+    },
+    {
+      "agent": "sc27-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 88.41522862506099,
+      "cost_usd": 0.226292,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 130.3944993331097,
+      "cost_usd": 0.236922,
+      "error": null
+    },
+    {
+      "agent": "sc27-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 89.26133037498221,
+      "cost_usd": 0.43275820000000004,
+      "error": null
+    },
+    {
+      "agent": "sc27-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 175.91424145794008,
+      "cost_usd": 0.3493756,
+      "error": null
+    },
+    {
+      "agent": "sc27-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 206.90677012491506,
+      "cost_usd": 0.32074740000000007,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}
