@@ -1,0 +1,440 @@
+{
+  "study": "bd04",
+  "status": "replicated",
+  "final": {
+    "agent": "bd04-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-pilot/bd04/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd04-library": "fable",
+    "bd04-team-a": "fable",
+    "bd04-team-b": "fable",
+    "bd04-team-c": "fable",
+    "bd04-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd04-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-pilot/bd04/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd04-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-pilot/bd04/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd04-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-pilot/bd04/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd04-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-pilot/bd04/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd04-team-a",
+        "bd04-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd04-team-a",
+        "bd04-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The hypothesis has three separate components: (a) TERT-rearrangement status per tumour, (b) membership of the low-risk group, (c) outcome (survival, relapse or another event). Before any modelling, write a three-row map: component -> exact file and column that measures it -> number of non-missing values, and mark any component for which no column exists. Being able to measure one component does not make the whole claim testable. Decide the label strictly from the task rubric applied to that map and to your own analysis of the tables; anything you remember about published neuroblastoma findings may help interpret a result but must not be the evidence for the label. In the reasoning, name which components were and were not measurable.",
+      "from": [
+        "sl-biodsa-pilot-a99a96aac998"
+      ],
+      "reason": "It fixes the order of work (variable map first, tests second) and stops the team from labelling out of topic knowledge instead of from the tables.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-d9affd515b57"
+      }
+    },
+    {
+      "text": "File-reading pitfall: data_mutations.txt is reported to start with a comment line '#sequenced_samples: ...', so the real header is on line 2; a naive read gives one garbage column. Read the mutation file with comment='#' and read the clinical tables skipping the '#' lines. Then compare three ID sets: SAMPLE_ID in data_clinical_sample.txt, the '#sequenced_samples' list, and the unique Tumor_Sample_Barcode values, and check that there is one sample per patient. Sample IDs are non-contiguous, so these sets may differ. A sample with no mutation rows counts as 'profiled, no mutation' only if it is in the sequenced list; code unprofiled samples as missing, not wild-type, use the sequenced list as the denominator for any frequency, and report the n per risk group after the join rather than assuming the full cohort size.",
+      "from": [
+        "sl-biodsa-pilot-694af8437718"
+      ],
+      "reason": "A wrong parse or a wrong denominator would silently corrupt every count the team reports.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-bd299ee577f8"
+      }
+    },
+    {
+      "text": "Check whether TERT-rearrangement status is actually a variable in the data before using anything as one. A MAF-style mutation table records small variants only (Variant_Type SNP/DNP/TNP/ONP/INS/DEL); in cBioPortal-style studies rearrangements and translocations are stored in a separate structural-variant table (data_sv.txt, with Site1_Hugo_Symbol/Site2_Hugo_Symbol/Class), and that file is not among the three given. Neuroblastoma TERT rearrangements are breakpoints in non-coding DNA around or upstream of TERT at 5p15.33 (enhancer hijacking), detected by whole-genome sequencing or break-apart FISH, not as coding SNVs or indels. The sample table's MEAN_TARGET_COVERAGE columns indicate target-capture (exome-like) sequencing, which misses most such breakpoints and captures the GC-rich TERT upstream region poorly. Checks: list every column of all three files; tabulate Variant_Type and Variant_Classification (almost all coding/splice rows, with few or no IGR, 5'Flank or Intron rows, means an exome-restricted call set); search all column names and clinical values for any SV, fusion, translocation, rearrangement or per-sample TERT-status field; if any rows have Hugo_Symbol TERT or lie in about chr5:1.25-1.35 Mb, print their classification, type, position and protein change. Consequences: rows with Hugo_Symbol TERT that are missense, silent or indel are small variants, not rearrangements; do not use them, nor MYCN status, TMB or any other column, as a surrogate for rearrangement status; do not score samples without TERT rows as 'rearrangement negative', because absence from an exome call set reflects the assay and the negative class is unobserved. If no table or column encodes rearrangements, state that this component is unmeasured and that any result on TERT point mutations does not test the stated hypothesis, and apply the task rubric for a missing variable rather than a statistical test on a stand-in.",
+      "from": [
+        "sl-biodsa-pilot-7f1adaf6ef2d",
+        "sl-biodsa-pilot-3b53a57e147f",
+        "sl-biodsa-pilot-172e49c39170"
+      ],
+      "reason": "The most likely error is building an exposure variable by grepping the mutation table for TERT; this tells the team how to check whether the exposure exists and what not to substitute for it.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-a336b8468bca"
+      }
+    },
+    {
+      "text": "A prognostic claim ('poor outcomes') can be tested only with survival or event data. In cBioPortal clinical files these look like OS_STATUS/OS_MONTHS, EFS/DFS/PFS status and months, relapse, progression, vital status or follow-up time. Enumerate every column of data_clinical_patient.txt and data_clinical_sample.txt, including the '#' description lines, and look for any such field; the library's reading of the headers suggests the patient table may hold only PATIENT_ID, STAGE, AGE_IN_DAYS and RISK_GROUP and the sample table only assay and tumour descriptors, so confirm this yourself. If no outcome field exists, the outcome component has no variable: do not run a test on a substitute, do not report a 'no difference' result as contradiction, state that outcome is unmeasured, and apply the task rubric for missing variables.",
+      "from": [
+        "sl-biodsa-pilot-536330f5950e"
+      ],
+      "reason": "Whether an outcome variable exists determines whether any test of the claim is possible at all, and which rubric branch applies.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-1ffcfd01378a"
+      }
+    },
+    {
+      "text": "Do not use RISK_GROUP, STAGE or age as a stand-in for outcome. Neuroblastoma risk group (INRG/COG low/intermediate/high) is a pre-treatment classification computed from age at diagnosis (18-month cut-off, about 547 days), stage, MYCN amplification and other biology, so treating it as 'poor outcome' is circular; and inside the low-risk stratum the hypothesis is about, RISK_GROUP is constant and cannot measure outcome at all. Print the distinct values of RISK_GROUP and STAGE (watch for codings such as HR/IR/LR, stage 4 versus 4S, and missing values) and cross-tabulate RISK_GROUP against STAGE, AGE_IN_DAYS >= 547 and MYCN_AMP to confirm it is derived from them. Use RISK_GROUP only to define the low-risk stratum (do not lump intermediate-risk or missing values into it), and never interpret an association between an alteration and risk group, stage or age as an association with outcome.",
+      "from": [
+        "sl-biodsa-pilot-6775a3560231"
+      ],
+      "reason": "It prevents a circular analysis in which a risk classifier is read as an outcome, which would yield a spurious True or False.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-3b3f012eb689"
+      }
+    },
+    {
+      "text": "Only if both a genuine alteration variable and a genuine outcome variable exist: the claim is about a subgroup within low-risk disease, so compare alteration-positive against alteration-negative patients inside the low-risk group only. Telomere-maintenance alterations in neuroblastoma track with risk group, age, stage and MYCN status, so a pooled 'altered versus all others' comparison across risk groups measures the risk-group mix (Simpson-type bias) and changes with the reference group. Cross-tabulate the alteration indicator against RISK_GROUP and MYCN_AMP, and report the number of alteration-positive patients and the number of events per group within low-risk before any test. The cohort is small (about 56 patients, with a much smaller low-risk subset and few expected events), so asymptotic log-rank and Cox tests are unreliable, Cox estimates diverge when events fall in one group only, and a Fisher test on event yes/no ignores censoring. With any cell below 5 or zero events in a group, use an exact or permutation log-rank test or Firth-penalised Cox, report counts and a confidence interval, and treat a wide interval or a non-significant underpowered result as inconclusive rather than as contradiction; with zero or one positives in the low-risk stratum the within-stratum effect is not estimable, which is 'cannot settle', not contradiction.",
+      "from": [
+        "sl-biodsa-pilot-3c67c4285955",
+        "sl-biodsa-pilot-ffe73309bad5"
+      ],
+      "reason": "If the variables do exist, the comparison group and the small-sample method decide the result, and an underpowered null must not be read as evidence against the claim.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-c20ee5aac11f"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed the claim has exactly one parse (within the low-risk stratum, rearranged tumours do worse than non-rearranged). Neither wrote out the alternative parse (rearranged tumours, as a group, sit in the low-risk class and do poorly) and checked whether that parse needs fewer variables than the first.",
+      "Both teams assumed that zero mutation rows near the gene's locus is 'an assay limit, not wild-type' without a positive control: neither reported how many rows lie on chromosome 5 at all, the lowest chromosome-5 position present, or the Chromosome value format, so the zero from the coordinate search was never shown to be a true zero rather than a format mismatch.",
+      "Both teams assumed the mutation table is a coding-only small-variant list. It also holds non-coding classes (Intron 8, RNA 8, 5'Flank 2, 3'Flank 1, IGR 1, 5'UTR 1), and the sample table reports mean target coverage of about 25-45x in tumour and normal; neither team used these to state what the assay could and could not see.",
+      "Both teams treated RISK_GROUP as the study's own two-level label (39 High, 17 Low, no Intermediate) and assumed it maps onto the claim's 'low-risk' without checking how the three stage 1/2 High patients and the absence of an intermediate class fit."
+    ],
+    "unused_evidence": [
+      "Sample-table columns PURITY, PLOIDY, MEAN_TARGET_COVERAGE_TUMOR/NORMAL and TMB_NONSYNONYMOUS were inventoried but not used. They describe assay depth and tumour genome state; none encodes a rearrangement or an outcome, so ignoring them is unlikely to change the label, but they bear on the 'assay limit' statement.",
+      "The 21 non-coding rows of the mutation table (Intron, RNA, flank, IGR, UTR) were counted by team A only in part (4 flank/IGR) and not at all by team B. They show whether calling reached outside coding sequence.",
+      "Patient/sample numbering runs to 61 with five numbers absent (46, 52, 57, 59, 60) in all three files and in the sequenced-sample list. Neither team mentioned it. It indicates the 56 are a subset of a larger numbered series; it does not add a rearrangement or outcome variable.",
+      "MAF columns that are blank in every row (Entrez_Gene_Id, read counts, Mutation_Status, validation fields) and Hotspot = 0 everywhere: no information is hidden there; I confirmed these are constant."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weak point, the choice between 'Not verifiable' and 'False', and both only reported it. Neither ran a check that would settle it from the task text itself, such as testing each reading of the claim against the rubric's two conditions for 'False' (relevant variables identifiable; analysis of them gives contradicting evidence).",
+      "Team A said the pooled/Simpson and small-sample survival pitfalls 'could not be exercised'; that is a consequence of the missing variables and is not a separate open issue.",
+      "Team B's plan held a branch to 'False' if the data tied rearrangement status to high-risk tumours; B abandoned it for lack of a status variable but did not record whether any other column makes that branch reachable. B's pitfalls_checked list is empty."
+    ],
+    "second_readings": [
+      "'Define a subgroup of low-risk neuroblastomas with poor outcomes' can mean (i) among low-risk tumours the rearranged ones form a poor-outcome subset, or (ii) rearranged tumours form a group characterised as low-risk and as poor-outcome. Reading (ii) splits into a risk-class component and an outcome component; the risk-class component would need only rearrangement status plus RISK_GROUP, with no outcome variable.",
+      "'Poor outcomes' could be read loosely as clinical risk class instead of survival. Both teams considered and rejected using RISK_GROUP as an outcome; under this loose reading the claim would still need per-tumour rearrangement status.",
+      "The rubric's 'False' requires identifiable relevant variables. One of the three components (risk group) is identifiable; whether one identifiable component out of three counts as 'the relevant variables' is a reading of the rubric, not of the data."
+    ],
+    "verdict": "I could not break the agreed answer: my own look at the files confirms three tables only, no outcome field, no structural-variant or rearrangement field, and a mutation table of SNP/INS/DEL/DNP rows, and both parses of the claim need a per-tumour rearrangement status that is absent. The remaining risk is not in the data but in the reading of the rubric (one of three components, risk group, is present), which both teams named and neither tested; the questions ask them to close that and to add a positive control to the locus search.",
+    "questions": [
+      {
+        "to": "bd04-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your component map covers one parse of the claim (within low-risk, rearranged versus not, compared on outcome). Write out the second parse (rearranged tumours as a group are low-risk, and separately have poor outcome) and redo the component map for each sub-claim of it: which columns would each need, and how many non-missing values does each have in the three files? State whether any sub-claim under either parse can be tested with the columns present, and whether that changes your method.",
+        "from": [
+          "sl-biodsa-pilot-4804883b1065",
+          "sl-biodsa-pilot-c720ebac39c1"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-846015c2dc84"
+      },
+      {
+        "to": "bd04-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your zero count for chr5:1.0-1.6 Mb has no positive control. Report the distinct values of the Chromosome column, the number of rows on chromosome 5, the lowest Start_Position among them, and the NCBI_Build value, so the zero is shown to be a true zero and not a format or build mismatch. Does the result change your statement about what the mutation table can show?",
+        "from": [
+          "sl-biodsa-pilot-ecc686b9fbc6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-71207cbfe714"
+      },
+      {
+        "to": "bd04-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You counted 4 flank/IGR rows, but the table also has Intron, RNA and 5'UTR rows (21 non-coding rows in all), and the sample table gives mean target coverage for tumour and normal. List those non-coding rows (gene, class, position) and the coverage range, and state what they show about the reach of the variant calling. Does this change the basis on which you call the absence of rows at the locus 'an assay limit', or how you separate small variants at the locus from rearrangements?",
+        "from": [
+          "sl-biodsa-pilot-ecc686b9fbc6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-6bdd70921f6b"
+      },
+      {
+        "to": "bd04-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your weakest point is the choice between two labels, and you reported it without testing it. Take the rubric's two conditions for 'False' one at a time (the relevant variables can be identified; analysing them gives contradicting evidence) and, for every column in the three files, record whether any possible result of any analysis on it could contradict or support the claim. If such a column exists, run that analysis and report it; if none exists, say so with the list. Does the outcome change your label rule?",
+        "from": [
+          "sl-biodsa-pilot-48d3c42fa29f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-c5ceb6841def"
+      },
+      {
+        "to": "bd04-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your plan held a branch to a different label if the data tied rearrangement status to the high-risk class. Write out both parses of the claim (within low-risk, rearranged versus not, on outcome; and rearranged tumours as a group being low-risk and, separately, poor-outcome) and, for each sub-claim, list the columns it needs and their non-missing counts in the three files. State whether that branch of your plan is reachable under either parse with the columns present, and whether this changes your method.",
+        "from": [
+          "sl-biodsa-pilot-971b09600510"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-6dcdaac9bb7a"
+      },
+      {
+        "to": "bd04-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your zero count for chromosome 5 below 2 Mb has no positive control. Report the distinct values of the Chromosome column, the number of rows on chromosome 5, the lowest Start_Position among them, and the NCBI_Build value, and confirm your whole-file text search was run on the raw text including '#' lines. Does the result change your statement that the table holds no record at the locus?",
+        "from": [
+          "sl-biodsa-pilot-47f28b91376a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-814621866dd7"
+      },
+      {
+        "to": "bd04-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You describe the mutation table as small variants only, but did not report its non-coding rows (Intron, RNA, 5'Flank, 3'Flank, IGR, 5'UTR; 21 rows) or use the mean target coverage columns of the sample table. List those rows and the coverage range and state what they show about the reach of the variant calling. Does this change the basis for saying the missing rows reflect a missing data type and not wild-type tumours?",
+        "from": [
+          "sl-biodsa-pilot-47f28b91376a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-15a1cf7878de"
+      },
+      {
+        "to": "bd04-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your pitfalls_checked list is empty and your weakest point (the choice between two labels) was reported, not tested. For every column in the three files, record whether any possible result of any analysis on it could contradict or support the claim, taking the rubric's two conditions for 'False' one at a time. If such a column exists, run that analysis and report it; if none exists, say so with the list. Does the outcome change your label rule?",
+        "from": [
+          "sl-biodsa-pilot-7d7019d73a77"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-b2033bc762f1"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In the cBioPortal study file format, in which files and columns have structural variants and gene fusions/rearrangements been stored across format versions (a separate structural-variant or fusion file, rows with Variant_Classification 'Fusion' inside the mutation table, or sample-level clinical attributes), and does the absence of such a file in a study mean the data type was not loaded rather than that no sample carries an event?",
+          "why": "Both teams searched the mutation table and clinical columns and concluded that rearrangement status is unrecorded. Knowing every place the format can hold such calls shows whether their search was exhaustive and whether 'absent' can be read as 'not profiled'.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Can small-variant calling from exome or genome sequencing (SNV/indel callers producing MAF rows) ever report a genomic rearrangement whose breakpoints lie in the non-coding region upstream of a gene, or are such events only reported by dedicated structural-variant callers and stored separately?",
+          "why": "Both teams treated the absence of small-variant rows near the gene's locus as uninformative about rearrangements without citing how such events are detected; this settles whether that assumption is sound.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In the cBioPortal study file format, in which files and columns have structural variants and gene fusions/rearrangements been stored across format versions (a separate structural-variant or fusion file, rows with Variant_Classification 'Fusion' inside the mutation table, or sample-level clinical attributes), and does the absence of such a file in a study mean the data type was not loaded rather than that no sample carries an event?",
+          "answer": "There are three kinds of place. (1) Current format, the only one accepted since cBioPortal v5.0.0 (Aug 2022): a separate structural-variant file, data_sv.txt, with meta genetic_alteration_type STRUCTURAL_VARIANT / datatype SV / stable_id structural_variants. It has one event per row; key columns are Sample_Id, SV_Status, Site1_Hugo_Symbol, Site2_Hugo_Symbol, Site1_Region/Site2_Region (Promoter, Exon, Intron, UTR), Class (Deletion, Duplication, Insertion, Inversion, Translocation), Event_Info, Annotation, DNA_Support, RNA_Support, SV_Length. (2) Legacy format, now marked deprecated: a separate data_fusions.txt (meta genetic_alteration_type FUSION, datatype FUSION) with columns Hugo_Symbol, Entrez_Gene_Id, Center, Tumor_Sample_Barcode, Fusion, DNA_support, RNA_support, Method, Frame. On import these rows were stored as fusion-typed events in the mutation profile and mutation table ('Fusion events are saved in the mutation table'; v5.0.0 'drops support for fusions in the mutation data format'). That is why older mutation exports can contain rows with Variant_Classification 'Fusion'. The docs describe this at database level only: 'Fusion' is not in the documented list of MAF Variant_Classification input values, so a literal 'Fusion' row in data_mutations.txt is possible in old exports but is not a documented input. (3) Free-form custom clinical attributes: the docs' own example sample columns include TMPRSS2_ERG_FUSION_STATUS and ERG_FUSION_ACGH, so a per-sample rearrangement-status column can exist, but only if the study's curators added one. For a study that has only the two clinical tables and data_mutations.txt, checking Variant_Classification for 'Fusion' (and for any SV-like columns) plus every clinical column is therefore exhaustive. On absence: the SV file lists only samples that have an event ('the MAF and structural variant formats are unable to include samples which are sequenced but contain no called mutations'). Which samples were assayed is recorded elsewhere: the '_sv' case list (all_cases_with_sv_data) and the structural_variants column of the gene panel matrix, where NA means not profiled. A study with no SV or fusion file therefore has no structural-variant profile: the data type was not loaded, and no sample can be read as 'profiled, rearrangement-negative'. The docs imply this reading but do not state it as a verbatim rule. It also says nothing about whether the original investigators ran an SV assay, only that no result is in the files. One related trap: cBioPortal by default filters out 5'Flank rows 'except for the promoter mutations of the TERT gene', so a TERT 5'Flank row in a MAF is a promoter point mutation, not a rearrangement.",
+          "sources": [
+            "https://docs.cbioportal.org/file-formats/",
+            "https://github.com/cBioPortal/cbioportal/releases/tag/v5.0.0",
+            "https://github.com/cBioPortal/datahub/blob/master/docs/recommended_staging_filenames.md",
+            "https://github.com/cBioPortal/cbioportal/issues/6966",
+            "https://www.synapse.org/Synapse:syn7222066/discussion/threadId=11267",
+            "https://groups.google.com/g/cbioportal/c/ClGApIMhOck"
+          ],
+          "confidence": "high for the storage locations; medium for the reading of an absent file as 'not loaded / not profiled' (implied by the documentation, not stated verbatim)",
+          "deliveries": {
+            "bd04-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-3b7eaf72f667"
+            },
+            "bd04-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-21822b09e08b"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In the cBioPortal study file format, in which files and columns have structural variants and gene fusions/rearrangements been stored across format versions (a separate structural-variant or fusion file, rows with Variant_Classification 'Fusion' inside the mutation table, or sample-level clinical attributes), and does the absence of such a file in a study mean the data type was not loaded rather than that no sample carries an event? ANSWER: There are three kinds of place. (1) Current format, the only one accepted since cBioPortal v5.0.0 (Aug 2022): a separate structural-variant file, data_sv.txt, with meta genetic_alteration_type STRUCTURAL_VARIANT / datatype SV / stable_id structural_variants. It has one event per row; key columns are Sample_Id, SV_Status, Site1_Hugo_Symbol, Site2_Hugo_Symbol, Site1_Region/Site2_Region (Promoter, Exon, Intron, UTR), Class (Deletion, Duplication, Insertion, Inversion, Translocation), Event_Info, Annotation, DNA_Support, RNA_Support, SV_Length. (2) Legacy format, now marked deprecated: a separate data_fusions.txt (meta genetic_alteration_type FUSION, datatype FUSION) with columns Hugo_Symbol, Entrez_Gene_Id, Center, Tumor_Sample_Barcode, Fusion, DNA_support, RNA_support, Method, Frame. On import these rows were stored as fusion-typed events in the mutation profile and mutation table ('Fusion events are saved in the mutation table'; v5.0.0 'drops support for fusions in the mutation data format'). That is why older mutation exports can contain rows with Variant_Classification 'Fusion'. The docs describe this at database level only: 'Fusion' is not in the documented list of MAF Variant_Classification input values, so a literal 'Fusion' row in data_mutations.txt is possible in old exports but is not a documented input. (3) Free-form custom clinical attributes: the docs' own example sample columns include TMPRSS2_ERG_FUSION_STATUS and ERG_FUSION_ACGH, so a per-sample rearrangement-status column can exist, but only if the study's curators added one. For a study that has only the two clinical tables and data_mutations.txt, checking Variant_Classification for 'Fusion' (and for any SV-like columns) plus every clinical column is therefore exhaustive. On absence: the SV file lists only samples that have an event ('the MAF and structural variant formats are unable to include samples which are sequenced but contain no called mutations'). Which samples were assayed is recorded elsewhere: the '_sv' case list (all_cases_with_sv_data) and the structural_variants column of the gene panel matrix, where NA means not profiled. A study with no SV or fusion file therefore has no structural-variant profile: the data type was not loaded, and no sample can be read as 'profiled, rearrangement-negative'. The docs imply this reading but do not state it as a verbatim rule. It also says nothing about whether the original investigators ran an SV assay, only that no result is in the files. One related trap: cBioPortal by default filters out 5'Flank rows 'except for the promoter mutations of the TERT gene', so a TERT 5'Flank row in a MAF is a promoter point mutation, not a rearrangement. HOW SURE: high for the storage locations; medium for the reading of an absent file as 'not loaded / not profiled' (implied by the documentation, not stated verbatim). SOURCES: https://docs.cbioportal.org/file-formats/, https://github.com/cBioPortal/cbioportal/releases/tag/v5.0.0, https://github.com/cBioPortal/datahub/blob/master/docs/recommended_staging_filenames.md, https://github.com/cBioPortal/cbioportal/issues/6966, https://www.synapse.org/Synapse:syn7222066/discussion/threadId=11267, https://groups.google.com/g/cbioportal/c/ClGApIMhOck."
+        },
+        {
+          "question": "Can small-variant calling from exome or genome sequencing (SNV/indel callers producing MAF rows) ever report a genomic rearrangement whose breakpoints lie in the non-coding region upstream of a gene, or are such events only reported by dedicated structural-variant callers and stored separately?",
+          "answer": "No. SNV/indel callers that produce MAF rows do not report rearrangements, so the teams' assumption is sound: the absence of small-variant rows near a gene is uninformative about rearrangements there. Small-variant callers are size-limited by design (Strelka: 'SNVs and indels up to a predefined maximum size, currently defaulting to 49 bases or less'). The MAF Variant_Type field allows only SNP, DNP, TNP, ONP, INS and DEL; it has no value for a translocation, inversion or breakend. Structural variants are conventionally events of 50 bp or more (deletions, duplications, insertions, inversions, translocations). They are found from different evidence (discordant read pairs, split reads, read depth, local assembly) by dedicated callers such as Manta, Delly, Lumpy, GRIDSS, SvABA and BRASS, which write breakend (BND) records in VCF or BEDPE. The GDC releases these as files separate from the SNV/indel output. The only overlap is at the size boundary: SV callers such as Manta and SvABA also emit medium-sized indels, and a sub-50-bp insertion or deletion in a gene's upstream region could appear as a 5'Flank MAF row if that region was sequenced, but that is a small indel, not a rearrangement joining distant loci. For TERT, a neuroblastoma review states that the rearrangements were discovered by whole-genome sequencing, that breakpoints cluster in a roughly 50 kb region upstream of the TERT transcription start site without affecting the gene itself, and that detection in practice is by FISH or WGS. Exome or targeted capture does not cover that non-coding region, so even an SV caller run on exome data would usually miss them; this last step is an inference from capture design and from sources the department read earlier, not a sentence read in this session. Note: one search also listed primary neuroblastoma TERT-rearrangement studies that may be the source of the task's dataset; they were not opened and nothing from them is used here.",
+          "sources": [
+            "https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/README.md",
+            "https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/DNA_Seq_WGS/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8138798/",
+            "https://docs.gdc.cancer.gov/Encyclopedia/pages/Variant_Type/",
+            "https://www.ejcped.com/article/S2772-610X(24)00015-1/fulltext"
+          ],
+          "confidence": "high for the caller and file-format answer; medium for the exome-coverage inference",
+          "deliveries": {
+            "bd04-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-e70e07ad4ac0"
+            },
+            "bd04-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-df35fdaddb7b"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Can small-variant calling from exome or genome sequencing (SNV/indel callers producing MAF rows) ever report a genomic rearrangement whose breakpoints lie in the non-coding region upstream of a gene, or are such events only reported by dedicated structural-variant callers and stored separately? ANSWER: No. SNV/indel callers that produce MAF rows do not report rearrangements, so the teams' assumption is sound: the absence of small-variant rows near a gene is uninformative about rearrangements there. Small-variant callers are size-limited by design (Strelka: 'SNVs and indels up to a predefined maximum size, currently defaulting to 49 bases or less'). The MAF Variant_Type field allows only SNP, DNP, TNP, ONP, INS and DEL; it has no value for a translocation, inversion or breakend. Structural variants are conventionally events of 50 bp or more (deletions, duplications, insertions, inversions, translocations). They are found from different evidence (discordant read pairs, split reads, read depth, local assembly) by dedicated callers such as Manta, Delly, Lumpy, GRIDSS, SvABA and BRASS, which write breakend (BND) records in VCF or BEDPE. The GDC releases these as files separate from the SNV/indel output. The only overlap is at the size boundary: SV callers such as Manta and SvABA also emit medium-sized indels, and a sub-50-bp insertion or deletion in a gene's upstream region could appear as a 5'Flank MAF row if that region was sequenced, but that is a small indel, not a rearrangement joining distant loci. For TERT, a neuroblastoma review states that the rearrangements were discovered by whole-genome sequencing, that breakpoints cluster in a roughly 50 kb region upstream of the TERT transcription start site without affecting the gene itself, and that detection in practice is by FISH or WGS. Exome or targeted capture does not cover that non-coding region, so even an SV caller run on exome data would usually miss them; this last step is an inference from capture design and from sources the department read earlier, not a sentence read in this session. Note: one search also listed primary neuroblastoma TERT-rearrangement studies that may be the source of the task's dataset; they were not opened and nothing from them is used here. HOW SURE: high for the caller and file-format answer; medium for the exome-coverage inference. SOURCES: https://github.com/Illumina/strelka/blob/v2.9.x/docs/userGuide/README.md, https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/DNA_Seq_WGS/, https://pmc.ncbi.nlm.nih.gov/articles/PMC8138798/, https://docs.gdc.cancer.gov/Encyclopedia/pages/Variant_Type/, https://www.ejcped.com/article/S2772-610X(24)00015-1/fulltext."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd04-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd04-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd04-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd04-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd04-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 212.02605470793787,
+      "cost_usd": 0.3835696,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 88.57577737502288,
+      "cost_usd": 0.11536030000000001,
+      "error": null
+    },
+    {
+      "agent": "bd04-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 60.874316332978196,
+      "cost_usd": 0.10882389999999999,
+      "error": null
+    },
+    {
+      "agent": "bd04-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 75.09670749993529,
+      "cost_usd": 0.14336,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 148.20449116698,
+      "cost_usd": 0.251847,
+      "error": null
+    },
+    {
+      "agent": "bd04-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 182.54553991602734,
+      "cost_usd": 0.466493,
+      "error": null
+    },
+    {
+      "agent": "bd04-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 112.74670941696968,
+      "cost_usd": 0.22161039999999999,
+      "error": null
+    },
+    {
+      "agent": "bd04-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 140.84722633298952,
+      "cost_usd": 0.2627988,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

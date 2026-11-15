@@ -225,6 +225,9 @@ The comparison is now against the best single model: Fable 5.2 alone, same tasks
 What we expect, written before any run: a lab of Fable analysts without the search changes would do about as well as Fable alone, because Fable was consistent on GeneBench (2 of 2 or 0 of 2 on every problem). If version 3 beats Fable alone, we expect the gain to come from problems where a search changed a method, and the search-off run to lose that gain. We may be wrong on both counts.
 Status: being built. The GeneBench design of D-17 stays reproducible with `--model opus --no-team-search --no-research`.
 
+**D-20 · Nov 14, 17:02 · Decided · Version 3 is frozen for the BioDSA-1K and scBench test tasks.**
+Design as in D-19, unchanged after the pilots (M-12). Development tasks, whose scores we have seen: BioDSA-1K bd01 to bd04; scBench sc01, sc07, sc08. Test tasks, scored once after every agent has exited: BioDSA-1K bd05 to bd40 (36 tasks); scBench sc02 to sc06 and sc09 to sc36 (33 tasks). All agents Fable 5.2. Comparison: Fable 5.2 alone, four attempts per BioDSA-1K task and two per scBench task, same limit, no web access; and for BioDSA-1K a second lab run with all search off. Order of running, because Claude usage on one account is the limit: BioDSA-1K lab, BioDSA-1K single agents, scBench, then the search-off run.
+
 ## 5. Agent observations
 
 Things the agents did that we did not expect.
@@ -252,6 +255,12 @@ Team A's first answer passed and team B's failed. After the question round team 
 
 **O-8 · Nov 14, 15:31 · Measured (test run, problem gb05) · The challenge did not break a false agreement this time.**
 Both teams agreed on a wrong answer. The director challenged it with questions; both teams re-checked and kept their answer; the lab reported it as replicated, and it failed. On the development problem gb02 the challenge did break a false agreement (O-5). So the challenge sometimes catches a shared blind spot and sometimes does not.
+
+**O-9 · Nov 14, 17:02 · Measured (BioDSA-1K pilot, task bd01) · The team that knew more was right, and the blind referee picked it.**
+Fable alone answered "not verifiable" on both attempts; the data in fact settles the claim. In the lab, team A (briefed by the library) answered correctly and team B (data only) made the single agents' mistake. Neither moved after the question round. The referee, not knowing which team was which, ran a test and picked team A's answer, and the lab passed. One task; but it is the design working as intended: two teams that differ in what they know, and a test instead of a vote.
+
+**O-10 · Nov 14, 17:02 · Measured (both pilots) · Fable alone fails in one way on BioDSA-1K, and the lab shares it when both teams do.**
+All four failed single attempts on the pilot tasks judged a settled claim "not verifiable". On bd04 both lab teams did the same, the challenge did not move them, and the lab reported a wrong answer as replicated. The same happened on scBench task sc01. With every agent on the same model, a mistake the model makes every time survives the whole lab.
 
 ## 6. Ideas
 
@@ -501,3 +510,20 @@ Commands, all on Modal, each agent in its own sandbox: `python3 -m lab.run lab -
 **What it does not show.** Eight problems. A difference of one problem is 12.5 points, so "3 of 8 against 3 of 8" and "3 against 4" are not differences we can call real. One run per arm. The lab's analysts were Opus; a lab of Fable analysts was not tested, and after seeing these scores it could not be tested on these problems without bias.
 
 **With the two development problems** (version 2 failed both, M-10; Opus alone 0 of 8 attempts; Fable alone 0 of 4): lab 3 of 10, Opus alone 10 of 40 attempts (25%), Fable alone 8 of 20 (40%). Published context on the full 129 problems, with other harnesses: best model about a third; Claude Opus 4.8 between 9% and 16%.
+
+**M-12 · Nov 14, 17:02 · Measured · Pilots of version 3 on the two new benchmarks (development tasks, all agents on Fable 5.2, on Modal).**
+Commands: `python3 -m lab.run lab --benchmark biodsa --studies bd01,bd02,bd03,bd04 --run-dir runs/biodsa-pilot --memory past --backend modal --parallel 8`, then `baseline ... --attempts 2`, `grade`, `measures`; the same for `--benchmark scbench --studies sc01,sc07,sc08`. Records: `results/biodsa-pilot/`, `results/sc-pilot/`.
+
+| | BioDSA-1K, 4 tasks | scBench, 3 tasks |
+|---|---|---|
+| Lab | 3 of 4 | 2 of 3 |
+| Fable alone | 4 of 8 attempts; 2 of 4 tasks | 4 of 6 attempts; 2 of 3 tasks |
+| Where they differ | bd01: lab right, single wrong twice (O-9) | nowhere: every agent passed sc07 and sc08 and failed sc01 |
+| False agreement | 1 of 3 replicated answers wrong (bd04) | 1 of 3 (sc01) |
+| Web search | library 48 calls, research on demand 39, team A 1; 29 pages opened | library 36, research on demand 29, team A 0 |
+| Research on demand | 11 questions, none blocked, 20 findings delivered | 9 questions, 2 blocked by the leak check, 14 findings delivered |
+| Lab cost | 33 runs, 94 minutes of agent time, $10.80 ($2.70 a task) | 25 runs, 131 minutes, $9.75 ($3.25 a task) |
+| One single attempt | 55 seconds, about $0.10 | 4 minutes, about $0.11 |
+| Faults | none | one sandbox lost by Modal, retried successfully |
+
+What this shows: version 3 runs end to end with real agents, including search by verified identity, budgets, and research on demand; web search is now a real part of the work (on GeneBench the library opened 7 pages in a whole run). What it does not show: seven tasks cannot say whether the lab beats Fable alone. The lab costs about 27 single attempts per BioDSA-1K task; a vote over repeats would not help a model that gives the same answer every time, but the cost gap is real.

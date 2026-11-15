@@ -1,0 +1,491 @@
+{
+  "study": "bd03",
+  "status": "replicated",
+  "final": {
+    "agent": "bd03-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-pilot/bd03/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd03-library": "fable",
+    "bd03-team-a": "fable",
+    "bd03-team-b": "fable",
+    "bd03-team-c": "fable",
+    "bd03-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd03-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-pilot/bd03/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd03-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-pilot/bd03/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd03-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-pilot/bd03/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd03-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-pilot/bd03/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd03-team-a",
+        "bd03-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd03-team-a",
+        "bd03-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The hypothesis is a conjunction of two directional claims: the TP53-mut predominant subtype has (1) higher tumour aneuploidy AND (2) poorer prognosis. The library reports that columns for every part appear to be present in the clinical tables (MOLECULAR_SUBTYPE; ANEUPLOIDY_SCORE and FGA, plus the segment file data_cna_hg19.seg; OS_MONTHS and OS_STATUS) - confirm this yourself by listing the columns before choosing between a tested label and 'Not verifiable'. Test each half separately, and write down the effect size, direction and p-value for both halves before choosing a label. If the halves disagree, say so explicitly and decide on whether both directional claims hold; do not average the evidence or report only the stronger half.",
+      "from": [
+        "sl-biodsa-pilot-cd7d662c9999"
+      ],
+      "reason": "Determines the overall structure of the analysis and the label rule: both halves must be tested, and the choice between a tested label and 'Not verifiable' depends on whether these columns exist.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-dc07ec804bc1"
+      }
+    },
+    {
+      "text": "The exposure is the study's own cluster label (the 'TP53-mut predominant' level of MOLECULAR_SUBTYPE), not TP53 mutation status re-derived from data_mutations.txt, which would be a different exposure. Tabulate the MOLECULAR_SUBTYPE levels and n per level. If there are more than two subtypes, an omnibus Kruskal-Wallis or k-group log-rank test only shows that some group differs and may be driven by another subtype. Make the pre-specified contrast 'TP53-mut predominant vs all other subtypes pooled' the primary test for both aneuploidy and survival; add pairwise contrasts against each other subtype (Dunn or Holm-adjusted pairwise tests for aneuploidy, Holm-adjusted pairwise log-rank for survival) and check the direction in each. Do not choose the label from an omnibus p-value alone.",
+      "from": [
+        "sl-biodsa-pilot-af11cb47929a"
+      ],
+      "reason": "Fixes which grouping variable and which contrast answer the hypothesis; using the omnibus test or a re-derived TP53 status would test a different question.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-bdf30c5df270"
+      }
+    },
+    {
+      "text": "Take care over how aneuploidy is measured. (a) data_cna.txt holds discrete gene-level calls from a targeted panel (mostly 0, with -2/2 for deep deletions/amplifications); these are focal events, so do not count altered genes there as an aneuploidy measure. Use the sample-table columns and data_cna_hg19.seg. (b) ANEUPLOIDY_SCORE may not be on a standard scale: standard scores are a count of altered chromosome arms (0-39) or a fraction of arms altered (0-1), but the first data row of data_clinical_sample.txt shows ANEUPLOIDY_SCORE = 319463.6 beside FGA = 0.0017. Describe its range and distribution and its Spearman correlation with FGA. (c) Independently recompute an arm-level score from the .seg file (e.g. segments with |seg.mean| > 0.2; an arm is altered if >= 70% of its covered length is altered in one direction; score = altered arms / callable arms) and check that FGA can be reproduced from the .seg file (FGA = length of segments with |seg.mean| above about 0.1-0.2 divided by total segment length). (d) Panel-derived FGA is right-skewed with many zeros or near-zeros, so use rank-based tests (Mann-Whitney / Kruskal-Wallis) with medians and IQRs, optionally Fisher's exact test on the share above a cutoff, not t-tests/ANOVA on raw values. Run the subtype comparison on all three metrics (provided score, FGA, recomputed arm score) and base the aneuploidy conclusion on whether they agree in direction, not on one column.",
+      "from": [
+        "sl-biodsa-pilot-cd7461b43d76",
+        "sl-biodsa-pilot-f258b1882ead"
+      ],
+      "reason": "The aneuploidy half can be mis-measured in three ways (wrong table, non-standard score scale, parametric tests on zero-inflated data); this tells the team which sources and tests are valid and to cross-check metrics.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-1be137aabbb7"
+      }
+    },
+    {
+      "text": "Low tumour purity compresses copy-number log-ratios toward zero (observed log2 ratio is about log2(purity*CN/2 + 1 - purity); a one-copy gain at 10% purity gives about 0.07, below the usual 0.1-0.2 calling thresholds), so low-cellularity (e.g. mucinous) tumours can look falsely 'flat' with low FGA/aneuploidy. A subtype difference in aneuploidy can therefore be a purity or histology artefact. Compare TUMOR_PURITY across MOLECULAR_SUBTYPE groups, correlate purity with FGA and ANEUPLOIDY_SCORE (Spearman), and count samples with purity <= 20% or missing per subtype. If purity differs by subtype or correlates with the aneuploidy metric, repeat the subtype comparison adjusted for purity (rank-transformed outcome regressed on subtype + purity, or a stratified test within purity strata) and as a sensitivity analysis restricted to samples with purity >= 20-30%; report whether the TP53-subtype effect survives.",
+      "from": [
+        "sl-biodsa-pilot-2774278ded9b"
+      ],
+      "reason": "Purity is a specific, checkable confounder of the aneuploidy comparison that the team would be unlikely to consider from the data alone.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-6fb0819d38f4"
+      }
+    },
+    {
+      "text": "Check the unit of analysis and the coding when joining the tables. MOLECULAR_SUBTYPE and OS are patient-level, while aneuploidy/FGA/purity are sample-level; sample IDs with suffixes such as T02/T04 suggest some patients have more than one sample or a non-first sample. OS_STATUS is a string like '0:LIVING' / '1:DECEASED', missing values are the literal 'NA', and four '#' metadata lines precede the header of the clinical tables. After merging, count samples per PATIENT_ID and count missing MOLECULAR_SUBTYPE, OS_MONTHS, FGA and ANEUPLOIDY_SCORE; parse the event indicator from the leading digit of OS_STATUS and check the death count is plausible. Keep one sample per patient (or average within patient) for aneuploidy tests, run survival strictly at patient level, drop rather than impute missing subtype, and report the n actually used in each test.",
+      "from": [
+        "sl-biodsa-pilot-15392907247d"
+      ],
+      "reason": "Prevents double-counting patients and mis-parsed event/missing codes, either of which would silently distort both tests.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-f66167616a20"
+      }
+    },
+    {
+      "text": "Survival power depends on the number of deaths, not patients. Tabulate patients and deaths per MOLECULAR_SUBTYPE. Report median OS with 95% CI per group and the hazard ratio with 95% CI for TP53-mut predominant vs others, not only the log-rank p; check proportional hazards (Schoenfeld test, crossing Kaplan-Meier curves). If a group has fewer than about 10 deaths or zero events (where ordinary Cox estimates diverge), use Firth-penalised Cox or an exact/permutation log-rank test, pool sparse subtypes for the TP53-vs-rest contrast, and add a restricted-mean-survival-time comparison if curves cross. Judge the prognosis half on effect direction and CI width as well as the p-value: a non-significant p in a small group is not by itself evidence against poor prognosis, and a significant one may rest on a handful of deaths.",
+      "from": [
+        "sl-biodsa-pilot-d8c0cd23efb1"
+      ],
+      "reason": "Changes which survival methods are valid with few events and how a non-significant or fragile result should be read when choosing the label.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-a078e6bd017d"
+      }
+    },
+    {
+      "text": "Molecular subtype is likely entangled with standard prognostic factors (HISTOLOGY, DIFFERENTIATION/grade, STAGE, PCI, treatment). The hypothesis says 'associated with', which is a marginal claim, so keep the unadjusted TP53-subtype contrast as the primary test. As a sensitivity analysis, cross-tabulate MOLECULAR_SUBTYPE against HISTOLOGY, DIFFERENTIATION and STAGE (Fisher/chi-square) and fit a multivariable Cox model with subtype plus grade/histology and age, staying within about 10 deaths per coefficient. Report the adjusted hazard ratio and say whether the association is independent of grade or explained by it, but do not flip the label solely because adjustment attenuates the effect.",
+      "from": [
+        "sl-biodsa-pilot-30b6153e7642"
+      ],
+      "reason": "Sets which estimate (crude vs adjusted) decides the label, avoiding both an unexamined confounded result and an over-adjusted answer to a different question.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-4f6cb61b8bf2"
+      }
+    },
+    {
+      "text": "Secondary robustness check only (possible left truncation). The library reports that OS_MONTHS is measured from metastasis diagnosis, while patients enter the cohort only when their tumour was sequenced, possibly months or years later; patients who died before sequencing are absent, so naive Kaplan-Meier overestimates survival and the subtype comparison is biased if time-to-sequencing differs by subtype. Compute entry delay = (AGE_AT_SEQUENCING - AGE_AT_METS) * 12 months per patient, check for negative values or delay > OS_MONTHS, and compare the delay across MOLECULAR_SUBTYPE groups. If delays are non-trivial or differ by subtype, add a delayed-entry (counting-process: entry, exit, event) Cox/KM analysis, dropping or flooring rows where entry >= exit, and state whether the subtype hazard ratio keeps its direction and significance. Because the ages have only whole-year precision, keep the naive analysis as primary and treat this as a sensitivity result.",
+      "from": [
+        "sl-biodsa-pilot-836000b62a22"
+      ],
+      "reason": "A survival bias specific to sequencing cohorts that could differ by subtype; the team needs to know both the check and that it must not override the primary analysis because the entry time is coarse.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-8fd240a8d115"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat the recorded TUMOR_PURITY as an adequate measure of tumour content for adjustment and stratification. The column is coarse (values in steps of about 10, with 123 of 273 samples at exactly 10, which looks like a floor or default, and one blank), so adjusting for it can leave residual detectability confounding. Neither team tested the aneuploidy contrast against an independent tumour-content measure.",
+      "Both teams treat the subtype label and the aneuploidy readout as independently measured. Team B showed the 'TP53-mut Predominant' label coincides exactly with having a detected TP53 mutation, so the exposure is itself detection-dependent: a low-tumour-content sample is less likely to show a TP53 call and less likely to show copy-number change, and so falls into a comparator group with a flat profile for a technical reason. 19 of 273 samples have no row at all in the mutation file.",
+      "Both teams count genome-wide copy-number burden including chromosome 17. TP53 mutation is commonly accompanied by loss of 17p, so part of the aneuploidy excess could be the defining locus itself and not genome-wide aneuploidy. Neither team recomputed the metrics without chr17.",
+      "Both teams made 'TP53-mut Predominant vs all other subtypes pooled' the primary contrast for 'poor prognosis' and both accept that a pooled difference is sufficient, although both found the subtype is not distinguishable from Triple-Negative.",
+      "The two halves are tested on different populations (aneuploidy on all 273, survival on the 244 stage IV patients with an OS time) and the label is drawn as if they describe the same group.",
+      "Both teams use the provided ANEUPLOIDY_SCORE only by rank without knowing what it measures; neither tried to reproduce it from the segment file, so it is not known whether it is an independent metric or a near-duplicate of FGA (Spearman 0.91)."
+    ],
+    "unused_evidence": [
+      "Read counts in data_mutations.txt (t_ref_count, t_alt_count): give a per-sample variant allele fraction, an independent proxy for tumour content. Neither team used it to check the purity confounding, and neither reported which subtype the 19 samples with no mutation rows belong to or what their FGA is.",
+      "ECOG, PCI (missing for 152), CRS_NUMBER, IPCHEMO_FIRST_CRS, FIRSTLINE_CHEMO_GROUP and BEST_RESPONSE: performance status, disease burden and treatment. Neither team's Cox models include any of them (team A: grade, histology, age; team B: histology, differentiation, age, sex). They are the main clinical prognostic factors recorded in the study and may differ by subtype.",
+      "data_gene_panel_matrix.txt: four panel versions (341, 410, 468 and 505 genes; 9 and 2 samples on the smallest and largest). Team B stratified by the IM5/IM6 suffix only; team A did not use panel version at all. Panel size affects segment resolution and the FGA denominator.",
+      "data_sv.txt (23 events) and data_cna.txt (gene-level calls): not used by either team. Both are focal-event tables and are unlikely to bear on arm-level aneuploidy, so leaving them out is defensible.",
+      "TMB_NONSYNONYMOUS: unused; not directly relevant to either half but could flag hypermutated outliers in the comparator groups.",
+      "STAGE for the 27 non-stage-IV patients: used only to explain missing OS. Team A said it checked whether OS missingness differs by subtype but reported no result."
+    ],
+    "unresolved_weak_points": [
+      "Both teams name the same weakest point, TP53-mut Predominant vs Triple-Negative survival (not significantly different), and both only report it. Neither examined what the Triple-Negative group is made of (histology mix, samples with no detected mutation, low-purity samples) or ran the TP53-vs-Triple-Negative contrast with histology held fixed, and neither stated in advance which comparator decides the label.",
+      "Team A listed a Firth or permutation test for the sparse RAS contrast (5 deaths) and an RMST comparison as not done; they remain not done.",
+      "Team A notes the aneuploidy effect weakens at purity >= 30 (provided score no longer significant) and is weak within goblet cell histology; reported, not resolved. This is the stratum where copy-number detection is most reliable, so it is the one that matters most for the purity artefact question.",
+      "Both teams call the left-truncation correction coarse (whole-year ages, 11 negative delays, 9 with delay >= OS); the result was stable in both, so this is reported and adequately bounded.",
+      "Team B's submitted note has an empty pitfalls_checked list, so it is not recorded which library pitfalls it considered beyond the checks listed."
+    ],
+    "second_readings": [
+      "'Poor prognosis' can mean worse than the rest of the cohort pooled (both teams' reading) or the poorest-prognosis subtype / worse than each other subtype. Under the stricter reading the Triple-Negative result matters and neither team said how it would change the label.",
+      "'TP53-mut predominant subtypes' is plural. It can be read as the single study cluster level 'TP53-mut Predominant' (both teams' reading) or as tumours/subtypes in which TP53 mutation predominates, for example the histological subtypes enriched for TP53 mutation. Team B's finding that the cluster equals detected TP53 mutation makes the two exposures close, but the histology-level reading was not examined as a reading of the claim.",
+      "'Increased tumor aneuploidy' can mean a higher value of the study's own Aneuploidy Score column (unknown definition) or higher genome-wide copy-number burden by any metric; the teams relied on agreement across metrics, which is reasonable only if the metrics are not all driven by the same purity-dependent signal.",
+      "The claim joins two outcomes with 'and'. Both teams read it as two separate associations that must each hold; neither considered whether the population differs between the halves (all stages vs stage IV only)."
+    ],
+    "verdict": "Moderate-to-high trust: both halves were tested with sensible rank-based and survival methods and several sensitivity analyses, and no check I can name is clearly likely to reverse the direction. The remaining doubts are that the exposure (a detected TP53 mutation) and the aneuploidy readout share a dependence on tumour content that was only adjusted with a coarse purity field, that chr17 was never excluded, and that the 'poor prognosis' half rests on the choice of pooled comparator, which both teams flagged but neither resolved.",
+    "questions": [
+      {
+        "to": "bd03-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your purity adjustment relies on TUMOR_PURITY, which takes values in steps of about 10 and is exactly 10 for 123 of 273 samples. Build an independent tumour-content proxy from data_mutations.txt (per-sample highest variant allele fraction from t_alt_count and t_ref_count), report which subtypes the 19 samples with no mutation rows fall in and their FGA, then repeat the TP53-subtype aneuploidy contrast (a) adjusted for this proxy and (b) restricted to samples whose proxy shows clear tumour content. Does the result change your method or how firmly you state the aneuploidy half?",
+        "from": [
+          "sl-biodsa-pilot-b256d7103be0",
+          "sl-biodsa-pilot-6fb0819d38f4"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-28e1feefed7d"
+      },
+      {
+        "to": "bd03-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The subtype is defined by a gene on chromosome 17, and loss of 17p often accompanies its mutation, so genome-wide burden metrics that include chr17 partly measure the defining locus. Recompute your seg-based FGA and arm-level score with chr17 removed (and say how many altered arms per sample the difference rests on), then repeat the TP53-subtype vs rest contrast. Does the result change your method or your reading of 'increased tumor aneuploidy'?",
+        "from": [
+          "sl-biodsa-pilot-0e02784b004a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-e7c1e2f2bff2"
+      },
+      {
+        "to": "bd03-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You name TP53 vs Triple-Negative survival as your weakest point but only report it. Tabulate the Triple-Negative group by histology, by purity and by whether the sample has any detected mutation, then run the TP53-subtype vs Triple-Negative survival contrast with histology held fixed (stratified). Before looking at the result, write down which comparator ('pooled rest' or 'each other subtype') your label rule uses for 'poor prognosis' and why. Does the result change your method or the rule?",
+        "from": [
+          "sl-biodsa-pilot-52fbcf97d45e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-93a27d0e8a55"
+      },
+      {
+        "to": "bd03-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your Cox models use grade, histology and age, but the study also records ECOG, PCI, CRS_NUMBER, IPCHEMO_FIRST_CRS and FIRSTLINE_CHEMO_GROUP, which neither team used. Cross-tabulate each against MOLECULAR_SUBTYPE among the patients in your survival analysis (noting missingness, especially PCI), and add ECOG and one treatment variable to the Cox model as a sensitivity analysis within your events-per-coefficient limit. Does the result change your method or how you describe the prognosis half?",
+        "from": [
+          "sl-biodsa-pilot-4f6cb61b8bf2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-d8d0f19faabb"
+      },
+      {
+        "to": "bd03-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You showed the TP53-mut Predominant label coincides exactly with a detected TP53 mutation, so both the exposure and the copy-number readout depend on tumour content, and TUMOR_PURITY is coarse (exactly 10 for 123 of 273 samples). Build an independent tumour-content proxy from data_mutations.txt (per-sample highest variant allele fraction from t_alt_count and t_ref_count), report which subtypes the 19 samples with no mutation rows fall in and their FGA, then repeat the aneuploidy contrast (a) adjusted for this proxy and (b) restricted to samples whose proxy shows clear tumour content. Does the result change your method or how firmly you state the aneuploidy half?",
+        "from": [
+          "sl-biodsa-pilot-1f1769d75b98"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-c0fb1e6a3d0f"
+      },
+      {
+        "to": "bd03-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: The subtype is defined by a gene on chromosome 17, and loss of 17p often accompanies its mutation, so genome-wide burden metrics that include chr17 partly measure the defining locus. Recompute FGA from the seg file with chr17 removed and repeat the TP53-subtype vs rest contrast overall and within your purity strata. Does the result change your method or your reading of 'increased tumor aneuploidy'?",
+        "from": [
+          "sl-biodsa-pilot-cdbc8aec1dcb",
+          "sl-biodsa-pilot-03bc6e78adce"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-0874162aa9e2"
+      },
+      {
+        "to": "bd03-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You name TP53 vs Triple-Negative survival as your weakest point but only report it; your within-histology tests compare TP53 with the pooled rest, not with Triple-Negative. Tabulate the Triple-Negative group by histology, by purity and by whether the sample has any detected mutation, then run the TP53-subtype vs Triple-Negative survival contrast stratified by histology. Before looking at the result, write down which comparator ('pooled rest' or 'each other subtype') your label rule uses for 'poor prognosis' and why. Does the result change your method or the rule?",
+        "from": [
+          "sl-biodsa-pilot-5d7bf97c47a5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-ec1a98e77e46"
+      },
+      {
+        "to": "bd03-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your aneuploidy half uses all 273 patients while your prognosis half uses only the 244 stage IV patients with an OS time, so the two halves of one claim describe different groups. Report the subtype distribution of the 29 patients without an OS time, then repeat the aneuploidy contrast in exactly the 244 patients used for survival. Does the result change your method or the population you say the conclusion applies to?",
+        "from": [
+          "sl-biodsa-pilot-58c9766e0b44"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-a69e45b6ee28"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In clinical targeted-panel tumour sequencing, how is the pathologist-estimated tumour purity field usually recorded (step size, minimum reported value, default when unknown), how well does it agree with purity inferred from somatic variant allele fractions or allele-specific copy-number tools, and is a VAF-based estimate a recommended substitute when adjusting copy-number burden for tumour content?",
+          "why": "Both teams adjusted the aneuploidy comparison only with the recorded purity field, which is coarse and concentrated at its lowest value. If that field is known to be unreliable, an adjustment based on it does not rule out a detectability artefact, and the teams need to know whether a VAF-based proxy is an accepted alternative.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When comparing genome-wide copy-number burden (fraction of genome altered or arm-level aneuploidy scores) between TP53-mutant and TP53-wild-type tumours, is it standard practice to exclude chromosome 17 or the 17p arm to avoid counting the loss that accompanies TP53 mutation, and how much of the reported difference is typically attributable to chromosome 17?",
+          "why": "Neither team removed chr17 from its metrics. Knowing the convention tells the teams whether the with-chr17 comparison is acceptable evidence of increased aneuploidy or needs the exclusion to be credible.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Which published copy-number summary metrics for panel-sequenced tumours are called an 'aneuploidy score' but take large continuous values (hundreds of thousands to tens of millions) instead of a count of altered chromosome arms, how are they computed from segment data, and do they depend on tumour purity or on the number of probes in the panel?",
+          "why": "Both teams used a provided score of unknown definition by rank only. If it is a length-weighted or probe-weighted deviation measure it may be more purity- or panel-dependent than FGA, which affects how much weight its agreement with the other metrics deserves.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In clinical targeted-panel tumour sequencing, how is the pathologist-estimated tumour purity field usually recorded (step size, minimum reported value, default when unknown), how well does it agree with purity inferred from somatic variant allele fractions or allele-specific copy-number tools, and is a VAF-based estimate a recommended substitute when adjusting copy-number burden for tumour content?",
+          "answer": "Agreement is poor, so an adjustment that uses only the recorded pathologist purity does not rule out a detectability artefact. A VAF-based purity is an accepted complementary check, but the pages read do not establish it as a replacement. RECORDING CONVENTION: not settled. None of the pages read documents the step size, floor value or unknown-default of a clinical panel purity field. The only related facts are that pathologists score in coarse bins (Smits 2014 used 0-5, 6-10, 11-20 ... 91-100%) and that panel assays ask for at least 20-30% tumour content. A pile-up at the lowest value may therefore be a floor or default code, not a measurement; this is my inference. AGREEMENT: Smits 2014 (nine pathologists, 47 lung slides, counted gold standard): estimates for one slide spanned 6.3 bins on average, 33% were at least 3 bins off, mean absolute error was 2.0 bins, and samples truly below 20% were judged adequate in 38% of observations. Mikubo 2020 (JTO): pathologists overestimated percent tumour nuclei against a computational estimate from mutant allele frequencies, which the sequencing lab used as a reference standard. Haider 2020 (333 prostate tumours, 10 methods): poor concordance between pathology and molecular purity; it recommends parameterising genomic analyses with purity estimated from the same analyte, i.e. DNA-derived purity for copy-number work. COUNTERPOINT: Patel 2018 (881 targeted-panel patients): three computational purity algorithms agreed poorly with each other, often failed on panel data and added no value beyond the pathologist estimate; the authors propose combining mutant allele fraction and copy-number evidence with the morphological estimate. SUGGESTED USE (my inference, not from the sources): repeat the adjustment with a VAF proxy alongside recorded purity, and restrict to samples with clear tumour signal. Leave TP53 out of the proxy, because 17p loss at the mutated locus inflates its VAF and would bias the TP53 group's purity upward.",
+          "sources": [
+            "https://www.modernpathology.org/article/S0893-3952(22)01806-3/fulltext",
+            "https://www.jto.org/article/S1556-0864(19)33409-4/fulltext",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7529507/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6887630/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd03-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-439a7321ec4d"
+            },
+            "bd03-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-93e274a1f443"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In clinical targeted-panel tumour sequencing, how is the pathologist-estimated tumour purity field usually recorded (step size, minimum reported value, default when unknown), how well does it agree with purity inferred from somatic variant allele fractions or allele-specific copy-number tools, and is a VAF-based estimate a recommended substitute when adjusting copy-number burden for tumour content? ANSWER: Agreement is poor, so an adjustment that uses only the recorded pathologist purity does not rule out a detectability artefact. A VAF-based purity is an accepted complementary check, but the pages read do not establish it as a replacement. RECORDING CONVENTION: not settled. None of the pages read documents the step size, floor value or unknown-default of a clinical panel purity field. The only related facts are that pathologists score in coarse bins (Smits 2014 used 0-5, 6-10, 11-20 ... 91-100%) and that panel assays ask for at least 20-30% tumour content. A pile-up at the lowest value may therefore be a floor or default code, not a measurement; this is my inference. AGREEMENT: Smits 2014 (nine pathologists, 47 lung slides, counted gold standard): estimates for one slide spanned 6.3 bins on average, 33% were at least 3 bins off, mean absolute error was 2.0 bins, and samples truly below 20% were judged adequate in 38% of observations. Mikubo 2020 (JTO): pathologists overestimated percent tumour nuclei against a computational estimate from mutant allele frequencies, which the sequencing lab used as a reference standard. Haider 2020 (333 prostate tumours, 10 methods): poor concordance between pathology and molecular purity; it recommends parameterising genomic analyses with purity estimated from the same analyte, i.e. DNA-derived purity for copy-number work. COUNTERPOINT: Patel 2018 (881 targeted-panel patients): three computational purity algorithms agreed poorly with each other, often failed on panel data and added no value beyond the pathologist estimate; the authors propose combining mutant allele fraction and copy-number evidence with the morphological estimate. SUGGESTED USE (my inference, not from the sources): repeat the adjustment with a VAF proxy alongside recorded purity, and restrict to samples with clear tumour signal. Leave TP53 out of the proxy, because 17p loss at the mutated locus inflates its VAF and would bias the TP53 group's purity upward. HOW SURE: medium. SOURCES: https://www.modernpathology.org/article/S0893-3952(22)01806-3/fulltext, https://www.jto.org/article/S1556-0864(19)33409-4/fulltext, https://pmc.ncbi.nlm.nih.gov/articles/PMC7529507/, https://pmc.ncbi.nlm.nih.gov/articles/PMC6887630/."
+        },
+        {
+          "question": "When comparing genome-wide copy-number burden (fraction of genome altered or arm-level aneuploidy scores) between TP53-mutant and TP53-wild-type tumours, is it standard practice to exclude chromosome 17 or the 17p arm to avoid counting the loss that accompanies TP53 mutation, and how much of the reported difference is typically attributable to chromosome 17?",
+          "answer": "The web did not settle this. No page read states that excluding chr17 or 17p is standard, and none quantifies the share of the TP53-associated difference due to chr17. A targeted search for studies 'excluding chromosome 17 / 17p' returned no paper describing such a convention. WHAT THE PAGES SHOW: Taylor 2018, the reference pan-cancer analysis, defines the aneuploidy score as the count of altered arms over all arms and reports its correlation with TP53 mutation; no chr17 exclusion appears in the text retrieved (only part of the paper was returned, so the methods were not fully checked). Donehower 2019 reports that more than 91% of TP53-mutant cancers lose the second allele, most typically through a 17p deletion, so 17p loss is mechanically coupled to TP53 mutation. The abstract of a 2025 preprint (Marques et al.) says p53-deficient tumours have higher aneuploidy pan-cancer but often comparable aneuploidy within a single cancer type, with more chromosome losses as the consistent difference. SIZE OF THE CHR17 EFFECT (my arithmetic from chromosome sizes, not from the sources): chr17 is about 81 Mb, roughly 2.6% of the genome; 17p is about 22-25 Mb, roughly 0.8%; 17p is one arm of 39. Chr17 can therefore add at most about 0.026 to FGA, or 1-2 arms to an arm count. READING FOR THE TEAMS: the with-chr17 comparison appears to be the usual primary analysis. Recomputing FGA and the arm score from the .seg file without chr17 or 17p is a cheap sensitivity check worth reporting, but nothing read makes it a prerequisite.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6028190/",
+            "https://www.cell.com/cell-reports/fulltext/S2211-1247(19)30885-X",
+            "https://doi.org/10.1101/2025.07.04.663162"
+          ],
+          "confidence": "low",
+          "deliveries": {
+            "bd03-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-6f3050cb6f9f"
+            },
+            "bd03-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-aebf12fb57f5"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When comparing genome-wide copy-number burden (fraction of genome altered or arm-level aneuploidy scores) between TP53-mutant and TP53-wild-type tumours, is it standard practice to exclude chromosome 17 or the 17p arm to avoid counting the loss that accompanies TP53 mutation, and how much of the reported difference is typically attributable to chromosome 17? ANSWER: The web did not settle this. No page read states that excluding chr17 or 17p is standard, and none quantifies the share of the TP53-associated difference due to chr17. A targeted search for studies 'excluding chromosome 17 / 17p' returned no paper describing such a convention. WHAT THE PAGES SHOW: Taylor 2018, the reference pan-cancer analysis, defines the aneuploidy score as the count of altered arms over all arms and reports its correlation with TP53 mutation; no chr17 exclusion appears in the text retrieved (only part of the paper was returned, so the methods were not fully checked). Donehower 2019 reports that more than 91% of TP53-mutant cancers lose the second allele, most typically through a 17p deletion, so 17p loss is mechanically coupled to TP53 mutation. The abstract of a 2025 preprint (Marques et al.) says p53-deficient tumours have higher aneuploidy pan-cancer but often comparable aneuploidy within a single cancer type, with more chromosome losses as the consistent difference. SIZE OF THE CHR17 EFFECT (my arithmetic from chromosome sizes, not from the sources): chr17 is about 81 Mb, roughly 2.6% of the genome; 17p is about 22-25 Mb, roughly 0.8%; 17p is one arm of 39. Chr17 can therefore add at most about 0.026 to FGA, or 1-2 arms to an arm count. READING FOR THE TEAMS: the with-chr17 comparison appears to be the usual primary analysis. Recomputing FGA and the arm score from the .seg file without chr17 or 17p is a cheap sensitivity check worth reporting, but nothing read makes it a prerequisite. HOW SURE: low. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC6028190/, https://www.cell.com/cell-reports/fulltext/S2211-1247(19)30885-X, https://doi.org/10.1101/2025.07.04.663162."
+        },
+        {
+          "question": "Which published copy-number summary metrics for panel-sequenced tumours are called an 'aneuploidy score' but take large continuous values (hundreds of thousands to tens of millions) instead of a count of altered chromosome arms, how are they computed from segment data, and do they depend on tumour purity or on the number of probes in the panel?",
+          "answer": "The web did not settle this. Three searches found no published 'aneuploidy score' for panel-sequenced tumours on a 1e5-1e7 scale, so the formula of the provided score remains unknown. Every definition found is an arm count (Taylor 2018: number of altered arms, 0-39; ploidy-adjusted arm-count variants) or an arm fraction. CONFIRMED ON A PAGE READ: CNApp computes continuous broad, focal and global CNA scores from segmented log2-ratio data. Its authors compute them on purity-corrected segments because purity, ploidy and subclonality cause under- or over-estimation of CNAs. Magnitude-based segment scores are therefore purity-dependent unless explicitly corrected. SNIPPETS ONLY (pages not opened or text not retrieved, lower reliability): an 'SCNA burden score' defined as the sum of segment log2 ratios normalised by segment length, and a genome-wide score that sums squared per-arm z-scores. No source read addressed dependence on panel probe count. MY INFERENCE, not from the sources: a score on this scale is most plausibly a length- or marker-weighted sum over segments, for example sum of |seg.mean| x length, or total altered length. Such a score would track purity-compressed log-ratios and panel coverage at least as much as FGA does, so its agreement with FGA is not independent evidence. The teams can test candidate formulas against the .seg file and check the score's correlation with purity and with markers per sample.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7010409/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6028190/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8505672/"
+          ],
+          "confidence": "low",
+          "deliveries": {
+            "bd03-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-9aa3dcdd15fb"
+            },
+            "bd03-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-a8728c386981"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Which published copy-number summary metrics for panel-sequenced tumours are called an 'aneuploidy score' but take large continuous values (hundreds of thousands to tens of millions) instead of a count of altered chromosome arms, how are they computed from segment data, and do they depend on tumour purity or on the number of probes in the panel? ANSWER: The web did not settle this. Three searches found no published 'aneuploidy score' for panel-sequenced tumours on a 1e5-1e7 scale, so the formula of the provided score remains unknown. Every definition found is an arm count (Taylor 2018: number of altered arms, 0-39; ploidy-adjusted arm-count variants) or an arm fraction. CONFIRMED ON A PAGE READ: CNApp computes continuous broad, focal and global CNA scores from segmented log2-ratio data. Its authors compute them on purity-corrected segments because purity, ploidy and subclonality cause under- or over-estimation of CNAs. Magnitude-based segment scores are therefore purity-dependent unless explicitly corrected. SNIPPETS ONLY (pages not opened or text not retrieved, lower reliability): an 'SCNA burden score' defined as the sum of segment log2 ratios normalised by segment length, and a genome-wide score that sums squared per-arm z-scores. No source read addressed dependence on panel probe count. MY INFERENCE, not from the sources: a score on this scale is most plausibly a length- or marker-weighted sum over segments, for example sum of |seg.mean| x length, or total altered length. Such a score would track purity-compressed log-ratios and panel coverage at least as much as FGA does, so its agreement with FGA is not independent evidence. The teams can test candidate formulas against the .seg file and check the score's correlation with purity and with markers per sample. HOW SURE: low. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC7010409/, https://pmc.ncbi.nlm.nih.gov/articles/PMC6028190/, https://pmc.ncbi.nlm.nih.gov/articles/PMC8505672/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd03-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd03-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd03-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd03-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd03-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 202.32711612503044,
+      "cost_usd": 0.41127829999999993,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 81.15136875002645,
+      "cost_usd": 0.19113940000000001,
+      "error": null
+    },
+    {
+      "agent": "bd03-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 131.69687212491408,
+      "cost_usd": 0.2310903,
+      "error": null
+    },
+    {
+      "agent": "bd03-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 139.67931154195685,
+      "cost_usd": 0.2729367,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 169.09869200002868,
+      "cost_usd": 0.3484789,
+      "error": null
+    },
+    {
+      "agent": "bd03-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 205.66570162493736,
+      "cost_usd": 0.44532140000000003,
+      "error": null
+    },
+    {
+      "agent": "bd03-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 203.17964287498035,
+      "cost_usd": 0.40752219999999995,
+      "error": null
+    },
+    {
+      "agent": "bd03-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 225.9617546669906,
+      "cost_usd": 0.4853848,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

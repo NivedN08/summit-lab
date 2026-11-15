@@ -1,0 +1,488 @@
+{
+  "study": "sc07",
+  "status": "replicated",
+  "final": {
+    "agent": "sc07-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-pilot/sc07/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc07-library": "fable",
+    "sc07-team-a": "fable",
+    "sc07-team-b": "fable",
+    "sc07-team-c": "fable",
+    "sc07-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc07-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-pilot/sc07/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc07-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-pilot/sc07/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc07-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-pilot/sc07/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc07-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-pilot/sc07/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc07-team-a",
+        "sc07-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc07-team-a",
+        "sc07-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Definition to use: 'variance explained in PC1 by a factor' means the R-squared of a one-factor-at-a-time linear regression of the PC1 scores on that categorical factor, i.e. SS_between / SS_total (eta-squared) of PC1 across the factor's levels. This is what scater getExplanatoryPCs, kBET pcRegression and scib pc_regression compute; it is marginal and unadjusted. It is NOT PC1's share of total variance, NOT gene loadings, and NOT a score summed over many PCs. Compute 1 - RSS/TSS of PC1 ~ C(factor) separately for each of the four factors, on PC1 only, and rank those four numbers.",
+      "from": [
+        "sl-sc-pilot-c14284e9bdbc"
+      ],
+      "reason": "The task wording is ambiguous and the commonly confused alternatives give different numbers; fixing the quantity is the first decision of the analysis.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-731a2e27bd0a"
+      }
+    },
+    {
+      "text": "Unit of analysis: the library read the file header (not yet verified by analysis) as 100,000 cells, 18 cell types, 91 cytokine levels, 12 donors and 1092 samples (sample = donor x cytokine), i.e. about 92 cells per sample and about 5 cells per sample x cell-type group. Pseudobulking per sample removes cell type as a testable factor and turns cell-type composition differences into apparent donor/cytokine variance; pseudobulking per sample x cell type gives groups so thin (many empty or 1-cell) that profiles are sampling noise. Tabulate cells per sample and per sample x cell_type first; if groups are this thin, make cell-level PCA the primary analysis (all four factors are defined per cell) and use any pseudobulk only as a sensitivity check with a minimum-cells filter. If you do compute R-squared on pseudobulk units, note that unadjusted R-squared is inflated by number of levels (expected value under no effect is (k-1)/(n-1): about 8% for a 91-level factor at n=1092 versus about 1% for a 12-level factor, but only about 0.09% at n=100,000 cells), so report adjusted R-squared or a label-permutation null alongside it and trust the corrected ranking if they differ.",
+      "from": [
+        "sl-sc-pilot-e2eabe3423b5",
+        "sl-sc-pilot-180354d7ccbd",
+        "sl-sc-pilot-37195cc8e0b5"
+      ],
+      "reason": "The choice between cell-level and pseudobulk PCA can change which factor ranks first, and a pseudobulk analysis carries a level-count bias large enough to flip a close ranking.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-39a4db9543d9"
+      }
+    },
+    {
+      "text": "The data file is an AnnData h5ad whose X is reported (from the header) to hold RAW integer counts, with no layers and no precomputed PCA; obs columns are cell_type, cytokine, donor, treatment, sample, plus tscp_count, gene_count, pct_counts_MT and barcode wells. PCA on raw or poorly normalised counts makes PC1 track sequencing depth rather than the design factors, which changes every factor's R-squared. Confirm X is integer-valued, apply library-size normalisation + log1p before PCA, then correlate PC1 with log total counts and gene_count. Depth also differs biologically between cell types, so a correlation alone is not proof of artefact: if PC1 is mostly depth after normalisation, do not regress depth out blindly; re-run with an alternative transform (e.g. Pearson residuals or scaled HVGs) and report whether the factor ranking is unchanged.",
+      "from": [
+        "sl-sc-pilot-6dcc8b8f3afc",
+        "sl-sc-pilot-180354d7ccbd"
+      ],
+      "reason": "Skipping normalisation, or assuming X is already normalised, produces a different PC1 and therefore a different ranking.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-b45fef53618c"
+      }
+    },
+    {
+      "text": "The PCA must be centred. An uncentred SVD on the sparse matrix (sklearn TruncatedSVD, or scanpy pca with zero_center=False) returns a first component that mainly represents the vector of gene means, not the leading axis of variation, so its 'PC1' is the wrong component. Use a centred PCA (scanpy sc.pp.pca / sc.tl.pca default zero_center=True, or sklearn PCA; arpack solver with fixed random_state) and confirm that PC1 scores have mean approximately 0 before computing any R-squared.",
+      "from": [
+        "sl-sc-pilot-addfa4db1326"
+      ],
+      "reason": "A common shortcut for large sparse matrices silently yields the wrong component, invalidating all four R-squared values.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-a59647fa7d25"
+      }
+    },
+    {
+      "text": "PC1 depends on preprocessing choices with no field consensus: highly-variable-gene selection (and its batch_key), per-gene scaling to unit variance versus unscaled log-counts, and clipping (max_value). Compute the four per-factor R-squared values on PC1 under at least two or three reasonable pipelines (e.g. normalize_total + log1p + 2000 HVGs + scale + PCA; the same without scaling; all genes), and check that PC1 is not dominated by one rare cell type or a few outlier cells. If the ranking changes between pipelines, report the standard default pipeline (normalize_total, log1p, HVG, scale, centred PCA) as primary and state which pairs of factors are close enough to swap.",
+      "from": [
+        "sl-sc-pilot-1de9fe71d89b"
+      ],
+      "reason": "A ranking that holds under only one pipeline is fragile; this sets both the robustness check and the tie-break rule for which pipeline counts as primary.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-e166ff136ee5"
+      }
+    },
+    {
+      "text": "Treatment (PBS vs cytokine) is very likely a coarsening of the cytokine column: 1092 samples = 12 donors x 91 cytokine levels suggests PBS is itself one of the 91 cytokine levels. Crosstab cytokine x treatment to check whether each cytokine level maps to exactly one treatment level. If so, treatment is nested in cytokine: a model containing both is rank-deficient (variancePartition aborts on collinearity > 0.99), and the partial R-squared of treatment given cytokine is zero by construction. Compute each factor's R-squared in its own one-factor model and do not fit treatment and cytokine jointly; a nested coarser factor cannot have a larger marginal R-squared than the finer factor it is nested in, which is a mathematical property and not a biological finding.",
+      "from": [
+        "sl-sc-pilot-703850acd2d0"
+      ],
+      "reason": "A joint model of all four factors would fail or give meaningless estimates for cytokine and treatment; this tells the team how to structure the models.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-d155406f3b91"
+      }
+    },
+    {
+      "text": "The design is unbalanced, so the factors are not orthogonal (cell-type composition can differ between donors and possibly between cytokines). Variance shared between factors is counted in each marginal R-squared, and sequential (Type I) sums of squares change with the order in which terms are entered, so the decomposition is not unique. Crosstab donor x cell_type and cytokine x cell_type (chi-square / Cramer's V), and compare the marginal one-factor R-squared ranking with drop-one (partial) R-squared from the additive model PC1 ~ cell_type + donor + cytokine and, if feasible, a random-effects variance-component fit (PVCA / variancePartition style, all categorical factors as random effects). If rankings disagree, report the marginal per-factor R-squared as the primary answer (it is what PC-regression tools compute), never a Type I table in arbitrary order, and flag the disagreement.",
+      "from": [
+        "sl-sc-pilot-a8bbc0715b85"
+      ],
+      "reason": "Different decomposition methods can order donor, cytokine and cell type differently; this fixes which one is primary and which are sensitivity checks.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-8620ba0356ca"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams built PC1 from the same family of pipelines: library-size normalisation to 10,000, log1p, dispersion-style highly variable genes, optional scaling, centred PCA on single cells. Every 'robustness' variant either team ran (HVG count, scaled/unscaled, all genes, batch_key) stays inside log-normalised data. Neither ran a pipeline that differs in kind (no library-size normalisation, count-based HVG selection, Pearson residuals), so agreement across their variants is weaker evidence than the number of variants suggests.",
+      "Both teams took 'variance explained' to mean the marginal one-factor eta-squared of PC1 scores and used a fixed-effects additive model (drop-one partial R-squared, or residualising PC1 on cell-type means) as the only conditional alternative. Neither fitted a random-effects variance-component model, and neither allowed donor or cytokine to act differently in different cell types (no interaction terms), although cytokine responses are expected to be cell-type specific.",
+      "Both teams treated the supplied cell_type column (18 levels) as given and independent of the expression data. If the labels were derived by clustering the same expression matrix, the very high cell-type share of PC1 is partly built in. This does not obviously change the order, but neither team said where the labels come from or tested a coarser grouping.",
+      "Both teams treated cells as independent units for the donor figure. Donor has only 12 levels and its marginal share is mostly cell-type composition; team B's leave-one-donor-out run addresses this, team A's cell-level permutation null does not.",
+      "Both teams treated the residualised check as 'PC1 with cell type removed'. Subtracting cell-type means from PC1 scores (or subsetting the global PC1 to one cell type) is not the same as recomputing the PCA after cell type is removed from the expression data; the leading axis of the residual expression could be a different axis altogether."
+    ],
+    "unused_evidence": [
+      "Sublibrary: every cell name ends in a suffix (16 distinct values, about 6,800 cells each; 14 sublibraries contain all 12 donors, one contains 9 donors and one contains 2). This is the technical batch of the experiment. Neither team mentions it, tests whether PC1 tracks it, or checks whether it is associated with donor or cell type.",
+      "Replicate PBS wells: bc1_well has 96 levels against 91 cytokine levels because PBS occupies 6 wells (H7-H12) and every other cytokine occupies one. Team B noted that well and cytokine are confounded but neither team used the 6 PBS wells for what they offer: a direct estimate of well-to-well variation between identically treated wells, which is the real noise floor for the cytokine factor (a label-permutation null only measures the degrees-of-freedom inflation).",
+      "Depth columns supplied in obs (log1p_total_counts, log1p_n_genes_by_counts, tscp_count, gene_count, mread_count, total_counts_MT, pct_counts_MT). Both teams correlated PC1 with depth, and team A reports depth eta-squared by cell type only. Neither reports how depth splits by donor, cytokine and treatment, which is what decides the ranking if PC1 is depth-driven under a less careful pipeline.",
+      "bc2_well, bc3_well (192 levels each) and bc1_wind/bc2_wind/bc3_wind: later split-pool rounds, expected to be uninformative; not used and probably rightly so. species has one level; var holds only n_cells (genes were pre-filtered)."
+    ],
+    "unresolved_weak_points": [
+      "Team A named 'no alternative transform such as Pearson residuals; only log-normalised variants were tested'. Its own plan listed this check and it was not run. Reported, not resolved.",
+      "Team B named 'the exact preprocessing intended by the task is unknown'. It varied HVG count and scaling only; reported, not resolved beyond the log-normalised family.",
+      "Both named the donor figure as mostly cell-type composition rather than donor expression. Both showed the order survives drop-one / residualised PC1, which resolves it for the additive fixed-effects reading only; the variance-component fit that was passed down to team A as a suggested check is absent from its record, and team B's pitfalls_checked list is empty (it received no library notes).",
+      "Both named the cytokine-versus-treatment margin as thin and guaranteed by nesting. All six answer options place treatment last, so this weak point cannot change the letter; it stays unresolved but harmless.",
+      "Team B's plan promised a within-cell-type PCA; its checks list reports 'within six major cell types: donor > cytokine' without saying whether the PCA was recomputed inside each type or the global PC1 was subset."
+    ],
+    "second_readings": [
+      "'Variance explained' as the unique contribution of each factor (variance components or partial R-squared, with or without cell-type-specific effects) rather than the marginal share. Under this reading the donor figure drops by roughly fifty-fold and the donor-versus-cytokine gap narrows to a small multiple, so this is the only pair whose order is not protected by orders of magnitude.",
+      "'PC1' of which data: single cells (both teams' primary), pseudobulk per donor x cytokine sample (cell type then cannot be ranked at all), or pseudobulk per sample x cell type. Team B ran both pseudobulk versions and the order of the rankable factors held; team A ran neither.",
+      "'PC1' from which preprocessing: the task gives none. A pipeline without library-size normalisation gives a PC1 that is largely depth, and the ranking would then follow how depth splits across the four factors, which nobody measured.",
+      "'Cytokine identity (which of 91 cytokines)': the 91 levels include PBS. Read as identity among cytokine-treated cells only, the nesting guarantee over treatment disappears; since every option puts treatment last this reading cannot change the letter.",
+      "'Cell type' at 18 fine labels versus a coarse lineage grouping: PC1 is a myeloid-versus-lymphoid axis, so a coarse grouping should explain nearly as much; no plausible change."
+    ],
+    "verdict": "I trust the agreed answer fairly highly: under the marginal reading the three factors that decide the letter are separated by one to two orders of magnitude, every option places treatment last, and team B's bootstrap, leave-one-donor-out and pseudobulk runs all agree. It is not yet proven robust because both teams tested only log-normalised pipelines and only an additive fixed-effects conditional model, and neither used the sublibrary batch or the six replicate PBS wells; the questions target those gaps, with the donor-versus-cytokine order under a conditional reading being the only place I see a realistic route to a different ranking.",
+    "questions": [
+      {
+        "to": "sc07-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your weakest point says no alternative transform was run, although your plan listed one, and all five of your pipelines are log-normalised variants of each other. Run at least one pipeline that differs in kind (for example analytic Pearson residuals on the raw counts, and highly variable genes selected on raw counts rather than on log data), confirm PC1 is centred, and report the four one-factor R-squared values on its PC1 together with which cell types sit at the two ends of that PC1. Is PC1 still the same axis, is the ranking of the four factors the same, and does the result change your method or your confidence?",
+        "from": [
+          "sl-sc-pilot-7a4be47fae31",
+          "sl-sc-pilot-6dcc8b8f3afc"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-0d7e267b717d"
+      },
+      {
+        "to": "sc07-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The task does not state any preprocessing, and obs already carries depth columns (log1p_total_counts, log1p_n_genes_by_counts, tscp_count) that you used only for a correlation with PC1 and for an eta-squared by cell type. Compute the one-factor eta-squared of log1p_total_counts for all four factors (cell type, donor, cytokine, treatment), then recompute the four PC1 R-squared values with the library-size normalisation step removed (log1p of raw counts, and raw counts with no transform). Does the ranking of the four factors on a depth-dominated PC1 match the ranking you submitted? If it does not, say how you justify the normalised pipeline as the one the task means, and whether your confidence changes.",
+        "from": [
+          "sl-sc-pilot-7eefe44ab73f",
+          "sl-sc-pilot-180354d7ccbd"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-7829b697da1c"
+      },
+      {
+        "to": "sc07-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The guidance passed to you suggested a random-effects variance-component fit, and your record shows only marginal eta-squared and fixed-effects drop-one R-squared. Fit PC1 with cell type, donor and cytokine as crossed random effects (a subsample of cells is acceptable if you state it and repeat it with a second seed), and report each factor's variance fraction with the residual. Then add donor-by-cell-type and cytokine-by-cell-type components and report donor plus its interaction against cytokine plus its interaction. Does the order of donor and cytokine stay the same in both fits, and does the result change which definition you treat as primary?",
+        "from": [
+          "sl-sc-pilot-8620ba0356ca",
+          "sl-sc-pilot-95d8651a182c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-9feea740a3ff"
+      },
+      {
+        "to": "sc07-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Two pieces of the data are absent from your method. (1) Each cell name ends in a sublibrary suffix (16 values), the technical batch of the experiment: compute the one-factor R-squared of PC1 by sublibrary, and Cramer's V of sublibrary against donor and against cell type; also recompute donor's R-squared on PC1 inside each sublibrary. (2) You declined all pseudobulk because sample-by-cell-type groups are thin, but groups at donor x cell type or cytokine x cell type, or sample x cell type with a minimum-cells filter, are not thin: run one such PCA and report the four R-squared values with adjusted R-squared or a permutation null. Is any part of the donor share attributable to sublibrary, and does either result change your method?",
+        "from": [
+          "sl-sc-pilot-ee4cb8e836a2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-118dc1da34a3"
+      },
+      {
+        "to": "sc07-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your plan promised a within-cell-type PCA, but your checks describe residual PC1 after removing cell-type means and 'within six major cell types' without saying whether the PCA was recomputed. State which you did. If the global PC1 was only subset or residualised, recompute the PCA (a) separately inside each of the major cell types and (b) on expression with cell-type means removed gene by gene, and report donor, cytokine and treatment R-squared on each new PC1 with a permutation null. Is donor above cytokine on every one of these PC1s, and if it is not, does that change which reading of the question you take as primary or the confidence you attach to it?",
+        "from": [
+          "sl-sc-pilot-66aa27482ca0",
+          "sl-sc-pilot-0405814a0e1e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-12f27a94ca62"
+      },
+      {
+        "to": "sc07-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You named 'the exact preprocessing intended by the task is unknown' as a weak point, yet every variant you ran is log-normalised data with a different HVG count or scaling. First report the settings of your primary run that your notes leave out (HVG flavour, clip value, solver, and the mean of the PC1 scores as proof the PCA was centred). Then run pipelines that differ in kind: no library-size normalisation (log1p of raw counts), HVGs selected on raw counts, and one residual-based transform. Also compute the one-factor eta-squared of the supplied log1p_total_counts column for all four factors. Is the ranking of the four factors the same on every PC1, including one that is mostly depth, and does the result change your method?",
+        "from": [
+          "sl-sc-pilot-123d4e7d3b24",
+          "sl-sc-pilot-a02515b49478"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-55b7936b64d4"
+      },
+      {
+        "to": "sc07-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You noted that bc1_well is confounded with cytokine but did not use the fact that PBS occupies six replicate wells (H7 to H12) while every other cytokine has one. Among PBS cells only, compute the R-squared of PC1 by well (raw, adjusted, and after removing cell-type means), and compare it with the cytokine R-squared scaled to the same number of levels, for example by drawing many random sets of six non-PBS wells. Separately, each cell name ends in a sublibrary suffix (16 values) that your audit does not mention: compute the R-squared of PC1 by sublibrary and its association with donor and cell type. Is the cytokine share of PC1 distinguishable from plain well-to-well variation, is any of the donor share attributable to sublibrary, and does either result change your method or how you describe the lower places of the ranking?",
+        "from": [
+          "sl-sc-pilot-6ea8eabddcbc"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-0bbd305185d6"
+      },
+      {
+        "to": "sc07-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your conditional check removes cell-type means and then compares donor with cytokine, which assumes each acts the same way in every cell type. Fit PC1 with cell type plus donor plus cytokine, then add donor-by-cell-type and cytokine-by-cell-type terms, and report the variance attributed to donor with its interaction against cytokine with its interaction, with degrees-of-freedom-adjusted values or a permutation null because the cytokine interaction has many levels. Also fit the three factors as crossed random effects and report the variance fractions. Does donor stay above cytokine once cell-type-specific effects are counted, and does the result change which definition of variance explained you report as primary?",
+        "from": [
+          "sl-sc-pilot-0405814a0e1e",
+          "sl-sc-pilot-a8bbc0715b85"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-1c51de657472"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In random-effects variance partitioning of a single response (as implemented in the variancePartition and PVCA approaches), how is the fraction of variance attributed to each crossed categorical factor defined, and when two factors are associated in an unbalanced design (for example group composition differing between levels of another factor), to which factor is the shared variance assigned compared with a one-factor-at-a-time R-squared?",
+          "why": "Both teams used marginal R-squared plus a fixed-effects drop-one model; neither showed it knew how a variance-component fit would allocate the composition-driven share, which is the one reading under which the middle of the ranking is not separated by orders of magnitude.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "For analytic Pearson residual normalisation of single-cell count data as implemented in scanpy's experimental module, what are the default overdispersion parameter and clipping rule, does the companion highly-variable-gene selection expect raw counts, and is the output already centred enough that PCA should be run without an extra scaling step?",
+          "why": "One team named the residual-based transform as its untested weak point and both will be asked to run it; knowing the defaults and the expected input prevents a wrong run (for example applying it to log-normalised data) from being mistaken for a real change in the first principal component.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In split-pool combinatorial-barcoding single-cell RNA-seq, what do the round-1 barcode well and the sublibrary each represent experimentally, which of them is the recommended technical batch covariate, and are sublibrary effects on leading principal components commonly reported?",
+          "why": "The data carry both a round-1 well and a sublibrary identifier that neither team used as a batch factor; knowing which one is a true technical batch tells the teams whether a principal component's association with donor or condition could be partly technical.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In random-effects variance partitioning of a single response (as implemented in the variancePartition and PVCA approaches), how is the fraction of variance attributed to each crossed categorical factor defined, and when two factors are associated in an unbalanced design (for example group composition differing between levels of another factor), to which factor is the shared variance assigned compared with a one-factor-at-a-time R-squared?",
+          "answer": "DEFINITION (sourced, high confidence). One linear mixed model is fitted to the response with every categorical factor as a random intercept, e.g. PC1 ~ (1|cell_type) + (1|donor) + (1|cytokine), using lme4::lmer. The fraction for factor k is its estimated variance component divided by the sum of all variance components plus the residual variance: sigma2_k / (sum_j sigma2_j + sigma2_residual). The fractions, residual included, sum to 1 and are always non-negative; each equals an intra-class correlation (the correlation of two observations sharing that factor level). The Gaussian prior shrinks per-level effects toward zero, which is why many-level factors are not over-credited as they are by fixed-effects least squares. PVCA uses the same variance-component fit (factors as random effects) on principal components and combines them with eigenvalue weights; on a single PC it reduces to the same per-factor fraction. SHARED VARIANCE (partly sourced, medium confidence). The vignette says each fraction is reported 'while simultaneously correcting for all other' variables, that 'like all multiple regression methods, variancePartition will divide the contribution over multiple variables that are strongly correlated', and that adding a correlated variable lowers the other's fraction (sex versus individual example). So the difference from one-factor-at-a-time R-squared is: marginal R-squared counts variance shared between associated factors in full in every one of them (the marginal values can sum above 1), while the joint variance-component fit counts it once. A factor whose marginal R-squared arises only because the composition of another factor differs across its levels (e.g. donors or cytokines differing in cell-type mix) keeps only what is left after the other factor is fitted, so its fraction drops below its marginal R-squared and the composition-driven share goes to the factor that actually carries the level effects (here cell type). That last sentence is my inference from the 'correcting for all others' statement; no page I read gives an explicit allocation formula for unbalanced crossed factors, so the web does not fully settle the exact split. NESTED FACTORS (sourced). A coarser factor nested in a finer one (sex within individual in the vignette; here treatment within cytokine) removes its share from the finer factor and the two fractions add up to the total between-level variation. The mixed model can fit such nested terms where a fixed-effects ANOVA is singular. Consequently, in a variance-component fit treatment is not mathematically bounded above by cytokine, unlike marginal R-squared. This refines the earlier department note that a joint treatment + cytokine model is unusable: that holds for fixed effects, not for random effects. NOT SOURCED (my statistical reasoning, low confidence): a variance component describes the spread of level effects and is not weighted by level sizes the way SS_between/SS_total is, so a very unbalanced 2-level factor can get a larger fraction than its marginal R-squared, but a component estimated from 2 levels is poorly determined.",
+          "sources": [
+            "https://www.bioconductor.org/packages/release/bioc/vignettes/variancePartition/inst/doc/variancePartition.html",
+            "https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-016-1323-z",
+            "https://bioconductor.org/packages/release/bioc/vignettes/pvca/inst/doc/pvca.pdf"
+          ],
+          "confidence": "high for the definition; medium for how shared variance is allocated (the sources say it is divided and each factor is adjusted for the others, but give no explicit rule for unbalanced crossed factors)",
+          "deliveries": {
+            "sc07-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-pilot-cd38258f9d65"
+            },
+            "sc07-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-pilot-64ade0508e94"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In random-effects variance partitioning of a single response (as implemented in the variancePartition and PVCA approaches), how is the fraction of variance attributed to each crossed categorical factor defined, and when two factors are associated in an unbalanced design (for example group composition differing between levels of another factor), to which factor is the shared variance assigned compared with a one-factor-at-a-time R-squared? ANSWER: DEFINITION (sourced, high confidence). One linear mixed model is fitted to the response with every categorical factor as a random intercept, e.g. PC1 ~ (1|cell_type) + (1|donor) + (1|cytokine), using lme4::lmer. The fraction for factor k is its estimated variance component divided by the sum of all variance components plus the residual variance: sigma2_k / (sum_j sigma2_j + sigma2_residual). The fractions, residual included, sum to 1 and are always non-negative; each equals an intra-class correlation (the correlation of two observations sharing that factor level). The Gaussian prior shrinks per-level effects toward zero, which is why many-level factors are not over-credited as they are by fixed-effects least squares. PVCA uses the same variance-component fit (factors as random effects) on principal components and combines them with eigenvalue weights; on a single PC it reduces to the same per-factor fraction. SHARED VARIANCE (partly sourced, medium confidence). The vignette says each fraction is reported 'while simultaneously correcting for all other' variables, that 'like all multiple regression methods, variancePartition will divide the contribution over multiple variables that are strongly correlated', and that adding a correlated variable lowers the other's fraction (sex versus individual example). So the difference from one-factor-at-a-time R-squared is: marginal R-squared counts variance shared between associated factors in full in every one of them (the marginal values can sum above 1), while the joint variance-component fit counts it once. A factor whose marginal R-squared arises only because the composition of another factor differs across its levels (e.g. donors or cytokines differing in cell-type mix) keeps only what is left after the other factor is fitted, so its fraction drops below its marginal R-squared and the composition-driven share goes to the factor that actually carries the level effects (here cell type). That last sentence is my inference from the 'correcting for all others' statement; no page I read gives an explicit allocation formula for unbalanced crossed factors, so the web does not fully settle the exact split. NESTED FACTORS (sourced). A coarser factor nested in a finer one (sex within individual in the vignette; here treatment within cytokine) removes its share from the finer factor and the two fractions add up to the total between-level variation. The mixed model can fit such nested terms where a fixed-effects ANOVA is singular. Consequently, in a variance-component fit treatment is not mathematically bounded above by cytokine, unlike marginal R-squared. This refines the earlier department note that a joint treatment + cytokine model is unusable: that holds for fixed effects, not for random effects. NOT SOURCED (my statistical reasoning, low confidence): a variance component describes the spread of level effects and is not weighted by level sizes the way SS_between/SS_total is, so a very unbalanced 2-level factor can get a larger fraction than its marginal R-squared, but a component estimated from 2 levels is poorly determined. HOW SURE: high for the definition; medium for how shared variance is allocated (the sources say it is divided and each factor is adjusted for the others, but give no explicit rule for unbalanced crossed factors). SOURCES: https://www.bioconductor.org/packages/release/bioc/vignettes/variancePartition/inst/doc/variancePartition.html, https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-016-1323-z, https://bioconductor.org/packages/release/bioc/vignettes/pvca/inst/doc/pvca.pdf."
+        },
+        {
+          "question": "For analytic Pearson residual normalisation of single-cell count data as implemented in scanpy's experimental module, what are the default overdispersion parameter and clipping rule, does the companion highly-variable-gene selection expect raw counts, and is the output already centred enough that PCA should be run without an extra scaling step?",
+          "answer": "DEFAULTS (sourced, high confidence). scanpy.experimental.pp.normalize_pearson_residuals uses theta=100 (negative binomial with var = mean + mean^2/theta, shared across genes; theta=np.inf gives Poisson) and clip=None, which clips residuals to [-sqrt(n_obs), +sqrt(n_obs)] where n_obs is the number of cells in the object passed in (about +-316 for 100,000 cells); a scalar c clips to [-c, c] and clip=np.inf disables clipping. Because the clip depends on n_obs, running on a subset of cells changes it. INPUT (sourced, high confidence). Both normalize_pearson_residuals and scanpy.experimental.pp.highly_variable_genes(flavor='pearson_residuals') state 'Expects raw count input'; with check_values=True (default) they warn if the matrix is not integer-valued. Neither should be run on normalize_total/log1p data. The HVG function uses the same theta=100 and sqrt(n_obs) clip, requires n_top_genes (the tutorial uses 2000), ranks genes by residual variance, and accepts batch_key. PIPELINE (sourced, high confidence). The official tutorial runs: HVG selection on raw counts -> subset to the HVGs (the residual matrix is dense, so select genes first) -> keep raw counts in a layer -> normalize_pearson_residuals on the raw counts -> sc.pp.pca(adata, n_comps=50) directly. There is no log1p and no sc.pp.scale step; the tutorial says Pearson residuals 'replace the common steps of explicitly normalizing by sequencing depth and log-transforming'. Wrappers normalize_pearson_residuals_pca and recipe_pearson_residuals do the same in one call. CENTRING AND SCALING (medium confidence). The docs do not say the residuals are exactly zero-mean per gene, so the web does not settle 'centred enough' literally. What they do establish: residuals are variance-stabilised so that non-variable genes have variance near 1 and differentially expressed genes have variance above 1, and PCA is applied straight to them. sc.pp.pca centres genes by default (zero_center=True), which covers any residual offset. Adding sc.pp.scale is not part of the documented workflow; it would force every gene to unit variance and remove the extra weight that biologically variable genes carry (that consequence is my inference, not a quoted statement).",
+          "sources": [
+            "https://scanpy.readthedocs.io/en/stable/generated/scanpy.experimental.pp.normalize_pearson_residuals.html",
+            "https://scanpy.readthedocs.io/en/stable/generated/scanpy.experimental.pp.highly_variable_genes.html",
+            "https://scanpy.readthedocs.io/en/stable/tutorials/experimental/pearson_residuals.html"
+          ],
+          "confidence": "high for defaults, raw-count input and PCA-without-scale workflow; medium for whether the output is exactly centred (not stated in the docs)",
+          "deliveries": {
+            "sc07-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-pilot-acfa5bd5eaef"
+            },
+            "sc07-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-pilot-d3e15508b45c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: For analytic Pearson residual normalisation of single-cell count data as implemented in scanpy's experimental module, what are the default overdispersion parameter and clipping rule, does the companion highly-variable-gene selection expect raw counts, and is the output already centred enough that PCA should be run without an extra scaling step? ANSWER: DEFAULTS (sourced, high confidence). scanpy.experimental.pp.normalize_pearson_residuals uses theta=100 (negative binomial with var = mean + mean^2/theta, shared across genes; theta=np.inf gives Poisson) and clip=None, which clips residuals to [-sqrt(n_obs), +sqrt(n_obs)] where n_obs is the number of cells in the object passed in (about +-316 for 100,000 cells); a scalar c clips to [-c, c] and clip=np.inf disables clipping. Because the clip depends on n_obs, running on a subset of cells changes it. INPUT (sourced, high confidence). Both normalize_pearson_residuals and scanpy.experimental.pp.highly_variable_genes(flavor='pearson_residuals') state 'Expects raw count input'; with check_values=True (default) they warn if the matrix is not integer-valued. Neither should be run on normalize_total/log1p data. The HVG function uses the same theta=100 and sqrt(n_obs) clip, requires n_top_genes (the tutorial uses 2000), ranks genes by residual variance, and accepts batch_key. PIPELINE (sourced, high confidence). The official tutorial runs: HVG selection on raw counts -> subset to the HVGs (the residual matrix is dense, so select genes first) -> keep raw counts in a layer -> normalize_pearson_residuals on the raw counts -> sc.pp.pca(adata, n_comps=50) directly. There is no log1p and no sc.pp.scale step; the tutorial says Pearson residuals 'replace the common steps of explicitly normalizing by sequencing depth and log-transforming'. Wrappers normalize_pearson_residuals_pca and recipe_pearson_residuals do the same in one call. CENTRING AND SCALING (medium confidence). The docs do not say the residuals are exactly zero-mean per gene, so the web does not settle 'centred enough' literally. What they do establish: residuals are variance-stabilised so that non-variable genes have variance near 1 and differentially expressed genes have variance above 1, and PCA is applied straight to them. sc.pp.pca centres genes by default (zero_center=True), which covers any residual offset. Adding sc.pp.scale is not part of the documented workflow; it would force every gene to unit variance and remove the extra weight that biologically variable genes carry (that consequence is my inference, not a quoted statement). HOW SURE: high for defaults, raw-count input and PCA-without-scale workflow; medium for whether the output is exactly centred (not stated in the docs). SOURCES: https://scanpy.readthedocs.io/en/stable/generated/scanpy.experimental.pp.normalize_pearson_residuals.html, https://scanpy.readthedocs.io/en/stable/generated/scanpy.experimental.pp.highly_variable_genes.html, https://scanpy.readthedocs.io/en/stable/tutorials/experimental/pearson_residuals.html."
+        },
+        {
+          "question": "In split-pool combinatorial-barcoding single-cell RNA-seq, what do the round-1 barcode well and the sublibrary each represent experimentally, which of them is the recommended technical batch covariate, and are sublibrary effects on leading principal components commonly reported?",
+          "answer": "ROUND-1 WELL (sourced, high confidence). Fixed cells of each sample are loaded into one or more wells of the first barcoding plate, where in-cell reverse transcription adds a well-specific barcode. Vendor material calls these 'sample-specific barcodes', and samples are demultiplexed by their round-1 wells. Round-1 well is therefore a label of sample identity (here donor x cytokine), nested in sample, not an independent technical batch; its effect cannot be separated from donor or condition unless one sample was spread over several wells. Rounds 2 and 3 are random re-splits of the pooled cells and carry no sample information. SUBLIBRARY (sourced, high confidence). After round 3 all cells are pooled, counted and split into aliquots called sublibraries (2, 8 or 16 depending on kit size). Each sublibrary is lysed, template-switched, cDNA-amplified (cycle number chosen per sublibrary), fragmented and indexed by PCR separately; the sublibrary index is the fourth barcode. Sublibraries can hold different numbers of cells and be sequenced separately and to different depths. Each sublibrary contains cells from every sample in roughly even proportion. WHICH IS THE BATCH COVARIATE (medium confidence, partly inference). Sublibrary is the true technical processing unit (separate lysis, amplification, library prep, possibly sequencing depth). No page I read explicitly recommends it as a batch covariate; that follows from the protocol. Because every sublibrary draws from all samples, sublibrary is crossed with donor and cytokine rather than confounded with them, so a sublibrary effect cannot by itself create a donor or condition association on a principal component. Round-1 well is the opposite: fully confounded with sample, so using it as a 'batch' factor would absorb donor and cytokine signal. ARE SUBLIBRARY EFFECTS ON LEADING PCs COMMONLY REPORTED (not settled, low confidence). Two searches found no report of sublibrary effects driving leading principal components, and none of the pages read describe one. Absence in ten calls is weak evidence, so I cannot say they are rare. The documented way sublibraries differ is cell number and sequencing depth, so the practical check is sublibrary against total counts / genes detected, then sublibrary R-squared on PC1.",
+          "sources": [
+            "https://support.parsebiosciences.com/hc/en-us/articles/360052394312-What-is-a-sublibrary",
+            "https://www.parsebiosciences.com/technology/",
+            "https://www.protocols.io/view/evercode-wt-mega-v2-2-1-cysrxwd6.pdf",
+            "https://scg-lib-structs.readthedocs.io/en/stable/ge/SPLiT-seq.html",
+            "https://github.com/GreenleafLab/shareseq-pipeline/",
+            "https://doi.org/10.1101/2023.06.28.546827",
+            "https://www.parsebiosciences.com/blog/overcoming-obstacles-in-differential-rna-isoform-expression-at-single-cell-resolution/"
+          ],
+          "confidence": "high for what round-1 well and sublibrary represent; medium for sublibrary being the right technical covariate (implied by protocol, not stated as a recommendation); low for how commonly sublibrary effects on leading PCs are reported (web did not settle it)",
+          "deliveries": {
+            "sc07-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-pilot-4943b1f9c3df"
+            },
+            "sc07-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-pilot-d04b9d1c343f"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In split-pool combinatorial-barcoding single-cell RNA-seq, what do the round-1 barcode well and the sublibrary each represent experimentally, which of them is the recommended technical batch covariate, and are sublibrary effects on leading principal components commonly reported? ANSWER: ROUND-1 WELL (sourced, high confidence). Fixed cells of each sample are loaded into one or more wells of the first barcoding plate, where in-cell reverse transcription adds a well-specific barcode. Vendor material calls these 'sample-specific barcodes', and samples are demultiplexed by their round-1 wells. Round-1 well is therefore a label of sample identity (here donor x cytokine), nested in sample, not an independent technical batch; its effect cannot be separated from donor or condition unless one sample was spread over several wells. Rounds 2 and 3 are random re-splits of the pooled cells and carry no sample information. SUBLIBRARY (sourced, high confidence). After round 3 all cells are pooled, counted and split into aliquots called sublibraries (2, 8 or 16 depending on kit size). Each sublibrary is lysed, template-switched, cDNA-amplified (cycle number chosen per sublibrary), fragmented and indexed by PCR separately; the sublibrary index is the fourth barcode. Sublibraries can hold different numbers of cells and be sequenced separately and to different depths. Each sublibrary contains cells from every sample in roughly even proportion. WHICH IS THE BATCH COVARIATE (medium confidence, partly inference). Sublibrary is the true technical processing unit (separate lysis, amplification, library prep, possibly sequencing depth). No page I read explicitly recommends it as a batch covariate; that follows from the protocol. Because every sublibrary draws from all samples, sublibrary is crossed with donor and cytokine rather than confounded with them, so a sublibrary effect cannot by itself create a donor or condition association on a principal component. Round-1 well is the opposite: fully confounded with sample, so using it as a 'batch' factor would absorb donor and cytokine signal. ARE SUBLIBRARY EFFECTS ON LEADING PCs COMMONLY REPORTED (not settled, low confidence). Two searches found no report of sublibrary effects driving leading principal components, and none of the pages read describe one. Absence in ten calls is weak evidence, so I cannot say they are rare. The documented way sublibraries differ is cell number and sequencing depth, so the practical check is sublibrary against total counts / genes detected, then sublibrary R-squared on PC1. HOW SURE: high for what round-1 well and sublibrary represent; medium for sublibrary being the right technical covariate (implied by protocol, not stated as a recommendation); low for how commonly sublibrary effects on leading PCs are reported (web did not settle it). SOURCES: https://support.parsebiosciences.com/hc/en-us/articles/360052394312-What-is-a-sublibrary, https://www.parsebiosciences.com/technology/, https://www.protocols.io/view/evercode-wt-mega-v2-2-1-cysrxwd6.pdf, https://scg-lib-structs.readthedocs.io/en/stable/ge/SPLiT-seq.html, https://github.com/GreenleafLab/shareseq-pipeline/, https://doi.org/10.1101/2023.06.28.546827, https://www.parsebiosciences.com/blog/overcoming-obstacles-in-differential-rna-isoform-expression-at-single-cell-resolution/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc07-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc07-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc07-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc07-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc07-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 217.53523162507918,
+      "cost_usd": 0.4106099,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 77.83941437501926,
+      "cost_usd": 0.1577324,
+      "error": null
+    },
+    {
+      "agent": "sc07-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 180.4580779579701,
+      "cost_usd": 0.2117474,
+      "error": null
+    },
+    {
+      "agent": "sc07-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 213.22066312492825,
+      "cost_usd": 0.1915921,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 214.15188020805363,
+      "cost_usd": 0.3726938,
+      "error": null
+    },
+    {
+      "agent": "sc07-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 213.7172069590306,
+      "cost_usd": 0.5673845000000001,
+      "error": null
+    },
+    {
+      "agent": "sc07-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 425.6241346669849,
+      "cost_usd": 0.4759822,
+      "error": null
+    },
+    {
+      "agent": "sc07-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 475.64700587501284,
+      "cost_usd": 0.43729489999999993,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

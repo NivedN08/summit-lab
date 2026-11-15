@@ -1,0 +1,484 @@
+{
+  "study": "bd02",
+  "status": "replicated",
+  "final": {
+    "agent": "bd02-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-pilot/bd02/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd02-library": "fable",
+    "bd02-team-a": "fable",
+    "bd02-team-b": "fable",
+    "bd02-team-c": "fable",
+    "bd02-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd02-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-pilot/bd02/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd02-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-pilot/bd02/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd02-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-pilot/bd02/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd02-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-pilot/bd02/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd02-team-a",
+        "bd02-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd02-team-a",
+        "bd02-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The phrase 'RNF43 mutations are significantly associated with IPMNs and MCNs' can be tested in two ways, and in a small exome cohort they can disagree. Reading 1 is between-group enrichment: RNF43 mutated versus not mutated in IPMN and MCN tumours against the other tumour types in the study, with an exact test on the contingency table. Reading 2 is gene-level significance: whether the number of IPMN and MCN tumours carrying a non-silent RNF43 mutation exceeds what the background (passenger) mutation rate predicts for a gene of that coding length, using a binomial or Poisson test. Reading 1 has very low power when each tumour type has only a handful of tumours; Reading 2 can be decisive with few tumours because the per-gene background probability is very small. Compute both. For Reading 2, estimate the background rate from the study itself (total non-silent somatic mutations in those tumours divided by about 30 Mb of coding sequence per exome, a library approximation, or use TMB_NONSYNONYMOUS in the sample table if present) and compute the probability of at least k mutated tumours out of n. The gene's coding length is not in the tables and the library gave no figure, so state the value you assume and show that the result does not depend on it. If the two readings disagree, say so explicitly and decide the label on the reading that best matches the hypothesis wording; do not report only the test that came out significant or only the one that did not.",
+      "from": [
+        "sl-biodsa-pilot-5656d871b707"
+      ],
+      "reason": "The choice between these two tests can by itself decide the label, so the team must run both and justify which one answers the hypothesis instead of defaulting to a single 2x2 test.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-b237c1595be8"
+      }
+    },
+    {
+      "text": "The hypothesis names two tumour types jointly (IPMNs and MCNs). Pooling them can give a significant result driven by only one type; testing each type separately halves the sample and loses power; and the choice of comparator (all other types pooled, or each other type separately) changes the p-value. Build the full tumour-type by mutated/not-mutated table from CANCER_TYPE_DETAILED or ONCOTREE_CODE in the sample table, run an exact r x 2 test (Fisher-Freeman-Halton), then the pooled IPMN+MCN versus rest 2x2, then each named type against the remaining types separately, noting the multiplicity. Report the result for IPMN and for MCN individually: a claim about both types needs evidence in each, so do not claim support for both from the pooled test alone if mutations turn out to sit in only one of them.",
+      "from": [
+        "sl-biodsa-pilot-abf3a109fc36"
+      ],
+      "reason": "How the two named types are grouped and what they are compared with changes the result, and a pooled test can hide that only one type carries the signal.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-488af5b6624a"
+      }
+    },
+    {
+      "text": "Take group sizes from the clinical sample table, not from the mutation file. data_mutations.txt has one row per mutation, so a sequenced tumour with no RNF43 mutation has no RNF43 row, and building groups from the mutation file undercounts unmutated tumours and inflates the mutation frequency. The library reports that data_clinical_sample.txt and data_gene_panel_matrix.txt list the same 32 samples, all profiled by whole-exome sequencing (panel WXS); confirm this, then code every profiled sample with no qualifying RNF43 row as not mutated (0), not as missing, and state n per tumour type from the clinical table. Count mutated tumours, not mutation rows: a gene can carry two or more mutations in one sample, and a patient may contribute more than one sample. Count distinct Tumor_Sample_Barcode values for RNF43, check whether SAMPLE_ID to PATIENT_ID is one-to-one, and if it is not, collapse to one mutated/not-mutated value per patient before building any contingency table.",
+      "from": [
+        "sl-biodsa-pilot-d501f12a2b14",
+        "sl-biodsa-pilot-ec25d9adbacc"
+      ],
+      "reason": "Wrong denominators or counting rows instead of tumours changes every frequency and p-value and breaks the independence that exact tests assume.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-037b3be79178"
+      }
+    },
+    {
+      "text": "Define 'RNF43 mutated' by protein-altering variants only. The library reports that this study's data_mutations.txt is not restricted to protein-altering variants (its first rows have Variant_Classification = Intron), so counting any RNF43 row as a hit could count silent, intronic, UTR or flanking variants. Tabulate Variant_Classification and Consequence for the RNF43 rows and for the whole file. Use Missense_Mutation, Nonsense_Mutation, Frame_Shift_Del, Frame_Shift_Ins, In_Frame_Del, In_Frame_Ins, Splice_Site, Nonstop_Mutation and Translation_Start_Site as the 'mutated' set, and report as a sensitivity analysis whether the conclusion changes when all rows are counted. Match the gene by exact Hugo_Symbol: the library reports that Entrez_Gene_Id is empty and that the file uses older gene symbols, so do not join on Entrez ID.",
+      "from": [
+        "sl-biodsa-pilot-4df0a0e5c6c4"
+      ],
+      "reason": "Which rows count as a mutation sets the numerator of every test, and a join on an empty ID column would silently find nothing.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-3d26baf5769c"
+      }
+    },
+    {
+      "text": "With small groups, Fisher's exact test is conservative and discrete (its real false-positive rate is well below the nominal level), so a p-value just above 0.05 may reflect the test and not the data; chi-squared is invalid when expected counts are below 5. Sidedness matters too: a directional hypothesis (mutations enriched in the named types) can justify a one-sided test, but only if that is chosen before seeing the p-value. Before testing, write down the group sizes and the smallest p-value the table margins can possibly produce. Then run Fisher two-sided and one-sided, plus Fisher mid-p or an unconditional exact test (scipy.stats.barnard_exact or boschloo_exact). If the verdict flips between these tests or between one- and two-sided, report all of them, say which was pre-specified, and treat the between-group result as borderline, not as a clean positive or negative.",
+      "from": [
+        "sl-biodsa-pilot-99879ea5f02f"
+      ],
+      "reason": "In a cohort this small the choice of exact test and sidedness can move the p-value across 0.05, so the team needs to fix its choice in advance and know what the table can and cannot show.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-421690a6cbca"
+      }
+    },
+    {
+      "text": "Check the contingency table for zero or one counts. A zero cell (for example no mutated tumours in the comparator types) makes the sample odds ratio infinite or zero and makes large-sample confidence intervals meaningless. Zero events in a small group also does not show the true rate is zero: the 95% upper bound for 0 of n is about 3/n, roughly 31-37% for n = 8. If a zero or one count is present, report per-group proportions with Clopper-Pearson exact intervals and an exact conditional odds-ratio interval or a 0.5-corrected odds ratio. Do not describe any tumour type as 'never mutated', and do not treat a non-significant p-value as evidence that there is no association.",
+      "from": [
+        "sl-biodsa-pilot-26b475f4a796"
+      ],
+      "reason": "It changes which effect measures and intervals are valid and stops a non-significant small-sample test from being read as evidence against the hypothesis.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-7ad3c372ac56"
+      }
+    },
+    {
+      "text": "Decide and state whether the analysis tests only RNF43, the one gene named in the hypothesis, or scans many genes. A single pre-named gene needs no genome-wide correction: report its unadjusted p-value as the primary result, and as a stringency check for the background-rate test also report the p-value multiplied by about 20,000 genes (a library approximation of the number of genes in an exome). If instead all genes are scanned for association with tumour type, uncorrected p-values overstate significance: apply Benjamini-Hochberg or Bonferroni across the genes tested and report where RNF43 ranks.",
+      "from": [
+        "sl-biodsa-pilot-f21e90fb69fa"
+      ],
+      "reason": "Whether and how a multiple-testing correction is applied changes the significance verdict in either direction.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-01ee76ee1a65"
+      }
+    },
+    {
+      "text": "In a small cohort, mutation frequency alone is a weak guide to whether a gene's mutations are selected in a tumour type; the pattern of mutations is the standard second line of evidence. By the '20/20 rule', a gene in which more than 20% of mutations are inactivating (nonsense, frameshift, splice-site) fits a tumour-suppressor pattern, because truncating mutations are a small share of passenger mutations. For RNF43, tabulate Variant_Classification by tumour type and compare its truncating fraction with the truncating fraction of all other non-silent mutations in the same tumours using an exact binomial test. Report this alongside the frequency tests, not in place of them: a predominantly truncating pattern is supporting evidence that the mutations are selected and not passengers, and its absence is equally worth reporting.",
+      "from": [
+        "sl-biodsa-pilot-46d8b8dc828f"
+      ],
+      "reason": "It adds an independent line of evidence the team would not otherwise compute, which matters when the frequency tests are underpowered or disagree.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-pilot-f4b916d3c412"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams code every SCA and SPN tumour with no RNF43 row as wild-type. Neither tested whether the comparator tumours had enough neoplastic cellularity and depth for a mutation to be detected; the mutation file has no rows for unmutated positions, so coverage at RNF43 in the comparators is unknown. The library's pitfall on detection sensitivity (sl-biodsa-pilot-385d043d96c4) does not appear in either team's checks.",
+      "Both teams treat IPMN+MCN pooled against SCA+SPN as the primary test and let the pooled result carry the label, although each found that IPMN drives it and that MCN alone is marginal.",
+      "Both teams treat RNF43 as a gene named in advance, so no correction across genes is applied to the between-group test. Team B's own gene scan does not pass correction; team A's background-rate test passes it only on the unfiltered call set.",
+      "Both background-rate checks rest on constants that are not in the data (about 30 Mb per exome, an assumed RNF43 coding length, about 20,000 genes) and on a uniform per-base passenger rate. Neither team benchmarked RNF43 against the recurrence of other genes inside the same file.",
+      "Both teams accept the mutation file as a curated somatic call set of uniform quality across tumour types. Validation_Status, Mutation_Status, n_ref_count and n_alt_count are empty in all 440 rows, so nothing in the data confirms any single call."
+    ],
+    "unused_evidence": [
+      "DYSPLASIA in the sample table: all 8 IPMNs are High grade, while MCNs are 5 High grade and 3 Low grade. Neither team tabulated RNF43 status against grade, so it is unknown whether the MCN mutants and the weak MCN calls sit in one grade.",
+      "MAIN_VS_BRANCH_DUCT (sample table) and HISTOLOGICAL_SUBTYPE (patient table: gastric, intestinal, pancreatobiliary, oncocytic) subdivide the IPMNs; neither was used.",
+      "SEX, LOCATION, TUMOR_FOCALITY, CYST_SIZE and SMOKER: MCNs are all female and mostly in the tail, IPMNs mostly male and in the head. These are unlikely to change a somatic-mutation comparison, but no team showed that.",
+      "Per-tumour allele fraction and depth of all calls (t_ref_count, t_alt_count) were used only to filter RNF43 calls. They were not used to compare detection sensitivity across the four tumour types or to place each weak RNF43 call within its own tumour's distribution.",
+      "Recurrence at the position level: 7 genomic positions are called in more than one sample. Neither team compared the recurrent low-depth RNF43 position with the other recurrent positions."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the MCN half of the claim as the weakest point and only reported it. Under their own filters the MCN count moves between 3, 2 and 1 of 8, and MCN alone is then not significant on either reading. Neither team stated in advance which label follows if MCN fails on its own.",
+      "The credibility of the weak calls (the recurrent stop call with 2 of 11 and 4 of 15 reads, and the 7% allele-fraction call) was argued from the file-wide read-count floor, not examined within each tumour.",
+      "Team A named the assumed coding length and exome size as outside the data; it ran a length sensitivity but no check that avoids the constants. Team B did not state the coding length it used and listed no pitfalls checked.",
+      "Team B's gene scan failing multiple-testing correction was set aside by appeal to pre-specification, without a gene-level test for MCN alone."
+    ],
+    "second_readings": [
+      "'IPMNs and MCNs' can mean the two types pooled, or each type on its own. On the second reading the claim needs MCN to stand without IPMN, which is the part both teams trust least.",
+      "'Significantly associated' can mean enriched relative to the other tumour types in the study, or mutated more often than the passenger rate predicts within each named type. Team A ran both per type; team B ran the second only pooled.",
+      "'Associated with' has no stated comparator. MCN against SCA+SPN is nominally significant, while MCN against all other tumours including IPMN is not; the choice of comparator decides the MCN result.",
+      "'IPMNs' in general versus the IPMNs in this study, which are all high grade; the data can speak only to the latter."
+    ],
+    "verdict": "Moderate to high trust in the pooled and IPMN results, which survive every filter both teams tried; lower trust in the MCN half, which both teams named as weakest and neither resolved, and which decides the label if the claim is read as applying to each type separately. The comparator wild-type calls were also never checked for detection sensitivity, so the answer should not go out until the questions above are answered.",
+    "questions": [
+      {
+        "to": "bd02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your 0/8 SCA and 0/8 SPN counts treat 'no RNF43 row' as wild-type. Compute, per tumour and per type, the number of calls, the median allele fraction (t_alt_count / (t_ref_count + t_alt_count)) and the median depth of all calls, and check whether every SCA and every SPN tumour carries at least one well-supported call in the gene most recurrently mutated within its own type. If allele fractions or call counts in the comparators are systematically lower than in IPMN and MCN, are the comparator wild-type calls still usable, and does that change your method or how firmly you state the between-group result?",
+        "from": [
+          "sl-biodsa-pilot-385d043d96c4",
+          "sl-biodsa-pilot-92e1fc417cbc"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-13a3176ea0f4"
+      },
+      {
+        "to": "bd02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You reported the weak MCN calls but did not resolve them. For MCN_166, MCN_170 and IPMN_21, rank the RNF43 call's alt-read count, depth and allele fraction among that same tumour's other calls, and list the 7 genomic positions called in more than one sample with their gene, tumour types and read support. Does the recurrent low-depth RNF43 position look like the other recurrent positions, or does it stand out, and does a low allele fraction match the rest of that tumour's calls? State from this which MCN count you carry forward and whether that changes your method.",
+        "from": [
+          "sl-biodsa-pilot-3851be06d32e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-6a23bf4e4cff"
+      },
+      {
+        "to": "bd02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your MCN evidence rests on a background-rate test that needs constants not in the data (30 Mb exome, assumed coding length, 20,000 genes). Run a check that needs none of them: for each tumour type, count how many genes in the file carry a protein-altering mutation in at least 2, and in at least 3, of the 8 tumours of that type, and say where RNF43 falls in that list for MCN and for IPMN, on the full call set and on your filtered ones. Then write down the rule you apply when the claim is read as requiring each named type to stand on its own, and say whether this check changes your method or your label under that reading.",
+        "from": [
+          "sl-biodsa-pilot-03b55f488903",
+          "sl-biodsa-pilot-03dc3176d1e9"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-6c3dbd89c012"
+      },
+      {
+        "to": "bd02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Neither team used DYSPLASIA, MAIN_VS_BRANCH_DUCT or HISTOLOGICAL_SUBTYPE. All 8 IPMNs are High grade and the MCNs are 5 High grade and 3 Low grade. Tabulate RNF43 status, and separately the weakly supported calls, against DYSPLASIA within MCN and against duct type and histological subtype within IPMN. Is RNF43 mutation spread across these subgroups or confined to one, and does that change the group you compare or the scope of the claim you can support?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-148b54e5bda1"
+      },
+      {
+        "to": "bd02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You count every SCA and SPN tumour without an RNF43 row as wild-type, and you found 3.4 times fewer non-silent mutations in those types. Compute, per tumour and per type, the number of calls, the median allele fraction (t_alt_count / (t_ref_count + t_alt_count)) and the median depth of all calls, and check whether every SCA and every SPN tumour carries at least one well-supported call in the gene most recurrently mutated within its own type. Is the lower burden in the comparators consistent with lower detection sensitivity, and does the result change your method or how firmly you state the 0/16?",
+        "from": [
+          "sl-biodsa-pilot-385d043d96c4",
+          "sl-biodsa-pilot-c19622780511"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-a2778075c0ca"
+      },
+      {
+        "to": "bd02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your background-rate check was run on IPMN and MCN pooled, and your gene scan did not pass correction. Run the background-rate test for MCN alone and for IPMN alone, on the full call set and on each of your filtered sets, stating the coding length you assume and how the result moves when it is varied. Also count, per tumour type, how many genes carry a non-silent mutation in at least 2 and at least 3 of the 8 tumours, and say where RNF43 falls. Then write down the rule you apply if the claim is read as requiring each named type to stand on its own. Does this change your method or your label under that reading?",
+        "from": [
+          "sl-biodsa-pilot-4ccbc066fbdb"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-3f6a79dcc442"
+      },
+      {
+        "to": "bd02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your alt-reads >= 8 filter is a file-wide threshold and does not show whether the weak calls are real. For IPMN_20, IPMN_21, MCN_166 and MCN_170, rank the RNF43 call's alt-read count, depth and allele fraction among that same tumour's other calls, and list the 7 genomic positions called in more than one sample with their gene, tumour types and read support. Does the recurrent low-depth RNF43 position look like the other recurrent positions, or does it stand out? State from this which MCN count you carry forward and whether it changes your method.",
+        "from": [
+          "sl-biodsa-pilot-3a0042d3e3cb"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-c517c26da81b"
+      },
+      {
+        "to": "bd02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your notes list no pitfalls checked and do not use DYSPLASIA, MAIN_VS_BRANCH_DUCT or HISTOLOGICAL_SUBTYPE. All 8 IPMNs are High grade and the MCNs are 5 High grade and 3 Low grade. Tabulate RNF43 status, and separately the weakly supported calls, against DYSPLASIA within MCN and against duct type and histological subtype within IPMN. Is RNF43 mutation spread across these subgroups or confined to one, and does that change the group you compare or the scope of the claim you can support?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-pilot-e4cf438bdae5"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In whole-exome discovery screens of small tumour cohorts (fewer than ten tumours per tumour type), how is a gene conventionally declared significantly mutated in, or associated with, a tumour type: which statistical test is used (passenger-probability or background-rate tests versus between-group exact tests), what background mutation rate and what multiple-testing correction are standard, and is the test applied per tumour type or to pooled types?",
+          "why": "The label depends on which definition of 'significantly associated' is applied and on whether each named tumour type must pass on its own; the teams chose constants and a pooling rule without a stated convention.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In tumour-normal exome sequencing, what minimum number of distinct mutant reads, minimum depth and minimum allele fraction are conventionally required to call a somatic point mutation, and how do low neoplastic cellularity and low depth affect the false-negative rate, so that a sample with no call in a gene can or cannot be treated as wild-type?",
+          "why": "Several calls in the gene of interest have two to four mutant reads or an allele fraction under 10%, and the comparison groups are counted as wild-type from the absence of calls; the convention settles whether those calls and those absences can be trusted.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In cBioPortal-format mutation files (MAF), what does it mean when Validation_Status, Mutation_Status, n_ref_count and n_alt_count are empty for every row: are the listed mutations unvalidated, or is validation simply not recorded, and do curated study imports normally contain only mutations that passed the original study's somatic filters?",
+          "why": "Both teams kept low-read calls on the argument that the file is a curated somatic call set; whether an empty validation field supports that argument is not known to either team.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In whole-exome discovery screens of small tumour cohorts (fewer than ten tumours per tumour type), how is a gene conventionally declared significantly mutated in, or associated with, a tumour type: which statistical test is used (passenger-probability or background-rate tests versus between-group exact tests), what background mutation rate and what multiple-testing correction are standard, and is the test applied per tumour type or to pooled types?",
+          "answer": "Partly settled. TEST: the convention is a gene-level test of the observed mutation count against a background (passenger) mutation rate, not a between-tumour-type exact test. In the two-stage discovery + validation/prevalence design this is a binomial / likelihood-ratio statistic or the CaMP score, giving each gene a 'passenger probability'; in large cohorts it is the MutSig burden test (plus clustering and conservation signals). None of the pages read uses a Fisher-type comparison between tumour types to call a gene significantly mutated. BACKGROUND RATE: there is no single standard constant. It is estimated per study (lower/median/upper bounds from sequence unlikely to be selected, or from synonymous mutations), it varies by tumour and by nucleotide context, and analyses are run under more than one rate; the CancerMutationAnalysis package default is 0.55e-6 per nucleotide per context, and tumour mutation rates range from 0.1 to 100 per Mb. MULTIPLE TESTING: genome-wide over all genes, by Benjamini-Hochberg FDR on tail p-values (shown to be conservative) or by empirical-Bayes passenger probabilities; a CaMP score above 1 was used to target about 10% false discoveries, and large-cohort practice declares genes at q <= 0.1. Genes with no mutations get p = 1, which makes frequentist correction over-strict in two-stage designs. PER TYPE OR POOLED: the large pan-cancer study analysed each tumour type separately and the combined set with the same method and reported them separately; a gene can be significant in the combined set but in no individual type (EZH1), or in one type but not combined (VHL, WT1). So a pooled result does not establish that each named type passes on its own. NOT SETTLED: the pages give no convention specific to cohorts under ten tumours per type. The methods literature treats such screens as ranking candidates for a validation/prevalence screen in more tumours (simulated 10 discovery + 20 validation tumours: about 59% sensitivity and 58% positive predictive value for major drivers), and it assumes a passenger rate equal across genes and samples.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC2820387/",
+            "https://doi.org/10.1214/10-aoas438",
+            "https://rdrr.io/bioc/CancerMutationAnalysis/man/cma.fdr.html",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4048962/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd02-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-00cc7319ca0f"
+            },
+            "bd02-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-5e658e55e9ea"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In whole-exome discovery screens of small tumour cohorts (fewer than ten tumours per tumour type), how is a gene conventionally declared significantly mutated in, or associated with, a tumour type: which statistical test is used (passenger-probability or background-rate tests versus between-group exact tests), what background mutation rate and what multiple-testing correction are standard, and is the test applied per tumour type or to pooled types? ANSWER: Partly settled. TEST: the convention is a gene-level test of the observed mutation count against a background (passenger) mutation rate, not a between-tumour-type exact test. In the two-stage discovery + validation/prevalence design this is a binomial / likelihood-ratio statistic or the CaMP score, giving each gene a 'passenger probability'; in large cohorts it is the MutSig burden test (plus clustering and conservation signals). None of the pages read uses a Fisher-type comparison between tumour types to call a gene significantly mutated. BACKGROUND RATE: there is no single standard constant. It is estimated per study (lower/median/upper bounds from sequence unlikely to be selected, or from synonymous mutations), it varies by tumour and by nucleotide context, and analyses are run under more than one rate; the CancerMutationAnalysis package default is 0.55e-6 per nucleotide per context, and tumour mutation rates range from 0.1 to 100 per Mb. MULTIPLE TESTING: genome-wide over all genes, by Benjamini-Hochberg FDR on tail p-values (shown to be conservative) or by empirical-Bayes passenger probabilities; a CaMP score above 1 was used to target about 10% false discoveries, and large-cohort practice declares genes at q <= 0.1. Genes with no mutations get p = 1, which makes frequentist correction over-strict in two-stage designs. PER TYPE OR POOLED: the large pan-cancer study analysed each tumour type separately and the combined set with the same method and reported them separately; a gene can be significant in the combined set but in no individual type (EZH1), or in one type but not combined (VHL, WT1). So a pooled result does not establish that each named type passes on its own. NOT SETTLED: the pages give no convention specific to cohorts under ten tumours per type. The methods literature treats such screens as ranking candidates for a validation/prevalence screen in more tumours (simulated 10 discovery + 20 validation tumours: about 59% sensitivity and 58% positive predictive value for major drivers), and it assumes a passenger rate equal across genes and samples. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC2820387/, https://doi.org/10.1214/10-aoas438, https://rdrr.io/bioc/CancerMutationAnalysis/man/cma.fdr.html, https://pmc.ncbi.nlm.nih.gov/articles/PMC4048962/."
+        },
+        {
+          "question": "In tumour-normal exome sequencing, what minimum number of distinct mutant reads, minimum depth and minimum allele fraction are conventionally required to call a somatic point mutation, and how do low neoplastic cellularity and low depth affect the false-negative rate, so that a sample with no call in a gene can or cannot be treated as wild-type?",
+          "answer": "No single universal threshold exists; it is caller-specific. THRESHOLDS READ: the rule-based qSNP caller triggers a call at a minimum of 3 reads of the same non-reference allele, 4 mutant reads above 20x coverage, and above 50x at least 5% mutant reads (2.5% if on both strands). In its orthogonal verification, requiring 5 mutant reads with at least 4 novel starts gave 57% accuracy at 98% sensitivity, and requiring 10 mutant reads gave 94% accuracy at 53% sensitivity (exomes at about 65x mean coverage). Allele fraction alone discriminated poorly there: under 10% there were 130 true and 112 false calls, over 10% there were 574 true and 422 false. MuTect uses a likelihood (LOD) threshold with filters instead of a fixed read count, and needs at least 15x in the matched normal to keep germline miscalls low. So calls with 2-4 mutant reads sit at or below the usual trigger level and are the class most often false without orthogonal validation; a low allele fraction by itself is not grounds to discard a call. FALSE NEGATIVES: sensitivity falls steeply with allele fraction and depth. MuTect: 95.6% at allele fraction 0.2 and 30x, 58.9% at 0.1 and 30x (53.2% with high-confidence filters), 16.0% at 0.05 and 30x rising to 51.9% at 60x, and 66.4% for 3% allele fraction at 150x. qSNP in tumour/normal mixtures recovered 68% of verified mutations at 40% tumour purity, 42% at 20% and 15% at 10%, and deeper sequencing (>150x) improved but did not restore sensitivity. CONSEQUENCE: a sample with no call in a gene is 'not detected', not wild-type; absence can be asserted only where depth and purity at that gene give adequate power for the expected allele fraction. The pages do not give a 'distinct mutant tags' rule of the kind some discovery screens state in their own methods.",
+          "sources": [
+            "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0074380",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3833702/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd02-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-dc91aaeaf897"
+            },
+            "bd02-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-cb3f21be2055"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In tumour-normal exome sequencing, what minimum number of distinct mutant reads, minimum depth and minimum allele fraction are conventionally required to call a somatic point mutation, and how do low neoplastic cellularity and low depth affect the false-negative rate, so that a sample with no call in a gene can or cannot be treated as wild-type? ANSWER: No single universal threshold exists; it is caller-specific. THRESHOLDS READ: the rule-based qSNP caller triggers a call at a minimum of 3 reads of the same non-reference allele, 4 mutant reads above 20x coverage, and above 50x at least 5% mutant reads (2.5% if on both strands). In its orthogonal verification, requiring 5 mutant reads with at least 4 novel starts gave 57% accuracy at 98% sensitivity, and requiring 10 mutant reads gave 94% accuracy at 53% sensitivity (exomes at about 65x mean coverage). Allele fraction alone discriminated poorly there: under 10% there were 130 true and 112 false calls, over 10% there were 574 true and 422 false. MuTect uses a likelihood (LOD) threshold with filters instead of a fixed read count, and needs at least 15x in the matched normal to keep germline miscalls low. So calls with 2-4 mutant reads sit at or below the usual trigger level and are the class most often false without orthogonal validation; a low allele fraction by itself is not grounds to discard a call. FALSE NEGATIVES: sensitivity falls steeply with allele fraction and depth. MuTect: 95.6% at allele fraction 0.2 and 30x, 58.9% at 0.1 and 30x (53.2% with high-confidence filters), 16.0% at 0.05 and 30x rising to 51.9% at 60x, and 66.4% for 3% allele fraction at 150x. qSNP in tumour/normal mixtures recovered 68% of verified mutations at 40% tumour purity, 42% at 20% and 15% at 10%, and deeper sequencing (>150x) improved but did not restore sensitivity. CONSEQUENCE: a sample with no call in a gene is 'not detected', not wild-type; absence can be asserted only where depth and purity at that gene give adequate power for the expected allele fraction. The pages do not give a 'distinct mutant tags' rule of the kind some discovery screens state in their own methods. HOW SURE: medium. SOURCES: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0074380, https://pmc.ncbi.nlm.nih.gov/articles/PMC3833702/."
+        },
+        {
+          "question": "In cBioPortal-format mutation files (MAF), what does it mean when Validation_Status, Mutation_Status, n_ref_count and n_alt_count are empty for every row: are the listed mutations unvalidated, or is validation simply not recorded, and do curated study imports normally contain only mutations that passed the original study's somatic filters?",
+          "answer": "Validation is simply not recorded. The cBioPortal file-format specification lists Validation_Status, Mutation_Status, n_ref_count and n_alt_count as Optional columns. Validation_Status is defined as second-pass results from an orthogonal technology with allowed values Valid, Invalid, Untested, Inconclusive, Redacted, Unknown or NA, so an explicitly unvalidated call would read 'Untested'; an empty cell carries no information either way. The empty fields therefore neither support nor weaken an argument that the calls were validated. Empty n_ref_count/n_alt_count mean normal-sample read counts were not supplied, not that the normal had zero reads. On curation: the cBioPortal FAQ states that it uses the mutation calls as provided by each publication, performs no additional filtering, only re-annotates them through Genome Nexus (VEP, canonical MSKCC transcript), and refers to the publication for the callers and filters used. So a curated study file is the publication's own call set, and whether every row passed somatic filters depends on that publication, not on cBioPortal. Two importer rules apply: rows with Mutation_Status None, LOH or Wildtype are not loaded, and by default Silent, Intron, IGR, 3'UTR, 5'UTR, 3'Flank and 5'Flank rows are filtered out at database load (TERT promoter excepted). That filter runs at load, so a downloaded data_mutations.txt can still contain such rows. For comparison, the legacy TCGA MAF specification requires Mutation_Status = Somatic in a somatic MAF and allows unvalidated somatic calls only in coding regions and splice sites; cBioPortal does not impose that on publication-derived files.",
+          "sources": [
+            "https://docs.cbioportal.org/file-formats/",
+            "https://docs.cbioportal.org/user-guide/faq/",
+            "https://docs.gdc.cancer.gov/Encyclopedia/pages/Mutation_Annotation_Format_TCGAv2/"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd02-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-b72bb9d39455"
+            },
+            "bd02-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-pilot-0d10384eee45"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cBioPortal-format mutation files (MAF), what does it mean when Validation_Status, Mutation_Status, n_ref_count and n_alt_count are empty for every row: are the listed mutations unvalidated, or is validation simply not recorded, and do curated study imports normally contain only mutations that passed the original study's somatic filters? ANSWER: Validation is simply not recorded. The cBioPortal file-format specification lists Validation_Status, Mutation_Status, n_ref_count and n_alt_count as Optional columns. Validation_Status is defined as second-pass results from an orthogonal technology with allowed values Valid, Invalid, Untested, Inconclusive, Redacted, Unknown or NA, so an explicitly unvalidated call would read 'Untested'; an empty cell carries no information either way. The empty fields therefore neither support nor weaken an argument that the calls were validated. Empty n_ref_count/n_alt_count mean normal-sample read counts were not supplied, not that the normal had zero reads. On curation: the cBioPortal FAQ states that it uses the mutation calls as provided by each publication, performs no additional filtering, only re-annotates them through Genome Nexus (VEP, canonical MSKCC transcript), and refers to the publication for the callers and filters used. So a curated study file is the publication's own call set, and whether every row passed somatic filters depends on that publication, not on cBioPortal. Two importer rules apply: rows with Mutation_Status None, LOH or Wildtype are not loaded, and by default Silent, Intron, IGR, 3'UTR, 5'UTR, 3'Flank and 5'Flank rows are filtered out at database load (TERT promoter excepted). That filter runs at load, so a downloaded data_mutations.txt can still contain such rows. For comparison, the legacy TCGA MAF specification requires Mutation_Status = Somatic in a somatic MAF and allows unvalidated somatic calls only in coding regions and splice sites; cBioPortal does not impose that on publication-derived files. HOW SURE: high. SOURCES: https://docs.cbioportal.org/file-formats/, https://docs.cbioportal.org/user-guide/faq/, https://docs.gdc.cancer.gov/Encyclopedia/pages/Mutation_Annotation_Format_TCGAv2/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd02-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd02-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd02-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd02-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd02-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 203.62681712501217,
+      "cost_usd": 0.38520669999999996,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 92.24023275007494,
+      "cost_usd": 0.1896153,
+      "error": null
+    },
+    {
+      "agent": "bd02-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 99.8845194169553,
+      "cost_usd": 0.17588539999999997,
+      "error": null
+    },
+    {
+      "agent": "bd02-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 141.96516754094046,
+      "cost_usd": 0.26227829999999996,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 140.27640520897694,
+      "cost_usd": 0.28986940000000005,
+      "error": null
+    },
+    {
+      "agent": "bd02-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 231.1526612919988,
+      "cost_usd": 0.6392325999999999,
+      "error": null
+    },
+    {
+      "agent": "bd02-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 180.219985542004,
+      "cost_usd": 0.3898162,
+      "error": null
+    },
+    {
+      "agent": "bd02-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 263.0916067500366,
+      "cost_usd": 0.49597899999999995,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,504 @@
+{
+  "study": "sc08",
+  "status": "replicated",
+  "final": {
+    "agent": "sc08-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-pilot/sc08/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc08-library": "fable",
+    "sc08-team-a": "fable",
+    "sc08-team-b": "fable",
+    "sc08-team-c": "fable",
+    "sc08-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc08-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-pilot/sc08/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc08-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-pilot/sc08/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc08-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-pilot/sc08/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc08-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-pilot/sc08/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc08-team-a",
+        "sc08-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc08-team-a",
+        "sc08-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Data layout, from the library's inspection of the file header only (verify each point yourself): 159007346.node is an AnnData h5ad with 19259 nuclei x 32227 mouse gene symbols. There is NO counts layer; X is a float32 CSR matrix whose stored values look like whole-number raw counts. obs has 'sample' with 3 categories (3M, 21M1, 21M2), so the batch for integration is sample, not age_group. obs also already holds total_counts, n_genes and n_genes_raw columns; do not reuse them for the filter. Barcodes are 16-mers with no sample suffix, so obs_names may be duplicated across samples. Checks: confirm X is all integers; recompute n_genes as (X>0).sum(axis=1) and compare with both stored columns; apply the strict threshold n_genes > 1000; check obs_names are unique and that Edn1 occurs exactly once in var_names. If obs_names are not unique, prefix them with the sample name before any per-sample split or merge so cluster labels map back to the right nuclei.",
+      "from": [
+        "sl-sc-pilot-4f5df93830a8"
+      ],
+      "reason": "Determines which matrix is raw counts, which column is the batch, and guards against filtering on a stale stored n_genes or mis-mapping labels after a per-sample split; any of these would change which nuclei and labels enter the per-type means.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-c0532012ccbb"
+      }
+    },
+    {
+      "text": "The Edn1 values used for the per-cell-type means must come from the raw matrix, not from anything produced by integration. Common error: taking Edn1 from integrated/batch-corrected values, from z-scored scaled data, or from a matrix already subset to highly variable genes (Edn1 may not be an HVG, and CP10K computed after gene subsetting has the wrong denominator). Do this: keep a full-gene raw-count copy before HVG selection, scaling or integration; compute log1p(counts / total counts over all genes * 1e4) once from it; use the integration output only to obtain cluster labels. Sanity checks on the Edn1 vector: it is >= 0, it is exactly 0 wherever the raw Edn1 count is 0, and expm1 of each nucleus's full normalized row sums to 1e4.",
+      "from": [
+        "sl-sc-pilot-115cfe34c3ae"
+      ],
+      "reason": "Using the integrated, scaled or HVG-subset matrix for Step 5 gives different per-type Edn1 values and can change the ranking.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-7f09dc3ffcc9"
+      }
+    },
+    {
+      "text": "The task's statistic is the plain arithmetic mean of log1p(CP10K) Edn1 over ALL nuclei of a major type, zeros included. Do not use Seurat AverageExpression defaults (it exponentiates first, i.e. averages in linear space) and do not use the mean among expressing nuclei only. For a sparsely detected gene these metrics can rank cell types differently: the linear-space mean is dominated by a few high nuclei, the log-space mean tracks the fraction of expressing nuclei. Check: per major type compute (a) mean log1p(CP10K) over all nuclei, (b) log1p(mean(expm1)), (c) fraction of nuclei with Edn1 count > 0, (d) mean among expressing nuclei. Answer with (a); if the top type differs between metrics, say so in your notes.",
+      "from": [
+        "sl-sc-pilot-a820099aafd2"
+      ],
+      "reason": "A team using a package default for 'average expression' would compute a different statistic from the one the task specifies and could select a different cell type.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-8dd2575e6d8a"
+      }
+    },
+    {
+      "text": "RPCA integration caveats. (1) Scanpy has no native RPCA anchor integration, so a Python pipeline has to substitute or re-implement it and will get clusters that differ from a Seurat run; say which method you actually used. (2) Seurat's RPCA is deliberately conservative (default k.anchor=5), so the same cell type can stay split into sample-specific clusters; IntegrateData also fails if a batch has fewer cells than k.weight=100. Check: cross-tabulate cluster x sample. A cluster that is >90% from one sample and carries the same markers as another cluster is under-correction, not a new cell type: give it the same major label by markers (the major-type means are then unaffected) or raise k.anchor (e.g. 20). Also repeat the labelling with a second integration (e.g. Harmony, or none) and confirm the per-type Edn1 ranking does not change. The Edn1 values come from raw counts; only the labels depend on integration, so the integration choice should not be what decides the answer.",
+      "from": [
+        "sl-sc-pilot-e3c4064b3f46"
+      ],
+      "reason": "The integration step is the least portable part of the recipe; the team needs to know how to label sample-specific clusters and to test that the result does not hinge on the integration method.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-663499b349a7"
+      }
+    },
+    {
+      "text": "Label clusters by relative enrichment, not by marker presence or by argmax of a raw marker-set mean. Reasons: (1) ambient RNA in snRNA-seq spreads transcripts of abundant types (e.g. neuronal Prph/Isl1, SGC markers) at a low uniform level into every nucleus, so presence/absence gives wrong labels; (2) the marker sets are uneven: Schwann has four markers covering two subtypes (Mag, Ncmap = myelinating; Scn7a, L1cam = non-myelinating), so a plain set average penalises every Schwann cluster against the two-marker types; (3) some markers are poorly captured in nuclei (documented for macrophage/microglial genes), and Rgs5 and Pecam1 are not exclusive to one type. Do this: for each cluster and each marker compute fold-enrichment and detection fraction versus all other nuclei; accept a label only when at least one marker of that set is clearly enriched and the other sets are not; for ambiguous clusters use max-over-markers or per-gene z-scores across clusters, and settle ties with the cluster's own top differentially expressed genes. The same ambient baseline applies to Edn1: compare the top type's mean and detection fraction with the near-constant low level seen in the other types, and treat a lead of only a small margin over that baseline as unreliable. Only a filtered matrix is provided, so SoupX/CellBender cannot be run properly.",
+      "from": [
+        "sl-sc-pilot-6ff23e6bf5db",
+        "sl-sc-pilot-0df2da7b3454"
+      ],
+      "reason": "The per-type Edn1 means depend entirely on the cluster labels; a naive scoring rule over this uneven marker list in ambient-contaminated nuclei can mislabel clusters.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-3112c6ca9547"
+      }
+    },
+    {
+      "text": "At resolution 0.6 a single cluster can contain two major cell types (typical merges: endothelial+mural, SGC+Schwann, fibroblast+mural, several immune types together). One label per cluster then silently moves the minority type's nuclei into the majority label and shifts both types' means. Check: for every cluster print, for ALL nine marker sets (not only the winning one), the fraction of nuclei with count > 0 and the mean log1p(CP10K) of each marker; flag clusters where a second marker set is detected in more than about 15-20% of nuclei or where per-nucleus marker scores are bimodal within the cluster. If found: sub-cluster only that cluster at higher resolution and label the sub-clusters separately. Do not force all nine labels to exist; T_cell and B_cell may have no cluster of their own in ganglion nuclei data.",
+      "from": [
+        "sl-sc-pilot-2e11cb919e40"
+      ],
+      "reason": "A merged cluster changes the membership of two major types at once, which directly changes the per-type Edn1 means being compared.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-c0e1e767c9c4"
+      }
+    },
+    {
+      "text": "Cross-lineage contamination of a labelled type. (1) Heterotypic doublets form their own clusters that co-express two marker sets, and the n_genes > 1000 filter enriches for them because doublets have more genes. Check per cluster: median n_genes and total counts against the other clusters, and strong co-expression of two lineages' markers (neuron+SGC, endothelial+mural, Schwann+fibroblast); optionally run Scrublet/scDblFinder per sample and see whether flagged nuclei concentrate in one cluster. (2) Endothelial and mural cells are physically attached, so each of these two types routinely carries the other's transcripts, and the relative ranking of a gene between the two can be set by contamination in either direction. Check: fraction of Mural-labelled nuclei with any Pecam1/Flt1 counts and of Endothelial-labelled nuclei with any Rgs5/Notch3 counts, and whether the Edn1-positive nuclei in either type are the ones co-expressing the other type's markers. If found: sub-cluster the vascular clusters and label mixed sub-clusters separately. The task does not ask for doublet removal and defines the mean over all nuclei of each labelled type, so report the per-type Edn1 ranking both with and without the co-expressing/doublet nuclei and state whether it changes.",
+      "from": [
+        "sl-sc-pilot-079e27f58230",
+        "sl-sc-pilot-3508394311a7"
+      ],
+      "reason": "Mixed nuclei forced into one major label contaminate that type's Edn1 mean; the team needs a concrete test for whether such nuclei are driving the ranking.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-a371e9848426"
+      }
+    },
+    {
+      "text": "Check that the top type is stable, because a fixed seed makes clustering reproducible but not robust, and Edn1 may be sparsely detected. Cluster membership changes with seed, with Leiden vs Louvain, and with package and version (Seurat vs Scanpy defaults gave an adjusted Rand index near 0.5 on the same data). A per-type mean of a sparse gene can also be driven by a handful of nuclei, by a label group of only a few dozen nuclei, or by one of the 3 samples. Checks: rerun clustering with 3-5 seeds, with resolution 0.4/0.6/1.0 and with the other algorithm, and also label nuclei independently of clusters with a per-nucleus marker score, recording the per-type mean log1p(CP10K) Edn1 each time; per major type report the number of nuclei, the number of Edn1-positive nuclei, and the mean separately in each sample (3M, 21M1, 21M2); bootstrap nuclei for an interval on each type's mean. Report the specified run (resolution 0.6, seed 0, pooled all-nuclei mean) as the answer; if the top type changes across runs or samples, its interval overlaps the runner-up, or its n is very small, flag the answer as fragile and name the competing type.",
+      "from": [
+        "sl-sc-pilot-f4b440b38b3c",
+        "sl-sc-pilot-dbc87967387f"
+      ],
+      "reason": "Tells the team how to find out whether their answer depends on an arbitrary clustering outcome or on a few nuclei, which the single specified run cannot reveal.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-78e999bfd4a9"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat sub-cluster or cluster-free evidence as licence to decide the type of a mixed vascular cluster, although the task says to assign labels to the resolution-0.6 clusters. Under a strict one-label-per-cluster reading the two teams' unrefined pipelines do NOT agree: team A's argmax labels its 617-nucleus vascular cluster Mural (z 4.66 vs 4.58, in 5 of 6 runs) and team B's labels its 608-nucleus vascular cluster Endothelial (z 3.72 vs 2.80). The agreement was reached only after team A overrode its own automatic label.",
+      "Both teams score clusters with z-scores taken across clusters. A z-score across N clusters has a ceiling near (N-1)/sqrt(N) (about 4.9 for 26 clusters, about 4.0 for 18), reached whenever a marker is nearly exclusive to one cluster. Team A's 4.66 vs 4.58 are both at that ceiling, so the rule cannot say which type dominates inside the cluster; neither team tested a within-cluster or non-saturating rule as the labelling rule itself.",
+      "Both teams used their own Python re-implementation of RPCA anchors with the same design choices (2000 batch-aware HVGs, largest sample 3M as the single reference, k.anchor 5) and neither could run Seurat. Whether the reference implementation with its defaults merges or separates the two vascular types at resolution 0.6 is untested, and the two re-implementations already differ (26 vs 18 clusters).",
+      "Both teams used Leiden only. The task allows Leiden or Louvain; neither reports a Louvain run at resolution 0.6, and team B reports no other seeds.",
+      "Both teams assume the nuclei that carry both endothelial and mural markers are doublets or attached cells; neither tested this with the depth columns."
+    ],
+    "unused_evidence": [
+      "obs total_counts and n_genes / n_genes_raw: both teams verified them against recomputed values, but neither used them to test whether the marker co-expressing vascular nuclei (which carry a large share of the positive nuclei) have doublet-like depth compared with single-marker vascular nuclei of the same sample.",
+      "obs age_group: used only through sample (3M = Adult, 21M1/21M2 = Aged). The per-sample checks cover it, so I do not think it can change the answer.",
+      "The file has no other content (no layers, obsm, var columns or stored annotations), so there is no hidden label or embedding that the teams ignored."
+    ],
+    "unresolved_weak_points": [
+      "Team A: the answer rests on the label of one mixed cluster; this was resolved only by sub-clustering, which departs from the literal workflow. Under the literal one-label rule with team A's own scoring the top type is a different option. Reported, not resolved.",
+      "Team A: bootstrap intervals of the top type and the runner-up overlap (runner-up n=122 with 7 positive nuclei). The difference itself was never bootstrapped, and the 46 co-expressing nuclei in the Mural sub-cluster were not reassigned as a sensitivity run.",
+      "Team A: the 172-nucleus cluster it doubts is endothelial was left labelled Endothelial in the reported run, so the reported table uses a label the team does not believe.",
+      "Team B: its headline 'leads by about 38x' and confidence 0.96 compare against a Mural label that sits on Rgs5-high neurons. Its own cluster-free numbers put the true margin over mural-dominant nuclei at roughly 2-7x on 8 positive nuclei. The Python-RPCA weak point was only reported; the 'alternative integration' named in its plan and warning-sign action does not appear in checks_run (only no-integration does).",
+      "Team B: pitfalls_checked is empty because its memory recall returned nothing, so it never ran the seed / algorithm / label-rule stability checks the library asked for."
+    ],
+    "second_readings": [
+      "'Assign major cell-type labels to clusters' can mean exactly one label per resolution-0.6 cluster with no sub-clustering. Under that reading the answer depends on which label the single vascular cluster gets, and the two teams' automatic rules give opposite labels.",
+      "'Leiden or Louvain' leaves the algorithm open; if the vascular cluster splits under one and not the other, the literal workflow has two outcomes.",
+      "'using marker evidence' does not fix the scoring rule (raw mean, detection fraction, fold-enrichment, z-score, module score); the decisive cluster's label is rule-dependent.",
+      "The quantity itself (pooled mean of log1p(CP10K) over all nuclei of a type, zeros included, all samples together) is unambiguous and both teams computed it the same way."
+    ],
+    "verdict": "Moderate-to-good trust: every cluster-free and split-cluster check by both teams places the Edn1 signal in nuclei carrying endothelial markers, and nuclei with mural markers only have none, so the biological reading is consistent. The agreement is weaker than it looks, though, because under a strict one-label-per-cluster reading the two teams' automatic rules label the decisive vascular cluster differently and team A's would give a different option; that reading and its rule-dependence have not been tested by either team.",
+    "questions": [
+      {
+        "to": "sc08-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your automatic label for the 617-nucleus vascular cluster was a z-score tie (4.66 vs 4.58), but a z-score across 26 clusters cannot exceed about 4.9, so both sets are simply at the ceiling. On the unmodified resolution-0.6 seed-0 clusters, with strictly one label per cluster and no sub-clustering, label that cluster under at least four other rules (mean log1p(CP10K) of each marker set inside the cluster, mean detection fraction of each set, log2 fold-enrichment versus all other nuclei, a module score with expression-matched control genes, and z-score of marker-set means rather than per-gene z) and give, for each rule, the cluster's label, the margin, and the resulting top type for Edn1. Does the outcome change which run you report as primary, or your confidence?",
+        "from": [
+          "sl-sc-pilot-a44952c670db",
+          "sl-sc-pilot-e202aea10ec8"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-271bb2b10484"
+      },
+      {
+        "to": "sc08-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The task allows Leiden or Louvain, and you clustered on a Jaccard SNN graph with Leiden only. At exactly resolution 0.6, run Louvain and Leiden on both the Jaccard SNN graph and a plain k=20 kNN connectivity graph, seeds 0 to 4, and count in how many of these runs the endothelial and mural nuclei fall in separate clusters without any sub-clustering. If they separate in a meaningful share of runs, does that change whether sub-clustering is needed to justify your answer?",
+        "from": [
+          "sl-sc-pilot-a44952c670db"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-98d2903a4d80"
+      },
+      {
+        "to": "sc08-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your intervals for the top type and the runner-up overlap, and you call the marker co-expressing nuclei doublets without testing it. (a) Compare total_counts and n_genes of the co-expressing vascular nuclei with endothelial-only and mural-only vascular nuclei within each sample: are they doublet-like in depth? (b) Bootstrap the difference between the two types' means directly (not two separate intervals), three ways: co-expressing nuclei kept where they are, all moved to Endothelial, all moved to Mural. Does the interval for the difference exclude zero in all three, and if not, does that change your confidence?",
+        "from": [
+          "sl-sc-pilot-59074120a6da"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-343c29f9a1ea"
+      },
+      {
+        "to": "sc08-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your reported table keeps the 172-nucleus cluster as Endothelial although you describe it as a meningeal or perineurial fibroblast-like population. Apply to it the same enrichment rule you used to relabel the six neuron clusters, and then recompute the table under the strict one-label reading in which the 617-nucleus cluster takes its automatic label: which clusters, if any, are then Endothelial, and what is the top type? Does this change what you state as the answer's main risk?",
+        "from": [
+          "sl-sc-pilot-e202aea10ec8"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-6a2329a8f42b"
+      },
+      {
+        "to": "sc08-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your answer needs the single 608-nucleus vascular cluster to take the Endothelial label, and you tested this with one seed, one algorithm and one scoring rule. Rerun the clustering at resolution 0.6 with seeds 0 to 4, with Louvain, and on a Jaccard SNN graph instead of your current graph; in every run report whether the vascular nuclei form one cluster or split, the argmax label of the cluster(s) and the z margin between the Endothelial and Mural sets, with strictly one label per cluster. If the label flips in any run, what is the top type in that run, and does that change your confidence of 0.96?",
+        "from": [
+          "sl-sc-pilot-2b510ae4dd25",
+          "sl-sc-pilot-57c39035f3b5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-0e522af86384"
+      },
+      {
+        "to": "sc08-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You label by argmax of z-scored marker-set means; a z-score across 18 clusters has a ceiling near 4.0 and is sensitive to how many other clusters carry a marker (Rgs5 is high in your neuron cluster). Label the vascular cluster again under per-gene z-scores averaged over the set, mean log1p(CP10K) of each set inside the cluster, mean detection fraction of each set, and log2 fold-enrichment versus all other nuclei. Report the label and margin under each rule. If any rule gives Mural, the whole cluster's Edn1 moves to Mural under a one-label reading: does that change your method or how you describe the answer's robustness?",
+        "from": [
+          "sl-sc-pilot-2b510ae4dd25"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-0b0f5e76ce02"
+      },
+      {
+        "to": "sc08-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your '38x lead' compares against a Mural label that you say sits on Rgs5-high neurons, while your own mural-dominant vascular nuclei have a mean much closer to the top type on only 8 positive nuclei. (a) Are those 8 positive mural-dominant nuclei also positive for Pecam1 or Flt1, and do they have doublet-like total_counts and n_genes for their sample? (b) Bootstrap the difference in mean between endothelial-dominant and mural-dominant vascular nuclei, and repeat with the co-expressing nuclei assigned each way. Does the interval exclude zero each time, and should the reported margin and confidence be restated?",
+        "from": [
+          "sl-sc-pilot-57c39035f3b5",
+          "sl-sc-pilot-a8524da3d9cb"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-b1a3c038ba0d"
+      },
+      {
+        "to": "sc08-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your plan and warning-sign action name an alternative integration, but checks_run lists only the no-integration run, and your integration fixes 3M as the single reference. Run one integration that differs in kind (a different reference sample, all-pairwise anchors with no reference, or a different method family) through the same resolution-0.6 seed-0 clustering and labelling, and report the number of clusters, whether the vascular nuclei are one cluster, its label and the per-type table. Does anything in the ranking or in the vascular cluster's label move?",
+        "from": [
+          "sl-sc-pilot-ab53073e4bb9"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-048e3f5b9a23"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In Seurat's standard graph clustering (FindNeighbors followed by FindClusters), what are the defaults for graph type (shared-nearest-neighbour with Jaccard pruning), k, clustering algorithm and the meaning of the resolution parameter, and is the same numeric resolution documented to give coarser or finer clusters than scanpy's Leiden (RB configuration on a UMAP-connectivity kNN graph) or Louvain on the same data?",
+          "why": "Whether two physically attached cell types end up in one cluster or two at the prescribed resolution decides whether a single cluster label controls the result; both teams used their own graph and Leiden only, with different cluster counts.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In Seurat's reciprocal-PCA anchor integration (FindIntegrationAnchors with reduction='rpca' followed by IntegrateData, or IntegrateLayers with RPCAIntegration), what happens by default when no reference is given (all-pairwise anchors with a guide tree versus a single reference dataset), what are the defaults for number of integration features, dims, k.anchor and k.weight, and is the integrated matrix scaled before the downstream PCA?",
+          "why": "Both teams re-implemented the method in Python with the largest batch as a fixed reference; if the standard workflow differs in these defaults, both re-implementations may share a departure that affects cluster boundaries.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "What are the documented conventions for assigning one cell-type label per cluster from short marker lists (average of scaled expression per cluster, module scores with expression-matched control genes such as AddModuleScore or scanpy score_genes, detection-fraction dot plots), and is it a known limitation that z-scoring cluster means across clusters saturates near (N-1)/sqrt(N) for a marker restricted to one cluster, so that it cannot rank two marker sets that are both specific to the same cluster?",
+          "why": "The label of one cluster that scores at the ceiling for two marker sets decides the outcome under a one-label-per-cluster reading, and both teams relied on across-cluster z-scores for that label.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In Seurat's standard graph clustering (FindNeighbors followed by FindClusters), what are the defaults for graph type (shared-nearest-neighbour with Jaccard pruning), k, clustering algorithm and the meaning of the resolution parameter, and is the same numeric resolution documented to give coarser or finer clusters than scanpy's Leiden (RB configuration on a UMAP-connectivity kNN graph) or Louvain on the same data?",
+          "answer": "Defaults (read from the reference pages). FindNeighbors: k.param=20, annoy with euclidean metric, compute.SNN=TRUE, prune.SNN=1/15, i.e. a shared-nearest-neighbour graph weighted by the Jaccard overlap of the k-neighbourhoods, with edges at Jaccard <= 1/15 removed; on a Seurat object dims defaults to 1:10. FindClusters runs on that SNN graph with algorithm=1 (original Louvain; 2 = Louvain with multilevel refinement, 3 = SLM, 4 = Leiden), resolution=0.8, modularity.fxn=1 (standard modularity), n.start=10, n.iter=10, random.seed=0. Resolution is documented only as 'use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities'. Scanpy for comparison: pp.neighbors n_neighbors=15, method='umap' connectivities; tl.leiden resolution=1, partition type RBConfigurationVertexPartition, Q = sum_ij (A_ij - gamma*k_i*k_j/2m)*delta(sigma_i, sigma_j), edge weights used. Coarser or finer at the same number: NOT settled by the web. No documentation states a direction. Published evidence (Rich et al. 2024, PBMC data) says only that the two are not equivalent: default-vs-default clusterings agree at ARI 0.53; Seurat's SNN graph has about twice the degree of scanpy's graph; Leiden is identical across packages when given the same graph, while Louvain is not (ARI 0.85 across packages vs 0.96 across seeds) because the optimisers and the normalisation of the quality function differ; and the packages agree better at their differing default resolutions than at an equal resolution (the paper prints the defaults swapped, as 1.0 for Seurat and 0.8 for scanpy). Combined with the documented defaults this hints that Seurat at 0.8 is roughly scanpy at 1.0, i.e. Seurat slightly finer at an equal number, but that is my inference from one dataset, not a documented rule. An unvetted forum note reports that the gap comes from the graph (SNN adds two-step edges, about 74 vs 25 non-zeros per row) rather than the resolution. Consequence for the teams: whether two attached cell types split at resolution 0.6 depends on graph type and algorithm, so it should be tested on a Jaccard SNN graph (k=20, prune 1/15) and with Louvain, not only Leiden on UMAP connectivities.",
+          "sources": [
+            "https://satijalab.org/seurat/reference/findneighbors",
+            "https://satijalab.org/seurat/reference/findclusters",
+            "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.tl.leiden.html",
+            "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.neighbors.html",
+            "https://leidenalg.readthedocs.io/en/stable/reference.html",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC11014608/",
+            "https://chatoverflow.dev/n/matching-seurat-clusters-in-scanpy-same-knn-but-export-seurat-s-snn-graph-54d40eaebc51",
+            "https://www.ivybiosciences.com/blog/scanpy-vs-seurat-single-cell-analysis"
+          ],
+          "confidence": "high for the defaults; low for any coarser/finer direction (the web does not settle it)",
+          "deliveries": {
+            "sc08-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-pilot-b4a770568f0e"
+            },
+            "sc08-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-pilot-e6f3b25f55bc"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In Seurat's standard graph clustering (FindNeighbors followed by FindClusters), what are the defaults for graph type (shared-nearest-neighbour with Jaccard pruning), k, clustering algorithm and the meaning of the resolution parameter, and is the same numeric resolution documented to give coarser or finer clusters than scanpy's Leiden (RB configuration on a UMAP-connectivity kNN graph) or Louvain on the same data? ANSWER: Defaults (read from the reference pages). FindNeighbors: k.param=20, annoy with euclidean metric, compute.SNN=TRUE, prune.SNN=1/15, i.e. a shared-nearest-neighbour graph weighted by the Jaccard overlap of the k-neighbourhoods, with edges at Jaccard <= 1/15 removed; on a Seurat object dims defaults to 1:10. FindClusters runs on that SNN graph with algorithm=1 (original Louvain; 2 = Louvain with multilevel refinement, 3 = SLM, 4 = Leiden), resolution=0.8, modularity.fxn=1 (standard modularity), n.start=10, n.iter=10, random.seed=0. Resolution is documented only as 'use a value above (below) 1.0 if you want to obtain a larger (smaller) number of communities'. Scanpy for comparison: pp.neighbors n_neighbors=15, method='umap' connectivities; tl.leiden resolution=1, partition type RBConfigurationVertexPartition, Q = sum_ij (A_ij - gamma*k_i*k_j/2m)*delta(sigma_i, sigma_j), edge weights used. Coarser or finer at the same number: NOT settled by the web. No documentation states a direction. Published evidence (Rich et al. 2024, PBMC data) says only that the two are not equivalent: default-vs-default clusterings agree at ARI 0.53; Seurat's SNN graph has about twice the degree of scanpy's graph; Leiden is identical across packages when given the same graph, while Louvain is not (ARI 0.85 across packages vs 0.96 across seeds) because the optimisers and the normalisation of the quality function differ; and the packages agree better at their differing default resolutions than at an equal resolution (the paper prints the defaults swapped, as 1.0 for Seurat and 0.8 for scanpy). Combined with the documented defaults this hints that Seurat at 0.8 is roughly scanpy at 1.0, i.e. Seurat slightly finer at an equal number, but that is my inference from one dataset, not a documented rule. An unvetted forum note reports that the gap comes from the graph (SNN adds two-step edges, about 74 vs 25 non-zeros per row) rather than the resolution. Consequence for the teams: whether two attached cell types split at resolution 0.6 depends on graph type and algorithm, so it should be tested on a Jaccard SNN graph (k=20, prune 1/15) and with Louvain, not only Leiden on UMAP connectivities. HOW SURE: high for the defaults; low for any coarser/finer direction (the web does not settle it). SOURCES: https://satijalab.org/seurat/reference/findneighbors, https://satijalab.org/seurat/reference/findclusters, https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.tl.leiden.html, https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.neighbors.html, https://leidenalg.readthedocs.io/en/stable/reference.html, https://pmc.ncbi.nlm.nih.gov/articles/PMC11014608/, https://chatoverflow.dev/n/matching-seurat-clusters-in-scanpy-same-knn-but-export-seurat-s-snn-graph-54d40eaebc51, https://www.ivybiosciences.com/blog/scanpy-vs-seurat-single-cell-analysis."
+        },
+        {
+          "question": "In Seurat's reciprocal-PCA anchor integration (FindIntegrationAnchors with reduction='rpca' followed by IntegrateData, or IntegrateLayers with RPCAIntegration), what happens by default when no reference is given (all-pairwise anchors with a guide tree versus a single reference dataset), what are the defaults for number of integration features, dims, k.anchor and k.weight, and is the integrated matrix scaled before the downstream PCA?",
+          "answer": "No single reference by default. FindIntegrationAnchors has reference=NULL, documented as 'all pairwise anchors are found (no reference/s)'. IntegrateData then integrates iteratively in pairs, in an order set by a guide tree it computes itself (sample.tree=NULL): the distance between two datasets is the number of cells in the smaller one divided by the number of anchors between them, and that distance matrix is hierarchically clustered. Only when reference is set are anchors found between each query and the reference(s), the references integrated pairwise, and each query then mapped onto the integrated reference. A fixed largest-batch reference is therefore a documented option, not the default, and both teams' re-implementations share that departure. Defaults: anchor.features=2000 (chosen by SelectIntegrationFeatures), dims=1:30, k.anchor=5, k.filter=200 (NA in the v5 RPCAIntegration wrapper), k.score=30, max.features=200, l2.norm=TRUE, scale=TRUE; IntegrateData dims=1:30, k.weight=100, sd.weight=1, and by default it corrects only the anchor features, so the integrated assay holds 2000 genes of corrected log-normalised values. Scaling: yes. The v4 RPCA vignette runs per-batch NormalizeData and FindVariableFeatures(vst, 2000), SelectIntegrationFeatures, per-batch ScaleData and RunPCA on those features, FindIntegrationAnchors(reduction='rpca'), IntegrateData, then ScaleData on the integrated assay before RunPCA, then FindNeighbors and FindClusters. In Seurat v5, IntegrateLayers(method=RPCAIntegration, orig.reduction='pca') instead corrects the PCA embedding and returns a reduction ('integrated.rpca'); there is no corrected expression matrix and no PCA after integration. The task's 'PCA in integrated space (50 PCs)' therefore corresponds to the v4-style IntegrateData route.",
+          "sources": [
+            "https://satijalab.org/seurat/reference/findintegrationanchors",
+            "https://satijalab.org/seurat/reference/integratedata",
+            "https://satijalab.org/seurat/reference/rpcaintegration",
+            "https://satijalab.org/seurat/archive/v4.3/integration_rpca",
+            "https://satijalab.org/seurat/articles/integration_rpca",
+            "https://satijalab.org/seurat/reference/integrateembeddings",
+            "https://satijalab.org/seurat/reference/integratelayers"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc08-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-pilot-d311c5ad3380"
+            },
+            "sc08-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-pilot-32fe65e1d3dc"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In Seurat's reciprocal-PCA anchor integration (FindIntegrationAnchors with reduction='rpca' followed by IntegrateData, or IntegrateLayers with RPCAIntegration), what happens by default when no reference is given (all-pairwise anchors with a guide tree versus a single reference dataset), what are the defaults for number of integration features, dims, k.anchor and k.weight, and is the integrated matrix scaled before the downstream PCA? ANSWER: No single reference by default. FindIntegrationAnchors has reference=NULL, documented as 'all pairwise anchors are found (no reference/s)'. IntegrateData then integrates iteratively in pairs, in an order set by a guide tree it computes itself (sample.tree=NULL): the distance between two datasets is the number of cells in the smaller one divided by the number of anchors between them, and that distance matrix is hierarchically clustered. Only when reference is set are anchors found between each query and the reference(s), the references integrated pairwise, and each query then mapped onto the integrated reference. A fixed largest-batch reference is therefore a documented option, not the default, and both teams' re-implementations share that departure. Defaults: anchor.features=2000 (chosen by SelectIntegrationFeatures), dims=1:30, k.anchor=5, k.filter=200 (NA in the v5 RPCAIntegration wrapper), k.score=30, max.features=200, l2.norm=TRUE, scale=TRUE; IntegrateData dims=1:30, k.weight=100, sd.weight=1, and by default it corrects only the anchor features, so the integrated assay holds 2000 genes of corrected log-normalised values. Scaling: yes. The v4 RPCA vignette runs per-batch NormalizeData and FindVariableFeatures(vst, 2000), SelectIntegrationFeatures, per-batch ScaleData and RunPCA on those features, FindIntegrationAnchors(reduction='rpca'), IntegrateData, then ScaleData on the integrated assay before RunPCA, then FindNeighbors and FindClusters. In Seurat v5, IntegrateLayers(method=RPCAIntegration, orig.reduction='pca') instead corrects the PCA embedding and returns a reduction ('integrated.rpca'); there is no corrected expression matrix and no PCA after integration. The task's 'PCA in integrated space (50 PCs)' therefore corresponds to the v4-style IntegrateData route. HOW SURE: high. SOURCES: https://satijalab.org/seurat/reference/findintegrationanchors, https://satijalab.org/seurat/reference/integratedata, https://satijalab.org/seurat/reference/rpcaintegration, https://satijalab.org/seurat/archive/v4.3/integration_rpca, https://satijalab.org/seurat/articles/integration_rpca, https://satijalab.org/seurat/reference/integrateembeddings, https://satijalab.org/seurat/reference/integratelayers."
+        },
+        {
+          "question": "What are the documented conventions for assigning one cell-type label per cluster from short marker lists (average of scaled expression per cluster, module scores with expression-matched control genes such as AddModuleScore or scanpy score_genes, detection-fraction dot plots), and is it a known limitation that z-scoring cluster means across clusters saturates near (N-1)/sqrt(N) for a marker restricted to one cluster, so that it cannot rank two marker sets that are both specific to the same cluster?",
+          "answer": "The ceiling is real and is a general theorem (Samuelson's inequality): among n values, none lies more than (n-1)/sqrt(n) sample standard deviations from the mean (sqrt(n-1) with the 1/n standard deviation), with equality exactly when the other n-1 values are all equal, which is the case of a marker confined to one cluster. After z-scoring cluster means across N clusters, every gene or marker-set mean that is flat outside one cluster gets the same score (N-1)/sqrt(N), whatever its expression level (2.67 for N=9, 3.61 for N=15). Two marker sets that are both specific to the same cluster tie at that ceiling, so the across-cluster z-score cannot rank them. Seurat's developers acknowledge the same effect in DotPlot: it averages the data slot per group, z-scores the group averages (scale=TRUE by default, so the number of points scaled equals the number of groups) and clips to col.min/col.max = -2.5/2.5; with two groups the values are always +-0.707, and a developer agreed this 'can definitely lead to misleading results, and becomes more extreme as the number of groups gets lower' and added a warning for fewer than 5 groups. I found no single-cell documentation that names the (N-1)/sqrt(N) saturation as a limitation of marker-set ranking; that part is the theorem applied to this case. Conventions that are documented, none of them a mandated one-label-per-cluster rule: Seurat DotPlot (dot size = percentage of cells expressing, colour = scaled average expression); scanpy dotplot (colour = mean expression in the group, unscaled by default with standard_scale=None, size = fraction of cells expressing); Seurat AddModuleScore (per-cell mean of the set minus the mean of control genes drawn from the same average-expression bin; nbin=24, ctrl=100, seed=1); scanpy score_genes (same approach after Tirosh 2016; ctrl_size=50, n_bins=25, gene_pool = all genes). Labelling a cluster is treated as a judgement combining mean expression and detection fraction. To break a ceiling tie, use quantities not bounded by N: unscaled mean log expression and detection fraction per marker in that cluster, fold-change against the rest, or per-nucleus module scores averaged per cluster. Not read in full: the scanpy clustering tutorial's annotation section and the text of scanpy's standard_scale option (pages were cut short).",
+          "sources": [
+            "https://en.wikipedia.org/wiki/Samuelson%27s_inequality",
+            "https://github.com/satijalab/seurat/issues/5742",
+            "https://github.com/satijalab/seurat/issues/7571",
+            "https://github.com/satijalab/seurat/issues/783",
+            "https://satijalab.org/seurat/reference/dotplot",
+            "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pl.dotplot.html",
+            "https://satijalab.org/seurat/reference/addmodulescore",
+            "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.tl.score_genes.html",
+            "https://ouyanglab.com/singlecell/clust.html"
+          ],
+          "confidence": "high for the mathematics and the tool definitions; medium that it is a recognised limitation in single-cell practice",
+          "deliveries": {
+            "sc08-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-pilot-783c1373c34c"
+            },
+            "sc08-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-pilot-666640a14d92"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What are the documented conventions for assigning one cell-type label per cluster from short marker lists (average of scaled expression per cluster, module scores with expression-matched control genes such as AddModuleScore or scanpy score_genes, detection-fraction dot plots), and is it a known limitation that z-scoring cluster means across clusters saturates near (N-1)/sqrt(N) for a marker restricted to one cluster, so that it cannot rank two marker sets that are both specific to the same cluster? ANSWER: The ceiling is real and is a general theorem (Samuelson's inequality): among n values, none lies more than (n-1)/sqrt(n) sample standard deviations from the mean (sqrt(n-1) with the 1/n standard deviation), with equality exactly when the other n-1 values are all equal, which is the case of a marker confined to one cluster. After z-scoring cluster means across N clusters, every gene or marker-set mean that is flat outside one cluster gets the same score (N-1)/sqrt(N), whatever its expression level (2.67 for N=9, 3.61 for N=15). Two marker sets that are both specific to the same cluster tie at that ceiling, so the across-cluster z-score cannot rank them. Seurat's developers acknowledge the same effect in DotPlot: it averages the data slot per group, z-scores the group averages (scale=TRUE by default, so the number of points scaled equals the number of groups) and clips to col.min/col.max = -2.5/2.5; with two groups the values are always +-0.707, and a developer agreed this 'can definitely lead to misleading results, and becomes more extreme as the number of groups gets lower' and added a warning for fewer than 5 groups. I found no single-cell documentation that names the (N-1)/sqrt(N) saturation as a limitation of marker-set ranking; that part is the theorem applied to this case. Conventions that are documented, none of them a mandated one-label-per-cluster rule: Seurat DotPlot (dot size = percentage of cells expressing, colour = scaled average expression); scanpy dotplot (colour = mean expression in the group, unscaled by default with standard_scale=None, size = fraction of cells expressing); Seurat AddModuleScore (per-cell mean of the set minus the mean of control genes drawn from the same average-expression bin; nbin=24, ctrl=100, seed=1); scanpy score_genes (same approach after Tirosh 2016; ctrl_size=50, n_bins=25, gene_pool = all genes). Labelling a cluster is treated as a judgement combining mean expression and detection fraction. To break a ceiling tie, use quantities not bounded by N: unscaled mean log expression and detection fraction per marker in that cluster, fold-change against the rest, or per-nucleus module scores averaged per cluster. Not read in full: the scanpy clustering tutorial's annotation section and the text of scanpy's standard_scale option (pages were cut short). HOW SURE: high for the mathematics and the tool definitions; medium that it is a recognised limitation in single-cell practice. SOURCES: https://en.wikipedia.org/wiki/Samuelson%27s_inequality, https://github.com/satijalab/seurat/issues/5742, https://github.com/satijalab/seurat/issues/7571, https://github.com/satijalab/seurat/issues/783, https://satijalab.org/seurat/reference/dotplot, https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pl.dotplot.html, https://satijalab.org/seurat/reference/addmodulescore, https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.tl.score_genes.html, https://ouyanglab.com/singlecell/clust.html."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc08-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc08-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc08-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc08-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc08-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 234.14740595791955,
+      "cost_usd": 0.4126856,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 95.813831166015,
+      "cost_usd": 0.15020299999999998,
+      "error": null
+    },
+    {
+      "agent": "sc08-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 406.5916795829544,
+      "cost_usd": 0.3012212000000001,
+      "error": null
+    },
+    {
+      "agent": "sc08-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 424.7510651249904,
+      "cost_usd": 0.40559049999999996,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 170.96869312494528,
+      "cost_usd": 0.319546,
+      "error": null
+    },
+    {
+      "agent": "sc08-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 259.1970234999899,
+      "cost_usd": 0.6754027,
+      "error": null
+    },
+    {
+      "agent": "sc08-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 332.92987187497783,
+      "cost_usd": 0.5111349000000001,
+      "error": null
+    },
+    {
+      "agent": "sc08-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 498.5700776249869,
+      "cost_usd": 0.6968506999999999,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

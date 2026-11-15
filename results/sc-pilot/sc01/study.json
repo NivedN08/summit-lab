@@ -1,0 +1,466 @@
+{
+  "study": "sc01",
+  "status": "replicated",
+  "final": {
+    "agent": "sc01-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-pilot/sc01/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc01-library": "fable",
+    "sc01-team-a": "fable",
+    "sc01-team-b": "fable",
+    "sc01-team-c": "fable",
+    "sc01-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "sc01-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-pilot/sc01/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "mural_nuclei": 0,
+        "interpretation": 5
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc01-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-pilot/sc01/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "mural_nuclei": 0,
+        "interpretation": 5
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc01-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-pilot/sc01/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "mural_nuclei": 0,
+        "interpretation": 5
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc01-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-pilot/sc01/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "mural_nuclei": 0,
+        "interpretation": 5
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc01-team-a",
+        "sc01-team-b"
+      ],
+      "fields": {
+        "mural_nuclei": true,
+        "interpretation": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc01-team-a",
+        "sc01-team-b"
+      ],
+      "fields": {
+        "mural_nuclei": true,
+        "interpretation": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Data layout and scoring-matrix pitfall. The file /workspace/data/illumina_pipseeker.h5ad holds 19,259 nuclei x 32,227 genes; X is raw integer counts; the samples are 3M, 21M1 and 21M2. var_names are Ensembl IDs and the gene symbols are in var['gene_symbol'], which has only 32,200 unique values for 32,227 rows, so some symbols are duplicated. Before scoring, confirm that each of the 32 panel genes maps to exactly one var row (mouse symbols are case-sensitive), resolve any duplicate explicitly rather than letting var_names_make_unique rename a panel gene unnoticed, and report any panel gene that is absent (a silently missing gene changes the panel denominator). Keep the full log-normalized matrix (in a layer or adata.raw) before HVG subsetting or scaling, and compute panel means from it: subsetting to the 3,000 HVGs drops most panel genes, and sc.pp.scale replaces log-normalized values with z-scores. Never score from the scaled or HVG-only matrix.",
+      "from": [
+        "sl-sc-pilot-333c5fd28e85"
+      ],
+      "reason": "A wrong gene mapping or scoring on the scaled/HVG-subset matrix changes every panel mean and therefore the cluster labels and the requested nucleus count; the team would otherwise have to discover the Ensembl-ID/duplicate-symbol layout by trial.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-6623ae7b7f9e"
+      }
+    },
+    {
+      "text": "Leiden clustering is not unique. Cluster number and membership change with random seed, implementation (leidenalg vs igraph flavor, n_iterations, directed), scanpy version, n_neighbors/n_pcs, HVG flavor (the dispersion flavors expect log data, seurat_v3 expects raw counts) and whether the data are scaled before PCA. A per-lineage nucleus count is a sum over whole clusters, so it can jump when a single cluster flips label. Run the exact specified workflow with scanpy defaults (random_state 0) and report that number as the answer; then repeat with 3-5 seeds, the other Leiden flavor, the other HVG flavor, and with/without sc.pp.scale, and tabulate the count of interest in each run. State how stable the count is; a count that is identical in every variant is robust, one that changes is fragile and should be flagged.",
+      "from": [
+        "sl-sc-pilot-60a2f502b415"
+      ],
+      "reason": "The requested number depends on unspecified pipeline choices; the team needs to anchor on the default pipeline and know whether its count is stable before reporting it.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-920f617b562b"
+      }
+    },
+    {
+      "text": "The provided object was filtered only by n_genes_by_counts > 1000: no doublet, mitochondrial or UMI-outlier filtering, and no integration across the three samples (two ages). Some Leiden clusters may therefore be heterotypic doublets, ambient-dominated or damaged nuclei, or sample-driven; such clusters show mixed lineage markers and get an arbitrary label from a panel argmax. Per cluster, report median total counts and genes, sample composition (3M / 21M1 / 21M2) and co-expression of mutually exclusive lineage markers (optionally Scrublet run per sample, not pooled). Flag suspicious clusters and keep them out of the biological interpretation, but do NOT drop them from the requested count and do not add extra QC filtering or integration to the primary run - the task asks for the exploratory workflow on the first-pass filtered object as given.",
+      "from": [
+        "sl-sc-pilot-50533e730aed"
+      ],
+      "reason": "Adding QC, doublet removal or integration to the primary run would change the clusters and the count the task asks for; the team should know to keep the specified workflow intact while still recognising low-quality clusters when interpreting.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-8371eb3d6a9d"
+      }
+    },
+    {
+      "text": "Raw mean log-normalized expression is not comparable across different marker panels. A panel made of abundant or ubiquitously detected genes scores high everywhere, a raw gene-set mean tracks sequencing depth and the baseline level of its genes, and there is no background control. In single-nucleus data ambient RNA adds to this: transcripts of the most abundant lineages of the tissue sit at a non-zero floor in every cluster. An argmax across panels can therefore be biased. Checks: (1) for each cluster print all eight panel scores and the winning margin (top minus runner-up); (2) look at the neuron/SGC/myelin panel genes in clusters that are clearly another lineage and compare each panel score to its minimum across clusters to see whether an ambient floor exists; (3) recompute the cluster assignment three ways - (a) raw panel mean as specified, (b) per-gene z-score across clusters then panel mean, (c) scanpy.tl.score_genes (control-gene-subtracted) averaged per cluster - and list which cluster labels flip. The filtered h5ad has no empty droplets, so CellBender/SoupX cannot be run properly. Use method (a) for the number that is asked for; use the comparison with (b)/(c) and the margins only to judge whether the result of (a) reflects the scoring rule or the biology, and report what you find either way.",
+      "from": [
+        "sl-sc-pilot-3c01416cd673",
+        "sl-sc-pilot-1ef628b85cbd"
+      ],
+      "reason": "The task fixes the scoring rule for the count, but the interpretation question asks why the result occurs; without these comparisons the team cannot tell a property of the scoring method from a property of the tissue.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-12ead646ba87"
+      }
+    },
+    {
+      "text": "Marker genes validated in whole cells are not equally detectable in nuclei: some transcripts are depleted in nuclei relative to whole cells, so a canonical marker can read near zero even in the cell type it marks, and a 4-5 gene panel average weights such a gene equally with well-detected ones. Whether this matters here must be measured, not assumed. Build a cluster x gene table for all 32 panel genes with both mean log-normalized expression and fraction of nuclei with count > 0; also record each gene's dataset-wide detection rate. Flag genes that are near zero in every cluster. For each lineage, check whether there is a cluster where a single panel gene is high and specific (large fold-change versus all other clusters) while that lineage's panel mean does not win the argmax, or whether no such cluster exists. Report the count that the specified panel-mean argmax gives regardless; base the interpretation on this per-gene evidence and name any genes that turned out to be non-informative.",
+      "from": [
+        "sl-sc-pilot-df1ddd2af6e8"
+      ],
+      "reason": "Per-gene detection within each panel is the evidence that distinguishes a panel-averaging/detection explanation from the other candidate explanations; a team looking only at panel means would not see it.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-b64c1b7ca8a3"
+      }
+    },
+    {
+      "text": "A zero or low count for a rare lineage is often attributed to rarity or to clustering resolution without being tested. Both must be checked directly. Independently of the panel argmax, count nuclei expressing the best-detected lineage-specific marker(s) and cross-tabulate them by Leiden cluster at resolution 0.8 (cluster size, fraction positive). Then rerun Leiden at higher resolution (e.g. 1.5 and 2.0) and repeat the panel argmax. Decision rule: if a coherent marker-enriched cluster already exists at 0.8, neither rarity nor resolution explains the result and the annotation rule is the place to look; if the assignment changes only at higher resolution, resolution is the cause; if marker-positive nuclei are few and scattered, rarity is plausible. Note that raising resolution also splits noise, so a new small cluster needs marker support.",
+      "from": [
+        "sl-sc-pilot-c18108e64e1c"
+      ],
+      "reason": "Two of the candidate interpretations (rarity, resolution) are directly testable with this check; the team should choose among them on evidence, and the decision rule tells them how each outcome maps to an explanation.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-7df737f6d7fa"
+      }
+    },
+    {
+      "text": "Cell-type composition in nuclei preparations does differ from whole-cell preparations, which makes selective loss during nuclear isolation a tempting explanation for a missing lineage. That claim cannot be established from an expression matrix alone, and it is contradicted if nuclei carrying the lineage signature are in fact present. Before invoking isolation loss, count nuclei positive for the best-detected lineage-specific marker and check whether they form a coherent cluster with supporting co-markers. If such nuclei exist in appreciable number, the depletion explanation does not hold and the annotation rule should be examined; depletion (or true rarity) is tenable only if marker-positive nuclei are essentially absent.",
+      "from": [
+        "sl-sc-pilot-e92eb2a42ecd"
+      ],
+      "reason": "One candidate interpretation is isolation-driven depletion; this tells the team what evidence in the data would support or refute it, so the choice is not made on plausibility alone.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-34fe4e915e74"
+      }
+    },
+    {
+      "text": "Mural cells (pericytes, vascular smooth muscle) and fibroblasts share mesenchymal markers: Pdgfrb is high in both, and Acta2 is also not mural-specific, so mural cells can in principle be absorbed into a fibroblast-labelled cluster. This explanation competes with other explanations and must be tested rather than assumed. For each mural panel gene, find the cluster where it peaks and record which lineage won that cluster and by what margin. If the mural-marker-high nuclei sit inside a cluster that also has high Col1a1/Col1a2/Pdgfra/Dcn, that supports fibroblast absorption (then sub-cluster that cluster or score with mural-vs-fibroblast discriminating genes before concluding). If the mural-marker-high cluster is separate from the collagen-high cluster, is low for fibroblast genes, and was won by a different panel, fibroblast overlap is not the cause.",
+      "from": [
+        "sl-sc-pilot-84da48e91bb4"
+      ],
+      "reason": "One candidate interpretation is fibroblast absorption; this gives the team a concrete test with both outcomes spelled out, so the interpretation is decided by where the mural markers actually sit.",
+      "fact_ids": {
+        "team-a": "sl-sc-pilot-68878417c2e8"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams accepted the resolution explanation on the strength of its second clause only (a mural-labelled cluster appears at resolution 2.0). Its first clause, that clusters below roughly 100 nuclei cannot be reliably annotated at resolution 0.8, was called 'loose' by both and tested by neither. At 0.8 the mural nuclei are not in a small cluster at all: they sit inside a 459-475 nucleus vascular cluster, which is a merging mechanism, not a small-cluster-annotation mechanism.",
+      "Both teams assumed the explanation must be judged by one counterfactual: keep the scoring rule fixed and change the clustering. Neither set out the opposite counterfactual on equal terms (keep the resolution-0.8 clusters fixed and change only the scoring rule) and compared what each one shows.",
+      "Both teams assumed that the 'specific cluster' with one highly expressed mural marker in the nuclear-detection explanation has to be a true mural cluster, and dismissed the Rgs5-high cluster 22 because its own top markers are neuronal. Neither checked whether Rgs5 there could come from ambient RNA or neuron-pericyte doublets, and neither asked whether the option describes the pattern in the resolution-0.8 table rather than the biology.",
+      "Both teams assumed Acta2 is near zero in the pericyte-like nuclei for a reason that does not matter (10% detected, mean 0.1-0.2). Neither tested whether that is biology (capillary pericytes are Acta2-low) or poor nuclear capture, for example by looking at nuclei with a smooth-muscle program.",
+      "Both teams treated the two runs as the same recipe, but they are not identical: team A gets 26 clusters and a 475-nucleus vascular cluster, team B gets 28 clusters and 459. At resolution 1.5 team A gets a mural-labelled cluster of 80 nuclei and team B gets none. The setting that differs is unidentified.",
+      "Both teams pooled three samples of unequal size and depth with no integration and no doublet removal (the task fixes this), and assumed that whether pericytes merge with endothelial nuclei does not depend on sample mix or dataset size."
+    ],
+    "unused_evidence": [
+      "uns/filtering and uns/curation state that only an n_genes_by_counts > 1000 threshold was applied: no doublet-cluster removal, no mitochondrial or UMI outlier filtering, no ambient correction. Team A found 38 nuclei in the vascular cluster positive for both endothelial and mural genes; neither team asked whether such doublets are what glue the two populations into one cluster at resolution 0.8.",
+      "The 32,000 genes outside the panels were used only by team B, and only for pericyte co-markers (Kcnj8, Abcc9, Higd1b, Vtn). Smooth-muscle genes outside the panel (the contractile program) were not used to ask whether Acta2-expressing mural nuclei exist and where they sit at resolution 0.8, although team B's resolution-2.0 mural cluster has Acta2 mean 0.40.",
+      "obs columns age, age_months, replicate, gsm and sample_id were used only for cluster composition. The pericyte-like nuclei split 59/15/5 across samples; no per-sample run was made to see whether the merging is the same within one sample.",
+      "Team A's own finding that the 842-nucleus macrophage cluster is its own cluster at resolution 0.8 and still loses the raw panel-mean argmax (macrophage count 0) was recorded but not used as evidence about which failure mode the panel-mean rule shows in this data.",
+      "obs barcode has 19,257 categories for 19,259 nuclei (two barcodes shared across samples); team B checked this and it is harmless."
+    ],
+    "unresolved_weak_points": [
+      "Both teams name the same weakest point, the choice between the resolution explanation and the nuclear-detection explanation, with confidence 0.62 and 0.72. Both reported it; neither resolved it. Team B started with the other option and switched after a single resolution-2.0 run.",
+      "The resolution-2.0 evidence is unstable and the teams contradict each other: team A gets 81, 207 or 210 mural-labelled nuclei depending on seed (118 with scaling); team B gets 0 at resolution 1.5 and one 206-nucleus cluster at 2.0 that wins by Mural 1.03 against Endothelial 0.72 and still contains endothelial nuclei. 'Small but distinct' holds in some runs only.",
+      "Team B's plan listed alternative annotation at fixed clusters (z-scored panels, best single marker); checks_run does not show it was done. Team B also did not run the mural panel without Acta2; team A did.",
+      "Neither team ran the seurat_v3 HVG flavour on raw counts (scikit-misc missing). The count was the same in every variant that was run, so this matters little for the count.",
+      "Team B's pitfalls_checked is empty (memory recall returned nothing), so the library pitfalls on nuclear detection and gene-length bias were only worked through by team A."
+    ],
+    "second_readings": [
+      "'Assess why this result occurs' can mean (a) why the specified workflow, taken as fixed, returns this count, judged from the resolution-0.8 cluster-by-gene table, or (b) what change to the workflow would make a mural label appear. Both teams read it as (b). Under (a) the evidence is the pattern of per-gene panel values at 0.8, and the clustering is not a free parameter.",
+      "The task describes the panel-averaging annotation step in detail and calls the clustering merely 'exploratory'. A reader could take the annotation rule to be the object under test, so that the question is about what the rule does with unevenly detected genes, not about cluster granularity.",
+      "The options are compound statements. One reading requires every clause of the chosen option to be true in the data; another accepts the option whose main mechanism fits best. Both teams used the second reading for the option they chose (first clause unverified) and the first reading for the option they rejected (premise true for only one of four genes).",
+      "The count itself has one reading: whole clusters whose argmax is mural, summed. Mean of log-normalised values over the full matrix, as both teams did, is the natural reading; no second scale changes it."
+    ],
+    "verdict": "The count is well supported: it is identical in both teams and in every seed, backend, scaling and scoring variant either ran at resolution 0.8, even though the two runs differ in cluster number. The interpretation is much less secure: both teams name it as their weakest point, they chose a two-clause option after verifying one clause with evidence that is seed-dependent and inconsistent between the teams, and neither tested the reading in which the resolution-0.8 clusters are held fixed, so I would not report the interpretation until the questions are answered.",
+    "questions": [
+      {
+        "to": "sc01-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The option you chose has two clauses and you verified only the second. Test the first on the data: at resolution 0.8, list every cluster with fewer than about 150 nuclei with its size, its panel-mean label, its winning margin and whether its own top differentially expressed genes agree with that label. Also state the size of the cluster that actually holds the mural nuclei at 0.8. Are small clusters in this run unreliably annotated, and is the mural population in a small cluster at 0.8 at all? Does the result change how you weigh that option against the others?",
+        "from": [
+          "sl-sc-pilot-3bd9cb2f4826",
+          "sl-sc-pilot-c18108e64e1c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-831dce5bbca4"
+      },
+      {
+        "to": "sc01-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your resolution-2.0 mural count is 81, 207 or 210 depending on seed, and team B, on nominally the same recipe, gets 28 clusters at 0.8 (you get 26), no mural-labelled cluster at 1.5 (you get 80 nuclei) and a mixed 206-nucleus one at 2.0. Run the literal unscaled pipeline at resolution 2.0 for seeds 0-9 and report for each seed: whether a mural-labelled cluster exists, its size, the fraction of its nuclei that co-express mural genes, the fraction positive for endothelial genes, and the margin over the runner-up panel. Also write out the exact settings of your primary run (HVG subset or mask, n_comps, n_neighbors, Leiden flavour and n_iterations, package versions) so the 26-versus-28 difference can be traced. In how many runs is the population 'small but distinct', and does that change your method or confidence?",
+        "from": [
+          "sl-sc-pilot-3bd9cb2f4826",
+          "sl-sc-pilot-60a2f502b415"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-f323a746583e"
+      },
+      {
+        "to": "sc01-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Separate dilution from detection inside the resolution-0.8 vascular cluster. Split cluster 16 into mural-co-expressing nuclei and the rest, compute both groups' per-gene means for the mural and endothelial panels, and work out what fraction of the cluster would have to be mural for the mural panel to win the argmax, once with all four genes and once with only the genes detected in most mural nuclei. Then check Acta2 directly: among nuclei that express smooth-muscle contractile genes outside the panel, how many are there, where do they sit at 0.8, and in what fraction is Acta2 detected? Report how much of the mural panel's deficit comes from the near-zero gene and how much from mixing. Does the split change which explanation your decision rules select?",
+        "from": [
+          "sl-sc-pilot-df1ddd2af6e8",
+          "sl-sc-pilot-8b8d05d49d45",
+          "sl-sc-pilot-c545d25f4561"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-6793119c43f1"
+      },
+      {
+        "to": "sc01-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: 'Why this result occurs' can be read with the resolution-0.8 clusters held fixed. Under that reading, tabulate for all eight lineages at 0.8: whether a coherent cluster of that lineage exists by its own top genes, whether the raw panel mean labels it correctly, and the per-gene detection fraction of each panel gene inside that lineage's own best cluster. Your macrophage cluster (842 nuclei) exists and still loses the argmax. Also check whether Rgs5 in cluster 22 is carried by the neurons themselves (compare total counts, pericyte co-markers and doublet-like profiles in Rgs5-positive versus Rgs5-negative nuclei of that cluster). Is the mural result the same kind of failure as the macrophage one or a different kind, and does the fixed-cluster reading change your method?",
+        "from": [
+          "sl-sc-pilot-12ead646ba87",
+          "sl-sc-pilot-c545d25f4561"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-aa02f39aa581"
+      },
+      {
+        "to": "sc01-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your plan listed alternative annotation with the clusters held fixed (z-scored panels, best single marker), but checks_run does not show it. At resolution 0.8, without re-clustering, relabel all 28 clusters under per-gene z-score panel means, max-over-markers, mean detection fraction, and the mural panel without Acta2. Report which cluster, if any, gets the mural label under each rule, its size, and whether its own top genes are mural. Does any scoring change alone produce a mural label at 0.8, and does that result change how you choose between the explanations?",
+        "from": [
+          "sl-sc-pilot-dd339f6d712f",
+          "sl-sc-pilot-d4c2cb6af2b5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-e41e034cadc8"
+      },
+      {
+        "to": "sc01-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your switch of interpretation rests on one resolution-2.0 run that gives a 206-nucleus cluster winning by 1.03 against 0.72 with endothelial nuclei still inside it, and you get no mural-labelled cluster at 1.5. Team A, on nominally the same recipe, gets 26 clusters at 0.8 (you get 28) and an 80-nucleus mural cluster at 1.5. Run the literal unscaled pipeline at resolutions 1.5 and 2.0 for seeds 0-9 and report for each run: whether a mural-labelled cluster exists, its size, the fraction of its nuclei co-expressing mural genes, the fraction positive for endothelial genes, and the margin. Also write out the exact settings of your primary run (HVG subset or mask, n_comps, n_neighbors, Leiden flavour and n_iterations, package versions). In how many runs is the population 'small but distinct', and does that change your method or confidence?",
+        "from": [
+          "sl-sc-pilot-b4d434cd45aa",
+          "sl-sc-pilot-60a2f502b415"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-6f4cb068a6c2"
+      },
+      {
+        "to": "sc01-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You wrote that the first clause of the option you chose is 'a loose generalisation I cannot verify'. It can be checked on your own run: at resolution 0.8, list every cluster with fewer than about 150 nuclei with its size, panel-mean label, winning margin and whether its top differentially expressed genes agree with the label. Also state the size of the cluster that holds the pericyte-like nuclei at 0.8. Are small clusters unreliably annotated in this run, and is the mural population a small cluster at 0.8 at all? Does the result change how you weigh that option against the others?",
+        "from": [
+          "sl-sc-pilot-d4c2cb6af2b5",
+          "sl-sc-pilot-c18108e64e1c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-d54701105eb0"
+      },
+      {
+        "to": "sc01-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Separate dilution from detection inside the resolution-0.8 vascular cluster. Using your 86-nucleus pericyte subcluster and the remainder of cluster 16, work out what fraction of the cluster would have to be mural for the mural panel to win the argmax, once with all four genes and once without the gene detected in only 10% of pericyte-like nuclei. Your resolution-2.0 cluster has Acta2 mean 0.40, so some nuclei do carry it: count the nuclei expressing smooth-muscle contractile genes outside the panel, say where they sit at 0.8, and give the Acta2 detection fraction in them. Also check whether Rgs5 in cluster 22 is carried by the neurons themselves or by doublets or ambient RNA (total counts and pericyte co-markers in Rgs5-positive versus Rgs5-negative nuclei). How much of the mural deficit is the near-zero gene and how much is mixing, and does that change your method?",
+        "from": [
+          "sl-sc-pilot-d4c2cb6af2b5",
+          "sl-sc-pilot-b4d434cd45aa"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-pilot-6af5e35f2084"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In single-nucleus RNA-seq compared with whole-cell RNA-seq of the same tissue, is Acta2 (and other smooth-muscle contractile transcripts) documented as under-detected in nuclei, and are Rgs5, Notch3 and Pdgfrb documented as well detected in the nuclei of mural cells? Which mural/pericyte markers are recommended specifically for nuclear data, and is low Acta2 in capillary pericytes a known biological feature independent of the assay?",
+          "why": "Both teams saw one mural panel gene near zero in pericyte-like nuclei and neither could say whether that is poor nuclear capture or true low expression; the answer decides whether the premise of the nuclear-detection explanation holds for this panel.",
+          "passed": false,
+          "reasons": [
+            "a number within 1 percent of another team's value for \"interpretation\""
+          ]
+        },
+        {
+          "question": "Is there any published guidance or benchmark giving a minimum cluster size (for example on the order of a hundred cells) below which marker-based annotation of a Leiden or Louvain cluster is considered unreliable? Separately, how does the resolution parameter of modularity-based Leiden as used by scanpy (RBConfigurationVertexPartition) determine the smallest community that is kept separate rather than merged into a larger neighbouring community, and how does that scale with the total number of cells?",
+          "why": "One candidate explanation asserts a size threshold for reliable annotation that both teams called loose and neither could verify; knowing whether such a threshold exists, and whether merging at a given resolution is a resolution-limit effect, tests that clause independently of the data.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Is Rgs5 expression documented in a subtype of mouse primary sensory neurons (for example tyrosine-hydroxylase-positive C-low-threshold mechanoreceptors) in published whole-cell and single-nucleus atlases, at a level comparable to its expression in pericytes?",
+          "why": "Both teams dismissed a cluster with a single strongly expressed mural marker as neuronal from its own top genes only; independent confirmation that this gene is genuinely expressed by those neurons, rather than arriving through ambient RNA or doublets, settles whether that cluster is a false lead.",
+          "passed": false,
+          "reasons": [
+            "a number within 1 percent of another team's value for \"interpretation\""
+          ]
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "Is there any published guidance or benchmark giving a minimum cluster size (for example on the order of a hundred cells) below which marker-based annotation of a Leiden or Louvain cluster is considered unreliable? Separately, how does the resolution parameter of modularity-based Leiden as used by scanpy (RBConfigurationVertexPartition) determine the smallest community that is kept separate rather than merged into a larger neighbouring community, and how does that scale with the total number of cells?",
+          "answer": "PART A (size threshold for annotation): Not found. None of the pages read states a minimum cluster size, 100 cells or otherwise, below which marker-based annotation of a Leiden/Louvain cluster is unreliable. The sc-best-practices annotation chapter gives no size cutoff; it says only that marker-based annotation is sensitive to the cluster resolution chosen and to the robustness and uniqueness of the marker sets, and suggests trying a higher resolution (it shows 1 vs 2) to see which captures marker patterns. The only explicit numeric floor read is Seurat's FindMarkers default min.cells.group = 3, with a developer comment that differential expression on fewer than 3 cells is severely under-powered; that is a DE-testing floor, not an annotation rule, and it is about 30 times smaller than 100. leidenalg/scanpy have no minimum-community-size setting (only max_comm_size, default 0 = unlimited), so resolution 0.8 does not imply any particular cell-count floor. The '~100 nuclei' clause is therefore unsupported by what was read. This is a negative result from a limited search (10 calls), not proof that no such statement exists anywhere; two hits that looked relevant (a scverse forum thread titled 'Minimum Cluster Size?' and PMC10316566 on DEG robustness versus cell number) were seen only as search snippets and were not opened, so they are not relied on.\n\nPART B (what resolution does): scanpy.tl.leiden defaults to leidenalg's RBConfigurationVertexPartition (scanpy docs: resolution default 1, use_weights=True, graph treated as directed for flavor='leidenalg'). Its quality function is Q = sum_c [ m_c - gamma * K_c^2 / (4m) ], where m_c is the internal edge weight of community c, K_c the summed (weighted) degree of its nodes, m the total edge weight, gamma the resolution; at gamma = 1 it is standard modularity (leidenalg reference). There is no size term or cutoff. Two communities r and s are merged when the edge weight between them exceeds gamma times what the null model expects, m_rs > gamma * K_r * K_s / (2m), and are kept separate otherwise (Kumpula et al. 2007 eq. 8; Lu, Cross & Szymanski 2019 eq. 2-3). Rearranging that inequality (my algebra, not quoted): a small community is absorbed into neighbour s when the share of its own degree that goes to s, m_rs / K_r, exceeds gamma * K_s / (2m), i.e. gamma times the neighbour's share of the whole graph. So what decides merging is how strongly the small group is wired to its neighbour relative to the neighbour's size, not a fixed number of cells; a group with almost no edges to other groups stays separate at any size and any positive gamma.\n\nScaling with dataset size: Kumpula et al. show that two similar-sized communities joined by l links are merged when each has fewer than about sqrt(N * l / gamma) nodes; for loosely connected communities (l ~ 1) the smallest detectable size is ~ sqrt(N / gamma) nodes (N = total nodes), and at gamma = 1 with the configuration null model the classic limit is communities with fewer than sqrt(L/2) internal links (L = total links). The floor therefore rises as the square root of the number of cells and falls only as 1/sqrt(gamma), which the authors call 'rather inefficient': going from 0.8 to 2.0 lowers the square-root floor by about 1.6-fold (for the pairwise inequality the tolerated inter-community edge weight rises 2.5-fold). Raising gamma also splits large loose communities, and no single gamma suits a broad distribution of community sizes (Kumpula; Lu et al.). A 2025 IEEE TCBB paper on scRNA-seq kNN graphs states (abstract only; body not accessible) that the minimum resolution at which a roughly disconnected subgraph splits off is inversely proportional to its frequency in the graph, i.e. rarer populations need higher resolution.\n\nCaveats: these results describe the optimum of Q; Leiden is a heuristic optimiser, and on a weighted kNN graph the outcome also depends on n_neighbors and edge weights, so no formula read here converts resolution 0.8 into a cell count for a given dataset. Implication for the clause being tested: a resolution-limit explanation applies only if the small population is merged into a larger cluster at 0.8; the resolution limit says nothing about whether a small cluster that already exists can be annotated, and the specific figure of ~100 nuclei has no source.",
+          "sources": [
+            "https://leidenalg.readthedocs.io/en/stable/reference.html",
+            "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.tl.leiden.html",
+            "https://ar5iv.labs.arxiv.org/html/cond-mat/0610370",
+            "https://ar5iv.labs.arxiv.org/html/1902.04243",
+            "https://doi.org/10.1109/tcbbio.2025.3627868",
+            "https://www.sc-best-practices.org/cellular_structure/annotation.html",
+            "https://www.sc-best-practices.org/cellular-structure/clustering/",
+            "https://github.com/satijalab/seurat/issues/1001",
+            "https://satijalab.org/seurat/articles/pbmc3k_tutorial"
+          ],
+          "confidence": "Part A: medium (negative result from a limited search; no source read states such a threshold). Part B: high for the quality function, merge condition and sqrt(N/gamma) scaling (read in the leidenalg reference and two papers); medium for how closely Leiden on a weighted, directed kNN graph follows these idealised bounds.",
+          "deliveries": {
+            "sc01-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-pilot-1b88b4f43fa9"
+            },
+            "sc01-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-pilot-d16858165347"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Is there any published guidance or benchmark giving a minimum cluster size (for example on the order of a hundred cells) below which marker-based annotation of a Leiden or Louvain cluster is considered unreliable? Separately, how does the resolution parameter of modularity-based Leiden as used by scanpy (RBConfigurationVertexPartition) determine the smallest community that is kept separate rather than merged into a larger neighbouring community, and how does that scale with the total number of cells? ANSWER: PART A (size threshold for annotation): Not found. None of the pages read states a minimum cluster size, 100 cells or otherwise, below which marker-based annotation of a Leiden/Louvain cluster is unreliable. The sc-best-practices annotation chapter gives no size cutoff; it says only that marker-based annotation is sensitive to the cluster resolution chosen and to the robustness and uniqueness of the marker sets, and suggests trying a higher resolution (it shows 1 vs 2) to see which captures marker patterns. The only explicit numeric floor read is Seurat's FindMarkers default min.cells.group = 3, with a developer comment that differential expression on fewer than 3 cells is severely under-powered; that is a DE-testing floor, not an annotation rule, and it is about 30 times smaller than 100. leidenalg/scanpy have no minimum-community-size setting (only max_comm_size, default 0 = unlimited), so resolution 0.8 does not imply any particular cell-count floor. The '~100 nuclei' clause is therefore unsupported by what was read. This is a negative result from a limited search (10 calls), not proof that no such statement exists anywhere; two hits that looked relevant (a scverse forum thread titled 'Minimum Cluster Size?' and PMC10316566 on DEG robustness versus cell number) were seen only as search snippets and were not opened, so they are not relied on.\n\nPART B (what resolution does): scanpy.tl.leiden defaults to leidenalg's RBConfigurationVertexPartition (scanpy docs: resolution default 1, use_weights=True, graph treated as directed for flavor='leidenalg'). Its quality function is Q = sum_c [ m_c - gamma * K_c^2 / (4m) ], where m_c is the internal edge weight of community c, K_c the summed (weighted) degree of its nodes, m the total edge weight, gamma the resolution; at gamma = 1 it is standard modularity (leidenalg reference). There is no size term or cutoff. Two communities r and s are merged when the edge weight between them exceeds gamma times what the null model expects, m_rs > gamma * K_r * K_s / (2m), and are kept separate otherwise (Kumpula et al. 2007 eq. 8; Lu, Cross & Szymanski 2019 eq. 2-3). Rearranging that inequality (my algebra, not quoted): a small community is absorbed into neighbour s when the share of its own degree that goes to s, m_rs / K_r, exceeds gamma * K_s / (2m), i.e. gamma times the neighbour's share of the whole graph. So what decides merging is how strongly the small group is wired to its neighbour relative to the neighbour's size, not a fixed number of cells; a group with almost no edges to other groups stays separate at any size and any positive gamma.\n\nScaling with dataset size: Kumpula et al. show that two similar-sized communities joined by l links are merged when each has fewer than about sqrt(N * l / gamma) nodes; for loosely connected communities (l ~ 1) the smallest detectable size is ~ sqrt(N / gamma) nodes (N = total nodes), and at gamma = 1 with the configuration null model the classic limit is communities with fewer than sqrt(L/2) internal links (L = total links). The floor therefore rises as the square root of the number of cells and falls only as 1/sqrt(gamma), which the authors call 'rather inefficient': going from 0.8 to 2.0 lowers the square-root floor by about 1.6-fold (for the pairwise inequality the tolerated inter-community edge weight rises 2.5-fold). Raising gamma also splits large loose communities, and no single gamma suits a broad distribution of community sizes (Kumpula; Lu et al.). A 2025 IEEE TCBB paper on scRNA-seq kNN graphs states (abstract only; body not accessible) that the minimum resolution at which a roughly disconnected subgraph splits off is inversely proportional to its frequency in the graph, i.e. rarer populations need higher resolution.\n\nCaveats: these results describe the optimum of Q; Leiden is a heuristic optimiser, and on a weighted kNN graph the outcome also depends on n_neighbors and edge weights, so no formula read here converts resolution 0.8 into a cell count for a given dataset. Implication for the clause being tested: a resolution-limit explanation applies only if the small population is merged into a larger cluster at 0.8; the resolution limit says nothing about whether a small cluster that already exists can be annotated, and the specific figure of ~100 nuclei has no source. HOW SURE: Part A: medium (negative result from a limited search; no source read states such a threshold). Part B: high for the quality function, merge condition and sqrt(N/gamma) scaling (read in the leidenalg reference and two papers); medium for how closely Leiden on a weighted, directed kNN graph follows these idealised bounds.. SOURCES: https://leidenalg.readthedocs.io/en/stable/reference.html, https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.tl.leiden.html, https://ar5iv.labs.arxiv.org/html/cond-mat/0610370, https://ar5iv.labs.arxiv.org/html/1902.04243, https://doi.org/10.1109/tcbbio.2025.3627868, https://www.sc-best-practices.org/cellular_structure/annotation.html, https://www.sc-best-practices.org/cellular-structure/clustering/, https://github.com/satijalab/seurat/issues/1001, https://satijalab.org/seurat/articles/pbmc3k_tutorial."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc01-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc01-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc01-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc01-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc01-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 219.76655250007752,
+      "cost_usd": 0.45925029999999994,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 82.94604133302346,
+      "cost_usd": 0.1525894,
+      "error": null
+    },
+    {
+      "agent": "sc01-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 655.3373969590757,
+      "cost_usd": 0.5005325,
+      "error": null
+    },
+    {
+      "agent": "sc01-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 695.7179936250905,
+      "cost_usd": 0.4040889,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 178.56927687500138,
+      "cost_usd": 0.34471740000000006,
+      "error": null
+    },
+    {
+      "agent": "sc01-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 167.85859320894815,
+      "cost_usd": 0.46182599999999996,
+      "error": null
+    },
+    {
+      "agent": "sc01-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 595.1977714159293,
+      "cost_usd": 0.5729959,
+      "error": null
+    },
+    {
+      "agent": "sc01-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 635.228606791934,
+      "cost_usd": 0.555002,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}
