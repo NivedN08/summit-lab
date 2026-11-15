@@ -228,6 +228,10 @@ Status: being built. The GeneBench design of D-17 stays reproducible with `--mod
 **D-20 · Nov 14, 17:02 · Decided · Version 3 is frozen for the BioDSA-1K and scBench test tasks.**
 Design as in D-19, unchanged after the pilots (M-12). Development tasks, whose scores we have seen: BioDSA-1K bd01 to bd04; scBench sc01, sc07, sc08. Test tasks, scored once after every agent has exited: BioDSA-1K bd05 to bd40 (36 tasks); scBench sc02 to sc06 and sc09 to sc36 (33 tasks). All agents Fable 5.2. Comparison: Fable 5.2 alone, four attempts per BioDSA-1K task and two per scBench task, same limit, no web access; and for BioDSA-1K a second lab run with all search off. Order of running, because Claude usage on one account is the limit: BioDSA-1K lab, BioDSA-1K single agents, scBench, then the search-off run.
 
+**D-21 · Nov 14, 17:32 · Decided · scBench's lab runs with Opus analysts, because the Fable allowance cannot carry both runs.**
+The account's Fable allowance ran out twenty minutes into running both test sets on Fable (I-13) and resets on a timer. Two full runs on Fable would hit it repeatedly. So, before any scBench test task has finished or been scored: the scBench lab uses Opus 5.5 for the library, the teams and the referee, and Fable 5.2 for the director only. Everything else in version 3 is unchanged. It is compared with Opus 5.5 alone and with Fable 5.2 alone, two attempts each per task. BioDSA-1K stays as frozen in D-20: every agent on Fable.
+What this means for reading the results: BioDSA-1K asks whether a Fable lab beats Fable alone. scBench now asks a different question: whether a lab of the weaker model, with search and a Fable director, can match the stronger model alone. The scBench pilot (M-12) was run with Fable analysts, so its three development tasks are not a pilot of this configuration; we say so here and will say so in the results.
+
 ## 5. Agent observations
 
 Things the agents did that we did not expect.
