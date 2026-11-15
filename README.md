@@ -4,7 +4,7 @@ Entry for Track 3, AI Scientist Swarms, at the SF AI Research Hackathon (Nov 14-
 
 ## Summary
 
-summit-lab is a research lab run by AI agents that reproduces computational biology analyses. For each task, a **library** agent researches the method with Exa. A **director** reads the library's findings and passes chosen items to **team A only**. Two analysis teams, A and B, then work blind to each other. Their past.dev memory is separated, so neither can read the other's plan, notes or answer. When the teams agree, the director tries to break the agreed answer before it is reported. When they disagree, the director turns each team's warning signs into questions for the other team, and never passes on an answer. A blind **referee** settles a remaining disagreement by designing and running a test. It may not vote. A third team is called only if the referee cannot settle it. The honest result so far: **the lab does not beat the best single model. It lost to it on one benchmark and tied it on another.** On the GeneBench-Pro test the lab passed 3 of 8 problems, the same as a plain vote over four Opus attempts, and Fable alone passed 4 of 8. On the scBench test, a lab of Opus analysts with a Fable director passed 23 of 33 tasks, the same as Fable alone, at about eleven times the cost. The BioDSA-1K test is still running.
+summit-lab is a research lab run by AI agents that reproduces computational biology analyses. For each task, a **library** agent researches the method with Exa. A **director** reads the library's findings and passes chosen items to **team A only**. Two analysis teams, A and B, then work blind to each other. Their past.dev memory is separated, so neither can read the other's plan, notes or answer. When the teams agree, the director tries to break the agreed answer before it is reported. When they disagree, the director turns each team's warning signs into questions for the other team, and never passes on an answer. A blind **referee** settles a remaining disagreement by designing and running a test. It may not vote. A third team is called only if the referee cannot settle it. The honest result so far: **the lab does not beat the best single model. It lost to it on one benchmark and tied it on another.** On the GeneBench-Pro test the lab passed 3 of 8 problems, the same as a plain vote over four Opus attempts, and Fable alone passed 4 of 8. On the scBench test, a lab of Opus analysts with a Fable director passed 23 of 33 tasks, the same as Fable alone and one fewer than a single Opus attempt (24 of 33), at about eleven times the cost. The BioDSA-1K test is still running.
 
 ## Results
 
@@ -13,7 +13,7 @@ All numbers come from section 9 of [explanation.md](explanation.md). Pass or fai
 | Run | Tasks | Lab | Fable 5.2 alone | Opus 5.5 alone | Cost |
 |---|---|---|---|---|---|
 | GeneBench-Pro public, test, gb03-gb10 (M-11). Opus analysts, Fable director | 8 | **3 of 8** | 4 of 8 problems (8 of 16 attempts) | 10 of 32 attempts (31%); vote over 4 attempts: 3 of 8 | Lab $27.06; Opus alone $18.10; Fable alone $7.94 |
-| scBench, test, 33 tasks (M-13). Opus analysts, Fable director (D-21) | 33 | **23 of 33** | 23 of 33 on the first attempt; 44 of 66 attempts (67%); vote: 23 of 33 | TODO(results pending) | Lab $101.33 ($3.07 a task); Fable alone $9.23 ($0.14 an attempt) |
+| scBench, test, 33 tasks (M-13). Opus analysts, Fable director (D-21) | 33 | **23 of 33** | 23 of 33 on the first attempt; 44 of 66 attempts (67%); vote: 23 of 33 | 24 of 33 on the first attempt; 47 of 66 attempts (71%); vote: 23 of 33 | Lab $101.33 ($3.07 a task); Fable alone $9.23 ($0.14 an attempt); Opus alone $8.45 ($0.13 an attempt) |
 | BioDSA-1K, test, bd05-bd40. All agents Fable (D-20) | 36 | TODO(results pending) | TODO(results pending) | not planned | TODO(results pending) |
 | BioDSA-1K pilot, bd01-bd04 (M-12). All agents Fable | 4 | 3 of 4 | 2 of 4 tasks (4 of 8 attempts) | not run | Lab $10.80 ($2.70 a task); one attempt about $0.10 |
 | scBench pilot, sc01, sc07, sc08 (M-12). All agents Fable | 3 | 2 of 3 | 2 of 3 tasks (4 of 6 attempts) | not run | Lab $9.75 ($3.25 a task); one attempt about $0.11 |
@@ -35,7 +35,7 @@ On the two GeneBench development problems (gb01, gb02) nothing passed: not the l
 How to read this:
 
 - **GeneBench-Pro.** The lab made Opus reliable where Opus was unreliable. It passed every problem a single Opus attempt passes at least half the time, and none beyond. Fable alone beat it, and a plain vote over four Opus attempts matched it for less money.
-- **scBench.** A lab whose analysts are the weaker model matched the stronger model working alone. The steps after the first answers rescued more answers than they damaged. Agreement is evidence but not proof: 16 of 21 replicated answers passed (76%), against 7 of 12 for every other label (58%). Until Opus alone is graded, we cannot say how much the lab added to its own analysts.
+- **scBench.** The lab added nothing to its own analysts: 23 of 33, against 24 of 33 for one Opus attempt. The lab's first answers started lower (team A 19 of 33, team B 21 of 33), and the steps after them won that back: 9 rescues against 3 damages. Seven tasks failed in every arm, lab or single, Opus or Fable. Agreement is evidence but not proof: 16 of 21 replicated answers passed (76%), against 7 of 12 for every other label (58%).
 - **Both pilots.** 1 of 3 replicated answers was wrong in each. When every agent is the same model, a mistake that model makes every time survives the whole lab (O-10).
 
 ## How it works
@@ -215,11 +215,11 @@ Run folders under `runs/` stay local. The graded records of each run are in `res
 ## Limits and what we would do next
 
 - **Small samples, one run per arm.** 8 GeneBench problems, 33 scBench tasks, 7 pilot tasks. A one-task difference is 12.5 points on GeneBench.
-- **No win yet.** GeneBench: Fable alone beat the lab. scBench: a tie with Fable alone at about eleven times the cost. A lab of Fable analysts was never tested on GeneBench, and it cannot now be tested there without bias.
-- **The like-for-like scBench comparison is missing.** Until Opus alone is graded, we cannot say how much the lab added to its own analysts.
+- **No win yet.** GeneBench: Fable alone beat the lab. scBench: the same score as Fable alone and as Opus alone, at about eleven times the cost. A lab of Fable analysts was never tested on GeneBench, and it cannot now be tested there without bias.
+- **The briefing did not help first answers on scBench.** The team briefed by the library passed 19 of 33 on its first answer; the team with data only passed 21; one Opus attempt alone passed 24.
 - **Same model, same blind spot.** Blinding stops copying. It does not stop two copies of one model from making the same mistake (I-11, O-10). The director's challenge broke a false agreement once (O-5) and failed to break others (O-8). On scBench it cost a director run and a round of replies on every agreed answer, and changed nothing in the score.
 - **Search's value is not measured yet.** The search-off run (D-20) has not run, and team A barely searched.
 - **Usage limits.** The account's Fable limit stopped both test runs once (I-13), and the scBench lab moved to Opus analysts because of it (D-21).
-- **Next:** finish the BioDSA-1K test and the Opus-alone scBench baseline; run the search-off comparison; try teams on different models (`--team-b-model`), so the two teams do not share one model's blind spots; test I-1 with an agent that names another identity.
+- **Next:** finish the BioDSA-1K test; run the search-off comparison; try teams on different models (`--team-b-model`), so the two teams do not share one model's blind spots; test I-1 with an agent that names another identity.
 
 Built entirely during the event. A practice lab was built beforehand in a separate repository; no file was copied from it. The full working log, with every decision, observation, issue and measurement, is [explanation.md](explanation.md).

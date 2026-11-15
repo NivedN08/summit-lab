@@ -535,14 +535,15 @@ Commands: `python3 -m lab.run lab --benchmark biodsa --studies bd01,bd02,bd03,bd
 
 What this shows: version 3 runs end to end with real agents, including search by verified identity, budgets, and research on demand; web search is now a real part of the work (on GeneBench the library opened 7 pages in a whole run). What it does not show: seven tasks cannot say whether the lab beats Fable alone. The lab costs about 27 single attempts per BioDSA-1K task; a vote over repeats would not help a model that gives the same answer every time, but the cost gap is real.
 
-**M-13 · Nov 14, 19:15 · Measured · scBench test: the lab with Opus analysts ties Fable alone, 23 of 33.**
-Commands: `python3 -m lab.run lab --benchmark scbench --studies sc02,...,sc36 (all but sc01, sc07, sc08) --run-dir runs/sc-test --memory past --backend modal --parallel 10 --model opus` (director on Fable, D-21), `baseline ... --attempts 2` (Fable), then `grade` and `measures` after every agent had exited. Scored by scBench's own grader. Records: `results/sc-test/`.
+**M-13 · Nov 14, 19:15 · Measured · scBench test: the lab with Opus analysts scores 23 of 33, the same as Fable alone and no better than Opus alone.**
+Commands: `python3 -m lab.run lab --benchmark scbench --studies sc02,...,sc36 (all but sc01, sc07, sc08) --run-dir runs/sc-test --memory past --backend modal --parallel 10 --model opus` (director on Fable, D-21), `baseline ... --attempts 2` (Fable), `baseline ... --attempts 2 --model opus --run-dir runs/sc-test-opus-single`, then `grade` and `measures` after every agent had exited. Scored by scBench's own grader. Records: `results/sc-test/`, `results/sc-test-opus-single/`. The Opus-alone rows were added at 19:35, when that run was graded.
 
 | | 33 test tasks |
 |---|---|
 | Lab (Opus analysts, Fable director) | 23 of 33 |
 | Fable alone | 44 of 66 attempts (67%); 23 of 33 tasks on the first attempt; 23 of 33 by vote |
-| Opus alone | running; this is the like-for-like comparison and will be added here |
+| Opus alone (the like-for-like comparison) | 47 of 66 attempts (71%); 24 of 33 tasks on the first attempt; 23 of 33 by vote |
+| Lab against Opus alone, task by task | lab right where Opus failed twice: sc29. Lab wrong where Opus passed twice: sc14. Opus passed once in two: sc05 (lab right), sc11 and sc18 (lab wrong). The other 28 tasks: same result |
 | Lab right where Fable alone was wrong twice | sc29 (settled by a third team) |
 | Lab wrong where Fable alone was right twice | sc14 (reported as unresolved) |
 | By label (tasks, passed) | replicated 21, 16; converged 3, 1; refereed 6, 4; third-team 1, 1; unresolved 2, 1 |
@@ -554,8 +555,8 @@ Commands: `python3 -m lab.run lab --benchmark scbench --studies sc02,...,sc36 (a
 | Selection | some lab answer passed in 25 tasks; the lab shipped a passing one in 23 (missed sc11, sc14) |
 | Web search | library 389 calls, research on demand 262, team A 0; 2 refused by the budget |
 | Research on demand | 88 questions, 12 blocked by the leak check, 150 findings delivered; the revision round after it rescued 3, damaged 1 |
-| Cost | lab 300 runs, 814 minutes of agent time, $101.33 ($3.07 a task); Fable alone 66 runs, 179 minutes, $9.23 ($0.14 an attempt) |
+| Cost | lab 300 runs, 814 minutes of agent time, $101.33 ($3.07 a task); Fable alone 66 runs, 179 minutes, $9.23 ($0.14 an attempt); Opus alone 66 runs, 122 minutes, $8.45 ($0.13 an attempt) |
 
-What this shows. A lab whose analysts are the weaker model reached the same score as the stronger model working alone, on 33 tasks it had never been tuned on. The steps after the first answers did net good: 9 rescues against 3 damages (question round 4 and 2, referee 3 and 1, third team 2 and 0; the revision round's 3 and 1 are already inside the question round's count). Agreement is evidence but not proof: 16 of 21 replicated answers passed (76%), against 7 of 12 for every other label (58%).
+What this shows. On scBench the lab added nothing to its own analysts: 23 of 33, against 24 of 33 for one Opus attempt and 23 of 33 for a vote over two. Opus alone also did slightly better than Fable alone here (71% of attempts against 67%), so Opus is not the weaker model on this benchmark. Seven tasks failed in every arm, single or lab, Opus or Fable, with or without web research (sc03, sc04, sc16, sc21, sc25, sc33, sc36): both models share those blind spots, and the lab's research did not remove them. Inside the lab, the steps after the first answers did net good: 9 rescues against 3 damages (question round 4 and 2, referee 3 and 1, third team 2 and 0; the revision round's 3 and 1 are already inside the question round's count). Agreement is evidence but not proof: 16 of 21 replicated answers passed (76%), against 7 of 12 for every other label (58%).
 
-What it does not show. It is not a win: 23 against 23, at eleven times the cost. Until the Opus-alone number is in, we cannot say how much the lab added to its own analysts. One run per arm. The challenge step, which costs a director run and a round of replies on every agreed answer, changed nothing in the score here.
+What it does not show. It is not a win: the same score at eleven to twelve times the cost. The rescues did not lift the lab above a single attempt because the lab's first answers started lower: team A (briefed by the library) passed 19 of 33 on its first answer and team B (data only) 21 of 33, against 24 of 33 for one Opus attempt alone. So the library's briefing did not improve first answers here; the later steps then won back what was lost. Differences of two to five tasks in 33 are within what one run per arm can produce by chance. The challenge step, which costs a director run and a round of replies on every agreed answer, changed nothing in the score here.
