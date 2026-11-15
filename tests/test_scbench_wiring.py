@@ -91,8 +91,13 @@ def make_lab(tmp_path, adapter, backend, config=None, **kwargs):
 
 # ----- 2. GeneBench briefs are word for word as before -----
 
-def test_genebench_analyst_and_baseline_briefs_are_unchanged(tmp_path):
-    """The golden files are the briefs the lab produced before the answer file became a field."""
+REPRODUCE = ["--model", "opus", "--no-team-search", "--no-research"]   # the earlier GeneBench design
+
+
+def lab_briefs(tmp_path, flags):
+    """Run one GeneBench-shaped study with the lab command's config for `flags`, and one baseline
+    attempt. Returns brief(agent_id) with the tool and data paths replaced by <TOOLS> and <DATA>,
+    and the lab's org."""
     statement = 'Estimate the effect.\nReturn {"answer": {"effect": <float>}}.\n'
     root = tmp_path / "bench"
     (root / "gb01" / "data").mkdir(parents=True)
@@ -118,16 +123,41 @@ def test_genebench_analyst_and_baseline_briefs_are_unchanged(tmp_path):
         return {"answer_file": "answer.json", "method": "m", "questions": [], "verdict": "v"}
 
     backend = MockBackend(script)
-    lab, log, _, run_dir = make_lab(tmp_path, Adapter(), backend, protocol.Config(max_agents=2, library=False))
+    args = run.build_parser().parse_args(["lab", "--benchmark", "genebench", "--run-dir", "unused", *flags])
+    config = run.make_config(args)
+    lab, log, _, run_dir = make_lab(tmp_path, Adapter(), backend, config)
     lab.run([study])
-    run_baselines(Adapter(), backend, log, run_dir, [study], 1, "opus", 1)
+    run_baselines(Adapter(), backend, log, run_dir, [study], 1, config.worker_model, 1)
 
-    def brief(agent_id):
-        text = next(c.brief for c in backend.calls if c.agent_id == agent_id)
-        return text.replace(str(protocol.TOOLS), "<TOOLS>").replace(str(study.data_dir), "<DATA>")
+    def brief(agent_id, every=False):
+        texts = [c.brief.replace(str(protocol.TOOLS), "<TOOLS>").replace(str(study.data_dir), "<DATA>")
+                 for c in backend.calls if c.agent_id == agent_id]
+        return "\n".join(texts) if every else texts[0]
 
+    return brief, lab.org
+
+
+def test_genebench_analyst_and_baseline_briefs_are_unchanged(tmp_path):
+    """The golden files are the briefs the lab produced before the answer file became a field.
+    The flags `--model opus --no-team-search --no-research` must give them word for word."""
+    brief, org = lab_briefs(tmp_path, REPRODUCE)
     assert brief("gb01-team-a") == (GOLDEN / "genebench_analyst_brief.md").read_text()
     assert brief("baseline-gb01-1") == (GOLDEN / "genebench_baseline_brief.md").read_text()
+    assert {a.model for a in org.agents if a.id != "director"} == {"opus"} and org.agent("director").model == "fable"
+    for agent_id in ("director", "gb01-library"):    # every director brief, the challenge included
+        assert "research_questions" not in brief(agent_id, every=True)
+        assert "research on demand" not in brief(agent_id, every=True)
+
+
+def test_default_version_3_briefs_for_team_a_and_team_b(tmp_path):
+    """Team A's default brief adds the search section; team B's is the old brief for team B."""
+    brief, org = lab_briefs(tmp_path, [])
+    assert brief("gb01-team-a") == (GOLDEN / "genebench_analyst_brief_v3_team_a.md").read_text()
+    assert brief("gb01-team-b") == (GOLDEN / "genebench_analyst_brief_v3_team_b.md").read_text()
+    old = (GOLDEN / "genebench_analyst_brief.md").read_text()
+    assert brief("gb01-team-b") == old.replace("gb01-team-a", "gb01-team-b").replace(
+        protocol.DIVERSITY["team-a"], protocol.DIVERSITY["team-b"])
+    assert {a.model for a in org.agents} == {"fable"}
 
 
 # ----- 2. the answer file comes from the study -----
@@ -231,7 +261,8 @@ def test_each_study_has_its_own_library_department_with_exa(tmp_path):
     assert org.agent("s1-library").department == "s1-library"
     assert org.agent("s2-library").department == "s2-library"
     assert "library" not in org.departments
-    assert sorted(built["exa_departments"]) == ["s1-library", "s2-library"]
+    # each study's library may search, and so may its team A (team B never does)
+    assert sorted(built["exa_departments"]) == ["s1-library", "s1-team-a", "s2-library", "s2-team-a"]
     for sid in ("s1", "s2"):
         brief = built["relay_briefs"][sid]
         assert f"`{sid}-library`" in brief and f"use only facts whose department starts with `{sid}-`" in brief

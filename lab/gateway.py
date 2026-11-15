@@ -12,12 +12,21 @@ Routes (all POST, JSON in and out):
   /memory/write      {text, label}                               -> {id, department}
   /memory/recall     {query, limit}                              -> {facts: [...]}
   /memory/pass_down  {to_department, text, came_from, reason}    -> {id, to_department}   (403 unless head/director)
-  /exa/search        {query, objective, type?, num?}             -> {results: [...]}      (403 unless an Exa department)
-  /exa/contents      {urls, objective, max_chars?}               -> {results: [...]}      (403 unless an Exa department)
+  /exa/search        {query, objective, type?, num?}             -> {results: [...]}      (403 unless an Exa department,
+                                                                                           429 over the agent's budget)
+  /exa/contents      {urls, objective, max_chars?}               -> {results: [...]}      (the same)
 
 Exa results whose URL or title contains a blocked term are dropped before the agent sees
 them, and a contents request for a blocked URL is refused. Every request is logged as
 "gateway.request"; tokens are never logged.
+
+Search budgets: `exa_caps` maps an agent id to the most Exa calls it may make (search and
+contents both count); agents not listed have no cap. `set_budget(agent, cap, label)` starts a
+new count for that agent, under a label that names what the calls are for ("library",
+"team-a", "research"). Every Exa call is logged as "exa.call" with its label; a call over the
+cap is answered 429 and logged as "exa.refused". With `budget_file`, the gateway also reads new
+budgets from that JSON file ({agent: {"cap", "label", "window"}}) before each Exa call: that is
+how the lab sets budgets on the gateway running on Modal.
 
 Usage from the orchestrator:
     gw = Gateway(org, memory, log, exa_departments=["library"], blocked_terms=["source paper title"])
@@ -34,6 +43,7 @@ import datetime as dt
 import hmac
 import json
 import os
+import pathlib
 import secrets
 import threading
 import time
@@ -86,7 +96,8 @@ class Gateway:
 
     def __init__(self, org: Org, memory: Memory, log: EventLog, exa_departments=(), blocked_terms=(),
                  *, exa_call=default_exa_call, host: str = "127.0.0.1", port: int = 0,
-                 agents_may_pass_down: bool = True, identity_header: str | None = None):
+                 agents_may_pass_down: bool = True, identity_header: str | None = None,
+                 exa_caps: dict | None = None, budget_file=None):
         self.org = org
         # When set (on Modal: "X-Verified-User-Data"), the caller's identity comes ONLY from this header,
         # which a trusted proxy fills in as JSON {"agent": "<agent id>"}. The bearer-token table is not used.
@@ -101,6 +112,11 @@ class Gateway:
         self.host, self.port = host, port
         self._tokens: dict[str, str] = {}     # agent id -> token
         self._exa_log_lock = threading.Lock()
+        # agent id -> {"cap", "label", "window"}; a new window starts a new count of calls
+        self._budgets = {a: {"cap": int(n), "label": None, "window": 0} for a, n in (exa_caps or {}).items()}
+        self._used: dict[str, tuple[int, int]] = {}      # agent id -> (window, calls made in it)
+        self._budget_lock = threading.Lock()
+        self.budget_file = budget_file
         self._server: ThreadingHTTPServer | None = None
         self._thread: threading.Thread | None = None
         self.routes = {
@@ -141,6 +157,7 @@ class Gateway:
         host, port = self._server.server_address[:2]
         self.log.append("gateway.start", "gateway", host=host, port=port,
                         exa_departments=sorted(self.exa_departments), blocked_terms=len(self.blocked_terms),
+                        exa_caps={a: b["cap"] for a, b in self._budgets.items()},
                         identity=self.identity_header or "bearer token")
         return f"http://{host}:{port}"
 
@@ -270,6 +287,48 @@ class Gateway:
         if exa.spent() >= cap:
             raise Refused(402, f"Exa budget of ${cap:.2f} is used up")
 
+    def set_budget(self, agent_id: str, cap: int, label: str | None = None) -> dict:
+        """Start a new count of Exa calls for this agent: at most `cap` from now on, under `label`."""
+        with self._budget_lock:
+            window = self._budgets.get(agent_id, {}).get("window", 0) + 1
+            self._budgets[agent_id] = {"cap": int(cap), "label": label, "window": window}
+            return dict(self._budgets[agent_id])
+
+    def _read_budget_file(self) -> None:
+        """Take new budgets from budget_file, when there is one. A file that cannot be read changes nothing."""
+        if not self.budget_file:
+            return
+        try:
+            data = json.loads(pathlib.Path(self.budget_file).read_text())
+        except (OSError, ValueError):
+            return
+        if not isinstance(data, dict):
+            return
+        with self._budget_lock:
+            for agent_id, b in data.items():
+                if isinstance(b, dict) and isinstance(b.get("cap"), int) and isinstance(b.get("window"), int):
+                    self._budgets[agent_id] = {"cap": b["cap"], "label": b.get("label"), "window": b["window"]}
+
+    def _take_call(self, agent: Agent, endpoint: str) -> None:
+        """Count one Exa call against the agent's budget, or refuse it (429) when the budget is used up."""
+        self._read_budget_file()
+        with self._budget_lock:
+            budget = self._budgets.get(agent.id)
+            if budget is None:
+                self.log.append("exa.call", agent.id, agent=agent.id, endpoint=endpoint, budget=None, used=None, cap=None)
+                return
+            window, used = self._used.get(agent.id, (budget["window"], 0))
+            if window != budget["window"]:
+                used = 0
+            if used >= budget["cap"]:
+                self.log.append("exa.refused", agent.id, agent=agent.id, endpoint=endpoint, budget=budget["label"],
+                                used=used, cap=budget["cap"])
+                raise Refused(429, f"web search limit reached: {agent.id} has used {used} of {budget['cap']} calls "
+                                   "allowed for this run (search and contents both count). Carry on without searching.")
+            self._used[agent.id] = (budget["window"], used + 1)
+            self.log.append("exa.call", agent.id, agent=agent.id, endpoint=endpoint, budget=budget["label"],
+                            used=used + 1, cap=budget["cap"])
+
     def _is_blocked(self, *values) -> bool:
         joined = " ".join(v for v in values if isinstance(v, str)).lower()
         return any(term in joined for term in self.blocked_terms)
@@ -312,6 +371,7 @@ class Gateway:
             request["type"] = body["type"]
         if body.get("num") is not None:
             request["numResults"] = _int(body, "num", 10, 1, 100)
+        self._take_call(agent, "search")
         status, parsed, seconds = self.exa_call("/search", request)
         results = parsed.get("results") or []
         kept = self._filter(agent, "search", results)
@@ -333,6 +393,7 @@ class Gateway:
         if blocked:
             self.log.append("exa.blocked", agent.id, endpoint="contents", dropped=len(blocked), refused=True)
             raise PermissionError(f"{len(blocked)} of the requested links are blocked for this lab")
+        self._take_call(agent, "contents")
         status, parsed, seconds = self.exa_call("/contents", {"urls": urls, "text": {"maxCharacters": max_chars}})
         results = parsed.get("results") or []
         kept = self._filter(agent, "contents", results)

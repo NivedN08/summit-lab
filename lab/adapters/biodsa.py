@@ -27,8 +27,9 @@ or two tasks from one source), skipping studies whose archive is missing, whose 
 exceed MAX_TABLE_BYTES, whose tables contain the study's identifiers, or whose hypothesis text
 contains its source's title. The label mix matches the full set's shares (largest remainder).
 
-There is no grader code to run: `grade` is our own exact match on the label. The paper's second
-score (evidence alignment) needs a judge model; we do not use it.
+There is no grader code to run: `grade` is our own exact match on the label, with a "kind" that
+says what sort of right or wrong the answer was ("accepted a false claim" and so on). The
+paper's second score (evidence alignment) needs a judge model; we do not use it.
 
 Agents run on Modal (`modal_spec`): each sandbox mounts its own task's folder of the Volume
 `summit-biodsa-data` read-only at MOUNT.
@@ -436,6 +437,17 @@ def _load_answer(path: pathlib.Path):
     return doc["answer"], []
 
 
+def outcome_kind(given: str, expected: str) -> str:
+    """What sort of right or wrong an answer label is, against the expected label."""
+    if given == expected:
+        return "correct"
+    if expected == "Not verifiable":
+        return "judged an unverifiable claim settled"
+    if given == "Not verifiable":
+        return "judged a settled claim not verifiable"
+    return "accepted a false claim" if given == "True" else "rejected a true claim"
+
+
 # ----------------------------------------------------------------------------- the adapter
 
 class BioDSA:
@@ -516,14 +528,15 @@ class BioDSA:
 
     def grade(self, study: Study, final_dir: pathlib.Path) -> dict:
         """Our own exact match against the sealed label. Call only after every agent has exited.
-        A missing or malformed answer is a fail."""
+        A missing or malformed answer is a fail. "kind" says what sort of right or wrong it was
+        (outcome_kind), in words that never name the label itself."""
         candidate = pathlib.Path(final_dir) / DELIVERABLE
         answer, found = _load_answer(candidate)
         if answer is None or self.problems(study, DELIVERABLE, candidate):
             return {"passed": False, "score": 0.0, "error": (found or self.problems(study, DELIVERABLE, candidate))[0]}
         expected = LABELS[json.loads(MAPPING.read_text())[study.id]["label"]]
         passed = answer["label"] == expected
-        return {"passed": passed, "score": 1.0 if passed else 0.0}
+        return {"passed": passed, "score": 1.0 if passed else 0.0, "kind": outcome_kind(answer["label"], expected)}
 
 
 if __name__ == "__main__":

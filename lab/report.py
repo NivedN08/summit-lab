@@ -85,6 +85,19 @@ def study_section(record: dict, grade: dict | None) -> list[str]:
             state = "delivered" if q["delivered"] else "blocked (" + "; ".join(q["reasons"]) + ")"
             lines.append(f"- to {q['to']}, {state}: {q['question']}")
         lines.append("")
+    for r in record.get("research") or []:
+        lines.append(f"Research on demand ({r.get('round')} round): the director asked {len(r.get('questions') or [])} "
+                     f"research question(s).")
+        for q in r.get("questions") or []:
+            state = "given to the library" if q.get("passed") else "blocked (" + "; ".join(q.get("reasons") or []) + ")"
+            lines.append(f"- research question, {state}: {q.get('question')}")
+        if not r.get("ran") and any(q.get("passed") for q in r.get("questions") or []):
+            lines.append(f"- the library's research run failed: {r.get('error') or 'no reason given'}")
+        for f in r.get("findings") or []:
+            sent = [d for d, v in (f.get("deliveries") or {}).items() if v.get("delivered")]
+            lines.append(f"- finding ({f.get('confidence') or 'no confidence given'}; delivered to "
+                         f"{', '.join(sent) or 'no team'}): {f.get('answer')} Sources: {', '.join(f.get('sources') or []) or 'none'}")
+        lines.append("")
     if record.get("warning_signs_to_team_c"):
         sent = sum(q["delivered"] for q in record["warning_signs_to_team_c"])
         lines.append(f"Team C received {sent} of {len(record['warning_signs_to_team_c'])} questions as warning signs.")
@@ -186,6 +199,7 @@ def measures_section(m: dict) -> list[str]:
               f"pitfall checks: {lib['found_in_data']} found the pitfall in the data and {lib['changed_method']} "
               f"changed a method.",
               "",
+              *research_paragraphs(m),
               f"**Cost.** The lab used {lab['runs']} agent runs, {lab['minutes']:.1f} minutes and {dollars(lab)}"
               f"{per_study(lab)}. The single agents used {base['runs']} runs, {base['minutes']:.1f} minutes and "
               f"{dollars(base)}. "
@@ -194,6 +208,31 @@ def measures_section(m: dict) -> list[str]:
     if m.get("missing"):
         lines += ["", "Missing from this run: " + "; ".join(m["missing"]) + "."]
     return lines + [""]
+
+
+def research_paragraphs(m: dict) -> list[str]:
+    """Paragraphs on web search, research on demand and outcome kinds (none for an older measures.json)."""
+    out = []
+    s, r, k = m.get("search"), m.get("research"), m.get("kinds")
+    if s:
+        calls, refused = s["calls"], s["refused"]
+        out += [f"**Web search.** The library's first pass made {calls.get('library', 0)} Exa calls, team A's analysts "
+                f"{calls.get('team-a', 0)} and research on demand {calls.get('research', 0)}; the budget refused "
+                f"{sum(refused.values())} more ({refused.get('library', 0)}, {refused.get('team-a', 0)} and "
+                f"{refused.get('research', 0)}). The teams wrote {s['learned']} LEARNED facts.", ""]
+    if r:
+        v = r["revision"]
+        out += [f"**Research on demand.** The director asked {r['asked']} research questions; the leak check blocked "
+                f"{r['blocked']} and {r['answered']} were answered. {r['delivered']} findings were delivered to teams. "
+                f"In the {len(r['studies'])} studies where findings arrived, the revision round that followed turned "
+                f"{v['rescued']} team answers from failing to passing and {v['damaged']} from passing to failing, out of "
+                f"{v['compared']}.", ""]
+    if k and (set(k["lab_final"]) | set(k["single_attempts"])) - {"not given"}:   # only when the adapter gives kinds
+        def tally(t: dict) -> str:
+            return ", ".join(f"{name} {n}" for name, n in sorted(t.items(), key=lambda kv: (-kv[1], kv[0]))) or "none"
+        out += [f"**Outcome kinds.** Lab final answers: {tally(k['lab_final'])}. Single-agent attempts: "
+                f"{tally(k['single_attempts'])}.", ""]
+    return out
 
 
 def write_report(run_dir: pathlib.Path) -> pathlib.Path:

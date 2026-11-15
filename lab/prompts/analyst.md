@@ -16,7 +16,7 @@ Work in this order.
 
 5. **Answer.** Write `{answer_file}` exactly as the task asks. Then write `result.json`.
 
-{diversity}
+{diversity}{search}
 
 ## Working limits
 

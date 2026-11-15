@@ -15,7 +15,7 @@ Rules for a question:
 - It never states or hints at the other team's answer, in numbers or in words. No values, no "higher", no "lower". A question that contains the other team's answer is not delivered.
 - It never tells a team which method to use. It asks; the team decides from the data.
 
-The teams are: {team_departments}. Do not analyse the data yourself and do not pick a winner.
+The teams are: {team_departments}. Do not analyse the data yourself and do not pick a winner.{research}
 
 ## The task
 
@@ -23,4 +23,4 @@ The teams are: {team_departments}. Do not analyse the data yourself and do not p
 
 ## result.json
 
-{{"differences_found": ["..."], "questions": [{{"to": "department", "from": ["fact id"], "question": "..."}}], "likely_cause": "your best guess at why the answers differ"}}
+{{"differences_found": ["..."], "questions": [{{"to": "department", "from": ["fact id"], "question": "..."}}], "likely_cause": "your best guess at why the answers differ"{research_shape}}}

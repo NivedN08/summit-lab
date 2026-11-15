@@ -3,8 +3,11 @@
     python3 -m lab.gateway_main --config /gateway/config.json --memory past --log-dir /gateway --port 8080
 
 The config file holds {"org": [agents as dicts], "namespace": ..., "exa_departments": [...],
-"blocked_terms": [...], "agents_may_pass_down": false, "exa_budget_usd": 25}. Keys come from the
-environment (the Modal Secret `summit-lab-keys`: PAST_API_KEY, EXA_API_KEY), never from the config.
+"blocked_terms": [...], "agents_may_pass_down": false, "exa_budget_usd": 25,
+"exa_caps": {agent id: most Exa calls}}. Keys come from the environment (the Modal Secret
+`summit-lab-keys`: PAST_API_KEY, EXA_API_KEY), never from the config. Later budgets (a new count
+for an agent, for example for its next round) arrive in <log-dir>/budgets.json, which the
+orchestrator writes and the gateway reads before each Exa call.
 
 The gateway listens on 0.0.0.0 and takes each caller's identity ONLY from Modal's
 X-Verified-User-Data header (set from the agent's connect token). With `--memory past` it attaches
@@ -28,6 +31,7 @@ from lab.gateway import Gateway
 from lab.tools import exa
 
 VERIFIED_HEADER = "X-Verified-User-Data"
+BUDGET_FILE = "budgets.json"
 
 
 def build(config: dict, memory_kind: str, log_dir: pathlib.Path, port: int) -> Gateway:
@@ -50,7 +54,8 @@ def build(config: dict, memory_kind: str, log_dir: pathlib.Path, port: int) -> G
         raise SystemExit(f"unknown memory {memory_kind!r}")
     return Gateway(org, memory, log, config.get("exa_departments") or [], config.get("blocked_terms") or [],
                    host="0.0.0.0", port=port, agents_may_pass_down=bool(config.get("agents_may_pass_down", False)),
-                   identity_header=VERIFIED_HEADER)
+                   identity_header=VERIFIED_HEADER, exa_caps=config.get("exa_caps") or {},
+                   budget_file=log_dir / BUDGET_FILE)
 
 
 def main(argv: list[str] | None = None) -> None:

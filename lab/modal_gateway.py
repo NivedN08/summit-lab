@@ -6,8 +6,10 @@
     ...
     gw.stop()
 
-It has the surface lab.protocol.Lab uses on the local Gateway (start, issue_token, stop) plus
-url_for and sync. issue_token makes a Modal Sandbox Connect Token whose metadata is
+It has the surface lab.protocol.Lab uses on the local Gateway (start, issue_token, set_budget,
+stop) plus url_for and sync. Search caps go in the config like the other settings; set_budget
+writes the agent's new budget to /gateway/budgets.json, which the gateway reads before each Exa
+call. issue_token makes a Modal Sandbox Connect Token whose metadata is
 {"agent": <agent id>}; Modal hands that to the gateway in the X-Verified-User-Data header, and the
 gateway takes the caller's identity from that header only.
 
@@ -38,6 +40,7 @@ PORT = 8080
 REMOTE_DIR = "/gateway"
 REMOTE_CODE = "/opt/summit"
 KEYS_SECRET = "summit-lab-keys"
+BUDGET_FILE = "budgets.json"     # the same name lab.gateway_main reads
 
 
 def gateway_image():
@@ -51,7 +54,8 @@ class ModalGateway:
     """lab.gateway.Gateway run in a Modal Sandbox, with its logs copied back while it runs."""
 
     def __init__(self, org: Org, memory: Memory, log: EventLog, exa_departments=(), blocked_terms=(), *,
-                 agents_may_pass_down: bool = True, exa_call=None, memory_kind: str | None = None,
+                 agents_may_pass_down: bool = True, exa_call=None, exa_caps: dict | None = None,
+                 memory_kind: str | None = None,
                  poll_s: float = 3.0, timeout_s: int = 12 * 3600, secret_name: str = KEYS_SECRET):
         if exa_call is not None:
             raise ValueError("the Modal gateway calls Exa from its sandbox; exa_call cannot be replaced")
@@ -59,6 +63,9 @@ class ModalGateway:
         self.exa_departments = list(exa_departments)
         self.blocked_terms = list(blocked_terms)
         self.agents_may_pass_down = agents_may_pass_down
+        self.exa_caps = {a: int(n) for a, n in (exa_caps or {}).items()}
+        self._budgets: dict[str, dict] = {}     # what budgets.json holds: agent id -> {cap, label, window}
+        self._budget_lock = threading.Lock()
         self.memory_kind = memory_kind or ("past" if hasattr(memory, "namespace") else "local")
         self.poll_s, self.timeout_s, self.secret_name = poll_s, timeout_s, secret_name
         self.sandbox = None
@@ -77,7 +84,7 @@ class ModalGateway:
                 "namespace": getattr(self.memory, "namespace", None),
                 "exa_departments": self.exa_departments, "blocked_terms": self.blocked_terms,
                 "agents_may_pass_down": self.agents_may_pass_down,
-                "exa_budget_usd": round(cap - exa.spent(), 4)}
+                "exa_budget_usd": round(cap - exa.spent(), 4), "exa_caps": self.exa_caps}
 
     def needs_keys(self) -> bool:
         return self.memory_kind == "past" or bool(self.exa_departments)
@@ -120,6 +127,20 @@ class ModalGateway:
         creds = self.sandbox.create_connect_token(user_metadata={"agent": agent_id}, port=PORT)
         self._urls[agent_id] = creds.url
         return creds.token
+
+    def set_budget(self, agent_id: str, cap: int, label: str | None = None) -> dict:
+        """Start a new count of Exa calls for this agent on the remote gateway, through budgets.json.
+        A failed write is logged and the agent keeps its earlier budget."""
+        with self._budget_lock:
+            window = self._budgets.get(agent_id, {}).get("window", 0) + 1
+            self._budgets[agent_id] = {"cap": int(cap), "label": label, "window": window}
+            path = f"{REMOTE_DIR}/{BUDGET_FILE}"
+            try:
+                self.sandbox.filesystem.write_text(json.dumps(self._budgets), path + ".tmp")
+                self.sandbox.exec("mv", path + ".tmp", path).wait()
+            except Exception as err:
+                self.log.append("gateway.modal.budget_error", "lab", agent=agent_id, error=f"{type(err).__name__}: {err}"[:300])
+            return dict(self._budgets[agent_id])
 
     def url_for(self, agent_id: str) -> str:
         """The connect URL that goes with this agent's token."""

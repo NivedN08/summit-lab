@@ -15,6 +15,10 @@ For each study S the lab runs, in order (explanation.md, section 1, and D-8 to D
   5. questions   on disagreement the director writes questions from each team's method note;
                  the lab leak-checks each one, delivers those that pass, and both teams revise.
                  Agreeing now: "converged".
+  4a/5 research  in either question round the director may also ask up to three research
+                 questions. Those that pass the leak check go to the study's library, which answers
+                 them from the web (phase "research"); each finding is leak-checked and passed down
+                 to both teams before they revise (Config.research; never without the library).
   6. referee     `S-referee` gets the two answers as X and Y and must run a test. A pick: "refereed".
   7. team C      on "neither", a third blind team runs with the questions as warning signs.
                  Agreeing with A or B: "third-team". Otherwise "unresolved".
@@ -23,13 +27,18 @@ For each study S the lab runs, in order (explanation.md, section 1, and D-8 to D
 The answer file is the study's first deliverable (answer_file): `answer.json` for GeneBench,
 `eval_answer.json` for scBench. Briefs name it through the {answer_file} field.
 
+Web search (version 3): the library searches before the analysis; team A, the briefed team, may
+also search while it works (Config.team_search), and team B never does. The gateway enforces
+each search budget per agent and per run (Gateway.set_budget).
+
 Blindness: a team's brief holds only the lab's instructions, the task text and the paths of its
 own workspace, the data and the agent tools. The only thing that ever crosses from one team to
 another is a question that passed the leak check, delivered through memory. After each delivery
 the lab waits until each receiving agent can read what it was sent (Memory.wait_visible).
 
 Folders under `<run_dir>/<S>/`: one workspace per agent run (`library`, `director-briefing`,
-`director-questions`, `director-challenge`, `team-a`, `team-b`, `team-c`, `referee`), `candidates/` (the lab's copy of
+`director-questions`, `director-challenge`, `library-research`, `team-a`, `team-b`, `team-c`, `referee`),
+`candidates/` (the lab's copy of
 every answer, which no agent can read), `briefs/` (every brief given), `final/` and `study.json`.
 """
 
@@ -66,18 +75,31 @@ SITUATION = {      # the {situation} line of analyst_revise.md, per round
     "challenge": "The other team reached the same answer as you. The director does not think agreement alone "
                  "makes it right, and has questions for both teams.",
 }
+# The analysts' revision brief, when research on demand is on (its {findings_note} field).
+FINDINGS_NOTE = ("\n\nThe director may also have passed down findings from the lab's library: answers to questions "
+                 "about how a method is defined, what a tool does by default, or which convention a field uses. They "
+                 "are in memory too: `python3 {tools}/memory.py recall \"findings from the lab's library\"`. Check each "
+                 "one against the data like a question; it is not a hint about the answer.")
+# The end of the director's result.json shape, when research on demand is on (its {research_shape} field).
+RESEARCH_SHAPE = ', "research_questions": [{"question": "...", "why": "..."}]'
+MAX_RESEARCH_QUESTIONS = 3
 
 
 @dataclasses.dataclass
 class Config:
     """Settings for one lab run. The switches exist for ablation and comparison runs."""
     director_model: str = "fable"
-    worker_model: str = "opus"
+    worker_model: str = "fable"
+    team_b_model: str | None = None   # None: team B uses worker_model (set it for a mixed run)
     timeouts: dict = dataclasses.field(default_factory=lambda: {
-        "library": 900, "director": 600, "analyst": 1800, "referee": 1200, "baseline": 1800})
+        "library": 900, "director": 600, "analyst": 1800, "referee": 1200, "baseline": 1800, "research": 900})
     max_agents: int = 4          # agents running at once, shared across all studies
-    max_searches: int = 15       # web search calls the library may make per study
+    max_searches: int = 12       # Exa calls the library may make in its first pass, per study
+    team_searches: int = 8       # Exa calls team A's analyst may make per round
+    research_searches: int = 10  # Exa calls the library may make answering research questions
     library: bool = True         # run the library and the director's briefing
+    team_search: bool = True     # team A's analyst may search the web while it works
+    research: bool = True        # research on demand in the question rounds (only with the library)
     questions: bool = True       # run the director's question round on disagreement
     referee: bool = True         # run the referee before calling team C
     challenge: bool = True       # challenge an agreed answer before reporting it as replicated
@@ -331,6 +353,7 @@ class Lab:
         self.gateway_url = ""
         self.tokens: dict[str, str] = {}
         self.delivered: set[str] = set()     # fact ids the lab itself passed down
+        self.blocked_terms: list[str] = []   # what identifies a task's source; research questions may not hold it
 
     def build_org(self, studies: list[Study]) -> Org:
         cfg = self.config
@@ -338,7 +361,8 @@ class Lab:
         for s in studies:
             agents.append(Agent(f"{s.id}-library", WORKER, library_department(s), cfg.worker_model))
             for team in TEAMS:
-                agents.append(Agent(f"{s.id}-{team}", WORKER, f"{s.id}-{team}", cfg.worker_model))
+                model = (cfg.team_b_model or cfg.worker_model) if team == "team-b" else cfg.worker_model
+                agents.append(Agent(f"{s.id}-{team}", WORKER, f"{s.id}-{team}", model))
             agents.append(Agent(f"{s.id}-referee", WORKER, f"{s.id}-referee", cfg.worker_model))
         return Org(agents=agents)
 
@@ -359,9 +383,17 @@ class Lab:
         self.org = self.build_org(studies)
         self.memory.setup(self.org)
         # Agents may not pass facts down themselves: the lab delivers every pass-down after its leak check.
-        libraries = [library_department(s) for s in studies] if self.config.library else []
-        kwargs = {"exa_departments": libraries, "agents_may_pass_down": False}
+        # Who may search: each study's library, and its team A when team search is on. Each has a cap.
+        caps = {}
+        for s in studies:
+            if self.config.library:
+                caps[f"{s.id}-library"] = self.config.max_searches
+            if self.config.team_search:
+                caps[f"{s.id}-team-a"] = self.config.team_searches
+        departments = sorted({self.org.agent(a).department for a in caps})
+        kwargs = {"exa_departments": departments, "exa_caps": caps, "agents_may_pass_down": False}
         if hasattr(self.adapter, "blocked_terms"):
+            self.blocked_terms = [t.lower() for t in self.adapter.blocked_terms() if t]
             kwargs["blocked_terms"] = self.adapter.blocked_terms()
         if self.exa_call is not None:
             kwargs["exa_call"] = self.exa_call
@@ -392,6 +424,11 @@ class Lab:
         url = self.gateway.url_for(agent.id) if hasattr(self.gateway, "url_for") else self.gateway_url
         return {"LAB_GATEWAY_URL": url, "LAB_GATEWAY_TOKEN": self.tokens[agent.id]}
 
+    def open_budget(self, agent_id: str, cap: int, label: str) -> None:
+        """Give an agent a fresh search budget on the gateway before a run that may search."""
+        if hasattr(self.gateway, "set_budget"):
+            self.gateway.set_budget(agent_id, cap, label)
+
     def wait_settled(self) -> None:
         """Wait until past.dev has derived memory from every write. Slow (minutes); the loop no longer uses it."""
         if hasattr(self.gateway, "sync"):     # a remote gateway: fetch its latest writes first
@@ -410,13 +447,18 @@ class StudyRun:
         self.dir = lab.run_dir / study.id
         self.deliverable = answer_file(study)
         self.briefed = [t for t in ("team-a", "team-b") if t in self.cfg.brief_teams]
+        self.research_on = bool(self.cfg.research and self.cfg.library)
+        self.findings_delivered = 0
+        names = ["director", f"{study.id}-library", *(f"{study.id}-{t}" for t in TEAMS), f"{study.id}-referee"]
         self.record: dict = {"study": study.id, "status": None, "final": None, "switches": {
             "library": self.cfg.library, "questions": self.cfg.questions, "referee": self.cfg.referee,
-            "challenge": self.cfg.challenge, "brief_teams": list(self.cfg.brief_teams)},
+            "challenge": self.cfg.challenge, "brief_teams": list(self.cfg.brief_teams),
+            "team_search": self.cfg.team_search, "research": self.research_on},
+            "models": {n: lab.org.agent(n).model for n in names},
             "briefed_teams": self.briefed if self.cfg.library else [],
             "candidates": [], "comparisons": [], "briefing": [], "questions": [], "warning_signs_to_team_c": [],
             "challenged": False, "challenge_questions": None, "challenge_changed_answer": None, "challenge": None,
-            "referee": None, "not_chosen": [], "agent_runs": [], "unsanctioned_pass_downs": []}
+            "referee": None, "research": [], "not_chosen": [], "agent_runs": [], "unsanctioned_pass_downs": []}
         self.candidates: list[Candidate] = []
         self.start_seq = 0
 
@@ -443,6 +485,8 @@ class StudyRun:
         """Template fields every brief may use."""
         s = self.study
         return {"statement": s.statement, "data_dir": str(s.data_dir), "max_searches": self.cfg.max_searches,
+                "team_searches": self.cfg.team_searches, "research_searches": self.cfg.research_searches,
+                "search": "", "findings_note": "", "research": "", "research_shape": "",
                 "study_id": s.id,
                 "time_limit_minutes": self.cfg.timeout("analyst") // 60, "answer_file": self.deliverable,
                 "library_department": library_department(s),
@@ -501,13 +545,15 @@ class StudyRun:
             if missing:
                 self.log("relay.not_visible", agent=agent_id, missing=missing)
 
-    def library_facts(self) -> list[str]:
-        """Ids of the facts the library wrote in this study. A remote gateway's writes are fetched first."""
+    def library_facts(self, since: int | None = None) -> list[str]:
+        """Ids of the facts the library wrote in this study (or after event `since`). A remote gateway's
+        writes are fetched first."""
         if hasattr(self.lab.gateway, "sync"):
             self.lab.gateway.sync()
         library = self.agent("library").id
+        after = self.start_seq if since is None else since
         return [e["fact_id"] for e in self.lab.log.events("memory.write")
-                if e.get("actor") == library and e["seq"] > self.start_seq and e.get("fact_id")]
+                if e.get("actor") == library and e["seq"] > after and e.get("fact_id")]
 
     def team_notes(self, ws: pathlib.Path) -> pathlib.Path:
         """Copy both teams' result.json (method notes, never answer files) into `ws/teams`."""
@@ -523,6 +569,7 @@ class StudyRun:
 
     def library(self) -> None:
         agent = self.agent("library")
+        self.lab.open_budget(agent.id, self.cfg.max_searches, "library")
         brief = make_brief("library", agent, **self.fields())
         self.run_agent(agent, brief, "library", [self.study.data_dir, TOOLS], "library", "library")
 
@@ -550,10 +597,17 @@ class StudyRun:
 
     def analyse(self, team: str, template_name: str = "analyst", round_: str = "analysis",
                 phase: str = "analysis") -> Candidate | None:
-        """Run one team. A revising round ("revise" or "challenge") gets that round's {situation} line."""
+        """Run one team. A revising round ("revise" or "challenge") gets that round's {situation} line.
+        Team A gets the search section, and a fresh search budget, when team search is on."""
         agent = self.agent(team)
+        extra = {}
+        if team == "team-a" and self.cfg.team_search:
+            extra["search"] = "\n\n" + make_brief("team_search", None, **self.fields()).strip()
+            self.lab.open_budget(agent.id, self.cfg.team_searches, "team-a")
+        if template_name == "analyst_revise" and self.research_on:
+            extra["findings_note"] = FINDINGS_NOTE.format(tools=TOOLS)
         brief = make_brief(template_name, agent, **self.fields(diversity=DIVERSITY[team],
-                                                               situation=SITUATION.get(round_, "")))
+                                                               situation=SITUATION.get(round_, ""), **extra))
         result = self.run_agent(agent, brief, team, [self.study.data_dir, TOOLS], phase, "analyst")
         return self.take(team, round_, result, self.dir / team)
 
@@ -568,12 +622,15 @@ class StudyRun:
         """The director's question round: write, leak-check and deliver. Returns every question."""
         director = self.agent("director")
         teams_dir = self.team_notes(self.dir / "director-questions")
-        brief = make_brief("director_crossexam", director, **self.fields(teams_dir=str(teams_dir)))
+        brief = make_brief("director_crossexam", director, **self.fields(teams_dir=str(teams_dir),
+                                                                         **self.research_fields()))
         result = self.run_agent(director, brief, "director-questions", [TOOLS], "questions", "director")
-        raw = result.result.get("questions") if result.ok else None
+        doc = result.result if result.ok else {}
         answers = {self.dept("team-a"): (a.values, b.values), self.dept("team-b"): (b.values, a.values)}
-        out = self.deliver(raw, answers, "questions", "question from the director after the teams' answers differed")
+        out = self.deliver(doc.get("questions"), answers, "questions",
+                           "question from the director after the teams' answers differed")
         self.record["questions"].extend(out)
+        self.research(doc, a, b, answers, "questions")
         return out
 
     def differing(self, own: Candidate, other: Candidate) -> dict:
@@ -587,7 +644,8 @@ class StudyRun:
         """The director challenges an agreed answer. Records its findings, delivers its questions, returns them."""
         director = self.agent("director")
         teams_dir = self.team_notes(self.dir / "director-challenge")
-        brief = make_brief("director_challenge", director, **self.fields(teams_dir=str(teams_dir)))
+        brief = make_brief("director_challenge", director, **self.fields(teams_dir=str(teams_dir),
+                                                                         **self.research_fields()))
         result = self.run_agent(director, brief, "director-challenge", [self.study.data_dir, TOOLS], "challenge",
                                 "director")
         doc = result.result if result.ok else {}
@@ -601,7 +659,89 @@ class StudyRun:
         out = self.deliver(doc.get("questions"), answers, "challenge",
                            "question from the director challenging the answer both teams agreed on")
         self.record["challenge"] = {"ran": bool(result.ok), **found, "verdict": verdict, "questions": out}
+        self.research(doc, a, b, answers, "challenge")
         return out
+
+    # ----- research on demand -----
+
+    def research_fields(self) -> dict:
+        """The director brief's research section and result.json shape, or nothing when research is off."""
+        if not self.research_on:
+            return {}
+        section = make_brief("director_research", None, **self.fields()).strip()
+        return {"research": "\n\n" + section, "research_shape": RESEARCH_SHAPE}
+
+    def names_source(self, text: str) -> bool:
+        """Whether the text holds a term that identifies this task's source (the adapter's blocked terms)."""
+        lower = text.lower()
+        return any(term in lower for term in self.lab.blocked_terms)
+
+    def research(self, doc: dict, a: Candidate, b: Candidate, answers: dict[str, tuple[dict, dict]], round_: str) -> int:
+        """Research on demand. Leak-check the director's research questions against both teams' answers
+        (and the task's source), run the library on those that pass, then leak-check each finding like a
+        question and pass it down to both teams under the director's name, and wait until each team can
+        read it. Records everything under "research". Returns how many deliveries were made."""
+        raw = doc.get("research_questions") if isinstance(doc, dict) else None
+        if not self.research_on or not isinstance(raw, list):
+            return 0
+        asked = []
+        for item in raw:
+            if not isinstance(item, dict) or not isinstance(item.get("question"), str) or not item["question"].strip():
+                continue
+            question, why = item["question"].strip(), str(item.get("why") or "").strip()
+            reasons = leak_check(f"{question} {why}", None, [a.values, b.values])
+            if self.names_source(f"{question} {why}"):
+                reasons.append("names something that identifies this task's source")
+            if sum(q["passed"] for q in asked) >= MAX_RESEARCH_QUESTIONS:
+                reasons = [f"more than {MAX_RESEARCH_QUESTIONS} research questions"]
+            passed = not reasons
+            self.log("research.leak_check", round=round_, passed=passed, reasons=reasons, question=question)
+            asked.append({"question": question, "why": why, "passed": passed, "reasons": reasons})
+        if not asked:
+            return 0
+        entry = {"round": round_, "questions": asked, "ran": False, "error": None, "findings": []}
+        self.record["research"].append(entry)
+        sent = [q for q in asked if q["passed"]]
+        if not sent:
+            return 0
+        agent = self.agent("library")
+        self.lab.open_budget(agent.id, self.cfg.research_searches, "research")
+        listing = "\n".join(f"{i}. {q['question']}" + (f"\n   Why it matters: {q['why']}" if q["why"] else "")
+                            for i, q in enumerate(sent, 1))
+        brief = make_brief("library_research", agent, **self.fields(research_questions=listing))
+        since = self.log("research.start", round=round_, questions=len(sent))["seq"]
+        result = self.run_agent(agent, brief, "library-research", [TOOLS], "research", "research")
+        entry["ran"], entry["error"] = bool(result.ok), None if result.ok else result.error
+        came_from = self.library_facts(since)
+        found = result.result.get("findings") if result.ok else None
+        waits: dict[str, list[str]] = {}
+        delivered = 0
+        for f in found if isinstance(found, list) else []:
+            if not isinstance(f, dict) or not isinstance(f.get("answer"), str) or not f["answer"].strip():
+                continue
+            sources = [str(x) for x in f.get("sources") or [] if isinstance(x, str)] \
+                if isinstance(f.get("sources"), list) else []
+            finding = {"question": str(f.get("question") or ""), "answer": f["answer"].strip(), "sources": sources,
+                       "confidence": f.get("confidence"), "deliveries": {}}
+            finding["text"] = (f"FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: "
+                               f"{finding['question']} ANSWER: {finding['answer']} HOW SURE: {finding['confidence']}. "
+                               f"SOURCES: {', '.join(sources) or 'none given'}.")
+            for dept, (own, other) in answers.items():
+                reasons = leak_check(finding["text"], own, [other])
+                passed = not reasons
+                self.log("relay.leak_check", round="research", to=dept, passed=passed, reasons=reasons,
+                         question=finding["text"])
+                fact_id = self.pass_down(dept, finding["text"], came_from,
+                                         "a research finding the director asked the library for") if passed else None
+                finding["deliveries"][dept] = {"delivered": passed, "reasons": reasons, "fact_id": fact_id}
+                if passed:
+                    waits.setdefault(dept, []).append(fact_id)   # a team's agent id is its department
+                    delivered += 1
+            entry["findings"].append(finding)
+        self.wait_visible(waits)
+        self.log("research.delivered", round=round_, findings=len(entry["findings"]), deliveries=delivered)
+        self.findings_delivered += delivered
+        return delivered
 
     def deliver(self, raw, answers: dict[str, tuple[dict, dict]], round_: str, reason: str) -> list[dict]:
         """Leak-check each question the director wrote and pass down those that pass, then wait until
@@ -718,7 +858,7 @@ class StudyRun:
             first = a
             delivered = [q for q in self.challenge(a, b) if q["delivered"]]
             self.record.update(challenged=True, challenge_questions=len(delivered))
-            if not delivered:
+            if not delivered and not self.findings_delivered:
                 return self.finish("replicated", a)
             a, b = self.revised(a, b, "challenge")
             if self.compare(a, b, "challenge"):

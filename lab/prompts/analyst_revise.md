@@ -11,7 +11,7 @@ For each question:
 
 Do not change your answer just because you were asked. Change it only when a check shows your method was wrong. If every check supports your method, keep your answer and say so.
 
-Record what you found for each question with `memory.py write`, label "REPLY". If you revise, overwrite `{answer_file}` and keep your old one as `answer_before_questions.json`.
+Record what you found for each question with `memory.py write`, label "REPLY". If you revise, overwrite `{answer_file}` and keep your old one as `answer_before_questions.json`.{findings_note}{search}
 
 ## Working limits
 

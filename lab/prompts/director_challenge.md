@@ -17,7 +17,7 @@ Look for four things.
 
 Then write up to four questions for each team in `result.json`. Each question names one concrete check to run on the data and asks whether its result changes the method. Start each with "QUESTION FROM THE DIRECTOR:". Do not tell a team which method to use, and do not suggest what the answer should be. If you find nothing worth asking, return an empty list and say why in `verdict`.
 
-The lab delivers your questions to the teams' memory under your name and records them. The teams are: {team_departments}.
+The lab delivers your questions to the teams' memory under your name and records them. The teams are: {team_departments}.{research}
 
 ## The task
 
@@ -25,4 +25,4 @@ The lab delivers your questions to the teams' memory under your name and records
 
 ## result.json
 
-{{"shared_assumptions": ["..."], "unused_evidence": ["..."], "unresolved_weak_points": ["..."], "second_readings": ["..."], "questions": [{{"to": "department", "from": ["fact id, if any"], "question": "QUESTION FROM THE DIRECTOR: ..."}}], "verdict": "one or two sentences: how much you trust the agreed answer, and why"}}
+{{"shared_assumptions": ["..."], "unused_evidence": ["..."], "unresolved_weak_points": ["..."], "second_readings": ["..."], "questions": [{{"to": "department", "from": ["fact id, if any"], "question": "QUESTION FROM THE DIRECTOR: ..."}}], "verdict": "one or two sentences: how much you trust the agreed answer, and why"{research_shape}}}

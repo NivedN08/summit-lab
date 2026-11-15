@@ -79,6 +79,8 @@ def mock_script(adapter):
                     "second_readings": [], "questions": [], "verdict": "mock: nothing to ask"}
         if "# Your job: the lab's library" in brief:
             return {"pitfalls": [], "searches_made": 0, "notes": "mock library"}
+        if "# Your job: research on demand" in brief:
+            return {"findings": []}
         if "# Your job: referee" in brief:
             return {"pick": "X", "reason": "mock referee", "test": "none", "own_answer": None}
         revising = "# Your job: analyst, answering the director's questions" in brief
@@ -185,6 +187,18 @@ def note_run(run_dir: pathlib.Path, **info) -> None:
 
 # ----- commands -----
 
+def make_config(args) -> Config:
+    """The lab's Config from the `lab` command's flags. --no-search turns off every web search:
+    the library (and with it the briefing), team A's search and research on demand."""
+    no_search = bool(getattr(args, "no_search", False))
+    return Config(max_agents=args.parallel, max_searches=args.max_searches,
+                  library=not (args.no_library or no_search), questions=not args.no_questions,
+                  referee=not args.no_referee, challenge=not args.no_challenge,
+                  team_search=not (args.no_team_search or no_search), research=not (args.no_research or no_search),
+                  brief_teams=brief_teams(args.brief_teams), director_model=args.director_model,
+                  worker_model=args.model, team_b_model=args.team_b_model)
+
+
 def cmd_lab(args) -> int:
     adapter = load_adapter(args.benchmark)
     studies = pick_studies(adapter, args.studies)
@@ -192,10 +206,7 @@ def cmd_lab(args) -> int:
     run_dir = pathlib.Path(args.run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     log = JsonlEventLog(run_dir / "events.jsonl")
-    config = Config(max_agents=args.parallel, max_searches=args.max_searches, library=not args.no_library,
-                    questions=not args.no_questions, referee=not args.no_referee, challenge=not args.no_challenge,
-                    brief_teams=brief_teams(args.brief_teams),
-                    director_model=args.director_model, worker_model=args.model)
+    config = make_config(args)
     note_run(run_dir, benchmark=args.benchmark, lab_studies=[s.id for s in studies], memory=args.memory,
              backend=args.backend)
     gateway_factory = None
@@ -258,7 +269,8 @@ def grade_run(run_dir: pathlib.Path, adapter) -> dict:
     started and not finished. Writes results.json and returns it.
 
     Each study's `candidates` list in results.json has one row per graded answer, with who
-    produced it, in which round, and whether it passed."""
+    produced it, in which round, whether it passed, and the adapter's word for what sort of
+    outcome it was ("outcome_kind", None when the adapter gives none)."""
     from lab.baseline import combine_attempts
     log = JsonlEventLog(run_dir / "events.jsonl")
     open_runs = unfinished_agents(log)
@@ -291,6 +303,11 @@ def grade_run(run_dir: pathlib.Path, adapter) -> dict:
         (folder / answer_file(study)).write_text(json.dumps(voted, indent=2) + "\n")
         return {"answer": voted, **graded(study, folder)}
 
+    def row(base: dict, grade: dict) -> dict:
+        """One results.json row: who and which round, then the grade. The grade's own "kind" (what sort
+        of right or wrong, when the adapter says) goes in "outcome_kind", since "kind" names the row's kind."""
+        return {**base, **{k: v for k, v in grade.items() if k != "kind"}, "outcome_kind": grade.get("kind")}
+
     results = {"benchmark": getattr(adapter, "name", None), "studies": {}}
     for study in adapter.studies():
         entry, rows = {}, []
@@ -301,16 +318,16 @@ def grade_run(run_dir: pathlib.Path, adapter) -> dict:
             for c in record.get("candidates") or []:
                 cid = candidate_id(c.get("team"), c.get("round"))
                 source = study_dir / "candidates" / pathlib.Path(c.get("path") or f"{cid}.json").name
-                rows.append({"id": cid, "kind": "lab", "who": c.get("agent"), "team": c.get("team"),
-                             "round": c.get("round"), "valid": bool(c.get("valid")),
-                             **graded_file(study, source, study_dir / "graded" / cid)})
+                rows.append(row({"id": cid, "kind": "lab", "who": c.get("agent"), "team": c.get("team"),
+                                 "round": c.get("round"), "valid": bool(c.get("valid"))},
+                                graded_file(study, source, study_dir / "graded" / cid)))
             final = record.get("final")
             entry["lab"] = {"status": record.get("status"), "final": final,
                             "grade": graded(study, study_dir / "final")}
-            rows.append({"id": "final", "kind": "final", "who": final.get("agent") if final else None,
-                         "team": final.get("team") if final else None, "round": "final",
-                         "same_as": candidate_id(final.get("team"), final.get("round")) if final else None,
-                         "status": record.get("status"), **entry["lab"]["grade"]})
+            rows.append(row({"id": "final", "kind": "final", "who": final.get("agent") if final else None,
+                             "team": final.get("team") if final else None, "round": "final",
+                             "same_as": candidate_id(final.get("team"), final.get("round")) if final else None,
+                             "status": record.get("status")}, entry["lab"]["grade"]))
         base = run_dir / "baseline" / study.id
         attempts = sorted((p for p in base.glob("attempt-*") if p.is_dir()),
                           key=lambda p: int(p.name.split("-")[1])) if base.is_dir() else []
@@ -322,11 +339,11 @@ def grade_run(run_dir: pathlib.Path, adapter) -> dict:
                 str(j): vote(study, paths[:j], base / f"vote-first-{j}") for j in range(1, len(paths) + 1)}
             for p in attempts:
                 k = p.name.split("-")[1]
-                rows.append({"id": p.name, "kind": "attempt", "who": f"baseline-{study.id}-{k}",
-                             "team": "single agent", "round": p.name, **entry["baseline"]["attempts"][p.name]})
+                rows.append(row({"id": p.name, "kind": "attempt", "who": f"baseline-{study.id}-{k}",
+                                 "team": "single agent", "round": p.name}, entry["baseline"]["attempts"][p.name]))
             v = entry["baseline"]["vote"]
-            rows.append({"id": "vote", "kind": "vote", "who": "vote", "team": "single agent", "round": "vote",
-                         **{key: val for key, val in v.items() if key != "answer"}})
+            rows.append(row({"id": "vote", "kind": "vote", "who": "vote", "team": "single agent", "round": "vote"},
+                            {key: val for key, val in v.items() if key != "answer"}))
         if entry:
             entry["candidates"] = rows
             results["studies"][study.id] = entry
@@ -404,7 +421,8 @@ def cmd_report(args) -> int:
     return 0
 
 
-def main(argv: list[str] | None = None) -> int:
+def build_parser() -> argparse.ArgumentParser:
+    """The command line: lab, baseline, grade, measures and report."""
     parser = argparse.ArgumentParser(prog="python3 -m lab.run", description="Run, grade and report the lab")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -415,10 +433,15 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--memory", choices=["past", "local"], default="local")
     p.add_argument("--backend", choices=["claude", "mock", "modal"], default="claude")
     p.add_argument("--parallel", type=int, default=4, help="agents running at once, across all studies")
-    p.add_argument("--model", default="opus", help="model for the workers")
+    p.add_argument("--model", default="fable", help="model for the workers: library, teams and referee")
+    p.add_argument("--team-b-model", default=None, help="model for team B (default: the same as --model)")
     p.add_argument("--director-model", default="fable")
-    p.add_argument("--max-searches", type=int, default=15)
+    p.add_argument("--max-searches", type=int, default=12, help="Exa calls the library may make in its first pass")
     p.add_argument("--no-library", action="store_true")
+    p.add_argument("--no-team-search", action="store_true", help="team A's analyst may not search the web")
+    p.add_argument("--no-research", action="store_true", help="no research on demand in the question rounds")
+    p.add_argument("--no-search", action="store_true",
+                   help="no web search at all: no library, no team search, no research on demand")
     p.add_argument("--no-questions", action="store_true")
     p.add_argument("--no-referee", action="store_true")
     p.add_argument("--no-challenge", action="store_true",
@@ -431,7 +454,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--benchmark", required=True)
     p.add_argument("--studies")
     p.add_argument("--attempts", type=int, default=4)
-    p.add_argument("--model", default="opus")
+    p.add_argument("--model", default="fable")
     p.add_argument("--run-dir", required=True)
     p.add_argument("--backend", choices=["claude", "mock", "modal"], default="claude")
     p.add_argument("--parallel", type=int, default=4)
@@ -451,8 +474,11 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("report", help="write report.md")
     p.add_argument("--run-dir", required=True)
     p.set_defaults(fn=cmd_report)
+    return parser
 
-    args = parser.parse_args(argv)
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
     return args.fn(args)
 
 

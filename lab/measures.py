@@ -2,7 +2,8 @@
 
 `measure(run_dir)` reads `results.json` (written by `grade`, which must have run), each
 `<study>/study.json`, the lab's copies of the teams' result.json files in `<study>/candidates/`,
-the library's `<study>/library/result.json` and the agent.finish events in `events.jsonl`.
+the library's `<study>/library/result.json` and, from `events.jsonl`, the agent.finish events,
+the gateway's exa.call and exa.refused events and the memory.write events.
 No agent is run. Every measure is a count first (`n` out of `of`) and a rate second, because
 ten studies are too few for rates to the decimal (I-5).
 
@@ -18,6 +19,9 @@ How rescues and damage (d) are counted, step by step:
                   A referee that picked neither and gave no usable answer changed nothing.
   third team      per study: what the lab would have reported without team C (the referee's own
                   valid answer, else no answer, which counts as failing) against the final answer.
+  research        per team, in studies where research on demand delivered at least one finding:
+                  the team's first answer against the answer it used after the revision round
+                  that followed the findings (the revised one when valid, else the first).
 """
 
 from __future__ import annotations
@@ -30,6 +34,8 @@ from typing import Any
 LABELS = ("replicated", "converged", "refereed", "third-team", "unresolved", "single-source", "no-answer")
 FIRST_TEAMS = ("team-a", "team-b")
 REVISING = ("revise", "challenge")     # rounds in which a team answers the director's questions
+SEARCH_ROLES = ("library", "team-a", "research")   # who made an Exa call: library first pass, team A, research
+REVISION_ROUND = {"questions": "revise", "challenge": "challenge"}   # director's round -> the teams' next round
 
 
 class NotGraded(RuntimeError):
@@ -48,18 +54,18 @@ def _load(path: pathlib.Path) -> Any:
         return None
 
 
-def _finish_events(run_dir: pathlib.Path) -> list[dict]:
-    """agent.finish events, read without creating or locking anything."""
+def _read_events(run_dir: pathlib.Path, kinds: tuple) -> dict[str, list[dict]]:
+    """Events of the given kinds, by kind, read without creating or locking anything."""
     path = run_dir / "events.jsonl"
-    out = []
+    out: dict[str, list[dict]] = {k: [] for k in kinds}
     if path.is_file():
         for line in path.read_text().splitlines():
             try:
                 event = json.loads(line)
             except ValueError:
                 continue
-            if isinstance(event, dict) and event.get("kind") == "agent.finish":
-                out.append(event)
+            if isinstance(event, dict) and event.get("kind") in out:
+                out[event["kind"]].append(event)
     return out
 
 
@@ -91,7 +97,9 @@ class Run:
             if "candidates" not in e:
                 self.missing.append(f"{sid}: results.json has no per-candidate grades (run grade again)")
             self.passed[sid] = {c["id"]: bool(c.get("passed")) for c in e.get("candidates") or [] if "id" in c}
-        self.events = _finish_events(self.dir)
+        logged = _read_events(self.dir, ("agent.finish", "exa.call", "exa.refused", "memory.write"))
+        self.events = logged["agent.finish"]
+        self.exa_calls, self.exa_refused, self.writes = logged["exa.call"], logged["exa.refused"], logged["memory.write"]
 
     def lab_passed(self, sid: str) -> bool:
         return bool((self.entries[sid]["lab"].get("grade") or {}).get("passed"))
@@ -393,6 +401,81 @@ def briefing(run: Run) -> dict:
     return {"studies": studies, "by_teams": tally}
 
 
+# ----- web search, research on demand and outcome kinds (version 3) -----
+
+def _search_role(event: dict) -> str:
+    """Which search an Exa call belonged to: the gateway's budget label, else the agent's job."""
+    if event.get("budget") in SEARCH_ROLES:
+        return event["budget"]
+    agent = str(event.get("agent") or event.get("actor") or "")
+    return "library" if agent.endswith("-library") else "team-a" if agent.endswith("-team-a") else "other"
+
+
+def search(run: Run) -> dict:
+    """Exa calls made and refused by the budget, by role, and the LEARNED facts the teams wrote."""
+    calls = {r: 0 for r in SEARCH_ROLES}
+    refused = {r: 0 for r in SEARCH_ROLES}
+    for events, tally in ((run.exa_calls, calls), (run.exa_refused, refused)):
+        for e in events:
+            role = _search_role(e)
+            tally[role] = tally.get(role, 0) + 1
+    teams = tuple(f"{sid}-team-" for sid in run.lab_ids)
+    learned = [e for e in run.writes if str(e.get("actor") or "").startswith(teams)
+               and (str(e.get("label") or "").strip().upper() == "LEARNED"
+                    or str(e.get("text") or "").lstrip().upper().startswith("LEARNED"))]
+    by_team: dict[str, int] = {}
+    for e in learned:
+        team = "team-" + str(e["actor"]).rsplit("team-", 1)[1]
+        by_team[team] = by_team.get(team, 0) + 1
+    return {"calls": calls, "refused": refused, "learned": len(learned), "learned_by_team": by_team}
+
+
+def research(run: Run) -> dict:
+    """Research questions asked, blocked and answered; findings delivered; and the rescues and
+    damage of the revision round that followed delivered findings."""
+    asked = blocked = answered = findings = delivered = compared = 0
+    studies, changes = [], []
+    for sid in run.lab_ids:
+        reached = False
+        for r in run.records[sid].get("research") or []:
+            questions = r.get("questions") or []
+            found = r.get("findings") or []
+            asked += len(questions)
+            blocked += sum(not q.get("passed") for q in questions)
+            findings += len(found)
+            answered += min(sum(bool(q.get("passed")) for q in questions), len(found))
+            sent = sum(bool(d.get("delivered")) for f in found for d in (f.get("deliveries") or {}).values())
+            delivered += sent
+            round_ = REVISION_ROUND.get(r.get("round"))
+            if not sent or round_ is None:
+                continue
+            reached = True
+            for team in FIRST_TEAMS:
+                cand = run.cand(sid, f"{team}-{round_}")
+                if cand is None or f"{team}-analysis" not in run.passed[sid]:
+                    continue
+                compared += 1
+                first = run.passed[sid][f"{team}-analysis"]
+                after = run.passed[sid].get(f"{team}-{round_}", False) if cand.get("valid") else first
+                _tally(changes, sid, team, first, after)
+        if reached:
+            studies.append(sid)
+    return {"asked": asked, "blocked": blocked, "answered": answered, "findings": findings, "delivered": delivered,
+            "studies": studies, "revision": _step(changes, compared)}
+
+
+def kinds(run: Run) -> dict:
+    """The adapter's outcome kinds, tallied for the lab's final answers and for single-agent attempts."""
+    out = {"lab_final": {}, "single_attempts": {}}
+    for entry in run.entries.values():
+        for row in entry.get("candidates") or []:
+            key = {"final": "lab_final", "attempt": "single_attempts"}.get(row.get("kind"))
+            if key:
+                kind = row.get("outcome_kind") or "not given"
+                out[key][kind] = out[key].get(kind, 0) + 1
+    return out
+
+
 # ----- h. cost -----
 
 def _cost_row(events: list[dict]) -> dict:
@@ -438,7 +521,8 @@ def measure(run_dir: pathlib.Path) -> dict:
     out = {"run": run.dir.name, "studies": len(run.lab_ids), "headline": head, "labels": labels(run),
            "false_agreement": false_agreement(run), "steps": steps(run), "challenge": challenge(run),
            "briefing": briefing(run), "selection": selection(run),
-           "noticing": noticing(run), "library": library(run), "cost": cost(run, head)}
+           "noticing": noticing(run), "library": library(run), "search": search(run), "research": research(run),
+           "kinds": kinds(run), "cost": cost(run, head)}
     out["missing"] = run.missing
     return out
 
@@ -495,10 +579,34 @@ def summary_lines(m: dict) -> list[str]:
               f"  Library: {lib['pitfalls_found']} pitfalls ({lib['pitfalls_with_sources']} with sources); "
               f"{lib['pitfall_checks']} checks, {lib['found_in_data']} found in the data, {lib['changed_method']} "
               "changed a method.",
+              *search_lines(m),
               f"  Cost: lab {_cost_text(c['overall']['lab'])}; single agents {_cost_text(c['overall']['baseline'])}; "
               f"passes per dollar lab {c['passes_per_dollar']['lab']}, single {c['passes_per_dollar']['single_attempts']}."]
     if m["missing"]:
         lines += ["", "  Missing:"] + [f"    {x}" for x in m["missing"]]
+    return lines
+
+
+def _tally_text(tally: dict) -> str:
+    return ", ".join(f"{k} {v}" for k, v in sorted(tally.items(), key=lambda kv: (-kv[1], kv[0]))) or "none"
+
+
+def search_lines(m: dict) -> list[str]:
+    """The summary's lines on web search, research on demand and outcome kinds (empty for an older measures.json)."""
+    lines = []
+    s, r, k = m.get("search"), m.get("research"), m.get("kinds")
+    if s:
+        lines.append(f"  Web search: {s['calls'].get('library', 0)} calls by the library's first pass, "
+                     f"{s['calls'].get('team-a', 0)} by team A's analysts, {s['calls'].get('research', 0)} by research "
+                     f"on demand; {sum(s['refused'].values())} refused by the budget. {s['learned']} LEARNED facts written.")
+    if r:
+        v = r["revision"]
+        lines.append(f"  Research on demand: {r['asked']} questions asked, {r['blocked']} blocked, {r['answered']} answered; "
+                     f"{r['delivered']} findings delivered. The revision round after them: {v['rescued']} rescued, "
+                     f"{v['damaged']} damaged ({v['compared']} team answers in {len(r['studies'])} studies).")
+    if k and (set(k["lab_final"]) | set(k["single_attempts"])) - {"not given"}:
+        lines.append(f"  Outcome kinds: lab final answers {_tally_text(k['lab_final'])}; single attempts "
+                     f"{_tally_text(k['single_attempts'])}.")
     return lines
 
 

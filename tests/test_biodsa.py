@@ -233,14 +233,29 @@ def grade(tmp_path, study_id, doc):
 
 
 def test_grade_passes_the_right_label(tmp_path, fake_sealed):
-    assert grade(tmp_path / "a", "bd01", answer("True")) == {"passed": True, "score": 1.0}
-    assert grade(tmp_path / "b", "bd02", answer("False")) == {"passed": True, "score": 1.0}
-    assert grade(tmp_path / "c", "bd03", answer("Not verifiable")) == {"passed": True, "score": 1.0}
+    right = {"passed": True, "score": 1.0, "kind": "correct"}
+    assert grade(tmp_path / "a", "bd01", answer("True")) == right
+    assert grade(tmp_path / "b", "bd02", answer("False")) == right
+    assert grade(tmp_path / "c", "bd03", answer("Not verifiable")) == right
 
 
 def test_grade_fails_a_wrong_label(tmp_path, fake_sealed):
     result = grade(tmp_path, "bd01", answer("False"))
     assert result["passed"] is False and result["score"] == 0.0
+
+
+# In the fake sealed mapping bd01 is True, bd02 False and bd03 Not verifiable (made-up labels).
+@pytest.mark.parametrize("study_id, given, kind", [
+    ("bd01", "True", "correct"), ("bd02", "False", "correct"), ("bd03", "Not verifiable", "correct"),
+    ("bd02", "True", "accepted a false claim"),
+    ("bd01", "False", "rejected a true claim"),
+    ("bd01", "Not verifiable", "judged a settled claim not verifiable"),
+    ("bd02", "Not verifiable", "judged a settled claim not verifiable"),
+    ("bd03", "True", "judged an unverifiable claim settled"),
+    ("bd03", "False", "judged an unverifiable claim settled")])
+def test_grade_says_what_sort_of_right_or_wrong(tmp_path, fake_sealed, study_id, given, kind):
+    result = grade(tmp_path, study_id, answer(given))
+    assert result["kind"] == kind and result["passed"] is (kind == "correct")
 
 
 @pytest.mark.parametrize("doc", [answer("true"), answer("Non-verifiable"), {"label": "True"}, "{", None])
