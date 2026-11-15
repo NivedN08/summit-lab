@@ -21,6 +21,21 @@ Without the server, the built page still works from any static host: it replays 
 
 For development, run `npm run dev` (port 5173) next to `python3 server.py`; Vite passes `/api` to the server.
 
+## The demo: 5 recorded minutes
+
+The page opens on a 5-minute clip of a real run, recorded event by event, and plays it on a loop at 4x. "Whole run" in the top bar leaves the clip; "Demo" goes back. The clip is chosen by `make_demo.py` and stored in `public/runs/demo.json`.
+
+Today's clip is the busiest 5 minutes of all the runs: the GeneBench-Pro test run from 3:12 to 3:17 PM Pacific (Nov 14), when the director sent 67 questions, the hatch compared answers 11 times, two referees ruled and four studies finished.
+
+When the research ends, if its results are what we present, switch the demo to the last 5 minutes of the final run, which end on the grading and a results card:
+
+```bash
+python3 web/make_demo.py --run results/<final run> --last    # or runs/<final run> if it is not in results/ yet
+cd web && npm run build
+```
+
+Other choices: `python3 web/make_demo.py` (the busiest 5 minutes across every baked run), `--run <name>` (the busiest 5 minutes of one run), `--minutes 3`, `--speed 12`. The busiest window is scored by what a viewer sees move: walks, notes and answers in flight, comparisons, verdicts, results, with a bonus for each kind of interaction. Tests: `python3 -m pytest web/test_demo.py -q`.
+
 ## Data
 
 `python3 build_data.py` turns every run in `results/` into `public/runs/<run>.json`. It reads only a run's `events.jsonl`, `study.json` files and `results.json`, plus `records/exa_calls.jsonl` for the librarians' searches. It never reads `data/` or a run's workspaces, and it drops local paths and session ids.

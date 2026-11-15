@@ -20,20 +20,24 @@ type Props = {
   playing: boolean;
   speed: number;
   filter: string | null;
+  /** The part of the run the scrubber spans: the demo clip, or the whole run. */
+  lo: number;
+  hi: number;
   onPlay: () => void;
   onSeek: (t: number) => void;
   onSpeed: (s: number) => void;
   onNext: (dir: 1 | -1) => void;
 };
 
-export function Timeline({ R, t, playing, speed, filter, onPlay, onSeek, onSpeed, onNext }: Props) {
+export function Timeline({ R, t, playing, speed, filter, lo, hi, onPlay, onSeek, onSpeed, onNext }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const end = R.end || 1;
+  const span = Math.max(1, hi - lo);
+  const at = (time: number) => `${Math.max(0, Math.min(1, (time - lo) / span)) * 100}%`;
   const seekAt = (clientX: number) => {
     const r = ref.current!.getBoundingClientRect();
-    onSeek(Math.max(0, Math.min(1, (clientX - r.left) / r.width)) * end);
+    onSeek(lo + Math.max(0, Math.min(1, (clientX - r.left) / r.width)) * span);
   };
-  const moments = R.moments.filter((m) => !filter || !m.study || m.study === filter);
+  const moments = R.moments.filter((m) => (!filter || !m.study || m.study === filter) && m.t >= lo && m.t <= hi);
   return (
     <div className="timeline box" role="group" aria-label="Replay controls">
       <button className="btn icon gold" onClick={onPlay} aria-label={playing ? "Pause" : "Play"} title={playing ? "Pause (space)" : "Play (space)"}>
@@ -59,8 +63,8 @@ export function Timeline({ R, t, playing, speed, filter, onPlay, onSeek, onSpeed
         role="slider"
         tabIndex={0}
         aria-label="Replay position"
-        aria-valuemin={0}
-        aria-valuemax={Math.round(end)}
+        aria-valuemin={Math.round(lo)}
+        aria-valuemax={Math.round(hi)}
         aria-valuenow={Math.round(t)}
         aria-valuetext={`${fmtElapsed(t)} into the run`}
         onPointerDown={(e) => {
@@ -71,16 +75,16 @@ export function Timeline({ R, t, playing, speed, filter, onPlay, onSeek, onSpeed
           if (e.buttons) seekAt(e.clientX);
         }}
         onKeyDown={(e) => {
-          if (e.key === "ArrowRight") onSeek(Math.min(end, t + 15));
-          if (e.key === "ArrowLeft") onSeek(Math.max(0, t - 15));
+          if (e.key === "ArrowRight") onSeek(Math.min(hi, t + 15));
+          if (e.key === "ArrowLeft") onSeek(Math.max(lo, t - 15));
         }}
       >
         <div className="track" />
-        <div className="fill" style={{ width: `${(t / end) * 100}%` }} />
+        <div className="fill" style={{ width: at(t) }} />
         {moments.map((m, i) => (
-          <div key={i} className="tick" title={m.label} style={{ left: `${(m.t / end) * 100}%`, background: TICK[m.kind] }} />
+          <div key={i} className="tick" title={m.label} style={{ left: at(m.t), background: TICK[m.kind] }} />
         ))}
-        <div className="head" style={{ left: `${(t / end) * 100}%` }} />
+        <div className="head" style={{ left: at(t) }} />
       </div>
       <button className="btn icon hide-sm" onClick={() => onNext(-1)} aria-label="Previous moment" title="Previous moment (←)">
         <PrevIcon />

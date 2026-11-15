@@ -235,7 +235,7 @@ Visitors can ask any agent a question. The answer comes from Claude playing that
 Data: `web/build_data.py` reads only `events.jsonl`, `study.json`, `results.json` and `records/exa_calls.jsonl`, never `data/` or workspaces, and drops local paths. The test run (`results/test-v2`) is the default; a run still in `runs/` appears live when the server runs.
 Status: built; the server's 44 tests pass, and one question through the Claude command-line tool was answered in about 5 seconds and respected the boundary. Not a measurement of the lab.
 
-**D-22 · Nov 14, 17:45 · Decided · Department heads, as a switch for a new arm.**
+**D-22 · Nov 14, 17:14 · Decided · Department heads, as a switch for a new arm.**
 Why: the team asked for a lab shaped like a real one, with a head for each department who can read every department's memory and logs, while workers read only their own. The memory layer was built for this (section 3, M-1), but until now the director was the only head.
 What it is (`--heads`, off by default, so version 3 stays frozen for its test tasks, D-20): three heads on Fable 5.2, for the library, Team A and Team B. They share a department, `heads`, that only heads and the director can read. Each reads every department's memory and is given the study's event log. Workers read only their own department, as before.
 - The head of the library reviews the library's findings before the director's briefing: does each apply to this data, is it backed by a source, what is missing. The director's brief carries the review; the director still decides what goes down.
@@ -245,6 +245,12 @@ Cost: up to three more Fable sessions per study, plus up to two revisions.
 Measures: a new step, "head review", counts per team how often the review turned a failing first answer into a passing one or the reverse. The later steps now start from the answer a team handed to the comparison (its reviewed answer when valid).
 What we expect, written before any run: the reviews will catch some format problems and warning signs a scientist recorded and did not act on, so some first answers will change; we do not know whether more will be rescued than damaged. Blindness could weaken in ways the checks miss: a head could steer its scientist without numbers and without citing a fact.
 Status: built and tested with scripted agents (10 new tests; 266 tests pass); one free end-to-end run with the scripted backend went library, library review, briefing, analysis, both team reviews, a delivered note, a revision, then the question round. No run with real agents yet. The web floor (D-21) shows heads in runs that have them: a desk at the back of the room each head runs, a walk to the scientist it reviews, its notes as envelopes, and a red cross when the lab holds a note back. Visitors' questions to a head are answered from everything a head can read, without the grades.
+
+**D-23 · Nov 14, 17:30 · Decided · The demo plays 5 recorded minutes, not a live lab.**
+Why: by judging time the research will be over, so nothing on the floor would be moving live. Every run is already recorded event by event in its `events.jsonl`; the demo now opens on a 5-minute clip of one and loops it. `web/make_demo.py` chooses the clip by scoring every 5-minute window on what a viewer sees move (walks, notes and answers in flight, comparisons, referee verdicts, results), with a bonus for each kind of interaction.
+The clip for now: the busiest 5 minutes of all runs, GeneBench-Pro test run, Nov 14, 3:12 to 3:17 PM: 67 questions delivered, 74 notes passed down, 11 comparisons, 3 referees assigned, 2 verdicts, 4 studies finished.
+At the end of the event: if the final results are what we present, `python3 web/make_demo.py --run results/<final run> --last` switches the demo to the last 5 minutes of the final run, which end on the grading and a results card with the counts as graded.
+Status: built; 7 tests for the clip choice pass.
 
 ## 5. Agent observations
 

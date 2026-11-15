@@ -89,6 +89,8 @@ export class LabEngine {
 
   t = 0;
   playing = false;
+  /** The part of the run being played: the demo clip, or null for the whole run. */
+  range: { start: number; end: number } | null = null;
   speed = 12;
   filter: string | null = null;
   selected: Target | null = null;
@@ -130,8 +132,22 @@ export class LabEngine {
 
   // ---- Public controls ------------------------------------------------------------------------
 
+  private get lo() {
+    return this.range?.start ?? 0;
+  }
+
+  private get hi() {
+    return this.range ? Math.min(this.range.end, this.replay.end) : this.replay.end;
+  }
+
+  /** Play only part of the run (the demo clip), or the whole run with null. */
+  setRange(range: { start: number; end: number } | null) {
+    this.range = range;
+    if (range) this.seek(range.start);
+  }
+
   setPlaying(p: boolean) {
-    if (p && this.t >= this.replay.end) this.seek(0);
+    if (p && this.t >= this.hi - 0.01) this.seek(this.lo);
     this.playing = p;
     this.cb.onTick(this.t, this.playing);
   }
@@ -141,7 +157,7 @@ export class LabEngine {
   }
 
   seek(t: number) {
-    this.t = Math.max(0, Math.min(this.replay.end, t));
+    this.t = Math.max(this.lo, Math.min(this.hi, t));
     this.flyers = [];
     this.floaters = [];
     this.hatchFlash = null;
@@ -285,9 +301,9 @@ export class LabEngine {
     this.real += dt;
     if (this.playing) {
       const before = this.t;
-      this.t = Math.min(this.replay.end, this.t + dt * this.speed);
+      this.t = Math.min(this.hi, this.t + dt * this.speed);
       this.crossEvents(before, this.t);
-      if (this.t >= this.replay.end) {
+      if (this.t >= this.hi) {
         this.playing = false;
         this.cb.onTick(this.t, false);
       }
