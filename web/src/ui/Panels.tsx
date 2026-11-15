@@ -1,8 +1,8 @@
 import { useState, type CSSProperties, type ReactNode } from "react";
 import type { Note, Role } from "../data/types";
-import { fmtElapsed, MODEL_NAME, ROLE_LABEL, ROLE_READS, roundWord, statusWord, type Replay } from "../sim/replay";
+import { fmtElapsed, MODEL_NAME, ROLE_READS, roleLabel, roundWord, statusWord, type Replay } from "../sim/replay";
 import type { Target } from "../world/engine";
-import { DEPT } from "../world/palette";
+import { colorOf, headDept } from "../world/palette";
 import { Avatar } from "./Avatar";
 
 type Nav = {
@@ -13,7 +13,7 @@ type Nav = {
   filter: (study: string | null) => void;
 };
 
-const band = (role: Role) => ({ "--band": DEPT[role] }) as CSSProperties;
+const band = (role: Role, id = "") => ({ "--band": colorOf(role, id) }) as CSSProperties;
 
 function Lock() {
   return (
@@ -56,9 +56,9 @@ function Section({ title, count, children }: { title: string; count?: number | s
 function NoteItem({ n, R }: { n: Note; R: Replay }) {
   return (
     <div className="item">
-      <div className="label">{n.kind === "pass_down" ? (n.reason ? first(n.reason, 90) : "From the director") : n.label}</div>
+      <div className="label">{n.kind === "pass_down" ? (n.reason ? first(n.reason, 90) : n.by === "director" ? "From the director" : `From ${R.deptName(n.by)}`) : n.label}</div>
       <div className="meta">
-        {fmtElapsed(n.t)} into the run{n.kind === "pass_down" ? `, passed by the director to ${R.deptName(n.to ?? "")}` : ""}
+        {fmtElapsed(n.t)} into the run{n.kind === "pass_down" ? `, passed by ${n.by === "director" ? "the director" : `${R.name(n.by)}, ${R.deptName(n.by)},`} to ${R.deptName(n.to ?? "")}` : ""}
       </div>
       <Expand text={n.text} />
     </div>
@@ -74,7 +74,7 @@ export function PersonButton({ id, R, t, select, note }: { id: string; R: Replay
   if (!a) return null;
   const st = R.status(id, t);
   return (
-    <button className="person-btn" style={band(a.role)} onClick={() => select({ type: "agent", id })}>
+    <button className="person-btn" style={band(a.role, id)} onClick={() => select({ type: "agent", id })}>
       <Avatar id={id} role={a.role} scale={2} />
       <span>
         {R.name(id)}
@@ -98,7 +98,7 @@ export function PersonPanel({ id, ...nav }: Nav & { id: string }) {
   const sessions = a.sessions.filter((s) => s.start <= t);
   const graded = R.graded(t);
   return (
-    <div style={band(a.role)}>
+    <div style={band(a.role, id)}>
       <div className="who">
         <div className="portrait">
           <Avatar id={id} role={a.role} scale={5} />
@@ -106,12 +106,12 @@ export function PersonPanel({ id, ...nav }: Nav & { id: string }) {
         <div>
           <h2>{R.name(id)}</h2>
           <p className="role">
-            <span className="swatch" style={{ background: DEPT[a.role] }} />
-            {ROLE_LABEL[a.role]}
+            <span className="swatch" style={{ background: colorOf(a.role, id) }} />
+            {roleLabel(id, a.role)}
           </p>
           <p className="sub">
             {MODEL_NAME[a.model ?? ""] ?? a.model ?? "Model unknown"}
-            {a.role === "director" ? ", reads every department" : study ? `, study ${study.id}` : ""}
+            {a.role === "director" || a.role === "head" ? ", reads every department" : study ? `, study ${study.id}` : ""}
           </p>
         </div>
       </div>
@@ -165,7 +165,7 @@ export function PersonPanel({ id, ...nav }: Nav & { id: string }) {
       )}
 
       {(a.role === "team-a" || a.role === "team-b" || a.role === "team-c") && (
-        <Section title="Passed down by the director" count={passed.length + questions.length || undefined}>
+        <Section title="Passed down to it" count={passed.length + questions.length || undefined}>
           {!passed.length && !questions.length && (
             <p className="empty">{a.role === "team-b" ? "Nothing yet. Team B starts from the data alone; it hears from the director only if the teams disagree or the director challenges them." : "Nothing yet."}</p>
           )}
@@ -183,9 +183,10 @@ export function PersonPanel({ id, ...nav }: Nav & { id: string }) {
       )}
 
       {a.role === "director" && <DirectorSections {...nav} />}
+      {a.role === "head" && <HeadSections id={id} {...nav} />}
 
       {a.role !== "director" && a.role !== "solo" && (
-        <Section title="Notebook" count={notes.length || undefined}>
+        <Section title={a.role === "head" ? "Notes for the other heads" : "Notebook"} count={notes.length || undefined}>
           {!notes.length && <p className="empty">No notes written yet.</p>}
           {notes.slice(0, 12).map((n) => (
             <NoteItem key={n.id} n={n} R={R} />
@@ -252,7 +253,7 @@ export function PersonPanel({ id, ...nav }: Nav & { id: string }) {
           {sessions.map((s, i) => (
             <Frag
               key={i}
-              k={`${a.role === "director" ? `${s.study} ` : ""}${s.phase?.startsWith("baseline") ? "attempt" : s.phase}`}
+              k={`${a.role === "director" || a.role === "head" ? `${s.study} ` : ""}${s.phase?.startsWith("baseline") ? "attempt" : s.phase}`}
               v={s.end !== null && s.end <= t ? `${Math.round(s.seconds ?? 0)} s, $${(s.cost ?? 0).toFixed(2)}` : `running for ${Math.round(t - s.start)} s`}
             />
           ))}
@@ -277,6 +278,40 @@ function hostOf(url: string) {
   } catch {
     return url;
   }
+}
+
+function HeadSections({ id, R, t }: Nav & { id: string }) {
+  const dept = headDept(id) ?? "";
+  const reviews = R.run.events.filter((e) => e.k === "head.review" && e.a === id && e.t <= t).reverse();
+  return (
+    <Section title="Reviews" count={reviews.length || undefined}>
+      {!reviews.length && (
+        <p className="empty">
+          {dept === "library"
+            ? "None yet. It reviews each study's library findings before the director's briefing."
+            : "None yet. It reviews its scientist's first answer before the answer goes to the hatch."}
+        </p>
+      )}
+      {reviews.map((e, i) => {
+        const rv = e.s ? R.studies.get(e.s)?.heads?.[dept] : undefined;
+        return (
+          <div className="item" key={i}>
+            <div className="label">
+              {e.s}: {dept === "library" ? `${e.weak ?? 0} weak findings, ${e.missing ?? 0} gaps` : e.delivered ? `${e.delivered} of ${e.notes} notes delivered` : e.notes ? `${e.notes} notes, none delivered` : "no notes"}
+            </div>
+            <div className="meta">{fmtElapsed(e.t)} into the run{rv?.revised ? (rv.changed_answer ? ", the scientist changed its answer" : ", the scientist kept its answer") : ""}</div>
+            {rv?.verdict && <Expand text={rv.verdict} />}
+            {(rv?.notes ?? []).map((nt, j) => (
+              <div key={j} className="quote" style={{ marginTop: 6, boxShadow: `inset 3px 0 0 ${nt.delivered ? "var(--good)" : "var(--bad)"}` }}>
+                {nt.text}
+                {!nt.delivered && <div className="meta">Held back: {nt.reasons.join("; ")}</div>}
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </Section>
+  );
 }
 
 function DirectorSections({ R, t }: Nav) {
@@ -323,7 +358,7 @@ export function StudyPanel({ id, ...nav }: Nav & { id: string }) {
   const { R, t } = nav;
   const s = R.studies.get(id)!;
   const steps = R.studySteps(id, t);
-  const members = R.run.agents.filter((a) => a.study === id && a.role !== "solo" && a.sessions.some((x) => x.start <= t));
+  const members = R.run.agents.filter((a) => (a.study === id && a.role !== "solo" || a.role === "head") && a.sessions.some((x) => x.start <= t && (a.role !== "head" || x.study === id)));
   const solos = R.run.agents.filter((a) => a.study === id && a.role === "solo");
   const final = R.finalEvent(id, t);
   const graded = R.graded(t) && s.grade;
@@ -382,7 +417,7 @@ export function StudyPanel({ id, ...nav }: Nav & { id: string }) {
 
       <Section title="Who is on it">
         <div className="people">
-          {members.length ? members.map((a) => <PersonButton key={a.id} id={a.id} R={R} t={t} select={nav.select} note={ROLE_LABEL[a.role]} />) : <p className="empty">Nobody yet.</p>}
+          {members.length ? members.map((a) => <PersonButton key={a.id} id={a.id} R={R} t={t} select={nav.select} note={roleLabel(a.id, a.role)} />) : <p className="empty">Nobody yet.</p>}
         </div>
         {solos.length > 0 && (
           <p className="sub" style={{ marginTop: 10 }}>
@@ -440,7 +475,7 @@ const ROOM_TEXT: Record<string, { role?: Role; what: string }> = {
 export function RoomPanel({ id, ...nav }: Nav & { id: string }) {
   const { R, t } = nav;
   const info = ROOM_TEXT[id] ?? { what: "" };
-  const people = info.role ? R.run.agents.filter((a) => a.role === info.role) : [];
+  const people = info.role ? R.run.agents.filter((a) => a.role === info.role || (a.role === "head" && headDept(a.id) === info.role)) : [];
   const present = people.filter((a) => R.status(a.id, t).present);
   const working = people.filter((a) => R.status(a.id, t).working);
   return (
@@ -461,7 +496,7 @@ export function RoomPanel({ id, ...nav }: Nav & { id: string }) {
         <Section title="People" count={people.length}>
           <div className="people">
             {present.map((a) => (
-              <PersonButton key={a.id} id={a.id} R={R} t={t} select={nav.select} note={a.study ?? ""} />
+              <PersonButton key={a.id} id={a.id} R={R} t={t} select={nav.select} note={a.role === "head" ? roleLabel(a.id, a.role) : a.study ?? ""} />
             ))}
             {!present.length && <p className="empty">Nobody has arrived yet.</p>}
           </div>

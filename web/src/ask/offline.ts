@@ -3,7 +3,7 @@
 // agent answers only from what it could read at that moment.
 
 import type { Replay } from "../sim/replay";
-import { MODEL_NAME, PHASE_TEXT, ROLE_LABEL, roundWord, statusWord } from "../sim/replay";
+import { lowerFirst, MODEL_NAME, PHASE_TEXT, ROLE_LABEL, roleLabel, roundWord, statusWord } from "../sim/replay";
 
 export type Source = { ref: number; kind: string; id: string; label: string; t: number };
 export type Answer = { answer: string; sources: Source[]; mode: "claude" | "offline"; model?: string; note?: string };
@@ -20,7 +20,7 @@ function words(s: string) {
 export function visibleDocs(R: Replay, agent: string, t: number): Doc[] {
   const run = R.run;
   const docs: Doc[] = [];
-  const all = agent === "guide" || agent === "director";
+  const all = agent === "guide" || agent === "director" || R.agents.get(agent)?.role === "head";
   const a = R.agents.get(agent);
   for (const n of Object.values(run.notes)) {
     if (n.t > t) continue;
@@ -137,6 +137,10 @@ export function answerOffline(R: Replay, agent: string, t: number, question: str
     }
   }
 
+  if (a && a.role === "head" && asks("tell your scientist", "pass it on", "pass that on", "why can't", "why cant", "why not tell")) {
+    return out("I can read both teams' memory, but nothing from the other team may reach my scientist. The two teams work blind so that when they agree it means something. Only the director decides what crosses between teams, and only as questions that pass the leak check. My notes to my own scientist go through the same check, and the lab refuses any note that cites the other team's notes.");
+  }
+
   if (agent !== "guide" && asks("grade", "pass", "score", "correct", "right answer")) {
     return out("I don't know whether my answer is right. Grading happens once, after every agent has left the lab, and nobody inside sees the answer key.");
   }
@@ -146,10 +150,10 @@ export function answerOffline(R: Replay, agent: string, t: number, question: str
     const study = a.study ? R.studies.get(a.study) : null;
     const lastNote = docs.filter((d) => d.kind === "note").sort((x, y) => y.t - x.t)[0];
     const parts = [];
-    const phrase: Record<string, string> = { director: "the lab director", library: "the research librarian", "team-a": "a scientist on Team A", "team-b": "a scientist on Team B", "team-c": "a scientist on Team C", referee: "the referee", solo: "a solo scientist" };
+    const phrase: Record<string, string> = { director: "the lab director", head: roleLabel(agent, "head").replace("Head", "the head"), library: "the research librarian", "team-a": "a scientist on Team A", "team-b": "a scientist on Team B", "team-c": "a scientist on Team C", referee: "the referee", solo: "a solo scientist" };
     parts.push(`I'm ${R.name(agent)}, ${phrase[a.role] ?? ROLE_LABEL[a.role]}${study ? ` for ${study.id} (${study.title.toLowerCase()})` : ""}, running on ${MODEL_NAME[a.model ?? ""] ?? a.model}.`);
     if (!st.present) parts.push("I haven't started yet.");
-    else if (st.working) parts.push(`Right now: ${(a.role === "solo" ? "working alone on this attempt" : PHASE_TEXT[st.phase ?? ""] ?? "working").toLowerCase()}.`);
+    else if (st.working) parts.push(`Right now: ${lowerFirst(a.role === "solo" ? "working alone on this attempt" : PHASE_TEXT[st.phase ?? ""] ?? "working")}.`);
     else parts.push(`My session is over for now. ${R.activity(agent, t)}.`);
     if (lastNote) parts.push(`My latest note is "${lastNote.label}". ${cite(lastNote)}`);
     return out(parts.join(" "));

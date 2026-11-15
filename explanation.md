@@ -244,7 +244,7 @@ Why heads review their own department instead of relaying between teams: a head 
 Cost: up to three more Fable sessions per study, plus up to two revisions.
 Measures: a new step, "head review", counts per team how often the review turned a failing first answer into a passing one or the reverse. The later steps now start from the answer a team handed to the comparison (its reviewed answer when valid).
 What we expect, written before any run: the reviews will catch some format problems and warning signs a scientist recorded and did not act on, so some first answers will change; we do not know whether more will be rescued than damaged. Blindness could weaken in ways the checks miss: a head could steer its scientist without numbers and without citing a fact.
-Status: built and tested with scripted agents (10 new tests; 266 tests pass); one free end-to-end run with the scripted backend went library, library review, briefing, analysis, both team reviews, a delivered note, a revision, then the question round. No run with real agents yet.
+Status: built and tested with scripted agents (10 new tests; 266 tests pass); one free end-to-end run with the scripted backend went library, library review, briefing, analysis, both team reviews, a delivered note, a revision, then the question round. No run with real agents yet. The web floor (D-21) shows heads in runs that have them: a desk at the back of the room each head runs, a walk to the scientist it reviews, its notes as envelopes, and a red cross when the lab holds a note back. Visitors' questions to a head are answered from everything a head can read, without the grades.
 
 ## 5. Agent observations
 

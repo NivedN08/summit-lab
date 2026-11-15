@@ -7,10 +7,10 @@ import type { Ev, Role } from "../data/types";
 import type { Replay } from "../sim/replay";
 import { bubble, type Icon } from "./icons";
 import {
-  CABINETS, DESKS, ELEVATOR, ELEVATOR_QUEUE, FIX, H, MARGIN, ROLE_ROOM, ROOMS, SEATS, TILE, VISITOR_SPOTS, W,
-  findPath, roomAt, roomById, type Desk, type RoomId, type Spot,
+  CABINETS, DESKS, ELEVATOR, ELEVATOR_QUEUE, FIX, H, HEAD_DESKS, HEAD_SEATS, MARGIN, ROLE_ROOM, ROOMS, SEATS, TILE,
+  VISITOR_SPOTS, W, findPath, roomAt, roomById, type Desk, type RoomId, type Spot,
 } from "./layout";
-import { C, DEPT, shade } from "./palette";
+import { C, DEPT, colorOf, headDept, shade } from "./palette";
 import { FOOT_X, FOOT_Y, lookFor, personSprite, type Dir, type Look } from "./people";
 import { buildStatic, OFF } from "./staticLayer";
 
@@ -85,6 +85,7 @@ export class LabEngine {
   private elevatorNext = 0;
   private visitorSlot = 0;
   private resizeObs: ResizeObserver;
+  private desks: Desk[];
 
   t = 0;
   playing = false;
@@ -100,6 +101,8 @@ export class LabEngine {
     this.ctx = canvas.getContext("2d")!;
     this.staticCv = buildStatic();
     this.events = [...replay.run.events].sort((a, b) => replay.timeOf(a) - replay.timeOf(b));
+    // Heads' desks appear only in runs that had department heads (D-22).
+    this.desks = replay.run.agents.some((a) => a.role === "head") ? [...DESKS, ...HEAD_DESKS] : DESKS;
     for (const a of replay.run.agents) {
       const home = this.homeOf(a.id, a.role, a.study);
       if (!home) continue;
@@ -241,6 +244,10 @@ export class LabEngine {
     switch (role) {
       case "director":
         return SEATS.director;
+      case "head": {
+        const d = headDept(id);
+        return d && d in HEAD_SEATS ? HEAD_SEATS[d as keyof typeof HEAD_SEATS] : null;
+      }
       case "library":
       case "team-a":
       case "team-b":
@@ -256,9 +263,13 @@ export class LabEngine {
     return null;
   }
 
+  private roomOf(a: Actor): RoomId {
+    return a.role === "head" ? ((headDept(a.id) as RoomId | null) ?? "lobby") : ROLE_ROOM[a.role];
+  }
+
   private roomActive(room: RoomId): boolean {
     for (const a of this.actors.values()) {
-      if (ROLE_ROOM[a.role] !== room) continue;
+      if (this.roomOf(a) !== room) continue;
       if (this.replay.status(a.id, this.t).working) return true;
     }
     if (room === "corridor" || room === "lobby") return true;
@@ -309,6 +320,15 @@ export class LabEngine {
         if (!actor) break;
         const first = R.agents.get(actor.id)?.sessions[0]?.start === e.t;
         if (first && actor.role !== "director") this.arrive(actor);
+        if (actor.role === "head" && e.phase === "head-review" && e.s) {
+          // The head goes to the desk of the person whose work it is reviewing.
+          const dept = headDept(actor.id);
+          const target = dept ? this.actors.get(`${e.s}-${dept}`) : undefined;
+          const idle = actor.steps.length === 0 && actor.path.length === 0 && actor.visible && actor.releaseAt <= this.real;
+          if (target && target.visible && idle && !first) {
+            this.plan(actor, [{ go: this.visitSpot(target), face: 1 }, { wait: 2.2, icon: "read", face: 1 }, { go: actor.home, face: 0 }], null);
+          } else this.say(actor, "read", colorOf(actor.role, actor.id), 2.5);
+        }
         if (actor.role === "director" && e.phase === "briefing" && e.s) {
           // The study's librarian carries its findings to the director's office.
           const lib = this.actors.get(`${e.s}-library`);
@@ -328,20 +348,27 @@ export class LabEngine {
         this.exaFlash = this.real + 1.2;
         break;
       case "memory.recall":
-        if (actor && actor.atHome && !actor.bubble) this.say(actor, "read", DEPT[actor.role], 1.1);
+        if (actor && actor.atHome && !actor.bubble) this.say(actor, "read", colorOf(actor.role, actor.id), 1.1);
         break;
       case "memory.write": {
         if (!actor) break;
-        this.say(actor, "write", DEPT[actor.role], 1.3);
+        this.say(actor, "write", colorOf(actor.role, actor.id), 1.3);
         this.sendToVault(actor, e);
         break;
       }
       case "memory.pass_down": {
         const target = e.to ? this.actors.get(e.to) : undefined;
         if (!target || !target.visible) break;
-        const director = this.actors.get("director");
-        if (director && director.steps.some((s) => "go" in s && s.go === this.visitSpot(target))) break;
-        if (this.throttle(`pd-${e.to}`, 8)) this.fly(this.spotOf(director), this.deskSpot(target), DEPT.director, "envelope", () => this.say(target, "paper", DEPT.director, 1.6));
+        const sender = this.actors.get(e.a ?? "director") ?? this.actors.get("director");
+        const color = sender ? colorOf(sender.role, sender.id) : DEPT.director;
+        if (sender?.role === "director" && sender.steps.some((s) => "go" in s && s.go === this.visitSpot(target))) break;
+        if (this.throttle(`pd-${e.a}-${e.to}`, 8)) this.fly(this.spotOf(sender), this.deskSpot(target), color, "envelope", () => this.say(target, "paper", color, 1.6));
+        break;
+      }
+      case "head.review": {
+        if (!actor) break;
+        const color = colorOf(actor.role, actor.id);
+        this.say(actor, e.delivered ? "write" : "check", color, 2.5);
         break;
       }
       case "relay.briefing": {
@@ -352,6 +379,15 @@ export class LabEngine {
       case "relay.leak_check": {
         const target = e.to ? this.actors.get(e.to) : undefined;
         if (!target) break;
+        if (e.by && e.by.startsWith("head-")) {
+          // A head's note: delivered by the envelope that follows; a held-back one stays with the head.
+          const head = this.actors.get(e.by);
+          if (head && !e.passed) {
+            this.say(head, "cross", C.red, 3);
+            this.floater(head.home.px, head.home.py - 30, `note held back`, C.red, 3.5);
+          }
+          break;
+        }
         if (e.passed) this.directorVisit(target, "question");
         else this.say(this.actors.get("director")!, "cross", C.red, 2.5);
         break;
@@ -360,9 +396,9 @@ export class LabEngine {
         const team = e.team;
         const who = e.s && team ? this.actors.get(`${e.s}-${team}`) : undefined;
         if (!who) break;
-        this.say(who, "paper", DEPT[who.role], 1.8);
+        this.say(who, "paper", colorOf(who.role, who.id), 1.8);
         const to = team === "team-a" ? FIX.hatchA : team === "team-b" ? FIX.hatchB : FIX.refTable;
-        this.fly(this.deskSpot(who), to, DEPT[who.role], "answer");
+        this.fly(this.deskSpot(who), to, colorOf(who.role, who.id), "answer");
         break;
       }
       case "compare": {
@@ -473,7 +509,7 @@ export class LabEngine {
     const to: Spot = { tx: cab.x, ty: cab.y + 2, px: cab.x * TILE + TILE, py: cab.y * TILE + drawer * 6 };
     const key = `${i}-${drawer}`;
     void e;
-    this.fly(this.deskSpot(a), to, DEPT[a.role], "note", () => this.drawerFlash.set(key, this.real + 1.5));
+    this.fly(this.deskSpot(a), to, colorOf(a.role, a.id), "note", () => this.drawerFlash.set(key, this.real + 1.5));
   }
 
   private fly(from: Spot, to: Spot, color: string, kind: Flyer["kind"], onArrive?: () => void, label?: string) {
@@ -516,7 +552,7 @@ export class LabEngine {
         if ("wait" in step) {
           a.wait = step.wait;
           if (step.face !== undefined) a.dir = step.face;
-          if (step.icon) this.say(a, step.icon, DEPT[a.role], step.wait);
+          if (step.icon) this.say(a, step.icon, colorOf(a.role, a.id), step.wait);
           continue;
         }
         const tiles = findPath(Math.floor(a.x / TILE), Math.floor((a.y - 1) / TILE), step.go.tx, step.go.ty);
@@ -674,7 +710,7 @@ export class LabEngine {
 
   private dimFor(study: string | null, role: Role) {
     if (!this.filter) return 1;
-    if (role === "director") return 1;
+    if (role === "director" || role === "head") return 1;
     return study === this.filter ? 1 : 0.28;
   }
 
@@ -684,7 +720,7 @@ export class LabEngine {
     // Desks, with whoever sits at them.
     const seatOwner = new Map<string, Actor>();
     for (const a of this.actors.values()) seatOwner.set(`${a.home.tx},${a.home.ty}`, a);
-    for (const d of DESKS) {
+    for (const d of this.desks) {
       const top = d.y * TILE;
       const seats = this.seatsAt(d);
       list.push({ y: top + 0.5, draw: () => this.drawDesk(ctx, d, seats.map((s) => seatOwner.get(`${s.tx},${s.ty}`))) });
@@ -706,6 +742,7 @@ export class LabEngine {
 
   private seatsAt(d: Desk): Spot[] {
     if (d.kind === "big") return [SEATS.director];
+    if (d.kind === "head") return Object.values(HEAD_SEATS).filter((s) => s.tx === d.x + 1);
     if (d.kind === "bench") return SEATS.referee;
     const out: Spot[] = [];
     for (const group of [SEATS.library, SEATS["team-a"], SEATS["team-b"], SEATS["team-c"]])
@@ -749,6 +786,23 @@ export class LabEngine {
       ctx.fillStyle = C.lamp;
       ctx.fillRect(x + 81, y - 12, 8, 3);
       this.drawMonitor(ctx, x + 14, y - 11, 12, 9, owners[0]);
+    } else if (d.kind === "head") {
+      // A head's desk: wood, a lamp, a nameplate in its department's colour.
+      ctx.fillStyle = C.woodDark;
+      ctx.fillRect(x, y - 3, w, 17);
+      ctx.fillStyle = C.wood;
+      ctx.fillRect(x, y - 3, w, 10);
+      ctx.fillStyle = C.woodHi;
+      ctx.fillRect(x, y - 3, w, 1);
+      ctx.fillStyle = owner ? colorOf(owner.role, owner.id) : C.metal;
+      ctx.fillRect(x + w / 2 - 7, y + 9, 14, 3);
+      ctx.fillStyle = C.paper;
+      ctx.fillRect(x + w - 16, y - 1, 7, 5);
+      ctx.fillStyle = "#2b2f55";
+      ctx.fillRect(x + w - 5, y - 9, 2, 7);
+      ctx.fillStyle = C.lamp;
+      ctx.fillRect(x + w - 7, y - 11, 6, 3);
+      this.drawMonitor(ctx, x + 2, y - 10, 10, 8, owner);
     } else if (d.kind === "bench") {
       ctx.fillStyle = "#1f3934";
       ctx.fillRect(x - 4, y - 3, w + 8, 18);
@@ -778,7 +832,7 @@ export class LabEngine {
       ctx.fillRect(x + 3, y + 8, 2, 6);
       ctx.fillRect(x + w - 5, y + 8, 2, 6);
       // A mug and some paper.
-      ctx.fillStyle = owner ? DEPT[owner.role] : C.metal;
+      ctx.fillStyle = owner ? colorOf(owner.role, owner.id) : C.metal;
       ctx.fillRect(x + w - 6, y - 1, 3, 3);
       ctx.fillStyle = C.paper;
       ctx.fillRect(x + w - 13, y, 6, 4);
@@ -790,7 +844,7 @@ export class LabEngine {
   private drawMonitor(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, a?: Actor) {
     const st = a && a.visible ? this.replay.status(a.id, this.t) : null;
     const working = !!st?.working;
-    const color = a ? DEPT[a.role] : C.metal;
+    const color = a ? colorOf(a.role, a.id) : C.metal;
     if (working) {
       // Screen light spilling onto the desk.
       ctx.fillStyle = color + "33";
@@ -851,7 +905,7 @@ export class LabEngine {
     const inStudy = this.filter && a.study === this.filter;
     if (!sel && !hov && !inStudy) return;
     const pulse = sel ? Math.floor(this.real * 4) % 2 : 0;
-    ctx.fillStyle = sel ? C.lamp : hov ? "#ffffffaa" : DEPT[a.role] + "aa";
+    ctx.fillStyle = sel ? C.lamp : hov ? "#ffffffaa" : colorOf(a.role, a.id) + "aa";
     const w = 12 + pulse * 2;
     ctx.fillRect(Math.round(x - w / 2), Math.round(y) - 2, w, 1);
     ctx.fillRect(Math.round(x - w / 2) - 1, Math.round(y) - 1, w + 2, 1);
@@ -972,7 +1026,7 @@ export class LabEngine {
       const w = ctx.measureText(name).width + 14;
       ctx.fillStyle = "#161a33";
       ctx.fillRect(Math.round(p.x - w / 2), Math.round(p.y - 22), Math.round(w), 20);
-      ctx.fillStyle = DEPT[a.role];
+      ctx.fillStyle = colorOf(a.role, a.id);
       ctx.fillRect(Math.round(p.x - w / 2), Math.round(p.y - 4), Math.round(w), 2);
       ctx.fillStyle = "#eef2fa";
       ctx.fillText(name, p.x, p.y - 12);

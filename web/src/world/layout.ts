@@ -47,7 +47,7 @@ function seat(tx: number, ty: number, dx = 0): Spot {
   return { tx, ty, px: tx * TILE + TILE / 2 + dx, py: ty * TILE + TILE - 1 };
 }
 
-export type Desk = { x: number; y: number; w: number; kind: "desk" | "small" | "bench" | "big" };
+export type Desk = { x: number; y: number; w: number; kind: "desk" | "small" | "bench" | "big" | "head" };
 
 /** Two rows of four desks, one per study, in a room of width 13-16. */
 function eightDesks(room: Room, firstX: number, rows: [number, number]) {
@@ -85,6 +85,18 @@ for (let c = 0; c < 8; c++) {
     soloDesks.push({ x, y: y + 1, w: 1, kind: "small" });
   }
 }
+
+/** Each department head's desk, at the back of the room it runs (D-22). */
+export const HEAD_SEATS: Record<"library" | "team-a" | "team-b", Spot> = {
+  library: seat(24, 10, TILE / 2),
+  "team-a": seat(41, 10, TILE / 2),
+  "team-b": seat(56, 10, TILE / 2),
+};
+export const HEAD_DESKS: Desk[] = [
+  { x: 23, y: 11, w: 3, kind: "head" },
+  { x: 40, y: 11, w: 3, kind: "head" },
+  { x: 55, y: 11, w: 3, kind: "head" },
+];
 
 export const SEATS = {
   director: seat(14, 4, TILE / 2),
@@ -167,7 +179,7 @@ for (const r of ROOMS) {
 setRect(1, 3, 7, 30, 1); // lobby
 setRect(8, 14, 1, 4, 1); // lobby opens onto the corridor
 setRect(4, 1, 1, 2, 1); // the elevator
-for (const d of DESKS) setRect(d.x, d.y, d.w, 1, 0);
+for (const d of [...DESKS, ...HEAD_DESKS]) setRect(d.x, d.y, d.w, 1, 0);
 for (const b of BLOCKS) setRect(b.x, b.y, b.w, b.h, 0);
 for (const p of PLANTS) setRect(p.x, p.y, 1, 1, 0);
 
@@ -227,6 +239,7 @@ export function roomAt(tx: number, ty: number): Room | null {
 
 export const ROLE_ROOM: Record<Role, RoomId> = {
   director: "director",
+  head: "lobby", // a head's room is the department it runs: see roomOf in the engine
   library: "library",
   "team-a": "team-a",
   "team-b": "team-b",

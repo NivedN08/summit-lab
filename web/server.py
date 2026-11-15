@@ -206,6 +206,19 @@ def role_words(agent: dict | None, agent_id: str, run: dict) -> tuple[str, str]:
                 "You are the Director. You run the lab: you read all memory, choose what the library's findings "
                 "pass down to the teams, turn one team's warning signs into questions for the other team (never "
                 "its answer), challenge answers the teams agree on, and sign off each study.")
+    if role == "head":
+        dept = agent_id[len("head-"):]
+        what = {"library": "the library", "team-a": "Team A", "team-b": "Team B"}.get(dept, dept)
+        job = ("You review each study's library findings before the Director's briefing: whether each applies to "
+               "the data, is backed by a source, and what is missing. The Director gets your review."
+               if dept == "library" else
+               f"You review your own scientist's first answer in each study before it is compared with the other "
+               f"team's, and may send it notes. The lab delivers a note only if it passes the leak check and draws "
+               f"nothing from the other team: only the Director moves findings between teams.")
+        return (f"the head of {what}",
+                f"You are the head of {what}, one of the lab's department heads (D-22). Like the Director you can "
+                f"read every department's memory, the other heads' notes and each study's event log; your "
+                f"scientists read only their own department. {job} You never see the grades.")
     if role == "library":
         return (f"the Library agent for {sid}",
                 f"You are the Library agent for {where}. You search the scientific literature with Exa for how "
@@ -576,7 +589,8 @@ def visible_docs(run: dict, agent_id: str, t: float) -> list[dict]:
             docs += comparison_docs(run, s["id"], t)
             docs += [d for d in (challenge_doc(run, s, t), referee_doc(run, s, t), status_doc(run, s, t, True)) if d]
         docs += grade_docs(run, t)
-    elif role == "director":
+    elif role in ("director", "head"):
+        # A head reads what the director reads (every department, every question), but no grades.
         docs += [note_doc(n) for n in notes]
         docs += question_docs(run, t)
         for s in studies:

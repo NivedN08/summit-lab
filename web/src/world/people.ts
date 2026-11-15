@@ -3,7 +3,7 @@
 // coats over their team's colour, referees in stripes, solo agents in grey.
 
 import type { Role } from "../data/types";
-import { C, DEPT, HAIRS, SKINS, shade } from "./palette";
+import { C, DEPT, HAIRS, SKINS, headDept, shade } from "./palette";
 
 export type HairStyle = "short" | "bob" | "long" | "bun" | "curly" | "bald" | "ponytail" | "spiky";
 const STYLES: HairStyle[] = ["short", "bob", "long", "bun", "curly", "bald", "ponytail", "spiky"];
@@ -60,6 +60,13 @@ export function lookFor(id: string, role: Role): Look {
     shirt = DEPT.referee;
     pants = "#22264a";
     stripes = true;
+  } else if (role === "head") {
+    // A head wears a blazer in its department's colour over a white shirt.
+    const dept = DEPT[headDept(id) ?? "director"];
+    coat = shade(dept, -0.18);
+    coatShade = shade(dept, -0.42);
+    shirt = "#f4f6fb";
+    pants = "#2b2f55";
   } else if (role === "solo") {
     coat = "#d9dded";
     coatShade = "#b2b8cf";
@@ -77,8 +84,8 @@ export function lookFor(id: string, role: Role): Look {
     pants,
     shoes: "#24284a",
     stripes,
-    glasses: ((h >>> 12) & 7) === 0 || role === "director",
-    badge: dept,
+    glasses: ((h >>> 12) & 7) === 0 || role === "director" || role === "head",
+    badge: role === "head" ? DEPT[headDept(id) ?? "director"] : dept,
   };
 }
 

@@ -5,6 +5,7 @@ import type { AgentRec, Ev, Note, Role, Run, Search, Study } from "../data/types
 
 export const ROLE_LABEL: Record<Role, string> = {
   director: "Lab director",
+  head: "Department head",
   library: "Research librarian",
   "team-a": "Scientist, Team A",
   "team-b": "Scientist, Team B",
@@ -16,6 +17,7 @@ export const ROLE_LABEL: Record<Role, string> = {
 
 export const ROLE_READS: Record<Role, string> = {
   director: "Reads every department's memory. Decides what crosses from one team to another.",
+  head: "Reads every department's memory, the other heads' notes and the study's event log. Its notes reach only its own department, after the lab's leak check, and may not draw on the other team.",
   library: "Reads and writes only its own study's library notes.",
   "team-a": "Reads only Team A's notes for this study, plus what the director passes down. Never Team B's.",
   "team-b": "Reads only Team B's notes for this study, plus what the director passes down. Never Team A's.",
@@ -24,6 +26,14 @@ export const ROLE_READS: Record<Role, string> = {
   solo: "Works alone with no lab, no memory and no library. A comparison arm for the lab.",
   other: "",
 };
+
+const HEAD_OF: Record<string, string> = { library: "Head of the library", "team-a": "Head of Team A", "team-b": "Head of Team B", "team-c": "Head of Team C" };
+
+/** The label under a person's name: a head says which department it runs. */
+export function roleLabel(id: string, role: Role): string {
+  if (role === "head") return HEAD_OF[id.slice(5)] ?? ROLE_LABEL.head;
+  return ROLE_LABEL[role];
+}
 
 export const MODEL_NAME: Record<string, string> = {
   fable: "Fable 5.2",
@@ -50,6 +60,8 @@ export const PHASE_TEXT: Record<string, string> = {
   questions: "Turning each team's warning signs into questions for the other",
   referee: "Designing a test that tells two answers apart",
   "third-team": "Called in as a third, blind team",
+  "head-review": "Reviewing its department's work on this study",
+  review: "Checking the notes its department head sent",
 };
 
 export type Status = {
@@ -153,12 +165,16 @@ export class Replay {
     if (st.working && fresh && e) {
       if (e.k === "memory.write") return `Writing a note: ${this.run.notes[e.f!]?.label ?? "a finding"}`;
       if (e.k === "memory.recall") return `Looking through memory for "${e.q}"`;
-      if (e.k === "web.search") return `Searching the web: "${this.run.searches[e.n!]?.q ?? ""}"`;
-      if (e.k === "web.contents") return `Reading ${this.run.searches[e.n!]?.urls?.length ?? "a few"} pages in full`;
+      if (e.k === "web.search") return e.n === undefined ? "Searching the web" : `Searching the web: "${this.run.searches[e.n]?.q ?? ""}"`;
+      if (e.k === "web.contents") return `Reading ${(e.n !== undefined && this.run.searches[e.n]?.urls?.length) || "a few"} pages in full`;
       if (e.k === "memory.pass_down") return `Passing a note to ${this.deptName(e.to ?? "")}`;
     }
     if (st.working) {
       if (a.role === "solo") return `Working alone on attempt ${a.id.split("-").pop()}`;
+      if (a.role === "head") {
+        const s = [...a.sessions].reverse().find((x) => x.start <= t && (x.end === null || x.end > t));
+        return s?.study ? `Reviewing its department's work on ${s.study}` : "Reviewing its department's work";
+      }
       return PHASE_TEXT[st.phase ?? ""] ?? "Working";
     }
     const s = a.study ? this.studies.get(a.study) : null;
@@ -169,7 +185,8 @@ export class Replay {
 
   deptName(dept: string) {
     const m = dept.match(/^(gb\d\d|sc\d\d|bd\d\d)-(.*)$/);
-    if (!m) return dept === "director" ? "the director" : dept;
+    if (dept.startsWith("head-")) return roleLabel(dept, "head").replace("Head", "the head");
+    if (!m) return dept === "director" ? "the director" : dept === "heads" ? "the heads" : dept;
     const team = { "team-a": "Team A", "team-b": "Team B", "team-c": "Team C", library: "the library", referee: "the referee" }[m[2]] ?? m[2];
     return `${team} (${m[1]})`;
   }
@@ -191,7 +208,7 @@ export class Replay {
   }
 
   questionsTo(id: string, t: number) {
-    return this.run.events.filter((e) => e.k === "relay.leak_check" && e.to === id && e.passed && e.t <= t);
+    return this.run.events.filter((e) => e.k === "relay.leak_check" && e.to === id && e.passed && !e.by && e.t <= t);
   }
 
   finalEvent(study: string, t: number) {
@@ -216,6 +233,16 @@ export class Replay {
       if (e.k === "agent.start" && e.phase === "library") once("lib", { t: e.t, title: "The library starts researching" });
       if (e.k === "relay.briefing") once("brief", { t: e.t, title: "The director briefs Team A only", detail: `${e.items} notes passed down. Team B starts from the data alone.` });
       if (e.k === "agent.start" && e.phase === "analysis") once("ana", { t: e.t, title: "Two blind teams analyse the data" });
+      if (e.k === "head.review") once(`head-${e.a}`, {
+        t: e.t,
+        title: `${roleLabel(e.a ?? "", "head")} reviews ${e.a === "head-library" ? "the library's findings" : "its scientist's answer"}`,
+        detail: e.a === "head-library"
+          ? `${e.weak ?? 0} findings judged weak, ${e.missing ?? 0} gaps named. The director gets the review.`
+          : e.delivered ? `${e.delivered} of ${e.notes} notes delivered after the leak check; the scientist revises.` : e.notes ? `${e.notes} notes, none delivered.` : "No notes: the answer goes to the hatch as it is.",
+      });
+      if (e.k === "relay.leak_check" && e.by && !e.passed) once(`held-${e.by}-${e.t}`, {
+        t: e.t, title: `A note from ${this.deptName(e.by)} is held back`, detail: e.why, tone: "bad",
+      });
       if (e.k === "compare") once(`cmp-${e.round}`, {
         t: e.t,
         title: e.agree ? `Answers agree (${roundWord(e.round)})` : `Answers disagree (${roundWord(e.round)})`,
@@ -224,7 +251,7 @@ export class Replay {
       });
       if (e.k === "agent.start" && e.a === "director" && e.phase === "challenge") once("chal", { t: e.t, title: "The director tries to break the agreed answer" });
       if (e.k === "agent.start" && e.a === "director" && e.phase === "questions") once("q", { t: e.t, title: "The director turns warning signs into questions" });
-      if (e.k === "relay.leak_check") once(`leak-${e.to}-${e.round}`, {
+      if (e.k === "relay.leak_check" && !e.by) once(`leak-${e.to}-${e.round}`, {
         t: e.t,
         title: `${e.passed ? "Question sent" : "Question held back"} to ${this.deptName(e.to ?? "")}`,
         detail: e.passed ? undefined : "The leak check stopped it: it would have revealed the other team's answer.",
@@ -263,15 +290,16 @@ export class Replay {
       case "agent.start": {
         const a = this.agents.get(e.a!);
         if (!a || a.role === "solo") return null;
-        if (a.role === "director") return { who: e.a, text: `The director starts on ${e.s}: ${(PHASE_TEXT[e.phase ?? ""] ?? "").toLowerCase()}` };
+        if (a.role === "director") return { who: e.a, text: `The director starts on ${e.s}: ${lowerFirst(PHASE_TEXT[e.phase ?? ""] ?? "")}` };
         if (e.phase === "third-team") return { who: e.a, text: `${n(e.a)} is called in as Team C for ${e.s}` };
         if (a.role === "referee") return { who: e.a, text: `${n(e.a)}, the referee, takes ${e.s}` };
-        if (a.sessions[0]?.start === e.t) return { who: e.a, text: `${n(e.a)} (${ROLE_LABEL[a.role].toLowerCase()}) starts on ${e.s}` };
-        return { who: e.a, text: `${n(e.a)} starts again on ${e.s}: ${(PHASE_TEXT[e.phase ?? ""] ?? "").toLowerCase()}` };
+        if (a.role === "head") return null;
+        if (a.sessions[0]?.start === e.t) return { who: e.a, text: `${n(e.a)} (${lowerFirst(ROLE_LABEL[a.role])}) starts on ${e.s}` };
+        return { who: e.a, text: `${n(e.a)} starts again on ${e.s}: ${lowerFirst(PHASE_TEXT[e.phase ?? ""] ?? "")}` };
       }
       case "web.search": {
-        const s = this.run.searches[e.n!];
-        return { who: e.a, text: `${n(e.a)} searches the web: "${s?.q ?? ""}"` };
+        const s = e.n === undefined ? undefined : this.run.searches[e.n];
+        return { who: e.a, text: s ? `${n(e.a)} searches the web: "${s.q}"` : `${n(e.a)} searches the web` };
       }
       case "web.contents":
         return { who: e.a, text: `${n(e.a)} opens pages to read in full` };
@@ -281,7 +309,15 @@ export class Replay {
       }
       case "relay.briefing":
         return { text: `The director passes ${e.items} library notes to Team A (${e.s}). Team B gets none` };
+      case "head.review":
+        return {
+          who: e.a,
+          text: e.a === "head-library"
+            ? `${n(e.a)}, head of the library, reviews the library's findings for ${e.s}`
+            : `${n(e.a)}, ${lowerFirst(roleLabel(e.a ?? "", "head"))}, reviews ${e.s}: ${e.delivered ? `${e.delivered} note${e.delivered > 1 ? "s" : ""} sent` : "no notes"}`,
+        };
       case "relay.leak_check":
+        if (e.by) return e.passed ? null : { who: e.by, text: `A note from ${this.deptName(e.by)} to ${this.deptName(e.to ?? "")} is held back: ${e.why ?? "it failed the check"}`, tone: "bad" };
         return e.passed
           ? { who: "director", text: `The director asks ${this.deptName(e.to ?? "")} a question from the other team's warning signs` }
           : { who: "director", text: `A question to ${this.deptName(e.to ?? "")} is held back: it would leak an answer`, tone: "bad" };
@@ -302,6 +338,11 @@ export class Replay {
   }
 }
 
+/** Lower-case the first letter only, so names like "Team A" keep their capitals. */
+export function lowerFirst(text: string) {
+  return text ? text[0].toLowerCase() + text.slice(1) : text;
+}
+
 export function statusWord(s?: string | null) {
   return ({ replicated: "replicated", converged: "converged", refereed: "settled by the referee", unresolved: "unresolved", "no-answer": "no answer" } as Record<string, string>)[s ?? ""] ?? s ?? "";
 }
@@ -318,7 +359,7 @@ function fieldsLine(fields?: Record<string, boolean>) {
 }
 
 function roleOrder(r: Role) {
-  return ["director", "library", "team-a", "team-b", "referee", "team-c", "solo", "other"].indexOf(r);
+  return ["director", "head", "library", "team-a", "team-b", "referee", "team-c", "solo", "other"].indexOf(r);
 }
 
 function push<K, V>(m: Map<K, V[]>, k: K, v: V) {

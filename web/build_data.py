@@ -33,6 +33,14 @@ TITLES = {
     "gb08": "CRISPRi screen of long non-coding RNAs",
     "gb09": "Multivariable Mendelian randomization",
     "gb10": "Multi-parent QTL mapping",
+    # Version 3 development tasks (BioDSA-1K and scBench), named from the librarians' first searches.
+    "bd01": "Splicing factor mutations in cancer",
+    "bd02": "Mutations in a pancreatic cyst study",
+    "bd03": "TP53 subtype, aneuploidy and survival",
+    "bd04": "A poor-outcome subgroup in neuroblastoma",
+    "sc01": "Annotating single-nucleus clusters by markers",
+    "sc07": "What drives the first principal component",
+    "sc08": "Cell type markers in single-nucleus data",
 }
 
 LABELS = {
@@ -40,6 +48,8 @@ LABELS = {
     "pilot1": "Pilot, 2 development studies",
     "dev-v2": "Design version 2, development studies",
     "dev-v2-local": "Design version 2, development studies",
+    "biodsa-pilot": "Version 3 pilot, BioDSA-1K, 4 studies",
+    "sc-pilot": "Version 3 pilot, scBench, 3 studies",
 }
 
 HOME = re.compile(r"/Users/[^/\s\"']+")
@@ -63,6 +73,8 @@ def role_of(agent: str) -> str:
         return "director"
     if agent.startswith("baseline-"):
         return "solo"
+    if agent.startswith("head-"):
+        return "head"
     for role in ("library", "team-a", "team-b", "team-c", "referee"):
         if agent.endswith(role):
             return role
@@ -72,6 +84,24 @@ def role_of(agent: str) -> str:
 def study_of(agent: str) -> str | None:
     match = re.search(r"(gb\d\d|sc\d\d|bd\d\d)", agent)
     return match.group(1) if match else None
+
+
+def clean_heads(heads: dict) -> dict:
+    """The department heads' reviews from study.json (D-22), with agent text cleaned."""
+    out = {}
+    for key, rv in heads.items():
+        if not isinstance(rv, dict):
+            continue
+        item = {"ran": rv.get("ran"), "verdict": clean(rv.get("verdict"))}
+        if key == "library":
+            item.update({k: [{kk: clean(vv) for kk, vv in x.items()} if isinstance(x, dict) else clean(x)
+                             for x in rv.get(k) or []] for k in ("strong", "weak", "missing")})
+        else:
+            item.update(approve=rv.get("approve"), revised=rv.get("revised"), changed_answer=rv.get("changed_answer"),
+                        notes=[{"text": clean(n.get("text")), "why": clean(n.get("why")), "delivered": n.get("delivered"),
+                                "reasons": n.get("reasons") or []} for n in rv.get("notes") or []])
+        out[key] = item
+    return out
 
 
 def build(run_dir: pathlib.Path) -> dict:
@@ -91,6 +121,7 @@ def build(run_dir: pathlib.Path) -> dict:
     study_ids: list[str] = []
     totals = None
     lab_end = None
+    exa_events = []   # the gateway's record of each search, used when records/exa_calls.jsonl lacks this run
 
     def agent(agent_id: str) -> dict:
         if agent_id not in agents:
@@ -135,8 +166,17 @@ def build(run_dir: pathlib.Path) -> dict:
         elif kind == "relay.briefing":
             out.append({"t": t, "k": kind, "s": e.get("study"), "items": e.get("items"), "teams": e.get("teams")})
         elif kind == "relay.leak_check":
-            out.append({"t": t, "k": kind, "s": e.get("study"), "round": e.get("round"), "to": e.get("to"),
-                        "passed": e.get("passed"), "q": clean(e.get("question"))})
+            item = {"t": t, "k": kind, "s": e.get("study"), "round": e.get("round"), "to": e.get("to"),
+                    "passed": e.get("passed"), "q": clean(e.get("question"))}
+            if e.get("by"):
+                item["by"] = e["by"]
+            if not e.get("passed") and e.get("reasons"):
+                item["why"] = "; ".join(e["reasons"])
+            out.append(item)
+        elif kind == "head.review":
+            out.append({"t": t, "k": kind, "a": e.get("head"), "s": e.get("study"), "of": e.get("of"),
+                        "ok": e.get("ran"), "approve": e.get("approve"), "notes": e.get("notes"),
+                        "delivered": e.get("delivered"), "weak": e.get("weak"), "missing": e.get("missing")})
         elif kind == "candidate":
             out.append({"t": t, "k": kind, "s": e.get("study"), "team": e.get("team"), "round": e.get("round"),
                         "valid": e.get("valid")})
@@ -162,6 +202,8 @@ def build(run_dir: pathlib.Path) -> dict:
             out.append({"t": t, "k": kind, "totals": totals})
         elif kind == "gateway.modal.stop":
             lab_end = t
+        elif kind == "exa.call":
+            exa_events.append({"t": t, "a": e.get("agent") or actor, "endpoint": e.get("endpoint") or "search"})
 
     # The librarians' web searches, from the Exa call record, inside this run's time window.
     searches = []
@@ -183,6 +225,10 @@ def build(run_dir: pathlib.Path) -> dict:
             })
             out.append({"t": round(max(t, 0), 1), "k": "web." + (r.get("endpoint") or "search"), "a": r["agent"],
                         "s": study_of(r["agent"]), "n": len(searches) - 1})
+    recorded = {x["a"] for x in searches}
+    for x in exa_events:
+        if x["a"] not in recorded:   # no words for this search, only that it happened
+            out.append({"t": x["t"], "k": "web." + x["endpoint"], "a": x["a"], "s": study_of(x["a"])})
     out.sort(key=lambda x: x["t"])
 
     # Per study: the outcome, the director's challenge and the referee's test, from study.json.
@@ -216,6 +262,7 @@ def build(run_dir: pathlib.Path) -> dict:
                                                  if k in ("difference", "test", "result", "verdict", "pick", "reason")},
             "not_chosen": [{"agent": n.get("agent"), "round": n.get("round"), "reason": clean(n.get("reason"))}
                            for n in s.get("not_chosen", [])],
+            "heads": clean_heads(s.get("heads") or {}),
             "grade": None if not g else {
                 "lab": (g.get("lab", {}).get("grade") or {}).get("passed"),
                 "solo": [v.get("passed") for v in (g.get("baseline", {}).get("attempts") or {}).values()],

@@ -41,6 +41,7 @@ export const C = {
 
 export const DEPT: Record<Role, string> = {
   director: "#f2c14e",
+  head: "#f2c14e",
   library: "#ee8a3c",
   "team-a": "#4c7cf2",
   "team-b": "#ea5f9d",
@@ -52,6 +53,7 @@ export const DEPT: Record<Role, string> = {
 
 export const DEPT_SOFT: Record<Role, string> = {
   director: "#fbe3a6",
+  head: "#fbe3a6",
   library: "#f8c99c",
   "team-a": "#b7cbfa",
   "team-b": "#f6bdd6",
@@ -60,6 +62,18 @@ export const DEPT_SOFT: Record<Role, string> = {
   solo: "#cdd2e4",
   other: "#cdd2e4",
 };
+
+/** The department a head runs ("head-team-a" -> "team-a"), or null for anyone else. */
+export function headDept(id: string): Role | null {
+  const d = id.startsWith("head-") ? id.slice(5) : "";
+  return d === "library" || d === "team-a" || d === "team-b" || d === "team-c" ? d : null;
+}
+
+/** A person's colour: their department's, and for a head the department it runs. */
+export function colorOf(role: Role, id: string): string {
+  if (role === "head") return DEPT[headDept(id) ?? "director"];
+  return DEPT[role];
+}
 
 export const SKINS = [
   ["#f6d7b9", "#e2b48f"],

@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ask, type Turn } from "../ask/client";
 import type { Source } from "../ask/offline";
-import { ROLE_LABEL, ROLE_READS, type Replay } from "../sim/replay";
+import { ROLE_READS, roleLabel, type Replay } from "../sim/replay";
 import type { Target } from "../world/engine";
-import { DEPT } from "../world/palette";
+import { colorOf } from "../world/palette";
 import { Avatar } from "./Avatar";
 
 export type Msg = { role: "user" | "bot"; text: string; sources?: Source[]; mode?: string; model?: string; note?: string; pending?: boolean };
@@ -23,6 +23,7 @@ type Props = {
 const SUGGEST: Record<string, string[]> = {
   guide: ["How does the lab work?", "Why are the two teams kept blind?", "Which studies passed?", "What did the referee decide in gb10?"],
   director: ["What are you working on?", "Which agreed answer worries you most?", "What did you ask the teams?"],
+  head: ["What did you review?", "What did the other team find?", "Why can't you tell your scientist that?"],
   library: ["What are you reading?", "What should the analysts watch out for?", "What are you working on?"],
   "team-a": ["What are you working on?", "What have you found so far?", "What did Team B find?"],
   "team-b": ["What are you working on?", "What have you found so far?", "What did Team A find?"],
@@ -78,8 +79,8 @@ export function Chat({ R, t, server, agent, setAgent, people, chats, setChats, s
   const sub =
     agent === "guide"
       ? "Answers from the whole run log, including the grades. Not an agent."
-      : `${ROLE_LABEL[role!]}${a?.study ? ` on ${a.study}` : ""}. ${ROLE_READS[role!]}`;
-  const bandStyle = { "--band": role ? DEPT[role] : "var(--gold)" } as CSSProperties;
+      : `${roleLabel(agent, role!)}${a?.study ? ` on ${a.study}` : ""}. ${ROLE_READS[role!]}`;
+  const bandStyle = { "--band": role ? colorOf(role, agent) : "var(--gold)" } as CSSProperties;
   const suggestions = SUGGEST[agent === "guide" ? "guide" : role ?? "guide"] ?? [];
 
   return (
@@ -102,7 +103,7 @@ export function Chat({ R, t, server, agent, setAgent, people, chats, setChats, s
             if (!p) return null;
             return (
               <option key={id} value={id}>
-                {R.name(id)}: {ROLE_LABEL[p.role]}
+                {R.name(id)}: {roleLabel(id, p.role)}
                 {p.study ? `, ${p.study}` : ""}
               </option>
             );

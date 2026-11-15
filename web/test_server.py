@@ -333,3 +333,30 @@ def test_static_with_dist(base_url, monkeypatch, tmp_path):
     assert status == 404   # a path that leaves dist is refused
     status, out = request(base_url, "/api/nothing")
     assert status == 404
+
+
+# ------------------------------------------------------------------------ department heads (D-22)
+
+def heads_run():
+    """test-v2 with a head of Team A added: it read everything, like a run made with --heads."""
+    run = json.loads(json.dumps(RUN))
+    run["agents"].append({"id": "head-team-a", "role": "head", "study": None, "model": "fable",
+                          "sessions": [{"phase": "head-review", "study": "gb05", "start": 100, "end": 200}], "cost": 0})
+    return run
+
+
+def test_a_head_reads_both_teams_and_the_questions_but_not_the_grades():
+    run = heads_run()
+    docs = S.visible_docs(run, "head-team-a", END)
+    seen = ids_of(docs)
+    assert note_ids(by="gb05-team-b", kind="note") <= seen and note_ids(by="gb05-team-a", kind="note") <= seen
+    assert note_ids(to="gb05-team-b", kind="pass_down") <= seen
+    assert not [d for d in docs if d["kind"] == "grade" or "grade" in d["id"]]
+    # a scientist still reads only its own team
+    team = ids_of(S.visible_docs(run, "gb05-team-a", END))
+    assert not (note_ids(by="gb05-team-b", kind="note") & team)
+
+
+def test_a_head_is_introduced_as_the_head_of_its_department():
+    display, about = S.role_words(heads_run()["agents"][-1], "head-team-a", heads_run())
+    assert display == "the head of Team A" and "every department's memory" in about and "never see the grades" in about
