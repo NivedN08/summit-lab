@@ -1,0 +1,402 @@
+{
+  "study": "bd33",
+  "status": "replicated",
+  "final": {
+    "agent": "bd33-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd33/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd33-library": "fable",
+    "bd33-team-a": "fable",
+    "bd33-team-b": "fable",
+    "bd33-team-c": "fable",
+    "bd33-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd33-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd33/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd33-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd33/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd33-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd33/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd33-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd33/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd33-team-a",
+        "bd33-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd33-team-a",
+        "bd33-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The SCLC subtypes SCLC-A, SCLC-N and SCLC-P are defined by RNA or protein EXPRESSION of ASCL1, NEUROD1 and POU2F3 (RNA-seq clustering or dominant-TF calls, or IHC), not by DNA alterations. So the first step is to establish whether the data hold any variable that measures them. (a) List every supplied file and check for an expression-type table (cBioPortal names such as data_mrna_seq_*, data_expression*, *_zscores*, data_rppa*, data_methylation*). (b) Read all column names AND the '#' description lines of data_clinical_patient.txt and data_clinical_sample.txt, list the unique values of CANCER_TYPE_DETAILED, ONCOTREE_CODE, GRADE, MSI_COMMENT, SAMPLE_TYPE and the timeline NOTE/SUBTYPE columns, and search all of them for ASCL1, NEUROD1, POU2F3, YAP1, 'SCLC-A', 'subtype', 'neuroendocrine', 'IHC'. The timeline column called SUBTYPE is a treatment subtype (e.g. 'Systemic therapy'), not a molecular subtype. The library read only file headers and reported clinical, CNA, seg, gene-panel, mutation, SV and timeline files and no subtype column; confirm this yourself on the full tables. If a real subtype/IHC/expression variable exists, tabulate it among xenograft samples only. If none exists, say that the subtype variable is unmeasured and apply the task's own label definitions to that fact rather than building a call from DNA data.",
+      "from": [
+        "sl-biodsa-test-4792300ae92c",
+        "sl-biodsa-test-ddbd6feb1aa2"
+      ],
+      "reason": "What counts as a 'relevant variable' for this hypothesis depends on knowing the subtypes are expression-defined; missing a hidden subtype column, or assuming one exists, would change the label.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-6bf485f8bb9f"
+      }
+    },
+    {
+      "text": "ASCL1, NEUROD1 and POU2F3 are reported NOT to be on the MSK-IMPACT 468-gene panel (nor are INSM1 or REST), although YAP1, MYC, MYCL, MYCN, NOTCH1-4, SOX2, NKX2-1, RB1 and TP53 are. Finding no mutation, CNA or SV row for the three genes therefore means 'not profiled', not 'wild-type' or 'subtype not present'. Check: search Hugo_Symbol in data_cna.txt and data_mutations.txt and both gene columns of data_sv.txt for ASCL1, NEUROD1, POU2F3 (aliases ASH1/HASH1, NEUROD/BETA2, SKN1A/OCT11; Entrez IDs 429, 4760, 25833), and read data_gene_panel_matrix.txt for each sample's panel. Also note how data_cna.txt is coded: -2 deep deletion, -1 shallow loss, 0 diploid, 1 gain, 2 amplification; panel versions are mixed (patient IDs ending IM3, IM5, IM6 = 341, 410, 468 genes; models listed as IMPACT468), so a 0 or blank can mean 'gene not on that sample's panel' and a gene has a row only if it is on a panel (expect about panel-size rows, not ~20,000). Copy number of a gene says nothing about its mRNA or protein level. Never read a missing row or a 0 as 'TF not expressed' or 'subtype absent'; restrict any patient-versus-model genomic comparison to genes shared by all panel versions involved.",
+      "from": [
+        "sl-biodsa-test-f798bd5f20a6",
+        "sl-biodsa-test-7dde15ad3ca9"
+      ],
+      "reason": "An empty search for the three genes in the DNA tables is the most likely thing to be misread as support for the hypothesis; the teams need to know it reflects panel coverage.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-74cd5fee6e64"
+      }
+    },
+    {
+      "text": "Genomic proxies cannot assign SCLC-A/N/P. MYC/MYCL/MYCN amplification, NOTCH mutations, RB1/TP53 status, YAP1 copy number or mutation, or seg-file copy number at the ASCL1 (12q23), NEUROD1 (2q31) or POU2F3 (11q23) loci have no published sensitivity or specificity for subtype: exome/genome studies of SCLC found no recurrent mutation or CNA that co-segregates with the expression subtypes, lineage-TF expression is epigenetically driven, and the only DNA-derived data shown to subtype SCLC is DNA methylation (not a mutation/CNA table). The MYC links are loose: MYC amplification is reported in only about 15-20% of NEUROD1-driven tumours and under 5% of others, MYCL/MYCN activation merely predominates in ASCL1-driven tumours, and most tumours of every subtype have no MYC-family amplification. Panel seg files also have sparse markers (see num.mark), so off-panel loci are interpolated. If such alterations are examined in the MSK_LX models, ask whether the same calls would be equally expected under any other subtype; report them at most as subtype-agnostic context and do not base either a 'present' or an 'absent' conclusion on them.",
+      "from": [
+        "sl-biodsa-test-f97d89266f29",
+        "sl-biodsa-test-10fb7ab7333d"
+      ],
+      "reason": "A team working from DNA tables alone may try to infer subtypes from MYC-family or locus copy number; this tells them that inference is not a measurement in either direction.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-04804c09d138"
+      }
+    },
+    {
+      "text": "The hypothesis is a universal negative ('subtypes are not present'). Supporting it needs a subtype-measuring assay showing none of the three TF states in any model; one confidently subtyped model would refute it; without such an assay neither direction is demonstrated, and absence of evidence must not be counted as evidence of absence. For each analysis you consider, ask: 'could this result have come out differently if the subtypes were present versus absent?' If not, it is uninformative and should not be counted toward any label. For every statement in your reasoning, name the supplied file and column that supports it; background knowledge of SCLC biology or of what the literature says about PDX/CDX models does not count as evidence from the data, and cBioPortal-format deposits often contain only the targeted-DNA part of a multi-omic study. The label must follow the task's own rule about whether relevant variables exist in the tables. If an expression/IHC variable does turn out to exist, note that subtypes are not clean bins (ASCL1 and NEUROD1 are often co-expressed, a TF-negative group exists, YAP1 is not a validated subtype), so calls need a stated dominant-TF rule and thresholds.",
+      "from": [
+        "sl-biodsa-test-60ce7807bf1d",
+        "sl-biodsa-test-6b121a06e095"
+      ],
+      "reason": "This sets the standard of evidence for a negative claim and stops the label being chosen from prior belief or from analyses that could not have discriminated.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-07f591877a7c"
+      }
+    },
+    {
+      "text": "The tables mix patient clinical tumours (sample IDs like P-00xxxxx-T01-IM6) with xenograft models (IDs like MSK_LX...), and several models can come from one patient (e.g. MSK_LX773A to MSK_LX773L). Select the models with SAMPLE_CLASS in data_clinical_sample.txt; CDX are reported to be identifiable as models with PROCEDURE_TYPE 'Blood Draw' / TISSUE_SITE 'blood'. Cross-tabulate models against PATIENT_ID and confirm each model's presence in the CNA, mutation and gene-panel tables. Restrict every statement about the hypothesis to the xenograft rows and report both the number of models and the number of distinct patients; do not treat sibling models as independent.",
+      "from": [
+        "sl-biodsa-test-49243329e5f6"
+      ],
+      "reason": "The hypothesis is about the PDX/CDX models only, so the teams must separate them from patient tumours and count them correctly.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-e79385e4fe31"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed every one of the 42 models was profiled only on the targeted DNA panel named in GENE_PANEL, so that a missing row always means 'not on the panel'. Neither tested it. The tables show at least two processing streams among the models: five models carry Center 'mskcc.org' with blank Sequencer and Mutation_Status in data_mutations.txt, and six models have 2.5-3 times as many markers in data_cna_hg19.seg (about 19,000-25,000 against about 7,700 for all other models and all patient tumours).",
+      "Both teams assumed a subtype can be read only from an expression, IHC or labelled subtype variable and fixed that rule before looking at the data (it was also handed down to team A by the director and library). So the two 'blind' teams applied the same decision rule; their agreement shows the rule was applied consistently, not that the rule matches what the task setter counts as a relevant variable.",
+      "Both teams established absence of the three regulators by name search (symbols, aliases, Entrez IDs). Team B's search was whole-word, which does not see a gene name inside the composite probe labels of data_cna.txt (snp_GENE_rs..., GENE_ex1_3pr, clinvar_GENE_Intron..., Tiling...). Neither reported a coordinate-based look at the seg file, which no name search can reach.",
+      "Both teams treated the 42 SAMPLE_CLASS=PDX rows as 'the PDX/CDX models' without a column that separates CDX; team A inferred 8 CDX from PROCEDURE_TYPE/TISSUE_SITE, team B reported only 'no CDX label'."
+    ],
+    "unused_evidence": [
+      "data_cna_hg19.seg: coordinate-indexed copy number for all 42 models, including segments spanning the hg19 positions of the three regulator genes; neither team's checks_run lists a coordinate-based read of it. It is in the study to give genome-wide copy number; it cannot measure expression, but the teams' statement that the three genes are 'absent from all tables' was not actually tested on this file.",
+      "Center, Sequencer and Mutation_Status columns of data_mutations.txt and per-sample num.mark totals in the seg file: they mark a subset of models that went through a different pipeline or assay. Neither team used them. If that assay is broader than the panel, 'missing row = not profiled' would not hold for those models.",
+      "The 27 non-probe rows of data_cna.txt that are non-NaN only in models (and the 149 rows that are NaN everywhere) were counted by team A but their identity was not reported; team B did not look at the NaN structure at all.",
+      "The paired design (21 patients have a clinical tumour sample, 29 patients have models, shared PATIENT_ID) and PDX_SAMPLE_DAYS_FROM_DIAGNOSIS, PRETREATED, GRADE: these serve a tumour-versus-model genomic comparison. Neither team used them; I see no way they bear on subtype, but neither team said so explicitly for GRADE and histology (40 SCLC and 2 combined SCLC among the models)."
+    ],
+    "unresolved_weak_points": [
+      "Team A: the boundary between 'Not verifiable' and 'False'/'True' rests on the judgement that DNA proxies carry no subtype information; reported, not resolved (team A says it could not test it without expression data).",
+      "Team B: the label depends on choosing 'Not verifiable' over 'False' when the source study may have subtyped the models with data not supplied; reported, not resolved. This cannot be resolved from the tables; it is a residual risk about how the label is keyed, not an analysis error.",
+      "Team B recorded no pitfalls_checked and its regulator search was whole-word only; the absence claim is therefore less thoroughly established on its side than on team A's.",
+      "The teams disagree in small counts that neither reconciled: team B says the models come from 'about 30' patients, team A says 29; team A says REST is non-NaN in 26 patient tumours while there are 27 tumour samples."
+    ],
+    "second_readings": [
+      "'Not present in the PDX/CDX models' can be read per model (no model has a subtype), per collection (the library as a whole lacks one or more of the three subtypes), or separately for PDX and CDX. All three readings need a per-model subtype measurement, so the label rule is the same, but neither team said which reading it used.",
+      "'The data hold no relevant variables' can be read strictly (no variable measures the three regulators' activity) or loosely (any variable located at or associated with the regulators, e.g. copy number over their loci or MYC-family calls, is 'relevant'). Both teams took the strict reading; under the loose reading a team would have to analyse the seg file before choosing a label.",
+      "'SCLC subtypes' scope: 2 of the 42 models are combined SCLC; whether they are in scope was not stated by either team."
+    ],
+    "verdict": "I trust the agreed answer moderately to well as a statement about these nine tables: my own look at the file structure found no expression, IHC, methylation or subtype table or column, and a substring search of every file for the three regulators returns nothing, so both teams' central factual claim holds. What remains open is (a) three untested points of record (a subset of models processed through a different pipeline, no coordinate-based read of the seg file, team B's whole-word search), which I expect to complete the record rather than change the label, and (b) the risk both teams named and could not resolve, that the label is keyed to findings from data the tables do not contain; no check on these data can remove that risk.",
+    "questions": [
+      {
+        "to": "bd33-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your method treats all 42 models as samples of the targeted panel named in GENE_PANEL, so a missing gene row means 'not on the panel'. Test that. For each model, tabulate the Center, Sequencer and Mutation_Status values of its rows in data_mutations.txt and its total num.mark in data_cna_hg19.seg, next to GENE_PANEL and the panel in data_gene_panel_matrix.txt. Is there a subset of models that differs from the rest (another centre string, blank sequencer, several-fold more markers)? If so, check whether those models carry mutation rows in genes that have no row in data_cna.txt, and whether any of them has data on a locus the panel does not target. Does the result change which variables you count as measured in the models, or does your method stand as it is?",
+        "from": [
+          "sl-biodsa-test-7e644ffa24f3",
+          "sl-biodsa-test-ab66a6096a45"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-c351ee5f2ecc"
+      },
+      {
+        "to": "bd33-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You list 'locus copy number' among the proxies you examined, but your checks_run names no coordinate-based read of data_cna_hg19.seg, and a symbol or Entrez search cannot reach that file. For the 42 models, list the segments that span the hg19 positions of ASCL1, NEUROD1 and POU2F3 with their length and num.mark, and say whether any segment boundary or short segment falls near those positions or whether the value is simply carried across tens of megabases. Then state, against the task's own wording of the three labels, whether this file is or is not a 'relevant variable' for the hypothesis and why. Does this check change your method or only complete your record?",
+        "from": [
+          "sl-biodsa-test-04804c09d138"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-3455ecd871db"
+      },
+      {
+        "to": "bd33-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your weakest point (the boundary between 'Not verifiable' and the other two labels) is reported, not resolved. Run this check on the tables: write down, for each of the three labels, the file, column and value pattern that would have had to be present for you to choose it; then go through all nine files and say for each whether any such pattern is there. Include the items your notes do not name: the GRADE, CANCER_TYPE_DETAILED and ONCOTREE_CODE values of the model rows, and the identity of the 27 non-probe rows of data_cna.txt that are non-NaN only in models. Does any file hold a pattern you had assigned to a label other than the one you chose?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-022c41ba82f5"
+      },
+      {
+        "to": "bd33-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The hypothesis names 'PDX/CDX models' and 'SCLC subtypes'. State which reading you used: every single model, the model collection as a whole, or PDX and CDX separately. Then check two scope points on data_clinical_sample.txt: (a) the 8 blood-derived models you call CDX-like: does any column confirm they are CDX, and is the missing variable equally missing for them and for the other 34? (b) the model rows whose CANCER_TYPE_DETAILED is not plain small cell lung cancer: are they inside the hypothesis as you read it? Does your label rule give the same result under each reading?",
+        "from": [
+          "sl-biodsa-test-7e644ffa24f3"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-c61ce02b430d"
+      },
+      {
+        "to": "bd33-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your search for ASCL1, NEUROD1 and POU2F3 was whole-word. About 960 of the 1677 row labels in data_cna.txt are composite probe names (Tiling..., snp_GENE_rs..., GENE_ex1_3pr, clinvar_GENE_Intron...), where a gene name sits inside a longer token joined by underscores; a whole-word match does not see those, and you call all 1677 rows 'genes'. Re-run the search as a case-insensitive substring search over every file including those row labels, with aliases (ASH1/HASH1, NEUROD/BETA2, SKN1A/OCT11) and Entrez IDs 429, 4760, 25833 in data_mutations.txt, and report how many of the 1677 rows are genes, how many are probes, and how many are non-NaN in at least one model. Does anything appear that changes your method?",
+        "from": [
+          "sl-biodsa-test-c4a3eaf3ff90"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-ba1951a70db8"
+      },
+      {
+        "to": "bd33-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You describe the data as a single DNA-only targeted-panel dataset. Test that for the models. For each of the 42 models, tabulate the Center, Sequencer and Mutation_Status values of its rows in data_mutations.txt and its total num.mark in data_cna_hg19.seg, next to GENE_PANEL and the panel matrix. Is there a subset of models that differs from the rest (another centre string, blank sequencer, several-fold more markers)? If so, check whether those models have mutation rows in genes with no row in data_cna.txt and whether any of them has data on loci the panel does not target. Does the result change which variables you count as measured in the models, or does your method stand?",
+        "from": [
+          "sl-biodsa-test-7738a929e951"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-40be32f676f4"
+      },
+      {
+        "to": "bd33-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your plan said you would check 'whether CNA in those genes exist and whether that could proxy subtype', but your checks used gene-name search only, and data_cna_hg19.seg is indexed by coordinates, not names. For the 42 models, list the segments that span the hg19 positions of ASCL1, NEUROD1 and POU2F3 with their length and num.mark, and say whether any segment boundary or short segment falls near those positions or whether the value is carried across tens of megabases. Then state, against the task's own wording of the three labels, whether this file is or is not a 'relevant variable' for the hypothesis and why. Does this check change your method or only complete your record?",
+        "from": [
+          "sl-biodsa-test-e8048e159be1"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-e233661e8ac0"
+      },
+      {
+        "to": "bd33-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: The hypothesis names 'PDX/CDX models'; you reported 'no CDX label' and 'about 30 patients'. Check data_clinical_sample.txt, matching case-insensitively: how many of the 42 models have PROCEDURE_TYPE 'Blood Draw' or TISSUE_SITE 'blood', exactly how many distinct PATIENT_ID values the models have, and what CANCER_TYPE_DETAILED and GRADE values the model rows take. State whether you read the hypothesis as a claim about every model, about the collection as a whole, or about PDX and CDX separately, and write down for each of the three labels the file, column and value pattern that would have made you choose it. Does your label rule give the same result under each reading?",
+        "from": [
+          "sl-biodsa-test-7738a929e951"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-ee394b6ae2b0"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In a segmented copy-number (.seg) file produced from a hybrid-capture targeted gene-panel sequencing assay, what does the num.mark column count, and when a segment spans a gene that the panel does not target, is that gene's copy number considered measured (for example by genome-wide tiling or SNP backbone probes) or inferred from distant flanking probes? How densely are such backbone probes typically spaced?",
+          "why": "Both teams said the three regulator genes are absent from every table on the strength of name searches, but the seg file is coordinate-based and spans their loci in the models. Knowing whether a spanning segment counts as a measurement of an off-panel locus decides whether that file must be treated as a relevant variable or can be set aside, and how to read the models whose marker counts are several times higher than the rest.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In a segmented copy-number (.seg) file produced from a hybrid-capture targeted gene-panel sequencing assay, what does the num.mark column count, and when a segment spans a gene that the panel does not target, is that gene's copy number considered measured (for example by genome-wide tiling or SNP backbone probes) or inferred from distant flanking probes? How densely are such backbone probes typically spaced?",
+          "answer": "(1) num.mark is the number of markers, i.e. the data points given to the segmentation algorithm, that fall inside the segment. The DNAcopy manual defines it as 'the number of markers in the segment', with loc.start and loc.end being the map locations where the segment starts and ends; CNVkit's format page calls it the 'number of probes or bins covered by the segment'. It is not a count of genes or bases. What one marker is depends on the pipeline: a capture target or exon interval, a backbone SNP, an off-target bin, or (in FACETS) a SNP or pseudo-SNP locus placed along the target intervals. Samples whose marker counts are several times higher than the rest were therefore most likely segmented with a different marker definition or a different assay; the web does not say which pipeline made any particular file, so that part is not settled. (2) A segment spanning an off-panel gene is an inference, not a measurement of that gene. seg.mean is the average log-ratio of the markers inside the segment, and those markers sit on panel exons or backbone SNPs elsewhere; the off-panel locus is interpolated on the assumption that no change-point lies between the nearest flanking markers. Broad, arm-scale gains and losses are genuinely supported, but any event smaller than the gap between flanking markers is invisible. This is the library's reading of the format definitions rather than a quoted statement; it is consistent with MSK's facets-suite gene-level caller, which keeps a gene only if SNP loci fall inside the gene's boundaries and suppresses amplification or homozygous-deletion calls on segments longer than 10 Mb. A backbone SNP that happens to lie inside or beside a gene would be a direct marker there, so the teams can check local density from the seg file itself: segment length divided by num.mark for the spanning segment, and the distance from the locus to the segment ends. (3) Backbone density ranges from tens of kb to several Mb by design. MSK-IMPACT papers state the assay captures '>1,000 intergenic and intronic single-nucleotide polymorphisms (tiling probes), interspersed homogenously across the genome' to aid genome-wide copy number, with probes covering about 1.2 Mb in total; spread over a roughly 3,100 Mb genome that averages about one tiling SNP per 3 Mb (library arithmetic, not a published figure). For comparison, IDT's xGen CNV Backbone panel has over 9,000 probes about every 0.34 Mb, and Twist exome backbones come at 25, 50 or 100 kb intervals. Caveat on sourcing: the MSK-IMPACT tiling-probe sentence was seen only as search excerpts, quoted identically from several MSK papers; when those pages were opened the gateway returned only the abstract and introduction, so the Methods text was not read in full. The DNAcopy, CNVkit, FACETS, facets-suite, IDT and Twist statements were read on the opened pages. Bottom line for the director: the seg file is a real DNA copy-number variable, but at the three off-panel regulator loci it carries interpolated, Mb-scale copy number at best, and copy number is in any case not the expression measure that defines the subtypes.",
+          "sources": [
+            "https://rdrr.io/bioc/DNAcopy/man/DNAcopy.html",
+            "https://cnvkit.readthedocs.io/en/stable/fileformats.html",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5027494/",
+            "https://github.com/mskcc/facets-suite/blob/master/R/gene-level-changes.R",
+            "https://raw.githubusercontent.com/mskcc/facets/master/vignettes/FACETS.pdf",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC9633455/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5397722/",
+            "https://www.idtdna.com/pages/products/next-generation-sequencing/workflow/xgen-ngs-hybridization-capture/pre-designed-hyb-cap-panels/human-cnv-backbone-hyb-panel",
+            "https://doi.org/10.1101/2024.05.19.594885"
+          ],
+          "confidence": "high for what num.mark counts; medium for 'inferred, not measured' (derived from the format definitions and facets-suite code, not a direct quoted statement); medium for backbone spacing (MSK-IMPACT figure from search excerpts only, per-3-Mb average is library arithmetic)",
+          "deliveries": {
+            "bd33-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-cf4b12d2d856"
+            },
+            "bd33-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-98e2e2d09418"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In a segmented copy-number (.seg) file produced from a hybrid-capture targeted gene-panel sequencing assay, what does the num.mark column count, and when a segment spans a gene that the panel does not target, is that gene's copy number considered measured (for example by genome-wide tiling or SNP backbone probes) or inferred from distant flanking probes? How densely are such backbone probes typically spaced? ANSWER: (1) num.mark is the number of markers, i.e. the data points given to the segmentation algorithm, that fall inside the segment. The DNAcopy manual defines it as 'the number of markers in the segment', with loc.start and loc.end being the map locations where the segment starts and ends; CNVkit's format page calls it the 'number of probes or bins covered by the segment'. It is not a count of genes or bases. What one marker is depends on the pipeline: a capture target or exon interval, a backbone SNP, an off-target bin, or (in FACETS) a SNP or pseudo-SNP locus placed along the target intervals. Samples whose marker counts are several times higher than the rest were therefore most likely segmented with a different marker definition or a different assay; the web does not say which pipeline made any particular file, so that part is not settled. (2) A segment spanning an off-panel gene is an inference, not a measurement of that gene. seg.mean is the average log-ratio of the markers inside the segment, and those markers sit on panel exons or backbone SNPs elsewhere; the off-panel locus is interpolated on the assumption that no change-point lies between the nearest flanking markers. Broad, arm-scale gains and losses are genuinely supported, but any event smaller than the gap between flanking markers is invisible. This is the library's reading of the format definitions rather than a quoted statement; it is consistent with MSK's facets-suite gene-level caller, which keeps a gene only if SNP loci fall inside the gene's boundaries and suppresses amplification or homozygous-deletion calls on segments longer than 10 Mb. A backbone SNP that happens to lie inside or beside a gene would be a direct marker there, so the teams can check local density from the seg file itself: segment length divided by num.mark for the spanning segment, and the distance from the locus to the segment ends. (3) Backbone density ranges from tens of kb to several Mb by design. MSK-IMPACT papers state the assay captures '>1,000 intergenic and intronic single-nucleotide polymorphisms (tiling probes), interspersed homogenously across the genome' to aid genome-wide copy number, with probes covering about 1.2 Mb in total; spread over a roughly 3,100 Mb genome that averages about one tiling SNP per 3 Mb (library arithmetic, not a published figure). For comparison, IDT's xGen CNV Backbone panel has over 9,000 probes about every 0.34 Mb, and Twist exome backbones come at 25, 50 or 100 kb intervals. Caveat on sourcing: the MSK-IMPACT tiling-probe sentence was seen only as search excerpts, quoted identically from several MSK papers; when those pages were opened the gateway returned only the abstract and introduction, so the Methods text was not read in full. The DNAcopy, CNVkit, FACETS, facets-suite, IDT and Twist statements were read on the opened pages. Bottom line for the director: the seg file is a real DNA copy-number variable, but at the three off-panel regulator loci it carries interpolated, Mb-scale copy number at best, and copy number is in any case not the expression measure that defines the subtypes. HOW SURE: high for what num.mark counts; medium for 'inferred, not measured' (derived from the format definitions and facets-suite code, not a direct quoted statement); medium for backbone spacing (MSK-IMPACT figure from search excerpts only, per-3-Mb average is library arithmetic). SOURCES: https://rdrr.io/bioc/DNAcopy/man/DNAcopy.html, https://cnvkit.readthedocs.io/en/stable/fileformats.html, https://pmc.ncbi.nlm.nih.gov/articles/PMC5027494/, https://github.com/mskcc/facets-suite/blob/master/R/gene-level-changes.R, https://raw.githubusercontent.com/mskcc/facets/master/vignettes/FACETS.pdf, https://pmc.ncbi.nlm.nih.gov/articles/PMC9633455/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5397722/, https://www.idtdna.com/pages/products/next-generation-sequencing/workflow/xgen-ngs-hybridization-capture/pre-designed-hyb-cap-panels/human-cnv-backbone-hyb-panel, https://doi.org/10.1101/2024.05.19.594885."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd33-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd33-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd33-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd33-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd33-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 172.3215727090137,
+      "cost_usd": 0.3246464,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 77.67367533408105,
+      "cost_usd": 0.1343452,
+      "error": null
+    },
+    {
+      "agent": "bd33-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 70.79002904100344,
+      "cost_usd": 0.1443321,
+      "error": null
+    },
+    {
+      "agent": "bd33-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 111.28469854197465,
+      "cost_usd": 0.2173879,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 193.98973020806443,
+      "cost_usd": 0.401501,
+      "error": null
+    },
+    {
+      "agent": "bd33-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 173.55811724998057,
+      "cost_usd": 0.38588320000000004,
+      "error": null
+    },
+    {
+      "agent": "bd33-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 167.80943962489255,
+      "cost_usd": 0.3677066,
+      "error": null
+    },
+    {
+      "agent": "bd33-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 211.2903336250456,
+      "cost_usd": 0.4814283,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

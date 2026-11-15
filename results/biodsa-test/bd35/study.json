@@ -1,0 +1,475 @@
+{
+  "study": "bd35",
+  "status": "replicated",
+  "final": {
+    "agent": "bd35-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd35/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd35-library": "fable",
+    "bd35-team-a": "fable",
+    "bd35-team-b": "fable",
+    "bd35-team-c": "fable",
+    "bd35-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd35-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd35/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd35-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd35/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd35-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd35/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd35-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd35/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd35-team-a",
+        "bd35-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd35-team-a",
+        "bd35-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Outcome and denominator for 'cisplatin resistance'. The library reports that data_clinical_patient.txt has a direct CHEMO_RESISTANT column, alongside tempting proxies (PROGRESSION_OF_DISEASE, SALVAGE_CHEMO, DFS_STATUS, OS_STATUS, RISK_GROUP). The proxies measure prognosis, not resistance, and resistance is undefined for patients who never received cisplatin-based chemotherapy (TREATMENT_CHEMOTHERAPY = 0, or a non-cisplatin CHEMO_REGIMEN_CATEGORY) or whose value is blank/NA. Confirm these columns exist in your copy, tabulate CHEMO_RESISTANT against TREATMENT_CHEMOTHERAPY and CHEMO_REGIMEN_CATEGORY, and count missing values. Use CHEMO_RESISTANT (Yes vs No) as the primary outcome, restricted to chemotherapy-treated patients with a non-missing value; drop missing values rather than recoding them as 'sensitive'; use progression or survival only as secondary corroboration.",
+      "from": [
+        "sl-biodsa-test-9ff0ab43d847"
+      ],
+      "reason": "Choosing a proxy outcome, or coding untreated/blank patients as sensitive, changes the comparison group and can change the result of the test.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-19728bf71df8"
+      }
+    },
+    {
+      "text": "Unit of analysis is the patient, not the sample. CHEMO_RESISTANT lives in the patient file and TP53 status comes from sample-level files; cBioPortal-format studies can hold several samples per patient (primary plus metastasis, pre- plus post-chemo), and those are not independent. Count rows per PATIENT_ID in data_clinical_sample.txt and compare the number of samples with the number of patients. If any patient has more than one sample, collapse to one row per patient (altered if any profiled sample is altered) and test on patients; as a sensitivity analysis use one pre-specified sample per patient.",
+      "from": [
+        "sl-biodsa-test-e0ed39b4c652"
+      ],
+      "reason": "A sample-level 2x2 table inflates n and double-counts patients biopsied more often, which distorts both the odds ratio and the p-value.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-38769ed8fb46"
+      }
+    },
+    {
+      "text": "Fix the definition of 'TP53 alteration' before looking at the outcome, because with a rare event one or two patients moving between groups can flip the p-value. Tabulate TP53 rows in data_mutations.txt by Variant_Classification and Mutation_Status, the TP53 values in data_cna.txt (-2/-1/0/1/2), and TP53 in data_sv.txt, and list each altered patient with the event. Primary definition: one gene-level indicator = any somatic non-synonymous TP53 mutation OR deep deletion (-2) OR TP53 structural variant; exclude silent and germline calls and the -1/+1 copy states; do not test variants one at a time. MDM2 amplification is a different gene (same p53 pathway): report 'TP53 or MDM2 amplification' and 'mutation only' as labelled sensitivity analyses, and base the label on the TP53-gene definition because the hypothesis names TP53. Second sensitivity analysis for call quality: the mutation file has no oncogenicity annotation, so for each TP53 row inspect HGVSp_Short, the Hotspot column, t_alt_count/t_depth and n_alt_count/n_depth (alternate reads in the normal, or an allele fraction near 50 percent, suggest germline leakage); repeat the test keeping only truncating, splice-site, hotspot or DNA-binding-domain missense calls without clear normal-read support, and if the conclusion changes report both and say which patients moved.",
+      "from": [
+        "sl-biodsa-test-b134234ffc57",
+        "sl-biodsa-test-e23bedbd9da2"
+      ],
+      "reason": "The exposure definition directly sets the count of altered patients; it must be pre-specified and tied to the gene named in the hypothesis, with alternatives shown as sensitivity analyses rather than chosen after seeing results.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-6227438b1236"
+      }
+    },
+    {
+      "text": "Do not treat 'no TP53 row' as wild-type without checking profiling. A mutation file lists only samples that have a mutation, so a sample with zero calls and a sample that was never profiled both have no rows; the first is unaltered, the second is unknown. Build the denominator from data_clinical_sample.txt joined to data_gene_panel_matrix.txt (columns mutations / gistic / structural_variants; NA or absent = not profiled), confirm TP53 is a row in data_cna.txt and that each sample is a column there, and confirm every Tumor_Sample_Barcode, CNA column name and SV Sample_Id matches a clinical SAMPLE_ID exactly. Set TP53 status to missing (exclude) for samples not profiled for the relevant data type, fix any ID mismatches before testing, and state the final n.",
+      "from": [
+        "sl-biodsa-test-c214ecf6cae7"
+      ],
+      "reason": "A failed join or an unprofiled sample silently becomes 'wild-type', misclassifying exposure and changing the 2x2 table.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-3b5749239414"
+      }
+    },
+    {
+      "text": "Choice of test for a rare alteration. Print the patient-level 2x2 table of TP53 status by CHEMO_RESISTANT with its expected counts and look for a zero cell. If expected counts fall below 5, chi-square and ordinary (Wald) logistic regression are unreliable, and a zero cell makes the maximum-likelihood odds ratio infinite and logistic regression fail to converge. In that case use Fisher's exact test (two-sided as primary), report the odds ratio with an exact confidence interval and the resistant fraction in each group, and use Firth penalised logistic regression (or a 0.5 continuity correction) when a cell is zero or covariates are added.",
+      "from": [
+        "sl-biodsa-test-503650ebbe29"
+      ],
+      "reason": "The wrong test on a sparse table gives an invalid p-value or a model that does not converge.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-0a7be08dbd5a"
+      }
+    },
+    {
+      "text": "Confounding by tumour subtype and specimen histology. In germ cell tumours, primary site and histology are established predictors of failure of cisplatin-based chemotherapy (mediastinal primary non-seminoma is poor-risk by definition; seminoma is never poor-risk), and teratoma is intrinsically chemo-resistant and is what often remains in post-chemotherapy residual masses, so the histology of the sequenced specimen can differ from the patient's overall histology. Cross-tabulate TP53 status with PRIMARY_SITE, OVERALL_PATIENT_HISTOLOGY, RISK_GROUP and the sample histology columns (DETAILED_SAMPLE_HISTOLOGY_CATEGORY, SAMPLE_DETAILED_SUBHISTOLOGIES, PC_RPLND, RPLND_PATH), and repeat the TP53 vs CHEMO_RESISTANT table within strata. Keep the crude patient-level association across all histologies as the primary answer (the hypothesis says 'is associated with' and 'germ cell tumors' without restriction), and add a stratified estimate (Cochran-Mantel-Haenszel, or exact conditional / Firth logistic regression adjusting for primary site and histology). Report whether the direction holds within strata; a sparse adjusted model losing significance is not by itself contradiction, but a reversal of direction within strata must be stated. Do not exclude any histology after seeing results.",
+      "from": [
+        "sl-biodsa-test-e3b5a8e90b6a",
+        "sl-biodsa-test-098d54ddfdfa"
+      ],
+      "reason": "If TP53 alterations cluster in one subtype, the crude association partly reflects that subtype; the teams need to know which analysis is primary and which stratified checks to report.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-31286c505071"
+      }
+    },
+    {
+      "text": "Pre- versus post-chemotherapy specimens. Chemotherapy selects surviving clones and can induce mutations, and post-chemo tissue exists mainly for patients with residual or resistant disease, so sample timing is correlated with the outcome. Cross-tabulate SPECIMEN_COLLECTION_PRE_OR_POST_CHEMO (and SAMPLE_TYPE primary vs metastasis) with CHEMO_RESISTANT and with TP53 status. Report the association in all patients (the hypothesis asks for association, not for a baseline predictor) and again restricted to pre-chemo samples; if it rests only on post-chemo samples, say so and describe it as association with possibly acquired resistance rather than a pre-treatment biomarker.",
+      "from": [
+        "sl-biodsa-test-0a4dc72a533a"
+      ],
+      "reason": "Sample timing is tied to the outcome, so a restricted re-analysis is needed to interpret what any association means.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-f7192f0fe8fc"
+      }
+    },
+    {
+      "text": "Pooled cohorts and assays. The library reports that the patient file has a COHORT column and that sample IDs follow two naming schemes (targeted-panel style 'P-...-IM3/IM5' and 'DS-test-...'), although the gene panel matrix labels samples WXS; verify this in your copy. Deep targeted panels detect low-allele-fraction mutations that roughly 50-100x exome sequencing misses, so 'wild-type' is less certain on one platform, and if cohort or platform is also related to resistance, pooling can create or hide an association. Tabulate COHORT and ID scheme against CHEMO_RESISTANT and TP53 status and compare t_depth and t_alt_count/t_depth between schemes. Report the TP53 vs resistance odds ratio within each cohort/platform as well as pooled (Cochran-Mantel-Haenszel stratified by cohort) and check that the direction agrees. If cohorts are enriched for resistant cases, quote odds ratios, not resistance rates, as the estimate.",
+      "from": [
+        "sl-biodsa-test-339750ab7061"
+      ],
+      "reason": "Differential detection sensitivity between cohorts that also differ in resistance frequency can bias a pooled comparison; a within-cohort check tells the teams whether the pooled result is trustworthy.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-2949424eb1e3"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams take the study's CHEMO_RESISTANT flag as a valid measure of cisplatin resistance without showing what it encodes. The patient table has 3 patients flagged resistant with PROGRESSION_OF_DISEASE=No and SALVAGE_CHEMO=0, and 1 flagged sensitive who progressed; team B's own secondary result (14 of 16 TP53-altered patients progressed) implies that some of the resistant-without-progression patients are TP53-altered, and neither team said what makes them 'resistant'.",
+      "Both teams treat every TP53 call in the mutation table as a tumour-derived somatic event. Mutation_Status is blank for 297 of 334 rows, the Hotspot column is 0 everywhere, and team A saw alternate reads in the matched normal for several TP53 calls and explained them as tumour-in-normal contamination without testing the alternative (blood-derived clonal haematopoiesis, which is enriched for TP53 after chemotherapy; 11 of 16 altered samples are post-chemo). Team B did no call-level quality check at all.",
+      "Both teams treat 'no TP53 call' as wild-type with equal certainty in resistant and sensitive patients. Team B only restricted to samples with at least one called mutation; neither team used a tumour-content proxy, although sensitive patients are mostly pre-chemo primaries and include all seminomas (specimens that are often lymphocyte-rich).",
+      "Both teams assume the sequenced specimen represents the patient's disease: 9 patients with overall histology NSGCT have a specimen coded SEM, and the specimen is sometimes the primary and sometimes a metastasis.",
+      "Both teams read 'associated with' as a crude, direction-only association and accept that independence from mediastinal site / IGCCCG poor risk is not shown."
+    ],
+    "unused_evidence": [
+      "data_cna_hg19.seg (9,902 segments, all 180 samples): team B only matched IDs, team A does not mention it. It could (a) confirm the single TP53 deep deletion, (b) show 17p/TP53 single-copy loss, which the discrete table cannot show because it holds only -2, 0, 2 and NA, and (c) give a tumour-content proxy per sample.",
+      "t_alt_count / t_ref_count / n_alt_count / n_ref_count for the TP53 rows: team A inspected them but reported tumour VAF for one call only; team B did not use them.",
+      "PC_RPLND and RPLND_PATH (teratoma, necrosis, fibrosis, viable tumour at post-chemo surgery), TIME_TO_PROGRESSION_OF_DISEASE, DFS_MONTHS and FOLLOW_UP_TIME_MONTHS: none was used to check what the resistance flag tracks or whether 'sensitive' patients had enough follow-up to be called sensitive.",
+      "AGE: not used by either team (relevant to blood-derived variants and to confounding).",
+      "The 11,523 NA cells in data_cna.txt (genes not assayed on some panel versions): both teams checked TP53 only; team A's and team B's MDM2 sensitivity analysis does not state whether MDM2 is NA for any sample."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weak point (TP53 cannot be separated from mediastinal primary / IGCCCG poor risk; risk-group stratified p about 0.09-0.12) and both only reported it. Neither resolved it; both argued that the hypothesis asks for association only.",
+      "Team B's primary evidence is the pre-chemo stratum with 5 altered patients, and it showed the p-value is fragile to one or two reclassifications; the validity of those 5 calls and of those 5 patients' resistance labels was not examined individually.",
+      "The teams disagree on the pre-chemo wild-type denominator (team A 32/108, team B 33/109). The sample table has one specimen with blank pre/post timing (a second-tumour sample of the patient whose chemotherapy and cohort fields are also blank); team B appears to have counted it as pre-chemo.",
+      "Team A left the normal-read support of several TP53 calls as 'kept as somatic, no change' without a sensitivity analysis that drops them."
+    ],
+    "second_readings": [
+      "'TP53 alterations' could mean the TP53 gene only, or the p53 pathway (TP53 mutation or MDM2 amplification), or include single-copy 17p loss; both teams covered the first two, neither the third.",
+      "'Cisplatin resistance' could be the patient-level clinical flag or the status of the sequenced tumour (a post-chemo specimen is by construction a tumour that survived cisplatin). Both teams handled this by a pre-chemo-only analysis.",
+      "'Associated with' could mean crude co-occurrence or an association that holds after accounting for site and risk group; the labels offered give no middle option, and the direction never reverses in either team's strata.",
+      "'Germ cell tumors' could mean all 180 patients or non-seminomas only (no TP53 alteration occurs in seminoma, and seminoma patients enlarge the wild-type comparison group); both teams ran a histology-restricted or stratified version."
+    ],
+    "verdict": "I trust the agreed answer fairly highly: both teams found the direct outcome variable, hit the same zero cell (no TP53-altered patient is sensitive), and the direction held in every stratum either team ran, including pre-chemo specimens only, so no check I can name would reverse the direction. What remains untested is the validity of individual inputs on which the small informative stratum rests (what the resistance flag encodes for the resistant-without-progression patients, whether every TP53 call is tumour-derived, whether wild-type calls are equally reliable in sensitive patients, and one blank-timing specimen that the teams classified differently); these could weaken the strength of evidence but are unlikely to change the label.",
+    "questions": [
+      {
+        "to": "bd35-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate CHEMO_RESISTANT against PROGRESSION_OF_DISEASE and SALVAGE_CHEMO, and list the patients flagged resistant with no progression and no salvage chemotherapy together with their TP53 status, PC_RPLND, RPLND_PATH and specimen timing. What in the data makes those patients 'resistant', are any of them TP53-altered, and does the TP53 result (crude and pre-chemo-only) hold if those patients are set aside? Does the result change your method or your choice of outcome?",
+        "from": [
+          "sl-biodsa-test-19728bf71df8",
+          "sl-biodsa-test-bfdef6f34026"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-085eabb4002c"
+      },
+      {
+        "to": "bd35-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You saw alternate reads in the matched normal for several TP53 calls and attributed them to tumour-in-normal contamination. For every TP53 call, tabulate tumour allele fraction (t_alt_count over t_alt_count + t_ref_count), normal allele fraction, the median tumour allele fraction of the other mutations in the same sample, patient AGE and whether the specimen is pre- or post-chemo. Are any calls with normal-read support also low in tumour allele fraction relative to the rest of the sample (the pattern expected for a blood-derived clone rather than a tumour clone)? Re-run the primary and the pre-chemo-only test with every such call recoded as wild-type and say whether this changes the method.",
+        "from": [
+          "sl-biodsa-test-6227438b1236"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-b926c5346f25"
+      },
+      {
+        "to": "bd35-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your notes do not mention data_cna_hg19.seg. Compute per sample a tumour-content proxy from it (for example the fraction of the genome with |seg.mean| above about 0.2, together with the number of called mutations), and compare the proxy between resistant and sensitive TP53-wild-type patients and between seminoma and non-seminoma specimens. If sensitive wild-type samples are flatter, repeat the test with flat, mutation-free samples removed from the wild-type group. Also read the seg.mean at the TP53 locus (chr17 near 7.57 Mb) for the one deep-deletion patient to confirm that call. Does either result change the method?",
+        "from": [
+          "sl-biodsa-test-efaf3cf018f3"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-70235e5eabba"
+      },
+      {
+        "to": "bd35-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your named weak point (TP53 versus mediastinal site / poor risk) was reported, not resolved. Print the three-way table TP53 x CHEMO_RESISTANT within each combination of specimen timing (pre only) and IGCCCG risk group, and within pre-chemo mediastinal non-seminomas, giving the counts in every cell. In how many cells is there both an altered patient and a sensitive wild-type patient to compare against, and is the stratified result carried by one cell? State whether that changes how you describe the finding or the method.",
+        "from": [
+          "sl-biodsa-test-967addedbb73"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-f81207a1a918"
+      },
+      {
+        "to": "bd35-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your pre-chemo stratum has 114 patients, but the sample table has 113 specimens marked 'pre', 66 marked 'post' and one with blank timing (a second-tumour metastasis from the patient whose chemotherapy and cohort fields are also blank). Check which stratum your code placed that specimen in, and re-run your primary pre-chemo test and the timing-stratified test with it excluded. Does the result or the method change?",
+        "from": [
+          "sl-biodsa-test-a624f3594a74"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-a53ee6aa2ded"
+      },
+      {
+        "to": "bd35-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You counted 'any TP53 mutation' without a call-level check. List every TP53 row with Variant_Classification, HGVSp_Short, tumour allele fraction, alternate reads in the matched normal, the median tumour allele fraction of the other mutations in that sample, and the specimen's pre/post timing. Are any calls silent, supported in the normal, or far below the sample's other allele fractions? Re-run the crude and pre-chemo-only tests keeping only calls with no such doubt, and say whether your 5 pre-chemo altered patients all survive this filter and whether the method changes.",
+        "from": [
+          "sl-biodsa-test-ad0e2454555c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-bb86b57809f3"
+      },
+      {
+        "to": "bd35-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your secondary result shows 14 of 16 TP53-altered patients progressed although all 16 are flagged resistant. Identify the altered patients flagged resistant without progression, and show their SALVAGE_CHEMO, PC_RPLND, RPLND_PATH and specimen timing. What defines their resistance in this data, and are any of them among the 5 pre-chemo altered patients your primary test rests on? Re-run the primary test with all resistant-without-progression patients set aside and say whether the method or outcome definition changes.",
+        "from": [
+          "sl-biodsa-test-ad0e2454555c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-8c323436d618"
+      },
+      {
+        "to": "bd35-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You used data_cna_hg19.seg only to match IDs, and handled possibly uninformative samples by requiring at least one called mutation. Compute from the seg file a per-sample tumour-content proxy (for example fraction of genome with |seg.mean| above about 0.2) and compare it between resistant and sensitive wild-type patients and between specimens coded SEM and NSGCT (9 NSGCT patients have a specimen coded SEM). If the proxy differs by outcome, repeat the pre-chemo test with flat-profile samples removed from the wild-type group. Does this change the method?",
+        "from": [
+          "sl-biodsa-test-efaf3cf018f3"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-6ec6de9a8140"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In matched tumour-normal targeted sequencing of solid tumours, how are variants arising from clonal haematopoiesis (blood-derived clones infiltrating the tumour specimen) distinguished from true tumour somatic variants - what tumour-to-normal allele-fraction ratios or other rules are used - and which genes are most often affected by clonal haematopoiesis after platinum-based chemotherapy?",
+          "why": "Several calls in the gene of interest have a few supporting reads in the matched normal and most altered specimens were collected after chemotherapy; one team attributed this to tumour-in-normal contamination and the other did not check. A stated rule would let both teams decide which calls to keep.",
+          "passed": false,
+          "reasons": [
+            "contains another team's value for \"label\""
+          ]
+        },
+        {
+          "question": "How is cisplatin (platinum) resistance or platinum-refractory disease conventionally defined in clinical studies of germ cell tumours - does it include incomplete marker response, viable non-teratomatous tumour at post-chemotherapy surgery, or relapse after a complete response, and can a patient be classed as resistant without documented disease progression or salvage chemotherapy?",
+          "why": "A few patients are flagged resistant without progression or salvage therapy, and neither team showed what the flag encodes; the convention tells the teams whether those labels are plausible or should be handled in a sensitivity analysis.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In cBioPortal-format discrete copy-number tables produced by targeted-panel pipelines that contain only the values -2, 0 and 2, are single-copy (hemizygous) losses simply not reported, and what log2-ratio thresholds on the accompanying segment file are conventionally used to call single-copy loss versus deep deletion?",
+          "why": "Neither team used the segment file; knowing the convention tells them whether single-copy loss of the gene of interest is invisible in the discrete table and how to read it, and how to verify the one deep deletion that was counted as an alteration.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "How is cisplatin (platinum) resistance or platinum-refractory disease conventionally defined in clinical studies of germ cell tumours - does it include incomplete marker response, viable non-teratomatous tumour at post-chemotherapy surgery, or relapse after a complete response, and can a patient be classed as resistant without documented disease progression or salvage chemotherapy?",
+          "answer": "There is no single definition; two conventions coexist, and a review says the definition varies by study. (a) Narrow trial terms require documented progression: 'cisplatin-refractory' = response or stabilisation on treatment but progression within 4 weeks of the last cisplatin-based cycle; 'absolutely refractory' = progression during cisplatin-based therapy (German Testicular Cancer Study Group trial and a 2006 review). (b) The broader 'resistant' label means failure to achieve a durable (continuous) complete response to platinum chemotherapy. A Memorial Sloan Kettering salvage trial defines clinical platinum resistance exactly that way and counts failure of marker normalisation as an incomplete response; in that trial, viable tumour that was completely resected counted as a complete response to chemotherapy plus surgery. Independent genomic resistant-versus-sensitive studies are broader still: one defines resistance as progressive disease (relapse or incomplete response) after one or more complete platinum regimens, or viable non-teratomatous disease in a post-chemotherapy surgical sample; another adds persistent or rising markers four weeks after chemotherapy. Two others use progression or relapse (or rising markers) only, and class necrosis/teratoma-only resections without later relapse as sensitive. So: incomplete marker response, viable non-teratoma at post-chemotherapy surgery and relapse after a complete response are all included in the broad convention used by some genomic studies, but not by every study, and none of them alone meets the narrow 'refractory' definition. Under the broad convention a patient can be resistant with no recorded progression and no salvage chemotherapy (for example, viable tumour found and resected at post-chemotherapy surgery, or a marker-positive incomplete response); under the narrow one they cannot. The few such labels are therefore plausible rather than evident errors: keep the study's flag for the primary test and re-run with those patients excluded or recoded as a sensitivity analysis, after checking them against the post-chemotherapy surgery pathology columns. The web does not settle what this dataset's own flag encodes: the searches surfaced what appears to be the dataset's source study, and I did not open it or base the answer on it.",
+          "sources": [
+            "https://www.annalsofoncology.org/article/S0923-7534(19)41183-6/fulltext",
+            "https://doi.org/10.1002/cncr.21742",
+            "https://doi.org/10.1200/jco.2005.19.638",
+            "https://ncbi.nlm.nih.gov/pmc/articles/PMC7352163/",
+            "https://www.nature.com/articles/s41467-020-15768-x",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC9101377/",
+            "https://aacrjournals.org/clincancerres/article/24/15/3755/80772/Orthoxenografts-of-Testicular-Germ-Cell-Tumors",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC13519188/"
+          ],
+          "confidence": "high that the convention is heterogeneous and that the broad definition can label a patient resistant without progression or salvage therapy; low on what this particular dataset's flag encodes",
+          "deliveries": {
+            "bd35-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-8d47df8413d4"
+            },
+            "bd35-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-0e40cbbc38fe"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How is cisplatin (platinum) resistance or platinum-refractory disease conventionally defined in clinical studies of germ cell tumours - does it include incomplete marker response, viable non-teratomatous tumour at post-chemotherapy surgery, or relapse after a complete response, and can a patient be classed as resistant without documented disease progression or salvage chemotherapy? ANSWER: There is no single definition; two conventions coexist, and a review says the definition varies by study. (a) Narrow trial terms require documented progression: 'cisplatin-refractory' = response or stabilisation on treatment but progression within 4 weeks of the last cisplatin-based cycle; 'absolutely refractory' = progression during cisplatin-based therapy (German Testicular Cancer Study Group trial and a 2006 review). (b) The broader 'resistant' label means failure to achieve a durable (continuous) complete response to platinum chemotherapy. A Memorial Sloan Kettering salvage trial defines clinical platinum resistance exactly that way and counts failure of marker normalisation as an incomplete response; in that trial, viable tumour that was completely resected counted as a complete response to chemotherapy plus surgery. Independent genomic resistant-versus-sensitive studies are broader still: one defines resistance as progressive disease (relapse or incomplete response) after one or more complete platinum regimens, or viable non-teratomatous disease in a post-chemotherapy surgical sample; another adds persistent or rising markers four weeks after chemotherapy. Two others use progression or relapse (or rising markers) only, and class necrosis/teratoma-only resections without later relapse as sensitive. So: incomplete marker response, viable non-teratoma at post-chemotherapy surgery and relapse after a complete response are all included in the broad convention used by some genomic studies, but not by every study, and none of them alone meets the narrow 'refractory' definition. Under the broad convention a patient can be resistant with no recorded progression and no salvage chemotherapy (for example, viable tumour found and resected at post-chemotherapy surgery, or a marker-positive incomplete response); under the narrow one they cannot. The few such labels are therefore plausible rather than evident errors: keep the study's flag for the primary test and re-run with those patients excluded or recoded as a sensitivity analysis, after checking them against the post-chemotherapy surgery pathology columns. The web does not settle what this dataset's own flag encodes: the searches surfaced what appears to be the dataset's source study, and I did not open it or base the answer on it. HOW SURE: high that the convention is heterogeneous and that the broad definition can label a patient resistant without progression or salvage therapy; low on what this particular dataset's flag encodes. SOURCES: https://www.annalsofoncology.org/article/S0923-7534(19)41183-6/fulltext, https://doi.org/10.1002/cncr.21742, https://doi.org/10.1200/jco.2005.19.638, https://ncbi.nlm.nih.gov/pmc/articles/PMC7352163/, https://www.nature.com/articles/s41467-020-15768-x, https://pmc.ncbi.nlm.nih.gov/articles/PMC9101377/, https://aacrjournals.org/clincancerres/article/24/15/3755/80772/Orthoxenografts-of-Testicular-Germ-Cell-Tumors, https://pmc.ncbi.nlm.nih.gov/articles/PMC13519188/."
+        },
+        {
+          "question": "In cBioPortal-format discrete copy-number tables produced by targeted-panel pipelines that contain only the values -2, 0 and 2, are single-copy (hemizygous) losses simply not reported, and what log2-ratio thresholds on the accompanying segment file are conventionally used to call single-copy loss versus deep deletion?",
+          "answer": "Yes: in a -2/0/2 table single-copy losses are not reported, so 0 means 'no event called', not 'two copies'. cBioPortal's format defines -2 = deep loss (possibly homozygous deletion), -1 = single-copy loss, 0 = diploid, 1 = low-level gain, 2 = high-level amplification, and its FAQ says only deep deletions and amplifications are treated as biologically relevant by default. The MSK-IMPACT panel pipeline reports a whole-gene event only when the tumour/normal coverage fold change is >2.0 (gain) or <-2.0 (loss) with FDR-corrected P<0.05, i.e. a log2 ratio of roughly >= +1 or <= -1, so it never emits -1 or +1. (A cBioPortal datahub thread documents another -2/0/2 table built the same way from binary amplification/deletion calls, with 'no event' written as 0.) For the segment file there is no universal cutoff, because the expected log2 ratio depends on tumour purity and ploidy. In a pure diploid tumour a clonal single-copy loss is log2(1/2) = -1.0; at 50% tumour fraction it is about -0.415 and a homozygous deletion is about -1.0 (the purity figures are my arithmetic from the standard mixing formula, consistent with CNVkit's documentation). The most commonly used fixed cutoffs are CNVkit's defaults: seg.mean < -1.1 = 0 copies (deep deletion); -1.1 to -0.25 = 1 copy (single-copy loss); -0.25 to +0.2 = neutral; +0.2 to +0.7 = 3 copies; above +0.7 = 4 or more. CNVkit states the inner cutoffs detect single-copy changes down to about 30% purity and the outer ones assume 100% purity. GISTIC uses a fixed low-level noise threshold of 0.1 or 0.3 for shallow events and sample-specific high-level thresholds. To verify the counted deep deletion, read the seg.mean of the segment overlapping the gene in that sample: at or below about -1 supports the call; between about -0.25 and -1 points to single-copy loss. Because the panel's loss threshold (ratio 0.5) equals a clonal single-copy loss in a pure diploid sample, a -2 with seg.mean near -1 in a high-purity tumour may not be a true homozygous deletion (my inference from the thresholds, not stated in a source). Single-copy loss read from the segment file should be a labelled sensitivity analysis, not part of the primary alteration definition.",
+          "sources": [
+            "https://github.com/cBioPortal/cbioportal/blob/master/docs/File-Formats.md",
+            "https://docs.cbioportal.org/user-guide/faq/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5808190/",
+            "https://github.com/cBioPortal/cbioportal/issues/4664",
+            "https://github.com/cBioPortal/datahub/issues/2269",
+            "https://cnvkit.readthedocs.io/en/stable/pipeline.html",
+            "https://cnvkit.readthedocs.io/en/stable/calling.html"
+          ],
+          "confidence": "high for the meaning of the discrete values and the panel pipeline's fold-change criteria; medium for the segment-file cutoffs, which are tool defaults rather than a universal standard and shift with purity and ploidy",
+          "deliveries": {
+            "bd35-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-6260603ae4ea"
+            },
+            "bd35-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-b26f70829caf"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cBioPortal-format discrete copy-number tables produced by targeted-panel pipelines that contain only the values -2, 0 and 2, are single-copy (hemizygous) losses simply not reported, and what log2-ratio thresholds on the accompanying segment file are conventionally used to call single-copy loss versus deep deletion? ANSWER: Yes: in a -2/0/2 table single-copy losses are not reported, so 0 means 'no event called', not 'two copies'. cBioPortal's format defines -2 = deep loss (possibly homozygous deletion), -1 = single-copy loss, 0 = diploid, 1 = low-level gain, 2 = high-level amplification, and its FAQ says only deep deletions and amplifications are treated as biologically relevant by default. The MSK-IMPACT panel pipeline reports a whole-gene event only when the tumour/normal coverage fold change is >2.0 (gain) or <-2.0 (loss) with FDR-corrected P<0.05, i.e. a log2 ratio of roughly >= +1 or <= -1, so it never emits -1 or +1. (A cBioPortal datahub thread documents another -2/0/2 table built the same way from binary amplification/deletion calls, with 'no event' written as 0.) For the segment file there is no universal cutoff, because the expected log2 ratio depends on tumour purity and ploidy. In a pure diploid tumour a clonal single-copy loss is log2(1/2) = -1.0; at 50% tumour fraction it is about -0.415 and a homozygous deletion is about -1.0 (the purity figures are my arithmetic from the standard mixing formula, consistent with CNVkit's documentation). The most commonly used fixed cutoffs are CNVkit's defaults: seg.mean < -1.1 = 0 copies (deep deletion); -1.1 to -0.25 = 1 copy (single-copy loss); -0.25 to +0.2 = neutral; +0.2 to +0.7 = 3 copies; above +0.7 = 4 or more. CNVkit states the inner cutoffs detect single-copy changes down to about 30% purity and the outer ones assume 100% purity. GISTIC uses a fixed low-level noise threshold of 0.1 or 0.3 for shallow events and sample-specific high-level thresholds. To verify the counted deep deletion, read the seg.mean of the segment overlapping the gene in that sample: at or below about -1 supports the call; between about -0.25 and -1 points to single-copy loss. Because the panel's loss threshold (ratio 0.5) equals a clonal single-copy loss in a pure diploid sample, a -2 with seg.mean near -1 in a high-purity tumour may not be a true homozygous deletion (my inference from the thresholds, not stated in a source). Single-copy loss read from the segment file should be a labelled sensitivity analysis, not part of the primary alteration definition. HOW SURE: high for the meaning of the discrete values and the panel pipeline's fold-change criteria; medium for the segment-file cutoffs, which are tool defaults rather than a universal standard and shift with purity and ploidy. SOURCES: https://github.com/cBioPortal/cbioportal/blob/master/docs/File-Formats.md, https://docs.cbioportal.org/user-guide/faq/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5808190/, https://github.com/cBioPortal/cbioportal/issues/4664, https://github.com/cBioPortal/datahub/issues/2269, https://cnvkit.readthedocs.io/en/stable/pipeline.html, https://cnvkit.readthedocs.io/en/stable/calling.html."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd35-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd35-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd35-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd35-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd35-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 157.02429358300287,
+      "cost_usd": 0.3091373,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 94.17183016706258,
+      "cost_usd": 0.1575291,
+      "error": null
+    },
+    {
+      "agent": "bd35-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 130.02605070790742,
+      "cost_usd": 0.255902,
+      "error": null
+    },
+    {
+      "agent": "bd35-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 155.45712291589007,
+      "cost_usd": 0.3198141,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 157.0068006250076,
+      "cost_usd": 0.34373590000000004,
+      "error": null
+    },
+    {
+      "agent": "bd35-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 193.11847475008108,
+      "cost_usd": 0.5310941,
+      "error": null
+    },
+    {
+      "agent": "bd35-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 248.17826249997597,
+      "cost_usd": 0.526732,
+      "error": null
+    },
+    {
+      "agent": "bd35-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 275.3200012090383,
+      "cost_usd": 0.5457143000000001,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,471 @@
+{
+  "study": "bd19",
+  "status": "replicated",
+  "final": {
+    "agent": "bd19-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd19/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd19-library": "fable",
+    "bd19-team-a": "fable",
+    "bd19-team-b": "fable",
+    "bd19-team-c": "fable",
+    "bd19-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd19-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd19/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd19-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd19/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd19-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd19/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd19-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd19/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd19-team-a",
+        "bd19-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd19-team-a",
+        "bd19-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Compare the two subsets with each other, directly. To support or contradict 'two GCB subsets have different outcomes', the test has to be head-to-head between those two subsets. Showing that subset A differs significantly from the remaining DLBCLs (or from a reference cluster) while subset B does not is not evidence that A and B differ: a difference in significance is not a significant difference. Run one test restricted to patients in the two GCB-enriched subsets (log-rank plus a Cox hazard ratio with 95% CI for subset A versus subset B) and base the outcome half of the hypothesis on that hazard ratio and its interval. Each-versus-rest or all-cluster results may be reported as context only. This is the same single primary comparison the earlier briefing asked you to fix before looking at survival; it does not add a new one.",
+      "from": [
+        "sl-biodsa-test-97b6224952f8"
+      ],
+      "reason": "An each-cluster-versus-rest or overall k-group design is the natural first analysis of a cluster column and can give the wrong label in either direction; the earlier briefing named the pair to compare but did not rule out this specific inference error.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-8c1899864ce4"
+      }
+    },
+    {
+      "text": "Check whether detected double-hit cases carry any outcome gap. GCB-DLBCL is known to be prognostically mixed for one specific reason: tumours with concurrent MYC and BCL2 rearrangements (double-hit; almost all of germinal-centre origin, roughly 10% of DLBCL) do poorly on R-CHOP. An outcome difference between two GCB subsets could therefore rest on a handful of double-hit cases and not on the subset as a whole. From data_sv.txt flag samples that have both a MYC and a BCL2 structural variant (one flag per sample, searching both gene columns), tabulate them by subset, and rerun the head-to-head survival comparison once with those cases removed or with double-hit status as a covariate. Report which of two situations holds: the difference shrinks or vanishes without them (the difference is concentrated in that group), or it persists (not explained by detected double-hit status). Either way add the caveat that MYC rearrangements are under-called by exome/capture sequencing, so double-hit status is incompletely known and SV-negative means 'not detected'. This is a sensitivity analysis of the pre-specified comparison, not a replacement for it.",
+      "from": [
+        "sl-biodsa-test-01727fe090eb"
+      ],
+      "reason": "It adds a specific, checkable alternative explanation for an outcome difference between GCB subsets that the team would not derive from the data tables alone, and it changes what the team can say about whether the subsets as a whole differ.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-66de6c717359"
+      }
+    },
+    {
+      "text": "Fix the gene list before comparing alteration frequencies between the two subsets. Testing every gene in an exome MAF between two small subsets means thousands of Fisher tests, most on genes mutated in one or two samples where p<0.05 cannot even be reached: uncorrected p-values give false positives, correction over all genes destroys power, and a gene that is non-significant in a small subset has not been shown to be equally frequent. Choose the list in advance (for example the significantly mutated genes in data_mutsig.txt at q<0.1 plus the recurrent SV targets, or genes altered in at least about 5% of samples; the candidate-target genes/pathways you declared for the 'targetable' half belong in this list), count the tests, and apply Benjamini-Hochberg over that list. Report per-subset frequencies and odds ratios with CIs, and call a gene enriched in a subset only when the effect size is large and the adjusted p-value agrees. This sits alongside the earlier circularity warning, it does not override it: because the subsets were built from genetic alterations, even FDR-adjusted p-values remain descriptive, so the pre-filtered list and effect sizes are how to describe each subset's characteristic alterations, not independent proof that the subsets are distinct. Confirm the q-value column name in data_mutsig.txt from its header.",
+      "from": [
+        "sl-biodsa-test-566836727dc5"
+      ],
+      "reason": "The 'targetable alterations' half requires a per-subset gene comparison; without a pre-set list and correction the team will either report spurious subset-specific targets or wrongly read non-significance in a small subset as absence of a difference.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-2f8330718c3d"
+      }
+    },
+    {
+      "text": "Overall survival may be diluted by deaths unrelated to lymphoma. According to the library, the patient table has AGE_AT_DIAGNOSIS and an IPI age factor and one of the pooled cohorts is an older-patient trial series (confirm against the COHORT values; the director has not seen the data). In older lymphoma patients OS and lymphoma-specific survival can differ by tens of percentage points, so non-lymphoma deaths can hide a real difference in disease control between genetic subsets, or create one if the subsets differ in age. The data carry no cause of death, so a competing-risk analysis is not possible. Compare the age distribution of the two subsets; analyse PFS and OS separately; count how many PFS events are deaths with no earlier progression (PFS time equal to OS time with both events recorded). Treat PFS as the endpoint closest to disease biology, adjust or stratify the OS analysis for age or IPI (one term, within the events-per-covariate limit already given), and do not read a null OS result on its own as proof that outcomes are equal.",
+      "from": [
+        "sl-biodsa-test-43fd07cdfd7c"
+      ],
+      "reason": "It affects which endpoint carries the conclusion and how a null or positive OS result should be read; an OS-only analysis in an age-mixed pooled cohort could lead to the wrong label.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-6e9c5c19fe98"
+      }
+    },
+    {
+      "text": "Check follow-up length and the tail of the Kaplan-Meier curves. KM curves for small subsets are unreliable on the right, where few patients remain at risk, and the pooled cohorts may have very different follow-up, so a late separation or late crossing, or a subset drawn mostly from a short-follow-up cohort, can drive or mask a log-rank difference. Compute median follow-up per subset and per COHORT by the reverse Kaplan-Meier method (swap event and censoring), print numbers at risk at 12, 24, 36 and 60 months for each subset, and note the time after which fewer than about 10-20% of patients remain at risk. If the result depends on the poorly observed tail, compare survival at fixed landmarks inside the well-observed window (for example 2- or 3-year PFS with CIs) or truncate follow-up at a common horizon before the log-rank/Cox test, and say that you did. Choose the landmark or horizon from the numbers at risk, before seeing its effect on the p-value, and report it as a sensitivity analysis of the pre-specified comparison.",
+      "from": [
+        "sl-biodsa-test-8046db1c143b"
+      ],
+      "reason": "Unequal follow-up across pooled cohorts and thin tails can produce or hide the survival difference the label depends on; the earlier briefing mentioned landmarks only as a fallback when proportional hazards fails and did not ask for follow-up or numbers-at-risk checks.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-713ff8a098c1"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams took the whole genetic clusters 3 and 4 (including ABC, Unclassified and COO-missing cases) as 'the two GCB subsets' for the primary outcome test; the COO-confirmed GCB comparison was run only as a sensitivity analysis and is not significant in either team's notes (2 PFS events in cluster 4).",
+      "Both teams assumed data_sv.txt is a complete list of structural variants for every sample, so that a sample with no row is SV-negative (or at least that under-detection is equal across subsets). The sample table suggests otherwise: 69 samples have NUM_DRIVER_SV > 0 but only 51 samples appear in data_sv.txt, and 21 of the 22 driver-SV-positive samples missing from the file are in the RICOVER cohort (1 in Mayo/Iowa). Clusters 3 and 4 have different cohort mixes.",
+      "Both teams assumed PFS_MONTHS and OS_MONTHS are measured consistently. In 27 Mayo/Iowa patients PFS_MONTHS is longer than OS_MONTHS by about 10 to 40 months (26 censored for both endpoints, one with a progression recorded after the OS censoring time); this never happens in RICOVER. 13 of the 27 are in clusters 3 or 4. Neither team reported it.",
+      "Both teams assumed mutation and SV detection sensitivity is the same in the two subsets. Cohort, tissue source and COO assay are perfectly collinear (Mayo/Iowa = frozen = GEP; RICOVER = FFPE = Lymph2Cx), cluster 3 is mostly Mayo/Iowa and cluster 4 mostly RICOVER, yet cohort was used as a stratifier only for survival, never for the gene-frequency comparison; PURITY_ABSOLUTE and coverage were not compared between clusters.",
+      "Both teams counted a gene as altered on any nonsilent mutation (gene-level flag) and treated that as a candidate 'targetable alteration' without looking at which protein changes are present.",
+      "The two teams ran the same primary computation on the same choices (identical HR and confidence interval), so their agreement is one analysis done twice rather than two independent lines of evidence."
+    ],
+    "unused_evidence": [
+      "NUM_DRIVER_SV and TOTAL_REARRANGEMENT in data_clinical_sample.txt: per-sample SV counts that disagree with data_sv.txt (22 samples with NUM_DRIVER_SV > 0 have no row in the SV file, almost all RICOVER; 29 samples with TOTAL_REARRANGEMENT >= 1 have no row). These bear on the BCL2-SV frequencies, the double-hit sensitivity check and Team B's BCL2-SV/EZH2 split.",
+      "NUM_DRIVER_SCNA, TOTAL_CNA and PLOIDY_ABSOLUTE: the only copy-number information in the study; both teams noted that no CNA table exists but neither compared these per-sample counts between the two subsets.",
+      "PURITY_ABSOLUTE, MEAN_TARGET_COVERAGE_TUMOR and SAMPLE_COLLECTION_SOURCE (FFPE vs Frozen): determine how many mutations can be detected; not compared between clusters and not used to stratify the genetic comparison.",
+      "Per-variant columns in data_mutations.txt: HGVSp_Short / Protein_Change (which variant, e.g. hotspot or not; the Hotspot column is 0 in every row so it cannot be used), clonal / CCF_hat (clonal vs subclonal), and isArtifactMode (1 in about 1,760 rows).",
+      "OS_MONTHS versus PFS_MONTHS consistency within patient (see shared assumptions); also 3 patients have OS but no PFS.",
+      "CCC (consensus clustering category) and MORPHOLOGY_SUBTYPE: present only for about half the samples (CCC only in Mayo/Iowa); unused, probably not decisive.",
+      "The 13 COO-confirmed GCB cases in cluster 2 and 3 more in other clusters (16 of 45 GCB) were left out of every outcome comparison."
+    ],
+    "unresolved_weak_points": [
+      "Team A: the outcome half rests on 18 PFS events with permutation p 0.049 and a CI lower bound of 0.99; loses significance after IPI adjustment with cohort stratification, with OS, with truncation and with the GCB-only restriction. Reported, not resolved.",
+      "Team A: the single-assay COO sensitivity analyses were not run. Since each assay maps to exactly one cohort, this is the same as a within-cohort GCB-restricted comparison, which was also not reported.",
+      "Team A: the cluster-4 side of 'targetable alterations' rests on 3 to 6 samples per gene with q 0.38 to 0.56; the pathway-level flags are listed as run but their result is not in the notes.",
+      "Team B: its extra support, the BCL2-SV/EZH2 split within GCB, was chosen after seeing which lesions define cluster 3 (stated by the team) and it depends on data_sv.txt, whose completeness differs by cohort. Not resolved.",
+      "Team B: did not run the double-hit, age-balance, follow-up or death-without-progression checks (pitfalls_checked is empty); its only significant cluster-4 feature is linker-histone mutations, which the team did not show to be a drug target; its GCB-only group size is given as '14-15 vs 9', i.e. not pinned down.",
+      "Team B: its own unsupervised re-clustering of GCB samples only partly reproduced the given labels, so 'distinct' rests on trusting the CLUSTER column."
+    ],
+    "second_readings": [
+      "'Subsets of GCB-DLBCLs' can mean only COO-confirmed GCB tumours inside the two clusters, not the whole clusters. Under that reading the head-to-head outcome test is not significant in either team's notes.",
+      "'Different outcomes' can mean PFS, OS or both; only PFS reaches nominal significance, OS does not.",
+      "'Different outcomes and targetable alterations' can mean (i) the two subsets differ from each other in targetable alterations, or (ii) each subset carries its own targetable alterations. Under (ii) the cluster-4 side is not established by either team.",
+      "'Two distinct subsets' can be read as a description of GCB-DLBCL as a whole; a third of GCB cases sit in neither subset (cluster 2 and others)."
+    ],
+    "verdict": "Moderate trust. The direction of both halves is consistent across every analysis the teams ran, but the outcome half is borderline (18 events, p at about 0.04 to 0.05, not significant when restricted to COO-confirmed GCB), the two teams ran the same computation so their agreement adds little, and neither noticed two features of how the data are built (the SV file is incomplete relative to the sample table mainly in one cohort, and PFS time exceeds OS time in 27 patients of one cohort) that touch exactly the borderline comparison and the SV-based checks.",
+    "questions": [
+      {
+        "to": "bd19-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You used data_sv.txt with all sequenced samples as the denominator and read 'no row' as 'SV not detected', on the assumption that under-detection is similar in both subsets. The sample table has two columns you did not use, NUM_DRIVER_SV and TOTAL_REARRANGEMENT. Cross-tabulate NUM_DRIVER_SV > 0 against 'sample has at least one row in data_sv.txt', by COHORT and by CLUSTER (I count 69 samples with NUM_DRIVER_SV > 0 but only 51 samples in the SV file, and the samples missing from the file are almost all in one cohort). Then say whether the SV file can be treated as complete in each cohort, and whether your BCL2-SV frequencies for cluster 3 versus cluster 4 and your double-hit sensitivity analysis still hold when you restrict them to the cohort where the file and the sample table agree. Does the result change how you handle SVs or what you conclude from them?",
+        "from": [
+          "sl-biodsa-test-ef88c4926371",
+          "sl-biodsa-test-122137b027d0",
+          "sl-biodsa-test-7daa6da2a67e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-7b71d71488d3"
+      },
+      {
+        "to": "bd19-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Compare PFS_MONTHS with OS_MONTHS patient by patient, by COHORT. I find 27 Mayo/Iowa patients whose PFS_MONTHS is longer than their OS_MONTHS by roughly 10 to 40 months (26 are censored for both endpoints; one has a progression recorded after the OS censoring time), and none in RICOVER; 13 of the 27 are in clusters 3 or 4. A progression-free time cannot exceed an overall-survival time measured from the same origin. Tabulate these cases by cluster, work out what the two time columns must mean in that cohort, and re-run your pre-specified PFS comparison (and the OS comparison, the reverse-KM follow-up and your count of deaths without earlier progression) under each defensible handling of the inconsistent times. With 18 events and a permutation p next to 0.05, does the primary result move, and does that change your method or your confidence?",
+        "from": [
+          "sl-biodsa-test-0313dda4c3c0"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-ab75202fe467"
+      },
+      {
+        "to": "bd19-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your 'targetable alterations' half is clear for cluster 3 and rests on 3 to 6 samples per gene for cluster 4, counted as any nonsilent mutation per gene; you list pathway-level flags as run but do not report what they showed. Cohort, tissue source and COO assay are the same variable in this study (Mayo/Iowa = frozen, RICOVER = FFPE) and the two clusters have different cohort mixes, yet the gene comparison was not stratified by it. Make one table for your pre-declared target genes and pathways in clusters 3 and 4, split by cohort: the protein changes present (HGVSp_Short; the Hotspot column is all zero), and the number of samples with at least one alteration per pathway; add median PURITY_ABSOLUTE per cluster. Do the differences between the subsets appear within each cohort, are the cluster-4 hits the variants a drug would act on, and does the hypothesis as you read it need each subset to carry its own targetable alterations or only that the subsets differ? Does the answer to that change your label rule?",
+        "from": [
+          "sl-biodsa-test-122137b027d0",
+          "sl-biodsa-test-d1cae0d08e92"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-1493a8fb8aa8"
+      },
+      {
+        "to": "bd19-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The hypothesis is about subsets of GCB-DLBCL, but your primary comparison includes the ABC, Unclassified and COO-missing members of clusters 3 and 4, and you left the single-assay COO analyses unrun. Each COO assay belongs to exactly one cohort (GEP only in Mayo/Iowa, Lymph2Cx only in RICOVER), so that analysis is a within-cohort, COO-confirmed-GCB comparison. Tabulate, for the R-CHOP-treated patients with PFS, patients and PFS events by cluster (3, 4, and all other clusters together) crossed with ANY_COO class (GCB, ABC, Unclassified, missing) and cohort. Which COO stratum supplies the events that drive the whole-cluster difference, and where do the 16 COO-confirmed GCB cases outside clusters 3 and 4 sit? If 'subsets of GCB-DLBCL' is read as COO-confirmed GCB only, what does your pre-stated label rule give, and does that reading change your method?",
+        "from": [
+          "sl-biodsa-test-c8396e5ddd9e",
+          "sl-biodsa-test-d1cae0d08e92",
+          "sl-biodsa-test-0313dda4c3c0"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-37d7b04f7cd8"
+      },
+      {
+        "to": "bd19-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your BCL2-SV frequencies and your label-independent check (splitting GCB cases by BCL2 SV or EZH2 mutation) both read 'no row in data_sv.txt' as SV-negative. The sample table has two columns you did not use, NUM_DRIVER_SV and TOTAL_REARRANGEMENT. Cross-tabulate NUM_DRIVER_SV > 0 against 'sample has at least one row in data_sv.txt', by COHORT and by CLUSTER (I count 69 samples with NUM_DRIVER_SV > 0 but only 51 samples in the SV file, and the samples missing from the file are almost all in one cohort). Then say whether the SV file can be treated as complete in each cohort, and re-run the BCL2-SV comparison and the BCL2-SV/EZH2 split within the cohort where the file and the sample table agree, once with and once without the samples that carry both a MYC and a BCL2 SV (you did not run a double-hit check). Does the split still support two GCB subsets, and does this change how much weight you put on it?",
+        "from": [
+          "sl-biodsa-test-a70215dc0062",
+          "sl-biodsa-test-087f3f84c5f7"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-c33fb8d2bddc"
+      },
+      {
+        "to": "bd19-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Compare PFS_MONTHS with OS_MONTHS patient by patient, by COHORT. I find 27 Mayo/Iowa patients whose PFS_MONTHS is longer than their OS_MONTHS by roughly 10 to 40 months (26 are censored for both endpoints; one has a progression recorded after the OS censoring time), and none in RICOVER; 13 of the 27 are in clusters 3 or 4. A progression-free time cannot exceed an overall-survival time measured from the same origin. Tabulate these cases by cluster, work out what the two time columns must mean in that cohort, and re-run your cluster 3 versus cluster 4 PFS and OS comparisons under each defensible handling of the inconsistent times; also report follow-up length per cluster and how many PFS events are deaths without earlier progression, which your notes do not give. With 18 events and p near 0.04 to 0.05, does the result move, and does that change your method or your confidence?",
+        "from": [
+          "sl-biodsa-test-78424d0b4353"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-3d7dda7ac528"
+      },
+      {
+        "to": "bd19-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: The only cluster-4 feature you report as significant is linker-histone mutation; the cluster-4 genes you name as targets (BRAF, STAT3) are at about 5 samples each and not significant. You counted any nonsilent mutation per gene, and you stratified by cohort for survival but not for the gene comparison, although cohort, tissue source (frozen vs FFPE) and COO assay are the same variable here and the clusters differ in cohort mix. Write down which genes or pathways you count as targetable, then make one table for them in clusters 3 and 4, split by cohort: the protein changes present (HGVSp_Short; the Hotspot column is all zero) and the number of samples with at least one alteration per pathway; add median PURITY_ABSOLUTE per cluster. Do the differences appear within each cohort, are the cluster-4 hits the variants a drug would act on, and does the hypothesis as you read it need each subset to carry its own targetable alterations or only that the subsets differ? Does that change your label?",
+        "from": [
+          "sl-biodsa-test-087f3f84c5f7",
+          "sl-biodsa-test-a055f041317f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-53eab03e347b"
+      },
+      {
+        "to": "bd19-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: The hypothesis is about subsets of GCB-DLBCL. You ran whole-cluster, GCB-only and non-ABC versions and 'reported all', but a label needs one of them to be the basis, and your GCB-only group size is given as '14-15 versus 9'. Tabulate, for the R-CHOP-treated patients with PFS, patients and PFS events by cluster (3, 4, and all other clusters together) crossed with ANY_COO class (GCB, ABC, Unclassified, missing) and cohort. Which COO stratum supplies the events that drive the whole-cluster difference, and where do the 16 COO-confirmed GCB cases outside clusters 3 and 4 sit in outcome? State which definition your label rests on and why; if it is the COO-confirmed GCB one, is a comparison with 2 events in one arm enough to call the outcome half supported, and does that change your method?",
+        "from": [
+          "sl-biodsa-test-a6eb25f3a46c",
+          "sl-biodsa-test-78424d0b4353"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-798d0d2bf517"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "How sensitive is exome or targeted-capture sequencing for detecting IGH-BCL2, MYC and BCL6 rearrangements in formalin-fixed paraffin-embedded lymphoma tissue compared with fresh-frozen tissue and with FISH, and is it usual for a study to supplement sequencing-based rearrangement calls with FISH or another assay in the FFPE part of a cohort?",
+          "why": "The structural-variant table appears far less complete for the FFPE-derived cohort than for the frozen cohort when checked against per-sample driver-SV counts, and the two subsets being compared differ in cohort mix; this decides whether SV frequencies and double-hit flags can be compared across subsets or only within one tissue type.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In lymphoma cohort or registry data, what explains a recorded progression-free survival time that is longer than the recorded overall survival time for patients censored on both endpoints (for example different last-contact dates for disease status and vital status, or different time origins), and what is the accepted way to handle such records in Kaplan-Meier and Cox analyses?",
+          "why": "A block of patients in one cohort has PFS time longer than OS time; how these censoring times are handled can shift a log-rank result that rests on few events, and neither team addressed it.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In B-cell lymphoma, which specific alterations of EZH2, BRAF, STAT3, SGK1, CREBBP and BCL2 are graded as therapeutically actionable (and at what evidence level) by frameworks such as OncoKB: any nonsilent mutation in the gene or only particular hotspot or domain variants? Are mutations in linker histone H1 genes regarded as a therapeutic target?",
+          "why": "Both teams counted any nonsilent mutation in a gene as a candidate target; whether the alterations seen in each subset are the drug-relevant variants decides whether each subset, or only one of them, can be said to carry targetable alterations.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "How sensitive is exome or targeted-capture sequencing for detecting IGH-BCL2, MYC and BCL6 rearrangements in formalin-fixed paraffin-embedded lymphoma tissue compared with fresh-frozen tissue and with FISH, and is it usual for a study to supplement sequencing-based rearrangement calls with FISH or another assay in the FFPE part of a cohort?",
+          "answer": "Partly settled. Versus FISH in FFPE tissue, capture sequencing misses many rearrangements: in 233 FFPE DLBCLs a 481-gene capture panel had sensitivity against break-apart FISH of 50% for MYC, 80% for BCL2 and 69% for BCL6 (17 of 17 re-examined misses had breakpoints outside the probe-covered region, 16 intergenic); in 34 FFPE high-grade B-cell lymphomas DNA sequencing found 6/12 MYC, 10/10 BCL2 and 13/18 BCL6 rearrangements and missed 5 of 12 FISH-defined MYC/BCL2 double-hit cases; a capture design aimed at known breakpoints reached 94.2% concordance. Stated reasons for misses: breakpoints outside captured regions, non-unique sequence flanking breakpoints (common at IG loci), and FFPE-induced DNA fragmentation, which one source says 'compromises sequencing-based analyses of chromosomal rearrangements'. NOT settled: none of the pages read gives a head-to-head FFPE-versus-frozen sensitivity figure for these rearrangements, and none documents how often research cohorts supplement FFPE sequencing calls with FISH. The sources say only that FISH remains the gold standard, that sequencing 'should not replace FISH', and that the two methods are complementary. That exome capture (coding exons only) does no better than these dedicated panels is my inference, not a sourced statement. Practical reading: SV-negative means 'not detected'; under-calling is plausibly worse in FFPE and is not equal across tissue types, so SV frequencies and double-hit flags should be compared within one tissue type/cohort or stratified by it, not pooled across subsets with different FFPE/frozen mix. This corrects the earlier department note that the bias is roughly equal across subsets.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC11251499/",
+            "https://doi.org/10.4149/neo_2024_240527n236",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8184748/",
+            "https://link.springer.com/article/10.1007/s12308-019-00360-0"
+          ],
+          "confidence": "medium (high for under-detection versus FISH in FFPE, especially MYC and BCL6; low for the FFPE-versus-frozen size of the effect and for how usual FISH supplementation is, which the web did not settle)",
+          "deliveries": {
+            "bd19-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-c85e72a94888"
+            },
+            "bd19-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-36a78227f886"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How sensitive is exome or targeted-capture sequencing for detecting IGH-BCL2, MYC and BCL6 rearrangements in formalin-fixed paraffin-embedded lymphoma tissue compared with fresh-frozen tissue and with FISH, and is it usual for a study to supplement sequencing-based rearrangement calls with FISH or another assay in the FFPE part of a cohort? ANSWER: Partly settled. Versus FISH in FFPE tissue, capture sequencing misses many rearrangements: in 233 FFPE DLBCLs a 481-gene capture panel had sensitivity against break-apart FISH of 50% for MYC, 80% for BCL2 and 69% for BCL6 (17 of 17 re-examined misses had breakpoints outside the probe-covered region, 16 intergenic); in 34 FFPE high-grade B-cell lymphomas DNA sequencing found 6/12 MYC, 10/10 BCL2 and 13/18 BCL6 rearrangements and missed 5 of 12 FISH-defined MYC/BCL2 double-hit cases; a capture design aimed at known breakpoints reached 94.2% concordance. Stated reasons for misses: breakpoints outside captured regions, non-unique sequence flanking breakpoints (common at IG loci), and FFPE-induced DNA fragmentation, which one source says 'compromises sequencing-based analyses of chromosomal rearrangements'. NOT settled: none of the pages read gives a head-to-head FFPE-versus-frozen sensitivity figure for these rearrangements, and none documents how often research cohorts supplement FFPE sequencing calls with FISH. The sources say only that FISH remains the gold standard, that sequencing 'should not replace FISH', and that the two methods are complementary. That exome capture (coding exons only) does no better than these dedicated panels is my inference, not a sourced statement. Practical reading: SV-negative means 'not detected'; under-calling is plausibly worse in FFPE and is not equal across tissue types, so SV frequencies and double-hit flags should be compared within one tissue type/cohort or stratified by it, not pooled across subsets with different FFPE/frozen mix. This corrects the earlier department note that the bias is roughly equal across subsets. HOW SURE: medium (high for under-detection versus FISH in FFPE, especially MYC and BCL6; low for the FFPE-versus-frozen size of the effect and for how usual FISH supplementation is, which the web did not settle). SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC11251499/, https://doi.org/10.4149/neo_2024_240527n236, https://pmc.ncbi.nlm.nih.gov/articles/PMC8184748/, https://link.springer.com/article/10.1007/s12308-019-00360-0."
+        },
+        {
+          "question": "In lymphoma cohort or registry data, what explains a recorded progression-free survival time that is longer than the recorded overall survival time for patients censored on both endpoints (for example different last-contact dates for disease status and vital status, or different time origins), and what is the accepted way to handle such records in Kaplan-Meier and Cox analyses?",
+          "answer": "Not fully settled. What the guidance says: the follow-up end (censoring) date is defined separately for each endpoint. OS is censored at the date last known alive, PFS at the last date the patient was known progression-free (last disease assessment), so the two censoring times legitimately differ. Under that rule censored PFS should be shorter than or equal to censored OS; using 'last known alive' as the PFS censor date is named as a common mistake that inflates PFS. A censored PFS longer than censored OS is therefore the reverse of the expected pattern and, under one time origin, logically inconsistent (progression-free at time t implies alive at t). It indicates that the two times in that cohort come from different date sources, data locks or time origins (for example disease status updated later than vital status, or different time zero). That explanation is my inference: the pages read do not discuss this exact pattern and I found no lymphoma-specific source. Handling consistent with the guidance: do not drop or silently edit the records; analyse each endpoint on its own time and status; check whether the pattern is confined to one cohort, because censoring that differs systematically between groups can bias Kaplan-Meier and Cox results; run sensitivity analyses with alternative censoring dates (cap PFS at the OS time; or extend OS to the PFS time; or stratify by or exclude the affected cohort) and report whether the log-rank result changes. Because these patients are censored on both endpoints, such changes alter time at risk, not event counts.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC13687036/",
+            "https://aacrjournals.org/clincancerres/article/19/10/2613/77658/Missing-Data-and-Measurement-Variability-in",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC2698020/"
+          ],
+          "confidence": "medium for the per-endpoint censoring rule and the sensitivity-analysis approach; low for the specific cause of PFS longer than OS, which is inferred",
+          "deliveries": {
+            "bd19-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-3b0f0e5ec01c"
+            },
+            "bd19-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-d408462f6074"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In lymphoma cohort or registry data, what explains a recorded progression-free survival time that is longer than the recorded overall survival time for patients censored on both endpoints (for example different last-contact dates for disease status and vital status, or different time origins), and what is the accepted way to handle such records in Kaplan-Meier and Cox analyses? ANSWER: Not fully settled. What the guidance says: the follow-up end (censoring) date is defined separately for each endpoint. OS is censored at the date last known alive, PFS at the last date the patient was known progression-free (last disease assessment), so the two censoring times legitimately differ. Under that rule censored PFS should be shorter than or equal to censored OS; using 'last known alive' as the PFS censor date is named as a common mistake that inflates PFS. A censored PFS longer than censored OS is therefore the reverse of the expected pattern and, under one time origin, logically inconsistent (progression-free at time t implies alive at t). It indicates that the two times in that cohort come from different date sources, data locks or time origins (for example disease status updated later than vital status, or different time zero). That explanation is my inference: the pages read do not discuss this exact pattern and I found no lymphoma-specific source. Handling consistent with the guidance: do not drop or silently edit the records; analyse each endpoint on its own time and status; check whether the pattern is confined to one cohort, because censoring that differs systematically between groups can bias Kaplan-Meier and Cox results; run sensitivity analyses with alternative censoring dates (cap PFS at the OS time; or extend OS to the PFS time; or stratify by or exclude the affected cohort) and report whether the log-rank result changes. Because these patients are censored on both endpoints, such changes alter time at risk, not event counts. HOW SURE: medium for the per-endpoint censoring rule and the sensitivity-analysis approach; low for the specific cause of PFS longer than OS, which is inferred. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC13687036/, https://aacrjournals.org/clincancerres/article/19/10/2613/77658/Missing-Data-and-Measurement-Variability-in, https://pmc.ncbi.nlm.nih.gov/articles/PMC2698020/."
+        },
+        {
+          "question": "In B-cell lymphoma, which specific alterations of EZH2, BRAF, STAT3, SGK1, CREBBP and BCL2 are graded as therapeutically actionable (and at what evidence level) by frameworks such as OncoKB: any nonsilent mutation in the gene or only particular hotspot or domain variants? Are mutations in linker histone H1 genes regarded as a therapeutic target?",
+          "answer": "OncoKB grades specific alterations ('Oncogenic Mutations' or named variants), never any nonsilent mutation. Its actionable-genes page as read on 2026-11-15 has no therapeutic level (1-4, R1, R2) for EZH2, CREBBP, BCL2, STAT3 or SGK1 in DLBCL or any other B-cell lymphoma; tazemetostat and venetoclax do not appear on the page; SGK1 and the H1 genes are not listed at all. EZH2 and CREBBP 'Oncogenic Mutations' in DLBCL NOS and follicular lymphoma, and the IGH::BCL2 fusion, appear only in the diagnostic tiers (Dx3 for EZH2, CREBBP and IGH::BCL2 in DLBCL; Dx2 for IGH::BCL2 in follicular lymphoma; the tier is inferred from row order in the flattened page text, so treat it as approximate). STAT3 is listed only for T-cell large granular lymphocytic leukemia (diagnostic). BRAF therapeutic entries are allele-specific (V600E/V600: hairy cell leukemia with vemurafenib, histiocytoses, solid tumours); there is none for DLBCL or follicular lymphoma. For EZH2, OncoKB curates Y646C/F/H/N/S, A682G, A692V and a few other SET-domain variants as oncogenic, and R207Q, R213H, R502Q, K515R, P577L as inconclusive. Outside OncoKB: the FDA gave accelerated approval (June 2020) to tazemetostat for relapsed/refractory follicular lymphoma, not DLBCL, with an EZH2 mutation found by an approved test (response 69% in mutant versus 34% in wild type); CIViC ties tazemetostat to EZH2 Y646 variants, A682G and A692V. I could not establish from the pages read why tazemetostat is absent from the current OncoKB list. BCL2 mutations are reported as markers of venetoclax resistance, not sensitivity. CREBBP has only low-level evidence (HAT-domain mutations and mTOR inhibition, CIViC, follicular lymphoma). H1 mutations are loss-of-function tumour-suppressor driver events; no drug is attached in the abstract read (full text paywalled) and they are not in OncoKB, so they are not regarded as a therapeutic target. A consensus review describes DLBCL genetic subtypes as suggesting therapeutic vulnerabilities 'for future drug development', i.e. inferred, not established, targets. So counting any nonsilent mutation overstates targetability: restrict to EZH2 Y646/A682/A692, BRAF V600E and comparable hotspot or domain variants, and call the rest candidate targets.",
+          "sources": [
+            "https://www.oncokb.org/actionable-genes",
+            "https://www.oncokb.org/gene/EZH2",
+            "https://www.fda.gov/drugs/fda-granted-accelerated-approval-tazemetostat-follicular-lymphoma",
+            "https://civicdb.org/diseases/51",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC9837456/",
+            "https://www.nature.com/articles/s41586-020-3017-y"
+          ],
+          "confidence": "medium (high that OncoKB is alteration-specific and lists no therapeutic level for these genes in DLBCL; medium for the exact diagnostic tiers; medium for H1, based on an abstract and absence from OncoKB)",
+          "deliveries": {
+            "bd19-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-ac5bee755d64"
+            },
+            "bd19-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-5aed5865d9c2"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In B-cell lymphoma, which specific alterations of EZH2, BRAF, STAT3, SGK1, CREBBP and BCL2 are graded as therapeutically actionable (and at what evidence level) by frameworks such as OncoKB: any nonsilent mutation in the gene or only particular hotspot or domain variants? Are mutations in linker histone H1 genes regarded as a therapeutic target? ANSWER: OncoKB grades specific alterations ('Oncogenic Mutations' or named variants), never any nonsilent mutation. Its actionable-genes page as read on 2026-11-15 has no therapeutic level (1-4, R1, R2) for EZH2, CREBBP, BCL2, STAT3 or SGK1 in DLBCL or any other B-cell lymphoma; tazemetostat and venetoclax do not appear on the page; SGK1 and the H1 genes are not listed at all. EZH2 and CREBBP 'Oncogenic Mutations' in DLBCL NOS and follicular lymphoma, and the IGH::BCL2 fusion, appear only in the diagnostic tiers (Dx3 for EZH2, CREBBP and IGH::BCL2 in DLBCL; Dx2 for IGH::BCL2 in follicular lymphoma; the tier is inferred from row order in the flattened page text, so treat it as approximate). STAT3 is listed only for T-cell large granular lymphocytic leukemia (diagnostic). BRAF therapeutic entries are allele-specific (V600E/V600: hairy cell leukemia with vemurafenib, histiocytoses, solid tumours); there is none for DLBCL or follicular lymphoma. For EZH2, OncoKB curates Y646C/F/H/N/S, A682G, A692V and a few other SET-domain variants as oncogenic, and R207Q, R213H, R502Q, K515R, P577L as inconclusive. Outside OncoKB: the FDA gave accelerated approval (June 2020) to tazemetostat for relapsed/refractory follicular lymphoma, not DLBCL, with an EZH2 mutation found by an approved test (response 69% in mutant versus 34% in wild type); CIViC ties tazemetostat to EZH2 Y646 variants, A682G and A692V. I could not establish from the pages read why tazemetostat is absent from the current OncoKB list. BCL2 mutations are reported as markers of venetoclax resistance, not sensitivity. CREBBP has only low-level evidence (HAT-domain mutations and mTOR inhibition, CIViC, follicular lymphoma). H1 mutations are loss-of-function tumour-suppressor driver events; no drug is attached in the abstract read (full text paywalled) and they are not in OncoKB, so they are not regarded as a therapeutic target. A consensus review describes DLBCL genetic subtypes as suggesting therapeutic vulnerabilities 'for future drug development', i.e. inferred, not established, targets. So counting any nonsilent mutation overstates targetability: restrict to EZH2 Y646/A682/A692, BRAF V600E and comparable hotspot or domain variants, and call the rest candidate targets. HOW SURE: medium (high that OncoKB is alteration-specific and lists no therapeutic level for these genes in DLBCL; medium for the exact diagnostic tiers; medium for H1, based on an abstract and absence from OncoKB). SOURCES: https://www.oncokb.org/actionable-genes, https://www.oncokb.org/gene/EZH2, https://www.fda.gov/drugs/fda-granted-accelerated-approval-tazemetostat-follicular-lymphoma, https://civicdb.org/diseases/51, https://pmc.ncbi.nlm.nih.gov/articles/PMC9837456/, https://www.nature.com/articles/s41586-020-3017-y."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd19-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd19-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd19-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd19-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd19-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 155.3619220419787,
+      "cost_usd": 0.28555700000000006,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 112.14742020901758,
+      "cost_usd": 0.17897100000000002,
+      "error": null
+    },
+    {
+      "agent": "bd19-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 178.147276584059,
+      "cost_usd": 0.2927211,
+      "error": null
+    },
+    {
+      "agent": "bd19-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 186.34121774998493,
+      "cost_usd": 0.3766988,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 290.7324944579741,
+      "cost_usd": 0.596563,
+      "error": null
+    },
+    {
+      "agent": "bd19-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 383.9644025840098,
+      "cost_usd": 0.9255223000000001,
+      "error": null
+    },
+    {
+      "agent": "bd19-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 234.89081687503494,
+      "cost_usd": 0.48986599999999997,
+      "error": null
+    },
+    {
+      "agent": "bd19-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 283.55732179200277,
+      "cost_usd": 0.5591510000000001,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

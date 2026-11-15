@@ -1,0 +1,514 @@
+{
+  "study": "bd20",
+  "status": "replicated",
+  "final": {
+    "agent": "bd20-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd20/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd20-library": "fable",
+    "bd20-team-a": "fable",
+    "bd20-team-b": "fable",
+    "bd20-team-c": "fable",
+    "bd20-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd20-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd20/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd20-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd20/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd20-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd20/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd20-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd20/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd20-team-a",
+        "bd20-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd20-team-a",
+        "bd20-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "DATA LAYOUT (reported by the library from the file headers; confirm it yourself before relying on it). data_clinical_sample.txt has only PATIENT_ID, SAMPLE_ID, SEQUENCING_TYPE, SAMPLE_CLASS (Tumor/Xenograft), ONCOTREE_CODE, CANCER_TYPE, CANCER_TYPE_DETAILED (all 'Invasive Breast Cancer'), SOMATIC_STATUS and TMB_NONSYNONYMOUS. There is no column saying whether a patient tumour is primary or metastatic, no passage column and no purity/ploidy. Passage has to be parsed from the SAMPLE_ID (e.g. SA501X1A = presumed passage 1, transplant A; SA536X0 = passage 0). Whole-genome (WGS) samples are reported as 13 tumours and 17 xenografts; tumour-xenograft WGS pairs are reported for SA493, SA494, SA495, SA499, SA500, SA501, SA530, SA531, SA532, SA533, SA534, SA535 and SA536, while SA429 and SA496 have xenografts only. One clinical row (SA542T-whole_genome, blank type/class, TMB NA) is reported to have no mutation or seg data and should be dropped. Because no primary/metastatic label exists, you must decide and state explicitly whether that makes the 'primary and metastatic' part of the hypothesis untestable or whether the tumour-vs-xenograft comparison across all lines is enough to judge the claim.",
+      "from": [
+        "sl-biodsa-test-5e435bb415a7",
+        "sl-biodsa-test-741d12cfc800"
+      ],
+      "reason": "Fixes which samples can be paired, how passage is obtained, and flags that a variable named in the hypothesis (primary vs metastatic) is absent, which bears directly on how the label is chosen and justified.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-d0f594615af6"
+      }
+    },
+    {
+      "text": "PITFALL: the '-targeted' rows of data_mutations.txt are reported not to be per-sample detections. Within each patient every targeted sample lists the identical set of loci (the library says this held for all 15 patients), and t_ref_count/t_alt_count are empty in every row of the file, so no allele frequencies exist anywhere. Comparing targeted mutations between tumour and xenograft will therefore always show 100% identity, which is an artefact of the file and not a measurement of clonal stability. CHECK: per patient, compare the (chrom, pos, alt) sets across targeted samples and confirm the read-count columns are blank; note that TMB_NONSYNONYMOUS for targeted samples is derived from the same rows. IF CONFIRMED: exclude targeted rows and targeted TMB from any tumour-vs-xenograft comparison. Only the roughly 30 '-whole_genome' samples (mutation presence/absence, data_cna_hg19.seg, data_log2_cna.txt) carry between-sample signal, and clonal-prevalence methods (VAF/CCF, PyClone-style) cannot be run because they need allele counts plus copy number and purity.",
+      "from": [
+        "sl-biodsa-test-44f3ebe2eca3"
+      ],
+      "reason": "Most rows in the mutation file are targeted; an analysis that uses them would get a guaranteed, meaningless result and any VAF-based plan would fail. This determines which data the whole analysis rests on.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-542480f32419"
+      }
+    },
+    {
+      "text": "PITFALL: the hypothesis is about INITIAL engraftment, but the xenograft that has WGS is at a different passage for each patient (sample IDs show X0, X1, X2, X3, X4, X5). A tumour-vs-xenograft difference can therefore come from later serial passaging rather than from engraftment; copy-number change is known to accumulate with passage number and with fragment splitting. SA429 and SA496 have no patient-tumour sample and cannot inform engraftment at all. CHECK: parse the passage number from each SAMPLE_ID (digit after 'X'), list which patients have a tumour WGS paired with an X0/X1 WGS versus only a later passage, and see whether your divergence metric grows with passage number. IF SO: report results stratified by passage, base the engraftment conclusion on the tumour-vs-X0/X1 pairs, treat tumour-vs-late-passage pairs as an upper bound on engraftment change, and use within-line early-vs-late xenograft WGS pairs (reported as SA501 X1A vs X5A and SA429 X2A vs X5A) to gauge how much change passaging alone produces.",
+      "from": [
+        "sl-biodsa-test-6dca0592a7ea"
+      ],
+      "reason": "The claim is specifically about the first engraftment step; without stratifying by passage the analysis would test a different question (tumour vs any later xenograft).",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-7ad15800c83c"
+      }
+    },
+    {
+      "text": "PITFALL: tumour purity jumps at first engraftment because human stroma is rapidly replaced by mouse stroma, whose reads do not count toward the human genome. A purer xenograft yields MORE detected mutations and LARGER log2 copy-ratio amplitudes than the patient tumour with no change in clonal composition (a one-copy gain is log2 = 0.585 only at 100% purity and shrinks toward 0 as purity falls). Published work attributes larger patient-vs-PDX than PDX-vs-PDX copy-number deviations to stromal dilution of the patient sample. CHECK: for each tumour/xenograft WGS pair, put both copy-number profiles on common bins and regress xenograft log2 on tumour log2; a high correlation with slope > 1 is pure amplitude scaling. Also check whether xenograft-only mutations outnumber tumour-only ones in nearly every pair and whether TMB is systematically higher in xenografts (the purity signature). IF SO: do not use fixed gain/loss thresholds (e.g. +/-0.3) or raw mutation-count/TMB differences as evidence of a clonal change; use scale-invariant comparisons (correlation, or rescale the tumour profile by the fitted slope) and look for bins that deviate from the fitted line (state changes). Mutations present in the tumour but absent from the purer xenograft are much harder to explain by purity than xenograft-only ones.",
+      "from": [
+        "sl-biodsa-test-22bf329fc626"
+      ],
+      "reason": "Purity is unrecorded in the data and confounds both the mutation and copy-number comparisons in one direction; without this the naive comparison measures stromal content, not clonal composition.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-b3d85a1a7ad6"
+      }
+    },
+    {
+      "text": "PITFALL: segment-level copy-number comparisons in data_cna_hg19.seg are not like-for-like. The library reports that xenograft WGS samples have roughly 1.5-3x more segments than patient tumours (tumours about 4,000-11,000 rows, xenografts about 9,500-19,800), breakpoints do not align between samples, and quantitative CNA comparisons are sensitive to the gain/loss thresholds, baselines and dynamic range used. Counting segments, breakpoints or thresholded 'altered genes' will show xenografts as more altered purely from oversegmentation and purity. CHECK: per sample tabulate segment count, the share of segments with small num.mark, and the median/centre of seg.mean (baseline shift); then re-bin every sample onto common fixed bins (e.g. 1 Mb, length- or marker-weighted mean), dropping tiny segments, sex chromosomes and bins missing in either sample. THEN: compare pairs on the common bins with a purity-robust metric (correlation, or discordance after rescaling and re-centring each profile) and require a discordant region to be large (multi-Mb or arm-level) before calling it a copy-number difference. Published DNA-based analyses that did this still disagree on magnitude, so report the size of the effect per pair, not just whether any difference exists.",
+      "from": [
+        "sl-biodsa-test-c0fab2653b7a"
+      ],
+      "reason": "The seg file is one of the two informative data sources; this changes how it must be processed before any tumour-vs-xenograft copy-number metric is meaningful.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-9c7115f51f76"
+      }
+    },
+    {
+      "text": "PITFALL: a mutation called in one WGS sample but not in its pair is often a detection problem, not proof of a gained or lost clone. With independent per-sample calling, published benchmarks found only 36-78% of somatic variants reproduced between technical replicates of the same DNA, and 34-80% of discordant ('heterogeneous') variants were technical noise. CHECK: for each patient compute tumour-only, xenograft-only and shared WGS mutation counts, and build a noise baseline from xenograft-vs-xenograft WGS pairs of the same line (reported as SA429 X2A vs X5A and SA501 X1A vs X5A) and from the distribution across patients. Ask whether tumour-vs-xenograft discordance clearly exceeds that baseline and whether it is structured (large blocks of private mutations in both directions) rather than a thin scatter. Evidence that is robust to call noise is: large reciprocal private sets, and private mutations co-located with a segmental copy-number change in the same pair. State in the reasoning that presence/absence alone cannot quantify clone frequencies, and interpret discordance only relative to the baseline, whichever way it comes out.",
+      "from": [
+        "sl-biodsa-test-fc6ef7e22c87"
+      ],
+      "reason": "With no read counts, mutation presence/absence is the only mutation-level signal; the teams need a noise baseline to interpret discordance instead of reading any private mutation as a clone.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-2240bb1df404"
+      }
+    },
+    {
+      "text": "PITFALL: somatic status is uncertain and is confounded with sample class. The library reports that in data_clinical_sample.txt every patient Tumor sample (13 targeted, 13 WGS) is SOMATIC_STATUS 'Unmatched' and every Xenograft sample (73 targeted, 17 WGS) is 'Matched', although every MAF row names a matched-normal barcode and the dbSNP and normal-allele columns are empty, so germline leakage cannot be filtered by annotation. Two consequences: (1) germline variants and recurrent artefacts appear in every sample of a patient, inflating the shared tumour/xenograft fraction, so a high shared fraction (Jaccard) is not by itself evidence against clonal change; (2) if the annotation reflects how variants were called, tumour and xenograft lists come from different calling regimes (cancer-only calling gave ~69% false positives in a benchmark), so one-sided calls can be a pipeline artefact; if it is only a labelling quirk the lists are comparable. CHECK: tabulate SOMATIC_STATUS for the WGS samples; flag variants recurring at the identical position in several unrelated patients; for the WGS pairs compare the character of tumour-only vs xenograft-only calls (cross-patient recurrence, share of silent/non-coding classes, per-pair counts in each direction) and look for a systematic one-sided excess in the same direction across all patients. IF FOUND: treat a direction-consistent excess as possibly technical, compute discordance with and without cross-patient recurrent sites, lean on copy-number evidence (produced per sample from depth) and on mutation differences corroborated by a copy-number change in the same pair, and state the limitation in the reasoning.",
+      "from": [
+        "sl-biodsa-test-31c3f74154bb",
+        "sl-biodsa-test-741d12cfc800"
+      ],
+      "reason": "A calling-regime difference perfectly aligned with the tumour/xenograft contrast can manufacture or hide mutation differences; the teams need to test for it and weight evidence accordingly.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-72eff5b28bc1"
+      }
+    },
+    {
+      "text": "PITFALL: mouse DNA in xenograft samples creates false 'xenograft-only' somatic calls and copy-number artefacts. Mouse reads align to about 49% of the human genome (including 409 cancer genes) and PDX samples can contain up to 70-80% mouse DNA, so mouse-specific alleles can look like mutations gained on engraftment. CHECK: among WGS mutations present in a xenograft but absent from its tumour, test recurrence across unrelated patients (identical chrom/pos/alt, or the same genes hit in xenografts of different patients and never in any tumour sample); true private somatic mutations are patient-specific, whereas mouse alleles and mapping artefacts recur. Also look for xenograft-only narrow seg segments recurring at the same coordinates across patients. IF FOUND: remove recurrent xenograft-only variants/segments before measuring tumour-vs-xenograft divergence, and report divergence with and without them.",
+      "from": [
+        "sl-biodsa-test-48e0b9582e1b"
+      ],
+      "reason": "A xenograft-specific artefact source that would otherwise be counted as mutations or copy-number changes acquired at engraftment.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-1630ad2d9e2e"
+      }
+    },
+    {
+      "text": "PITFALL: pseudoreplication. The roughly 117 samples come from only 15 patients (13 with a patient-tumour sample), many xenograft samples are serial passages or sibling transplants of one line, and mutations within a patient are not independent observations. Pooling samples or mutations across patients in one test (chi-square/Fisher on pooled counts, t-test over all samples) inflates significance and lets one divergent line drive the result. CHECK: confirm the number of independent tumour-to-xenograft WGS pairs (one per patient, at most 13) and make the patient/line the unit of analysis. THEN: summarise a divergence metric per patient, report how many lines show a change that exceeds the noise baseline (with the per-line values), and use paired per-patient summaries or a sign/Wilcoxon test across patients. Decide before looking at results what counts as support for a general claim that selection 'occurs' (for example a clear change in a majority of lines versus in a single line).",
+      "from": [
+        "sl-biodsa-test-3f9ade659a37"
+      ],
+      "reason": "Sets the correct unit of analysis and a pre-specified decision rule, which changes both the statistics and how a mixed per-line result is turned into a label.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-3d0497544147"
+      }
+    },
+    {
+      "text": "PITFALL: a genomic difference between the sequenced tumour piece and the xenograft is not by itself fitness-driven selection. PDX establishment imposes a bottleneck in which the graft often represents a single subclone of the region it came from; large studies found patient-vs-PDX copy-number differences comparable to multi-region variation within one patient tumour, with random fragment-splitting drift a major contributor. Selection versus sampling/drift is normally separated by independent replicate engraftments in which the same clone wins reproducibly. CHECK: look for replicate transplants of the same tumour with informative data (sample IDs with letter suffixes such as X1A/X1B/X1C). The library reports that WGS exists for only one xenograft per passage and that replicates have only the uninformative targeted rows; confirm this. EITHER WAY: state explicitly which meaning of 'clonal selection' your conclusion uses - (a) a change in clonal composition between tumour and engrafted xenograft, or (b) deterministic fitness selection as opposed to drift/spatial sampling - say which of these the available data can and cannot address, and do not claim more than the data show.",
+      "from": [
+        "sl-biodsa-test-be796b894f84"
+      ],
+      "reason": "The hypothesis term 'clonal selection' has two readings that the data may support to different degrees; the teams must choose and state the reading because it governs the label and its justification.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-01a7a52f3b58"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat 'the xenograft differs from the sequenced patient-tumour piece by more than purity explains' as the same thing as 'clonal selection'. Neither could separate it from spatial sampling of the tumour, a neutral bottleneck, or drift, and both say so; the label still rests on that equation.",
+      "Both teams treat passage X1 as 'initial engraftment'. Only one line (SA536) has a sample labelled X0 at all; the other six 'early' pairs are tumour vs X1. Neither team tested whether X0 and X1 denote the same step, so the number of pairs that really measure initial engraftment may be 7 or 1.",
+      "Both teams assume the WGS rows of the mutation table are a like-for-like call set for tumour and xenograft. The WGS rows are a filtered subset (81-1,514 SNVs per 'whole genome', SNVs only, almost no intergenic calls, 15-37% of rows per sample classed as 'RNA' in pseudogene/lncRNA/snoRNA-type genes), and SOMATIC_STATUS is Unmatched for every tumour and Matched for every xenograft. Tumour-private calls, on which both teams lean, were never checked for call quality beyond cross-patient recurrence (team A) and substitution spectrum (team B).",
+      "Both teams use a 'purity-only' null in which the xenograft log2 profile is a single linear (A) or monotone (B) function of the tumour profile, and read multi-Mb runs off that line as copy-number state changes. Neither measured how often the run detector fires when no clonal change is possible (autocorrelated wave noise, different segmentation density, tumour normalised without and xenograft with a matched normal).",
+      "Both teams use across-patient statistics computed on all 13 pairs (team A: co-location Wilcoxon; team B: Spearman between SNV loss and CNA discordance) as support, although 6 of the 13 pairs are late passage and both teams found divergence rises with passage. Passage is a common cause of both variables in those tests."
+    ],
+    "unused_evidence": [
+      "The per-patient targeted locus lists. Both teams discarded them as uninformative because they are identical across samples of a patient and carry no allele counts. But the list is a curated per-patient panel (52-184 loci) that only partly overlaps the WGS rows (for example about 40% of one patient's panel is in its WGS union, about 94% of another's). Membership of a WGS call in the patient's panel is a per-variant attribute neither team used; it could indicate which WGS calls the study itself treated as worth following, and whether tumour-private calls are among them.",
+      "SA542T-whole_genome. Team A called it an empty row; team B noted it has CNA only. It is a full column in data_log2_cna.txt (about 29,300 gene values) with a nearly flat profile (SD about 0.06, far flatter than any other sample) and is absent from the seg and mutation files. Neither team asked what it is for or used it as an empirical picture of what a tumour-class sample with almost no copy-number signal looks like after this pipeline.",
+      "Variant_Classification and gene identity of the WGS calls. Not used by either team to compare private vs shared calls, although a large share of WGS rows sit in 'RNA'-class and pseudogene/paralogue loci where mapping artefacts concentrate.",
+      "Chromosome X (and Y) in the seg file. Team A restricted to autosomes; team B does not say. Length-weighted X means differ strongly between some samples of the same line.",
+      "The gene-level table data_log2_cna.txt as an independent re-derivation of the copy-number comparison: both teams' CNA result comes from one re-binning of the seg file.",
+      "The two patient-ID series (SA429-SA501 and SA530-SA536). Not evidence of primary vs metastatic origin, but the only cohort structure visible in the data; neither team checked whether its finding holds in both series."
+    ],
+    "unresolved_weak_points": [
+      "Team A: 'whether early-passage differences exceed technical noise'. Reported, not resolved. Team A's pre-declared rule (True only if a majority of pairs, including early ones, diverge clearly above the xenograft-xenograft baseline) was by its own account not met; it re-read the baseline as biological passage change and chose True anyway. The rule was changed after seeing the data.",
+      "Team A: the co-location result (tumour-only mutations in regions the xenograft lost) is 'driven mostly by late-passage pairs'. Reported, not re-run on the seven early pairs.",
+      "Team B: no allele counts, so clonal prevalence is never measured; the noise floor comes from one line and 8 mutations (4 of 8 'lost' calls reappear later). Reported, not resolved; no interval was put on that floor.",
+      "Team B: 'the cleanest support comes from just two purity-matched pairs (SA493, SA533)'. Reported, not resolved; the general claim rests on two lines, and the across-patient correlation offered as wider support uses all 13 pairs.",
+      "Both: selection vs sampling/drift and the primary-vs-metastatic clause are named as untestable and then set aside without saying which of the task's three label definitions that leaves them in."
+    ],
+    "second_readings": [
+      "'Clonal selection' may mean (a) any change in clonal composition between tumour and xenograft, or (b) a measured shift in clonal prevalence / non-random outgrowth of particular clones. The data have no allele counts, so (b) is not measurable; under that reading the choice is between True and Not verifiable, not True and False.",
+      "'Initial engraftment' may mean patient tumour to the first mouse (passage 0) rather than tumour to X1. Under that reading only SA536 T vs X0 addresses it, and both teams list SA536 among the low-purity, noise-limited pairs.",
+      "'Primary and metastatic breast tumors' may be read as a claim that has to hold in both kinds of tumour. No field distinguishes them (every row is 'Invasive Breast Cancer'), so that clause cannot be checked; a strict reader would call the hypothesis as stated not testable here, a loose reader would treat the phrase as a description of the cohort.",
+      "'Occurs' may be read as 'in at least some lines' or 'as a general rule'. The teams report roughly four of seven early pairs with a signal and one line with none; the label depends on which reading is used."
+    ],
+    "verdict": "Moderate to low trust. Both teams did the same analysis from the same handed-down pitfall list, both have confidence near 0.6, and the label survives only by reading 'any tumour-xenograft difference beyond purity in about four of seven X1 pairs' as clonal selection at initial engraftment, with no measured noise floor, no allele counts, no primary/metastatic field, and team A departing from its own pre-declared rule. The real open choice is between the agreed label and 'Not verifiable', and the questions above are aimed at that boundary.",
+    "questions": [
+      {
+        "to": "bd20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your plan fixed a decision rule before you saw results, and your notes say that rule was not met, yet the label was kept. Run this check: for the seven tumour-vs-X0/X1 pairs only, build a no-change null for your off-line run detector (for example block-permute or circularly shift each pair's 1 Mb residual track within chromosomes, keeping its autocorrelation, and count how many >=10 Mb runs the detector then reports), and compare each pair's observed count with that null. Then apply your pre-declared rule exactly as written to those per-pair results. Does the outcome of that check change your method or the label the rule gives, and if you still depart from the rule, which number in the data justifies it?",
+        "from": [
+          "sl-biodsa-test-ef85d21e6090",
+          "sl-biodsa-test-3384b25d9f80",
+          "sl-biodsa-test-f0967ce7b6db"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-8b6bdced258f"
+      },
+      {
+        "to": "bd20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your co-location test (tumour-only mutations falling in regions the xenograft lost; 11 positive, 0 negative across 13 patients) is, by your own note, driven mostly by late-passage pairs, and you found divergence rises with passage. Re-run it on the seven X0/X1 pairs alone and report the per-pair values, the sign count and the test result. Does the result for early pairs alone change whether you use this test as evidence about initial engraftment?",
+        "from": [
+          "sl-biodsa-test-f0967ce7b6db"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-19f927a142e2"
+      },
+      {
+        "to": "bd20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You rely on tumour-only WGS calls but tested their quality only by cross-patient recurrence. Two columns were not used. (1) Variant_Classification and Hugo_Symbol: 15-37% of each WGS sample's rows are class 'RNA', many in pseudogene, lncRNA and snoRNA-type loci. (2) The patient's targeted locus list, which you discarded as carrying no per-sample signal but which is a per-variant attribute of each WGS call (in the list or not). For each tumour-xenograft pair, tabulate tumour-only vs shared calls by variant class and by membership in that patient's targeted list. If tumour-only calls differ in composition from shared calls, does that change how you count them, and does the early-pair result survive when the suspect classes are removed?",
+        "from": [
+          "sl-biodsa-test-9546a3914afd",
+          "sl-biodsa-test-d91e335972e2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-9d75e3d2fc61"
+      },
+      {
+        "to": "bd20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You grouped X0 and X1 as 'initial engraftment'. In the clinical table, list which patients have any sample labelled X0 and which start at X1; note that one line has both an X0 and an X1 sample. Report your divergence results separately for the tumour-vs-X0 pair and for the tumour-vs-X1 pairs, and say what your conclusion about initial engraftment would rest on if X1 already includes one mouse-to-mouse transfer. Separately, you recorded SA542T as an empty row; open its column in data_log2_cna.txt, describe what that sample is, and say whether it gives you any usable picture of pipeline noise in a tumour-class sample. Does either result change your method?",
+        "from": [
+          "sl-biodsa-test-3384b25d9f80"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-99e8395e1729"
+      },
+      {
+        "to": "bd20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your cross-modality result (tumour-private SNV fraction vs purity-unexplained CNA change, 13 pairs) includes six late-passage pairs, and passage number can raise both variables at once. Recompute it on the seven X0/X1 pairs alone, and on all 13 with passage number partialled out or as rank-within-passage-stratum. Does the association remain, and if not, does that change which evidence you use for initial engraftment?",
+        "from": [
+          "sl-biodsa-test-0874999f32e3",
+          "sl-biodsa-test-6cdad1a0fb7e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-aedd2e50d1a6"
+      },
+      {
+        "to": "bd20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your noise floor for 'lost' calls comes from one line and eight mutations, and your plan said the label goes to Not verifiable if WGS set differences cannot be told from call noise. Put an exact confidence interval on that reappearance rate, do the same reverse-direction check wherever a line has more than one xenograft WGS sample, and then state for each of the seven early pairs whether its tumour-private fraction exceeds the upper end of the noise range. How many early pairs clear it, and does that count change your method or the branch of your own plan that applies?",
+        "from": [
+          "sl-biodsa-test-0874999f32e3",
+          "sl-biodsa-test-a1a6f5c1d98e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-63afea2f160c"
+      },
+      {
+        "to": "bd20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your cleanest support is two purity-matched pairs. For those two pairs, and then for the other five early pairs, run these checks on the tumour-private calls: (1) are they concentrated inside the discordant copy-number regions you located, or spread across the genome; (2) how do they split by Variant_Classification and gene type compared with shared calls (15-37% of each WGS sample's rows are class 'RNA', many in pseudogene/lncRNA/snoRNA-type loci); (3) are they in that patient's targeted locus list at the same rate as shared calls. Does the pattern you find change how much weight the tumour-private calls can carry, and is the copy-number change in those two pairs still supported by an independent second derivation from data_log2_cna.txt?",
+        "from": [
+          "sl-biodsa-test-0874999f32e3"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-bb21330e4231"
+      },
+      {
+        "to": "bd20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You grouped X0 and X1 as first passage. List which patients have any sample labelled X0 and which start at X1 (one line has both), and report your SNV and CNA results separately for the tumour-vs-X0 pair and the tumour-vs-X1 pairs. Also split your seven early pairs by the two patient-ID series visible in the data (SA4xx/SA50x vs SA53x) and say whether the finding holds in both. Given that no field marks a tumour as primary or metastatic and no allele counts exist, do these results change your method, and which of the task's three label definitions does each clause of the hypothesis fall under?",
+        "from": [
+          "sl-biodsa-test-6cdad1a0fb7e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-adbe22bf9401"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In patient-derived xenograft studies, what do passage labels such as X0, X1, X2 (or P0/P1, F0/F1) conventionally denote? Specifically, is passage 0 the first tumour grown in a mouse directly from patient tissue and passage 1 the first mouse-to-mouse transplant, or is the first mouse tumour usually numbered 1? Do conventions differ between groups?",
+          "why": "The claim is about initial engraftment. Whether a sample at passage 1 measures the patient-to-mouse step alone or also one serial transfer decides how many tumour-xenograft pairs actually address the claim.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In bulk-sequencing comparisons of a patient tumour with its xenograft, how is 'clonal selection at engraftment' operationally defined and demonstrated? Is a change in presence/absence of somatic variant calls plus copy-number state differences accepted as evidence, or do published methods require allele counts and inferred clonal prevalences (mutation-cluster cellular frequencies) to show that clone proportions shifted? What controls are used to separate it from spatial sampling of the tumour and from detection noise?",
+          "why": "The data offer variant presence/absence and copy-number profiles but no read counts. Whether that kind of evidence is conventionally enough to support a clonal-selection claim, or whether the quantity is unmeasurable without allele frequencies, is the boundary between a supported claim and one that cannot be verified.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In cBioPortal-format studies, what does the sample-level SOMATIC_STATUS field (Matched / Unmatched) mean, who assigns it, and does 'Unmatched' imply that somatic mutation and copy-number calls for that sample were made without a matched normal even when the mutation file lists a matched-normal barcode for every row?",
+          "why": "The field takes one value for all samples of one class being compared and the other value for all samples of the other class. If it reflects the calling pipeline, private mutation calls and copy-number differences between the two classes could be pipeline artefacts rather than biology; if it is only a curation label, the call sets are comparable.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In patient-derived xenograft studies, what do passage labels such as X0, X1, X2 (or P0/P1, F0/F1) conventionally denote? Specifically, is passage 0 the first tumour grown in a mouse directly from patient tissue and passage 1 the first mouse-to-mouse transplant, or is the first mouse tumour usually numbered 1? Do conventions differ between groups?",
+          "answer": "Conventions differ between groups, so the label alone does not fix the meaning. Zero-based convention: NCI PDMR states that 'PDX model nomenclature begins with passage 0 (P0) which represents tumor material obtained from a mouse that was implanted with Originator material'; the Jackson Laboratory protocol speaks of P0 tumours when a graft establishes, then P1, and calls P2 'the tertiary passage'; the Tentler et al. 2012 review says 'the generation harbouring the patient-derived material is termed F0, with subsequent generations numbered consecutively (F1, F2, F3)', some groups writing G0, G1. Under this convention passage 0 is the first mouse tumour and passage 1 is the first mouse-to-mouse transplant. One-based convention: the Lai et al. 2017 review (Fig. 1) labels the patient's tumour P0, the first engrafted mice P1 and the secondary recipients P2, so there the first mouse tumour is numbered 1. Practical rule for a given dataset: if xenograft-class samples carry the label X0 alongside separately labelled patient tumours, only the zero-based reading is consistent, so X0 measures the patient-to-mouse step alone and X1 measures engraftment plus one serial transfer. A fifth source (Mattar et al. 2018, MSK) appeared to give the zero-based definition in its search snippet, but the fetched text did not include that passage, so it is not relied on.",
+          "sources": [
+            "https://dctd.cancer.gov/drug-discovery-development/reagents-materials/pdmr/models",
+            "https://tumor.informatics.jax.org/mtbwi/live/www/html/SOCHelp.html",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3928688/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5427553/"
+          ],
+          "confidence": "high that conventions differ and that zero-based numbering is used by the large repositories; medium for which convention a particular study uses without its own methods text",
+          "deliveries": {
+            "bd20-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-d42c84c08917"
+            },
+            "bd20-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-849915d981fc"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In patient-derived xenograft studies, what do passage labels such as X0, X1, X2 (or P0/P1, F0/F1) conventionally denote? Specifically, is passage 0 the first tumour grown in a mouse directly from patient tissue and passage 1 the first mouse-to-mouse transplant, or is the first mouse tumour usually numbered 1? Do conventions differ between groups? ANSWER: Conventions differ between groups, so the label alone does not fix the meaning. Zero-based convention: NCI PDMR states that 'PDX model nomenclature begins with passage 0 (P0) which represents tumor material obtained from a mouse that was implanted with Originator material'; the Jackson Laboratory protocol speaks of P0 tumours when a graft establishes, then P1, and calls P2 'the tertiary passage'; the Tentler et al. 2012 review says 'the generation harbouring the patient-derived material is termed F0, with subsequent generations numbered consecutively (F1, F2, F3)', some groups writing G0, G1. Under this convention passage 0 is the first mouse tumour and passage 1 is the first mouse-to-mouse transplant. One-based convention: the Lai et al. 2017 review (Fig. 1) labels the patient's tumour P0, the first engrafted mice P1 and the secondary recipients P2, so there the first mouse tumour is numbered 1. Practical rule for a given dataset: if xenograft-class samples carry the label X0 alongside separately labelled patient tumours, only the zero-based reading is consistent, so X0 measures the patient-to-mouse step alone and X1 measures engraftment plus one serial transfer. A fifth source (Mattar et al. 2018, MSK) appeared to give the zero-based definition in its search snippet, but the fetched text did not include that passage, so it is not relied on. HOW SURE: high that conventions differ and that zero-based numbering is used by the large repositories; medium for which convention a particular study uses without its own methods text. SOURCES: https://dctd.cancer.gov/drug-discovery-development/reagents-materials/pdmr/models, https://tumor.informatics.jax.org/mtbwi/live/www/html/SOCHelp.html, https://pmc.ncbi.nlm.nih.gov/articles/PMC3928688/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5427553/."
+        },
+        {
+          "question": "In bulk-sequencing comparisons of a patient tumour with its xenograft, how is 'clonal selection at engraftment' operationally defined and demonstrated? Is a change in presence/absence of somatic variant calls plus copy-number state differences accepted as evidence, or do published methods require allele counts and inferred clonal prevalences (mutation-cluster cellular frequencies) to show that clone proportions shifted? What controls are used to separate it from spatial sampling of the tumour and from detection noise?",
+          "answer": "The methods read define it quantitatively, as a shift between samples in the cellular prevalence of clusters of mutations, and that quantity requires allele counts. The PyClone paper takes as input deeply sequenced mutations (coverage >1000x) plus allele-specific copy number at each locus, corrects for normal-cell contamination, and describes 'sets of mutations whose cellular prevalences shift together' across samples as 'a route to precisely identifying clones whose prevalences are changing under selective pressures'. The practical guide to subclonal reconstruction says variant allele frequency must be converted to cellular prevalence or cancer cell fraction using allele-specific copy number and purity. Presence/absence of calls plus copy-number profiles therefore cannot measure clone proportions. At most they can show the coarse outcome: a block of tumour mutations or a copy-number state missing from the xenograft, i.e. a bottleneck to a subset of clones. No source read states that presence/absence alone is, or is not, an accepted demonstration, so the web does not settle that boundary. Spatial-sampling control, from the one design read (TRACERx lung PDX): multi-region sequencing of the patient tumour and several independent PDX models from different regions of the same tumour. That study found engraftment is a genomic bottleneck with models often representing a single tumour subclone, that different subclones were captured by independent models, and that later evolution in the mouse added only modestly to tumour-PDX distance; it also treats removal of mouse reads as a required step. Detection-noise control: deep targeted resequencing is implied by PyClone's input requirement, but no methods section describing it was read here, so that part is weaker.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4864026/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7867630/",
+            "https://www.nature.com/articles/s41467-024-47547-3"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd20-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-f4b85cc3b146"
+            },
+            "bd20-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-d3ce7f110e38"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In bulk-sequencing comparisons of a patient tumour with its xenograft, how is 'clonal selection at engraftment' operationally defined and demonstrated? Is a change in presence/absence of somatic variant calls plus copy-number state differences accepted as evidence, or do published methods require allele counts and inferred clonal prevalences (mutation-cluster cellular frequencies) to show that clone proportions shifted? What controls are used to separate it from spatial sampling of the tumour and from detection noise? ANSWER: The methods read define it quantitatively, as a shift between samples in the cellular prevalence of clusters of mutations, and that quantity requires allele counts. The PyClone paper takes as input deeply sequenced mutations (coverage >1000x) plus allele-specific copy number at each locus, corrects for normal-cell contamination, and describes 'sets of mutations whose cellular prevalences shift together' across samples as 'a route to precisely identifying clones whose prevalences are changing under selective pressures'. The practical guide to subclonal reconstruction says variant allele frequency must be converted to cellular prevalence or cancer cell fraction using allele-specific copy number and purity. Presence/absence of calls plus copy-number profiles therefore cannot measure clone proportions. At most they can show the coarse outcome: a block of tumour mutations or a copy-number state missing from the xenograft, i.e. a bottleneck to a subset of clones. No source read states that presence/absence alone is, or is not, an accepted demonstration, so the web does not settle that boundary. Spatial-sampling control, from the one design read (TRACERx lung PDX): multi-region sequencing of the patient tumour and several independent PDX models from different regions of the same tumour. That study found engraftment is a genomic bottleneck with models often representing a single tumour subclone, that different subclones were captured by independent models, and that later evolution in the mouse added only modestly to tumour-PDX distance; it also treats removal of mouse reads as a required step. Detection-noise control: deep targeted resequencing is implied by PyClone's input requirement, but no methods section describing it was read here, so that part is weaker. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC4864026/, https://pmc.ncbi.nlm.nih.gov/articles/PMC7867630/, https://www.nature.com/articles/s41467-024-47547-3."
+        },
+        {
+          "question": "In cBioPortal-format studies, what does the sample-level SOMATIC_STATUS field (Matched / Unmatched) mean, who assigns it, and does 'Unmatched' imply that somatic mutation and copy-number calls for that sample were made without a matched normal even when the mutation file lists a matched-normal barcode for every row?",
+          "answer": "It is a curation label added by the cBioPortal datahub curator, not an output of the calling pipeline, and the web does not settle what 'Unmatched' implies for the calls. The datahub curation guide instructs curators to 'always include matched normal status for all samples with column SOMATIC_STATUS added' and to normalise its values to Matched or Unmatched. In a public example data_clinical_sample.txt the description line for the column is just 'Somatic Status', with no further definition. Nothing read links the field to the MAF Matched_Norm_Sample_Barcode column, says which takes precedence when they disagree, or says the importer uses it. So the field is meant to record whether a sample had a matched normal, but it is neither proof that the two sample classes were called by different pipelines nor proof that they were not; a value that tracks sample class exactly is equally consistent with a per-class curation rule. The calling regime should be treated as unknown and tested for in the data. The excerpt of the File-Formats page returned by the gateway stopped before the mutation-format section, so the MAF column definitions were not read.",
+          "sources": [
+            "https://github.com/cBioPortal/datahub/blob/master/docs/curation-process.md",
+            "https://zenodo.org/records/8232723/files/data_clinical_sample.txt?download=1",
+            "https://github.com/cBioPortal/cbioportal/blob/master/docs/File-Formats.md"
+          ],
+          "confidence": "medium on who assigns it and what it is meant to record; low on whether Unmatched means the calls lacked a matched normal",
+          "deliveries": {
+            "bd20-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-765a09bb06d2"
+            },
+            "bd20-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-1f253455454c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cBioPortal-format studies, what does the sample-level SOMATIC_STATUS field (Matched / Unmatched) mean, who assigns it, and does 'Unmatched' imply that somatic mutation and copy-number calls for that sample were made without a matched normal even when the mutation file lists a matched-normal barcode for every row? ANSWER: It is a curation label added by the cBioPortal datahub curator, not an output of the calling pipeline, and the web does not settle what 'Unmatched' implies for the calls. The datahub curation guide instructs curators to 'always include matched normal status for all samples with column SOMATIC_STATUS added' and to normalise its values to Matched or Unmatched. In a public example data_clinical_sample.txt the description line for the column is just 'Somatic Status', with no further definition. Nothing read links the field to the MAF Matched_Norm_Sample_Barcode column, says which takes precedence when they disagree, or says the importer uses it. So the field is meant to record whether a sample had a matched normal, but it is neither proof that the two sample classes were called by different pipelines nor proof that they were not; a value that tracks sample class exactly is equally consistent with a per-class curation rule. The calling regime should be treated as unknown and tested for in the data. The excerpt of the File-Formats page returned by the gateway stopped before the mutation-format section, so the MAF column definitions were not read. HOW SURE: medium on who assigns it and what it is meant to record; low on whether Unmatched means the calls lacked a matched normal. SOURCES: https://github.com/cBioPortal/datahub/blob/master/docs/curation-process.md, https://zenodo.org/records/8232723/files/data_clinical_sample.txt?download=1, https://github.com/cBioPortal/cbioportal/blob/master/docs/File-Formats.md."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd20-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd20-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd20-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd20-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd20-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 89.04682774993125,
+      "cost_usd": 0.16808299999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 107.95600104203913,
+      "cost_usd": 0.1641202,
+      "error": null
+    },
+    {
+      "agent": "bd20-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 213.3230835000286,
+      "cost_usd": 0.3516069,
+      "error": null
+    },
+    {
+      "agent": "bd20-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 231.0614624589216,
+      "cost_usd": 0.41290119999999997,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 287.6075197500177,
+      "cost_usd": 0.5630238,
+      "error": null
+    },
+    {
+      "agent": "bd20-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 181.8727825829992,
+      "cost_usd": 0.41701020000000005,
+      "error": null
+    },
+    {
+      "agent": "bd20-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 282.71351324999705,
+      "cost_usd": 0.5253062000000001,
+      "error": null
+    },
+    {
+      "agent": "bd20-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 335.1266467499081,
+      "cost_usd": 0.638214,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

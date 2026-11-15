@@ -1,0 +1,532 @@
+{
+  "study": "bd38",
+  "status": "replicated",
+  "final": {
+    "agent": "bd38-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd38/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd38-library": "fable",
+    "bd38-team-a": "fable",
+    "bd38-team-b": "fable",
+    "bd38-team-c": "fable",
+    "bd38-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd38-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd38/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd38-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd38/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd38-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd38/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd38-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd38/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd38-team-a",
+        "bd38-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd38-team-a",
+        "bd38-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Scope of the claim: the study supplies only three tables (patient, sample, somatic point mutations/small indels); there is no copy-number, fusion or expression table. The hypothesis is worded in terms of mutation, and the variables needed for a mutation-significance test (somatic mutations per gene per sample) are present, so the missing copy-number table does not by itself make the claim untestable. Confirm which data types exist, restrict the conclusion to somatic SNV/indel significance, say so in the reasoning, and do not extrapolate to overall pathway alteration (amplification of ERBB2/PIK3CA or deletion of PTEN cannot be seen here).",
+      "from": [
+        "sl-biodsa-test-3a1b0ce1c418"
+      ],
+      "reason": "It bears directly on the choice between 'Not verifiable' and a True/False label, and on how far the conclusion may be stretched.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-b95e63589e96"
+      }
+    },
+    {
+      "text": "'ERBB-PI3K pathway' has no single agreed gene list, and the result can flip with the definition: a broad database set (e.g. KEGG PI3K-Akt, hundreds of genes including collagens and laminins) dilutes signal and adds long passenger genes, while a narrow curated core (ERBB receptors, PI3K catalytic/regulatory subunits, PTEN, AKT, MTOR and similar) concentrates it. Trying several lists and keeping the one that is significant is a forking-paths error. Write down the core gene list before looking at any counts, base the label on that pre-specified core list, then rerun with one narrow and one broad definition as sensitivity analyses and say explicitly if the conclusion depends on the definition.",
+      "from": [
+        "sl-biodsa-test-0a15fb5e1715"
+      ],
+      "reason": "The gene-set definition is the largest analyst degree of freedom in this task and can change the label.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-c681955f190b"
+      }
+    },
+    {
+      "text": "Gene matching in data_mutations.txt: the library's header read found Entrez_Gene_Id = 0 in the mutation table, so selecting pathway genes by Entrez ID would silently return nothing. The file has both Hugo_Symbol and SYMBOL columns, and genes may appear under alias or outdated symbols (e.g. ERBB2 = HER2/NEU, ERBB3 = HER3, MTOR = FRAP1, PTEN = MMAC1). Tabulate Entrez_Gene_Id, match on Hugo_Symbol after alias resolution, compare Hugo_Symbol with SYMBOL, and list in the reasoning which pathway genes were found mutated and which had zero rows, so that a zero is a real zero and not a failed join.",
+      "from": [
+        "sl-biodsa-test-91af3700f695"
+      ],
+      "reason": "A failed join would produce a spurious 'no mutations in the pathway' result.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-20805462bc50"
+      }
+    },
+    {
+      "text": "Sample identifiers may not match between tables: the library's header read saw Tumor_Sample_Barcode values like 'NPC015D' in the mutation table but clinical IDs like 'NPC15F', 'NPC29F'; it also saw roughly 55 samples in the clinical sample table, roughly 56 patients, and 56 distinct barcodes in the mutation table (header-level observations; verify). A naive merge on ID can drop most samples, give the wrong denominator, or attach TMB_NONSYNONYMOUS to the wrong tumour. List the distinct IDs in each table, compute the exact-match overlap, try a normalised key (strip leading zeros, drop the trailing letter) and check it is one-to-one. Either build an explicit verified ID map or compute per-sample mutation load directly from the mutation table (rows per barcode); state the denominator (number of tumours sequenced) and how it was derived.",
+      "from": [
+        "sl-biodsa-test-6a066d112314"
+      ],
+      "reason": "The number of tumours and each tumour's mutation load are inputs to any significance test; a bad join corrupts both.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-f1acdaece51f"
+      }
+    },
+    {
+      "text": "Not every row of data_mutations.txt is a clean somatic coding event: the library's scan reported 68 of 1575 rows with FILTER = common_variant (population-frequency flag, possible germline leakage) and about 21 rows classed Intron/Flank/RNA/IGR; Mutation_Status and Validation_Status are empty and cannot be used to filter. Tabulate FILTER and Variant_Classification overall and within the pathway genes (look at ExAC_AF/GMAF and t_alt_count/t_depth for flagged rows). Run the test with and without the common_variant and non-coding rows, applying the same filter to both the pathway counts and the background counts, and report whether the conclusion changes.",
+      "from": [
+        "sl-biodsa-test-40a23ea007bf"
+      ],
+      "reason": "These rows change both the pathway numerator and the background denominator, so the filtering choice can move the p-value.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-4bb3720383f8"
+      }
+    },
+    {
+      "text": "The mutation table is essentially nonsynonymous-only (library scan: 4 'Silent' rows out of 1575). Methods that estimate each gene's background mutation rate from synonymous mutations (dNdScv, MutSigCV-style silent-based backgrounds) cannot be run validly: with synonymous calls absent dN/dS tends to infinity and everything looks selected. Confirm by tabulating Variant_Classification. Do not compute dN/dS or a silent-based background rate; build the null from the nonsynonymous load itself (per-sample nonsynonymous count spread over the coding exome, scaled by each gene's coding length), state that this background includes drivers and ignores gene-specific covariates, and treat the resulting p-value as approximate.",
+      "from": [
+        "sl-biodsa-test-daf074714cb6"
+      ],
+      "reason": "It rules out the standard significance tools and determines what kind of background model is defensible on this data.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-e5f9b1094b9f"
+      }
+    },
+    {
+      "text": "Reporting 'X% of tumours carry a mutation in the pathway' is not a significance test. A gene set with many or long genes is hit in a large share of tumours by chance alone, and tests that treat all genes as equally mutable ignore gene length. Sum the coding length (bp) of the pathway genes, compute the expected number of tumours with at least one pathway mutation given each tumour's mutation rate, and compare observed with expected. Use a length-aware null (per-gene Bernoulli/binomial with probability from coding length x background rate, as in PathScan) or an empirical null from random gene sets matched on number of genes and total coding length, rather than a raw frequency or an unweighted hypergeometric test.",
+      "from": [
+        "sl-biodsa-test-ce5dda8778c2"
+      ],
+      "reason": "'Significantly mutated' needs an explicit background model; a raw frequency or length-blind test can give the wrong call in either direction.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-f513d8cb362a"
+      }
+    },
+    {
+      "text": "Use a per-tumour background rate, not one cohort-wide rate. Pooling all tumours into a single binomial inflates significance when mutation load varies between tumours, because a few high-load tumours contribute most pathway hits; unmodelled background heterogeneity is the main source of false-positive 'significantly mutated' calls. Separately, low tumour purity (typical of nasopharyngeal carcinoma, with heavy non-malignant infiltrate) lowers sensitivity for somatic calls, so both pathway hits and background counts are under-called in low-purity tumours and raw pathway frequency is a lower bound; the sample table has TUMOR_CELLULARITY_DOMINANT_CLONE_VAF and TUMOR_CELLULARITY_PATHOLOGY_REVIEW (some 'N.A.'). Check per-sample mutation counts, whether pathway-mutated tumours are the high-load ones, and how counts relate to cellularity. Prefer a test that conditions on each tumour's own mutation count (per-sample p-values combined by Fisher/Lancaster, or a Poisson-binomial across samples), which handles both load heterogeneity and purity-driven under-calling, and report a sensitivity analysis without the top-load outlier tumours.",
+      "from": [
+        "sl-biodsa-test-ae2773f4c179",
+        "sl-biodsa-test-59d220f00769"
+      ],
+      "reason": "The choice between a pooled and a per-sample background can change whether the pathway test comes out significant.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-a2d910240cae"
+      }
+    },
+    {
+      "text": "Self-contained and competitive nulls answer different questions and can disagree. A self-contained test (pathway mutated more than a background rate predicts) can be significant because of one highly mutated member gene; a competitive test (pathway mutated more than other genes of similar size) can be non-significant when many genes outside the pathway are also mutated. State which null was tested, do a leave-one-gene-out rerun and a per-gene breakdown of mutated samples, say whether the signal is spread over several pathway genes or carried by one gene, and prefer a conclusion that holds under both nulls.",
+      "from": [
+        "sl-biodsa-test-69af41d45a15"
+      ],
+      "reason": "Tells the team to check that the pathway-level call is robust to the null chosen and not driven by a single gene.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-afec91347665"
+      }
+    },
+    {
+      "text": "Fix the significance threshold and the family of tests before computing. 'Significantly mutated' for a pathway is a p/q-value against a background model, and the threshold depends on how many gene sets were tested: a scan over hundreds of gene sets needs FWER/FDR control, while a single pre-specified pathway is judged at a nominal alpha. Mixing the two (scanning many sets then quoting an uncorrected p, or Bonferroni-correcting a single pre-specified test by an imaginary family) can flip the call when p lies between about 1e-4 and 0.05. Report the nominal p for the pre-specified core list as the primary result, say whether it would survive correction for a realistic number of canonical pathways (about 10, as in curated oncogenic-pathway templates), count any extra pathway definitions or filters you ran, and call the result borderline in the reasoning if the label depends on that choice.",
+      "from": [
+        "sl-biodsa-test-0893216299c5"
+      ],
+      "reason": "The alpha/multiplicity convention can decide the label for intermediate p-values, so it must be fixed in advance.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-ddbc6a3d8238"
+      }
+    },
+    {
+      "text": "Power: with roughly 56 exomes the cohort has low power for genes mutated in a few percent of tumours (most cancer genes are mutated at 2-20% and need hundreds of tumours to detect individually), which is why pathway-level aggregation is used. Per-gene tests alone therefore cannot settle a pathway-level claim; test at the pathway level. Report the observed pathway frequency with an exact binomial confidence interval, the expected frequency under the null, and the smallest frequency the test could detect at this sample size; if the pathway test is null, say whether that reflects a frequency close to background or simply lack of power.",
+      "from": [
+        "sl-biodsa-test-efff96e905e7"
+      ],
+      "reason": "Prevents the team from deciding the label from single-gene results and makes them qualify how informative the pathway-level result is at this cohort size.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-c5fc808eb2db"
+      }
+    },
+    {
+      "text": "Counting every missense variant in a pathway gene as a pathway 'hit' mixes passengers with drivers. Expert pathway analyses count only activating hotspot mutations in oncogenes and truncating or recurrent mutations in tumour suppressors; recurrence at the same residue is independent evidence of selection that does not need a silent-mutation background. For each pathway gene list the protein changes (HGVSp_Short), the Hotspot column, Variant_Classification, and whether the same codon recurs across tumours or matches well-known activating residues. Report two tallies, all nonsynonymous and putative-driver-only, and note whether any significance rests on recurrent/known-driver events or on scattered unique missense variants.",
+      "from": [
+        "sl-biodsa-test-3cac283cea90"
+      ],
+      "reason": "Gives a second line of evidence that does not depend on the approximate background model and shows whether the result is sensitive to how a 'hit' is defined.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-750b05cbd7c6"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams equate 'significantly mutated' with a one-sided excess of non-silent mutations over a uniform, coding-length-scaled background (each tumour's own load x pathway CDS length / an assumed 25-35 Mb exome). Neither tested whether that null is calibrated in this cohort (gene-to-gene rate variation, sequence-context mutability, coverage); team B checked one gene (TTN), team A used a random-gene-set null built on a partly synthetic gene universe.",
+      "Both teams defined the pathway themselves, and the two primary lists differ in exactly the genes that carry the evidence: team A's core includes MTOR and excludes RAS; team B's set includes KRAS/NRAS/HRAS and excludes MTOR. They agree on the label but not on which calls support it, so the agreement is weaker than it looks.",
+      "Both teams treat every unflagged row as a true somatic call. The only germline screen used was the FILTER=common_variant flag; read counts and depths are empty, so no allele-fraction check is possible, and neither team looked at the per-variant population-frequency or dbSNP/COSMIC annotation of the pathway calls themselves.",
+      "Both teams treat the 56 tumours as one homogeneous batch. Sample IDs end in 'F' (42 tumours) or 'D' (14 tumours); neither team asked what the suffix denotes or whether call sets differ between the two groups.",
+      "Both teams judged a single pathway at nominal alpha 0.05 and treated a borderline rejection as 'contradicts the hypothesis'; neither ran the same test on any other canonical pathway to see what a typical result looks like in this cohort."
+    ],
+    "unused_evidence": [
+      "Functional-annotation columns in the mutation table: SIFT, PolyPhen, MA:FImpact / MA:FIS, CLIN_SIG, IMPACT, DOMAINS. They are populated (e.g. MA:FImpact has low/medium/neutral/high for most rows) and exist to separate likely-functional from likely-passenger missense calls. Both teams annotated driver status by hand instead. This matters because team A's result fails without two missense calls of uncertain function.",
+      "Population-frequency and known-variant columns: Existing_variation (filled in 473 of 1575 rows), ExAC_AF and its sub-population columns (filled in 357 rows), SOMATIC, PUBMED. They indicate whether a call is a known germline polymorphism or a catalogued somatic variant. Only the coarse common_variant flag was used; a rare germline variant below that flag's threshold would pass. Team A says it used COSMIC IDs for hand annotation but did not report population frequencies for its six calls.",
+      "The sample-ID suffix (F vs D, 42 vs 14) and the 'centre' column. Possibly a discovery/extension or tissue-type batch marker. Per-tumour conditioning absorbs differences in load but not differences in artefact type or filtering.",
+      "Reference/alternate alleles and the Codons column: the substitution spectrum per tumour (notably of the tumour holding 22% of all rows) was not examined by either team; it bears on whether the uniform background and the 'chance of hitting a hotspot codon' calculations are fair.",
+      "The patient table (stage, metastasis, smoking, survival) and tumour size / node status were unused by both. I judge these not to bear on a claim about mutation significance, so I ask no question about them."
+    ],
+    "unresolved_weak_points": [
+      "Team A named the marginal significance (6 tumours = exactly the critical count; p 0.14 without ERBB3; fails correction for about 10 pathways) and the semi-synthetic gene universe of its competitive null. It reported these but resolved none: the function of the two ERBB3 calls was not checked against the annotation columns in the file, and the competitive null was not rebuilt on real gene lengths.",
+      "Team B named the uniform background and its own gene-set definition, and said the conclusion 'leans on' the hotspot test. That test rests on three calls, two of which are in RAS genes whose membership in an ERBB-PI3K set is a definitional choice (the other team left them out of its core). Team B's own table shows the burden P rising to 0.03-0.08 without RAS; it did not report the hotspot test without RAS, nor whether the hotspot codon list was fixed before the calls were seen (its plan lists PIK3CA, ERBB2/3 and KRAS G12, not NRAS Q61).",
+      "Team B's notes say 7 calls in the 18-gene set but refer to a 'post-hoc 5 mutated genes' set; the count of distinct mutated genes is not reconciled in the record."
+    ],
+    "second_readings": [
+      "'Significantly' may be meant descriptively (the pathway is mutated in an appreciable share of cases, or stands out among pathways in this cohort) rather than as a p-value against a background model. Under that reading the relevant quantity is the case frequency and its rank among comparable pathways, which neither team computed.",
+      "'Significantly mutated' may be meant in the multiple-testing sense of a cohort-wide scan (a q-value across genes or pathways), under which a nominal p of about 0.01-0.04 would not count. Team A noted this and kept the nominal rule; team B did not address it.",
+      "'ERBB-PI3K signaling pathway' may mean only the ERBB receptors plus the PI3K/AKT arm (excluding RAS-MAPK and possibly MTOR), or the wider RTK/RAS/PI3K network. The two teams took different readings and each one's supporting calls come partly from genes the other excluded from its primary set.",
+      "'In NPC cases' is a per-case statement: the unit is the tumour (share of cases affected), not the number of mutations. Both teams did test at tumour level, so this reading is covered."
+    ],
+    "verdict": "Moderate trust. The teams agree on the label but not on the evidence: their primary gene sets differ, team A's borderline result depends on two missense calls of uncertain function, and team B's strongest evidence comes from RAS hotspots that team A's core list excludes; both rely on an uncalibrated uniform background and neither used the functional and population-frequency annotations in the file. The answer should go out only if it survives the gene-set, annotation and null-calibration checks above.",
+    "questions": [
+      {
+        "to": "bd38-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your result fails when ERBB3 is left out, and you called its two missense variants 'of uncertain function'. The mutation table has columns you did not use for this: SIFT, PolyPhen, MA:FImpact / MA:FIS, CLIN_SIG, DOMAINS, Existing_variation, ExAC_AF (and sub-population columns), SOMATIC. Print these for each of your six core-pathway calls, and for comparison give the distribution of MA:FImpact and of non-empty ExAC_AF among all missense calls in the cohort. Do any of the six carry a dbSNP ID with a non-zero population frequency (possible germline below the common_variant threshold), and are the pathway calls more often predicted functional than the cohort background? Does the result change which calls you count, or leave the method as it is?",
+        "from": [
+          "sl-biodsa-test-c09c39d02218",
+          "sl-biodsa-test-8f02560993e4"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-2f0374c7f861"
+      },
+      {
+        "to": "bd38-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You mention a correction for about 10 canonical pathways but tested only one. Write down, before counting, the gene lists of several other canonical signalling pathways of comparable total coding length, run your identical Poisson-binomial test on each, and report observed vs expected and p for all of them side by side with ERBB-PI3K. How many reach p<0.05, and where does ERBB-PI3K rank by excess and by share of cases affected? If most pathways reject, your uniform null is too permissive; if ERBB-PI3K does not stand out, the word 'significantly' may not be met on a descriptive reading. Does either outcome change your method or your decision rule?",
+        "from": [
+          "sl-biodsa-test-c09c39d02218"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-5708d8c1dae3"
+      },
+      {
+        "to": "bd38-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your competitive null drew random gene sets from a 'partly synthetic gene universe'. State exactly how the lengths of genes with no mutation in the file were generated. Then check the uniform null directly on real data: using the CDS totals recorded in the CDS_position column for mutated genes, count how many genes have calls in 2 or more, and 3 or more, tumours, and compare with the number your uniform length-scaled model predicts for an exome of about 19,000-20,000 genes. If the data show clearly more multi-tumour genes than the model predicts (overdispersion), what does your pathway p-value become when the null variance is inflated to match, and does that change the method?",
+        "from": [
+          "sl-biodsa-test-c09c39d02218"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-f60a2dd1953e"
+      },
+      {
+        "to": "bd38-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Sample IDs end in 'F' (42 tumours) or 'D' (14 tumours) and you established these are distinct tumours, but not what the suffix marks. Tabulate by suffix group: median load, share of rows flagged common_variant, the six-class substitution spectrum (from Reference_Allele / Tumor_Seq_Allele2), and the number of core-pathway calls. Also give the substitution spectrum of the tumour holding 22% of all rows against the rest. If the two groups or that tumour differ in spectrum or flag rate (a sign of different processing or artefacts), does your test need to be stratified or restricted, or does per-tumour conditioning already cover it?",
+        "from": [
+          "sl-biodsa-test-d3812f132a20",
+          "sl-biodsa-test-113e65731809"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-a6c7ef742a60"
+      },
+      {
+        "to": "bd38-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You say your conclusion leans on the hotspot test, and two of its three calls are in RAS genes. Whether RAS belongs in an 'ERBB-PI3K' set is a definitional choice, and your own table gives burden P of 0.03-0.08 without RAS. Rerun both tests on a set without KRAS/NRAS/HRAS, and separately with MTOR added: report observed vs expected, the Poisson-binomial P, and the hotspot test with the hotspot codon list fixed in advance for every gene in the set (state how many codons are on that list; your plan named PIK3CA, ERBB2/3 and KRAS G12 but not NRAS Q61). Under the decision rule in your plan, does the label still follow when the RAS calls are not available, and does that change which gene set you treat as primary?",
+        "from": [
+          "sl-biodsa-test-6512a326d250"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-840e51b20035"
+      },
+      {
+        "to": "bd38-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: List your seven pathway calls one per line (gene, tumour, protein change) and reconcile the count of distinct mutated genes with the 'post-hoc 5 mutated genes' in your notes. For each call print the columns you did not use: SIFT, PolyPhen, MA:FImpact / MA:FIS, CLIN_SIG, DOMAINS, Existing_variation, ExAC_AF (and sub-population columns), SOMATIC. Do the file's own annotations confirm your hand-scored hotspots, and does any of the remaining calls carry a dbSNP ID with non-zero population frequency (possible germline that the common_variant flag did not catch)? Does this change which calls you count, or leave the method as it is?",
+        "from": [
+          "sl-biodsa-test-ce1c2ce1f2dc",
+          "sl-biodsa-test-6512a326d250"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-df3e516b7ccf"
+      },
+      {
+        "to": "bd38-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your null is a uniform length-scaled rate, checked on one gene. Write down, before counting, the gene lists of several other canonical signalling pathways of comparable total coding length, run your identical burden test on each, and report observed vs expected and P for all of them beside ERBB-PI3K. How many reach P<0.05, and where does ERBB-PI3K rank by excess and by share of cases affected? If most pathways reject, the null is too permissive; if ERBB-PI3K does not stand out, 'significantly' may not be met on a descriptive reading or after correcting for the number of pathways. Does either outcome change your method or your decision rule?",
+        "from": [
+          "sl-biodsa-test-6512a326d250"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-cb7e8434086c"
+      },
+      {
+        "to": "bd38-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your hotspot test assumes a per-codon chance of being hit and allows up to 20x extra mutability, but you did not look at the substitution spectrum. From Reference_Allele / Tumor_Seq_Allele2 and the Codons column, compute the six-class spectrum for the cohort, for the tumour holding 22% of all rows, and separately for the 'F' (42) and 'D' (14) sample-ID groups, together with load and common_variant share per group. Are your three hotspot substitutions of the cohort's dominant mutation type, and is the 20x allowance still generous once the spectrum is taken into account? If the F and D groups differ, does the test need stratifying, or is the method unchanged?",
+        "from": [
+          "sl-biodsa-test-c6e0c41dd466"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-f4511e67733f"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In curated oncogenic signalling pathway templates (for example the pan-cancer curated pathway templates and the KEGG ErbB and PI3K-Akt maps), which pathway are KRAS/NRAS/HRAS, MTOR and the ERBB receptor genes assigned to: are RAS genes part of the PI3K pathway or of a separate RTK-RAS pathway, and when a paper speaks of an 'ERBB-PI3K signalling pathway' which genes does that phrase conventionally cover?",
+          "why": "The two teams built different gene lists and the calls that carry each team's result sit partly in genes the other team excluded; a conventional membership would settle which set is primary.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When a mutation table carries the FILTER value 'common_variant' as assigned by the standard MAF annotation pipeline used for public cancer-genomics portals (vcf2maf), what exact rule sets it: which population database and sub-populations, what allele-frequency or allele-count threshold, and would a variant with a dbSNP ID and a low but non-zero population frequency pass unflagged?",
+          "why": "Both teams used only this flag to rule out germline leakage and no read counts are available; knowing the threshold tells them whether unflagged calls with population-frequency entries still need to be examined.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "For self-contained pathway or gene-set mutation-burden tests on exome data that use a uniform, coding-length-scaled background rate without gene-specific covariates (expression, replication timing) or a silent-mutation background, how anti-conservative is the null known to be, and what simple calibration or overdispersion correction do methods papers recommend when only non-silent calls are available?",
+          "why": "Both teams' p-values lie between about 0.005 and 0.08 under exactly this kind of null, so a modest inflation of the null variance could move the result across the threshold.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In curated oncogenic signalling pathway templates (for example the pan-cancer curated pathway templates and the KEGG ErbB and PI3K-Akt maps), which pathway are KRAS/NRAS/HRAS, MTOR and the ERBB receptor genes assigned to: are RAS genes part of the PI3K pathway or of a separate RTK-RAS pathway, and when a paper speaks of an 'ERBB-PI3K signalling pathway' which genes does that phrase conventionally cover?",
+          "answer": "Curated pan-cancer templates (Sanchez-Vega 2018 gene lists, read as the table shipped with maftools): KRAS, NRAS, HRAS and all four ERBB receptors (EGFR, ERBB2, ERBB3, ERBB4) are in a separate RTK-RAS pathway (85 genes); they are NOT in the PI3K template. The PI3K template has 29 genes: AKT1, AKT2, AKT3, AKT1S1, DEPDC5, DEPTOR, EIF4EBP1, INPP4B, MAPKAP1, MLST8, MTOR, NPRL2, NPRL3, PDK1, PIK3CA, PIK3CB, PIK3R1, PIK3R2, PIK3R3, PPP2R1A, PTEN, RHEB, RICTOR, RPTOR, RPS6, RPS6KB1, STK11, TSC1, TSC2. So MTOR is PI3K; RAS and ERBB are RTK-RAS. KEGG draws the boundary differently. The KEGG ErbB signalling map hsa04012 (87 genes in the MSigDB copy) contains EGFR, ERBB2/3/4 and their ligands, PIK3CA/CB/CD/CG, PIK3R1/2/3/5, AKT1/2/3, MTOR, and also KRAS, NRAS, HRAS with the RAF-MEK-ERK arm; it does not contain PTEN, TSC1 or TSC2. The KEGG PI3K-Akt map hsa04151 contains KRAS, NRAS, HRAS, MTOR, EGFR, ERBB2/3/4, PIK3CA and AKT1 (confirmed by Entrez ID, mapped to symbols from my own knowledge; the list returned was cut off after 258 entries, before PTEN, so PTEN membership was not confirmed there). The phrase 'ERBB-PI3K signalling pathway' is not a named gene set in either resource, and the web as consulted does not settle a single conventional membership. I did not search the phrase itself because that would lead to the task's source. Two readings are defensible: a template-style list (ERBB receptors plus the PI3K/AKT/MTOR/PTEN core) excludes RAS; a KEGG-ErbB-style list includes RAS and MTOR. Neither team's list can be called the primary one on convention alone; the result should be reported for both, and the label should be flagged as definition-dependent if they disagree.",
+          "sources": [
+            "https://raw.githubusercontent.com/PoisonAlien/maftools/master/inst/extdata/oncogenic_sig_patwhays.tsv",
+            "https://www.gsea-msigdb.org/gsea/msigdb/human/download_geneset.jsp?geneSetName=KEGG_ERBB_SIGNALING_PATHWAY&fileType=json",
+            "https://rest.kegg.jp/link/hsa/hsa04151",
+            "https://www.genome.jp/entry/pathway+hsa04012",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6070353/"
+          ],
+          "confidence": "high for template and KEGG membership; low for any single conventional meaning of the phrase (not settled)",
+          "deliveries": {
+            "bd38-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-8f37537942d4"
+            },
+            "bd38-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-971b0c7f618a"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In curated oncogenic signalling pathway templates (for example the pan-cancer curated pathway templates and the KEGG ErbB and PI3K-Akt maps), which pathway are KRAS/NRAS/HRAS, MTOR and the ERBB receptor genes assigned to: are RAS genes part of the PI3K pathway or of a separate RTK-RAS pathway, and when a paper speaks of an 'ERBB-PI3K signalling pathway' which genes does that phrase conventionally cover? ANSWER: Curated pan-cancer templates (Sanchez-Vega 2018 gene lists, read as the table shipped with maftools): KRAS, NRAS, HRAS and all four ERBB receptors (EGFR, ERBB2, ERBB3, ERBB4) are in a separate RTK-RAS pathway (85 genes); they are NOT in the PI3K template. The PI3K template has 29 genes: AKT1, AKT2, AKT3, AKT1S1, DEPDC5, DEPTOR, EIF4EBP1, INPP4B, MAPKAP1, MLST8, MTOR, NPRL2, NPRL3, PDK1, PIK3CA, PIK3CB, PIK3R1, PIK3R2, PIK3R3, PPP2R1A, PTEN, RHEB, RICTOR, RPTOR, RPS6, RPS6KB1, STK11, TSC1, TSC2. So MTOR is PI3K; RAS and ERBB are RTK-RAS. KEGG draws the boundary differently. The KEGG ErbB signalling map hsa04012 (87 genes in the MSigDB copy) contains EGFR, ERBB2/3/4 and their ligands, PIK3CA/CB/CD/CG, PIK3R1/2/3/5, AKT1/2/3, MTOR, and also KRAS, NRAS, HRAS with the RAF-MEK-ERK arm; it does not contain PTEN, TSC1 or TSC2. The KEGG PI3K-Akt map hsa04151 contains KRAS, NRAS, HRAS, MTOR, EGFR, ERBB2/3/4, PIK3CA and AKT1 (confirmed by Entrez ID, mapped to symbols from my own knowledge; the list returned was cut off after 258 entries, before PTEN, so PTEN membership was not confirmed there). The phrase 'ERBB-PI3K signalling pathway' is not a named gene set in either resource, and the web as consulted does not settle a single conventional membership. I did not search the phrase itself because that would lead to the task's source. Two readings are defensible: a template-style list (ERBB receptors plus the PI3K/AKT/MTOR/PTEN core) excludes RAS; a KEGG-ErbB-style list includes RAS and MTOR. Neither team's list can be called the primary one on convention alone; the result should be reported for both, and the label should be flagged as definition-dependent if they disagree. HOW SURE: high for template and KEGG membership; low for any single conventional meaning of the phrase (not settled). SOURCES: https://raw.githubusercontent.com/PoisonAlien/maftools/master/inst/extdata/oncogenic_sig_patwhays.tsv, https://www.gsea-msigdb.org/gsea/msigdb/human/download_geneset.jsp?geneSetName=KEGG_ERBB_SIGNALING_PATHWAY&fileType=json, https://rest.kegg.jp/link/hsa/hsa04151, https://www.genome.jp/entry/pathway+hsa04012, https://pmc.ncbi.nlm.nih.gov/articles/PMC6070353/."
+        },
+        {
+          "question": "When a mutation table carries the FILTER value 'common_variant' as assigned by the standard MAF annotation pipeline used for public cancer-genomics portals (vcf2maf), what exact rule sets it: which population database and sub-populations, what allele-frequency or allele-count threshold, and would a variant with a dbSNP ID and a low but non-zero population frequency pass unflagged?",
+          "answer": "The rule is based on population allele counts in ExAC, not on dbSNP membership. vcf2maf v1.6.11 release notes (Nov 2016): common_variant is set 'if allele count across at least one ExAC subpopulation (AFR AMR EAS FIN NFE OTH SAS) is >16, and ClinVar doesn't say it's pathogenic', configurable with --max-filter-ac. v1.6.12 (Dec 2016): cutoff tightened from AC>16 to AC>10, ClinVar exception dropped, and a whitelist of known somatic events is removed from the ExAC VCF instead. Before v1.6.11 the tag used ExAC allele frequencies (the MSKCC ngs-filters README gives ExAC AF > 0.0004). The current main branch sets a default max_subpop_af of 0.0004 in place of an allele count; I read that default in the script header but not the body, so the database it is applied to in current versions (I believe gnomAD subpopulations) is not confirmed. The ExAC file used by default in the allele-count era appears to be the non-TCGA ExAC r0.3.1 sites VCF, but I saw that only in a search snippet of a fork. Yes, a variant with a dbSNP ID and a low non-zero frequency passes unflagged: an rsID alone never triggers the tag; a variant is unflagged if no single ExAC subpopulation carries more than 10 alleles (16 in v1.6.11), if it is absent from ExAC but present in 1000 Genomes, ESP or dbSNP, or if it is at a whitelisted somatic site. Because the cut is an absolute count per subpopulation, it corresponds to a much higher frequency in small subpopulations than in large ones. The tag only labels rows and removes nothing. So the absence of the flag does not rule out rare germline variants. Unflagged calls in the pathway genes that carry an rsID or any population-frequency entry still need to be listed and the test rerun without them. Which vcf2maf version annotated the teams' file is not something the web can tell, so whether the 10, 16 or frequency rule applied is unsettled.",
+          "sources": [
+            "https://zenodo.org/records/164894",
+            "https://github.com/mskcc/vcf2maf/releases/tag/v1.6.12",
+            "https://raw.githubusercontent.com/mskcc/vcf2maf/main/vcf2maf.pl",
+            "https://github.com/vanallenlab/common_variant_filter",
+            "https://github.com/mskcc/ngs-filters/"
+          ],
+          "confidence": "high for the ExAC subpopulation allele-count rule and that low-frequency dbSNP variants pass; medium for which version and threshold applies to this file",
+          "deliveries": {
+            "bd38-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-76e6bc199053"
+            },
+            "bd38-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-814fe165d6ed"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a mutation table carries the FILTER value 'common_variant' as assigned by the standard MAF annotation pipeline used for public cancer-genomics portals (vcf2maf), what exact rule sets it: which population database and sub-populations, what allele-frequency or allele-count threshold, and would a variant with a dbSNP ID and a low but non-zero population frequency pass unflagged? ANSWER: The rule is based on population allele counts in ExAC, not on dbSNP membership. vcf2maf v1.6.11 release notes (Nov 2016): common_variant is set 'if allele count across at least one ExAC subpopulation (AFR AMR EAS FIN NFE OTH SAS) is >16, and ClinVar doesn't say it's pathogenic', configurable with --max-filter-ac. v1.6.12 (Dec 2016): cutoff tightened from AC>16 to AC>10, ClinVar exception dropped, and a whitelist of known somatic events is removed from the ExAC VCF instead. Before v1.6.11 the tag used ExAC allele frequencies (the MSKCC ngs-filters README gives ExAC AF > 0.0004). The current main branch sets a default max_subpop_af of 0.0004 in place of an allele count; I read that default in the script header but not the body, so the database it is applied to in current versions (I believe gnomAD subpopulations) is not confirmed. The ExAC file used by default in the allele-count era appears to be the non-TCGA ExAC r0.3.1 sites VCF, but I saw that only in a search snippet of a fork. Yes, a variant with a dbSNP ID and a low non-zero frequency passes unflagged: an rsID alone never triggers the tag; a variant is unflagged if no single ExAC subpopulation carries more than 10 alleles (16 in v1.6.11), if it is absent from ExAC but present in 1000 Genomes, ESP or dbSNP, or if it is at a whitelisted somatic site. Because the cut is an absolute count per subpopulation, it corresponds to a much higher frequency in small subpopulations than in large ones. The tag only labels rows and removes nothing. So the absence of the flag does not rule out rare germline variants. Unflagged calls in the pathway genes that carry an rsID or any population-frequency entry still need to be listed and the test rerun without them. Which vcf2maf version annotated the teams' file is not something the web can tell, so whether the 10, 16 or frequency rule applied is unsettled. HOW SURE: high for the ExAC subpopulation allele-count rule and that low-frequency dbSNP variants pass; medium for which version and threshold applies to this file. SOURCES: https://zenodo.org/records/164894, https://github.com/mskcc/vcf2maf/releases/tag/v1.6.12, https://raw.githubusercontent.com/mskcc/vcf2maf/main/vcf2maf.pl, https://github.com/vanallenlab/common_variant_filter, https://github.com/mskcc/ngs-filters/."
+        },
+        {
+          "question": "For self-contained pathway or gene-set mutation-burden tests on exome data that use a uniform, coding-length-scaled background rate without gene-specific covariates (expression, replication timing) or a silent-mutation background, how anti-conservative is the null known to be, and what simple calibration or overdispersion correction do methods papers recommend when only non-silent calls are available?",
+          "answer": "Partly settled. At gene level the uniform null is known to be badly anti-conservative, but none of the papers read gives an inflation factor for a single pathway-level test, and none prescribes a correction specifically for non-silent-only data. What the sources say: Lawrence 2013 applied an average-rate method to 178 lung squamous exomes and got 450 genes at q<0.1, 101 of them olfactory receptors, with very long genes over-represented even though the test already scaled for length. Their Supplementary Fig. S1 simulation (20,000 genes of 1,500 bp, 200 patients, no drivers, mean 10 mutations/Mb) yields about 1 false positive when the rate really is uniform and 59 when gene rates are 4, 8 and 20 per Mb (25/50/25%) under the same threshold. The same figure shows the bias runs both ways: for low-rate genes the uniform null is conservative (a driver needs a 10-fold rather than 4-fold excess to be detected). Tokheim 2016 found the p-values of several driver methods inconsistent with the uniform distribution expected under the null, with many false positives especially in high-mutation-rate cancers, and made comparison of observed against theoretical p-values part of their evaluation framework. NIMBus 2020 states that assuming a constant rate gives overdispersed counts and numerous false positives, and corrects it with a gamma-Poisson (negative binomial) model. My reading, not a quoted recommendation: for one pathway the direction of the bias depends on whether its genes have above- or below-average background rates, so p-values between about 0.005 and 0.08 under this null should be treated as not robust. The two simple checks consistent with these papers are (a) an empirical null from random gene sets matched on number of genes and total coding length, drawn from the same mutation table, and (b) replacing the Poisson/binomial with a negative binomial whose dispersion is estimated from the across-gene spread of non-silent counts per bp. The label should rest on whether the call survives both.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3919509/",
+            "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fnature12213/MediaObjects/41586_2013_BFnature12213_MOESM255_ESM.pdf",
+            "https://www.pnas.org/doi/full/10.1073/pnas.1616440113",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7580035/"
+          ],
+          "confidence": "medium: high that the uniform null is miscalibrated at gene level and that negative-binomial overdispersion is the standard remedy; low on the size of the effect for one pathway and on any prescribed fix for non-silent-only data (not settled by the web)",
+          "deliveries": {
+            "bd38-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-c29cc08dc4b4"
+            },
+            "bd38-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-f4b7b6229f66"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: For self-contained pathway or gene-set mutation-burden tests on exome data that use a uniform, coding-length-scaled background rate without gene-specific covariates (expression, replication timing) or a silent-mutation background, how anti-conservative is the null known to be, and what simple calibration or overdispersion correction do methods papers recommend when only non-silent calls are available? ANSWER: Partly settled. At gene level the uniform null is known to be badly anti-conservative, but none of the papers read gives an inflation factor for a single pathway-level test, and none prescribes a correction specifically for non-silent-only data. What the sources say: Lawrence 2013 applied an average-rate method to 178 lung squamous exomes and got 450 genes at q<0.1, 101 of them olfactory receptors, with very long genes over-represented even though the test already scaled for length. Their Supplementary Fig. S1 simulation (20,000 genes of 1,500 bp, 200 patients, no drivers, mean 10 mutations/Mb) yields about 1 false positive when the rate really is uniform and 59 when gene rates are 4, 8 and 20 per Mb (25/50/25%) under the same threshold. The same figure shows the bias runs both ways: for low-rate genes the uniform null is conservative (a driver needs a 10-fold rather than 4-fold excess to be detected). Tokheim 2016 found the p-values of several driver methods inconsistent with the uniform distribution expected under the null, with many false positives especially in high-mutation-rate cancers, and made comparison of observed against theoretical p-values part of their evaluation framework. NIMBus 2020 states that assuming a constant rate gives overdispersed counts and numerous false positives, and corrects it with a gamma-Poisson (negative binomial) model. My reading, not a quoted recommendation: for one pathway the direction of the bias depends on whether its genes have above- or below-average background rates, so p-values between about 0.005 and 0.08 under this null should be treated as not robust. The two simple checks consistent with these papers are (a) an empirical null from random gene sets matched on number of genes and total coding length, drawn from the same mutation table, and (b) replacing the Poisson/binomial with a negative binomial whose dispersion is estimated from the across-gene spread of non-silent counts per bp. The label should rest on whether the call survives both. HOW SURE: medium: high that the uniform null is miscalibrated at gene level and that negative-binomial overdispersion is the standard remedy; low on the size of the effect for one pathway and on any prescribed fix for non-silent-only data (not settled by the web). SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC3919509/, https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fnature12213/MediaObjects/41586_2013_BFnature12213_MOESM255_ESM.pdf, https://www.pnas.org/doi/full/10.1073/pnas.1616440113, https://pmc.ncbi.nlm.nih.gov/articles/PMC7580035/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd38-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd38-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd38-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd38-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd38-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 122.45819625002332,
+      "cost_usd": 0.23167539999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 112.24625425005797,
+      "cost_usd": 0.17121960000000003,
+      "error": null
+    },
+    {
+      "agent": "bd38-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 165.33114083390683,
+      "cost_usd": 0.2668062,
+      "error": null
+    },
+    {
+      "agent": "bd38-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 228.02633179095574,
+      "cost_usd": 0.36797689999999994,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 177.51333999994677,
+      "cost_usd": 0.37679099999999993,
+      "error": null
+    },
+    {
+      "agent": "bd38-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 295.4014594589826,
+      "cost_usd": 0.6031042999999998,
+      "error": null
+    },
+    {
+      "agent": "bd38-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 293.69043275003787,
+      "cost_usd": 0.5394306,
+      "error": null
+    },
+    {
+      "agent": "bd38-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 345.1617625000654,
+      "cost_usd": 0.6287365,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

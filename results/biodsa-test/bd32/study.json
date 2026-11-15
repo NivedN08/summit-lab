@@ -1,0 +1,521 @@
+{
+  "study": "bd32",
+  "status": "replicated",
+  "final": {
+    "agent": "bd32-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd32/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd32-library": "fable",
+    "bd32-team-a": "fable",
+    "bd32-team-b": "fable",
+    "bd32-team-c": "fable",
+    "bd32-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd32-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd32/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd32-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd32/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd32-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd32/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd32-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd32/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd32-team-a",
+        "bd32-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd32-team-a",
+        "bd32-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Defining the lesion groups (library report, not checked by the director; confirm against the files). The clinical table is reported not to carry lesion type in a usable column: CANCER_TYPE_DETAILED is said to read 'Invasive Breast Carcinoma' for every sample, including the benign papillomatosis samples, so grouping by that column mixes the lesions. Lesion type is reported to be encoded in SAMPLE_ID suffixes (-JP, -DCIS, -IDC); some samples are reported to have no suffix and need an explicit, stated judgement about which lesion they are. Before computing anything, check that the IDs in the seg file's ID column match SAMPLE_ID exactly and that every sample has segments covering all autosomes. A sample missing from the seg file, or covering only part of the genome, is unmeasured, not zero alterations; normalise any length-based metric by that sample's own measured length.",
+      "from": [
+        "sl-biodsa-test-ad3cff8e1e27"
+      ],
+      "reason": "Using the cancer-type column or silently mis-assigning unsuffixed samples would compare the wrong groups, and treating missing seg data as zero would bias the comparison.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-d777992e389e"
+      }
+    },
+    {
+      "text": "Which variable measures copy number here. The gene panel matrix is reported to list only a mutations profile, and there is no discrete GISTIC-style table (data_cna.txt with -2..2 calls); the only copy-number data are in data_cna_hg19.seg, so calls have to be derived from the segments. The absence of a CNA profile in the panel matrix is not evidence that copy number was not measured. Mutation counts or TMB are a different quantity and should not stand in for copy-number burden. The seg.mean scale is not fixed across studies: look at its distribution over all samples first. Values centred near 0 with both signs indicate a log2 tumour/normal ratio (threshold |seg.mean|); values centred near 2 and never negative indicate absolute copy number (call gain/loss relative to 2 or the sample's modal copy number).",
+      "from": [
+        "sl-biodsa-test-1fcbced83a24",
+        "sl-biodsa-test-ad3cff8e1e27"
+      ],
+      "reason": "Stops the team from looking for a table that does not exist, from substituting mutation burden for copy number, and from applying log2 cutoffs to a file on a different scale.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-28968f4aa74c"
+      }
+    },
+    {
+      "text": "What to count as 'number of copy number alterations'. The number of rows per sample in a .seg file is not a count of alterations: the file lists every segment including copy-neutral ones, so raw segment count mostly reflects noise and segmentation settings. Per sample, on autosomes, compute several metrics and compare them: (a) number of segments with |seg.mean| above a threshold, (b) fraction of genome altered (FGA) = summed length of threshold-crossing segments divided by the summed length of all measured segments of that sample, (c) number of chromosome arms or whole chromosomes whose length-weighted mean is beyond the threshold, (d) amplitude of the largest alterations. Count-based and length-based metrics measure different things and can disagree: a few whole-arm changes give high FGA but few events; a noisy or focally rearranged sample gives many events but low FGA. The hypothesis wording points to an event count, which is also the metric most sensitive to noise. If the metrics rank the lesion types the same way the conclusion is robust; if they disagree, report all of them, say explicitly which one the conclusion rests on (merged/filtered event counts and arm-level events are more defensible for a 'number of CNAs' claim than raw altered-segment counts), and report raw segment count only as a noise indicator.",
+      "from": [
+        "sl-biodsa-test-c4b31986c3b3",
+        "sl-biodsa-test-e099e014475b"
+      ],
+      "reason": "The choice of burden metric can change the ordering of the lesion types, and the naive metric (seg rows) is the least trustworthy one.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-63d720e99d57"
+      }
+    },
+    {
+      "text": "Threshold sensitivity. There is no single correct log2 cutoff for calling a gain or loss from seg.mean: conventions range from 0.1 to 0.3 (cBioPortal's FGA uses |seg.mean| > 0.2; CNVkit suggests 0.1-0.2 with downstream filtering or 0.3 without). For reference, a fully clonal single-copy gain in a pure diploid sample is +0.585 and a single-copy loss is -1.0. Recompute the per-sample event count and FGA at 0.1, 0.2 and 0.3, plus a high-level cutoff around 0.5-1.0, and check whether the ordering of JP, DCIS and IDC is the same at every cutoff. If the ordering changes with the cutoff, do not present a single-threshold result as decisive: state which cutoffs give which ordering and weight the conclusion on the cutoffs that sit above each sample's noise level.",
+      "from": [
+        "sl-biodsa-test-28362170ba3d"
+      ],
+      "reason": "The result can flip with the cutoff, so a one-threshold analysis may give an unstable label.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-9f3076bf3df4"
+      }
+    },
+    {
+      "text": "Noise and over-segmentation. Exome and FFPE/microdissected copy-number data are noisy; short segments supported by few markers are mostly false positives, and a noisier sample gets more segments and more small threshold-crossing segments regardless of biology. Per sample, tabulate the number of segments, the distributions of num.mark and segment length, and how many threshold-crossing segments have few markers (for example num.mark below 10-50) or are shorter than roughly 100 kb-1 Mb. Check whether the sample with the most 'alterations' is simply the one with the most tiny segments. If so, filter or merge small segments (GISTIC joins segments with too few markers to the nearest neighbour; CNApp uses a minimum length of 100 kb and merges neighbours whose seg.mean differs by less than 0.16), merge adjacent segments in the same gain/loss state before counting events, and prefer length-weighted metrics (FGA, arm-level events), which are robust to fragmentation.",
+      "from": [
+        "sl-biodsa-test-118d79fbd243"
+      ],
+      "reason": "Without this check a difference in data quality between lesions can be mistaken for a difference in copy-number burden.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-fa939ba390e4"
+      }
+    },
+    {
+      "text": "Arm-level event counting. Counting each threshold-crossing segment as one alteration splits a single whole-arm or whole-chromosome change into several events when it is fragmented, and there is no consensus definition of an arm-level alteration, so state the rule used. Method: assign every autosomal segment to a p or q arm using hg19 centromeres (split segments that span the centromere); per sample and arm compute the fraction of the arm's measured length gained and the fraction lost at the chosen cutoff; call the arm altered if the same-direction altered length exceeds a stated fraction (published rules range from >50% of the arm, the common GISTIC 'broad' setting, to >90%, found best in a clinical validation); count remaining shorter altered runs as focal events after merging adjacent same-state segments. Show the lesion ordering at both 50% and 90% arm fraction. If the ordering differs between the raw altered-segment count and the arm-level plus merged-focal count, report both and rely on the latter. hg19 centromere start-end by chromosome: 1 121535434-124535434; 2 92326171-95326171; 3 90504854-93504854; 4 49660117-52660117; 5 46405641-49405641; 6 58830166-61830166; 7 58054331-61054331; 8 43838887-46838887; 9 47367679-50367679; 10 39254935-42254935; 11 51644205-54644205; 12 34856694-37856694; 13 16000000-19000000; 14 16000000-19000000; 15 17000000-20000000; 16 35335801-38335801; 17 22263006-25263006; 18 15460898-18460898; 19 24681782-27681782; 20 26369569-29369569; 21 11288129-14288129; 22 13000000-16000000. Chromosomes 13, 14, 15, 21 and 22 are acrocentric: use the q arm only.",
+      "from": [
+        "sl-biodsa-test-a6d2724dc379"
+      ],
+      "reason": "Gives a fragmentation-robust way to count events and supplies the centromere coordinates, which the team cannot look up without web access.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-549ab381c5fe"
+      }
+    },
+    {
+      "text": "Tumour purity. Purity compresses log2 ratios toward zero: observed log2 = log2((p*CN + 2*(1-p))/2) for purity p, so at purity 0.3 a one-copy gain is only about +0.20 and a one-copy loss about -0.23. A fixed seg.mean cutoff therefore under-calls alterations in low-purity or non-clonal lesions, and a low count can mean low purity rather than a quiet genome; a difference in purity between lesions can produce an apparent difference in burden in either direction. Estimate purity per sample from data_mutations.txt as roughly 2 x the median VAF of the higher-VAF somatic mutations (VAF = t_alt_count/(t_alt_count + t_ref_count)), and look at the maximum |seg.mean| of large segments in each sample. If samples differ strongly in purity, use purity-scaled thresholds (or a lenient 0.1 cutoff plus a noise filter) and say explicitly whether any lesion's low or high count could be explained by purity. A lesion with clonal mutations at decent VAF but flat seg.means has a genuinely low count.",
+      "from": [
+        "sl-biodsa-test-879b9dba6ba7"
+      ],
+      "reason": "Benign, in-situ and invasive lesions typically differ in purity, which confounds any fixed-threshold comparison between them.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-37e0763fb025"
+      }
+    },
+    {
+      "text": "Baseline centring. A mis-centred log2 baseline makes a whole genome look gained or lost when seg.mean is thresholded. For each sample compute the length-weighted median (and main mode) of seg.mean over autosomes. A value more than about 0.05-0.1 away from 0, or an FGA near 100% made of many small same-sign deviations, indicates a baseline shift rather than real alterations. If found, recentre that sample by subtracting its length-weighted median or mode before thresholding, and report results with and without recentring. Median centring is only valid for near-diploid samples; in a highly aneuploid sample the commonest state may not be two copies.",
+      "from": [
+        "sl-biodsa-test-9a9e6297d722"
+      ],
+      "reason": "A baseline shift in one sample would inflate its alteration count and FGA and could drive the whole comparison.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-8f85b87ffc07"
+      }
+    },
+    {
+      "text": "Sex chromosomes and recurrent small segments. chrX/Y log2 ratios depend on the sex of the reference, and small segments at the same coordinates in several samples are usually germline CNVs or capture artefacts rather than somatic events. List the chrom values in the seg file (X/Y may be coded X, Y, 23 or 24) and compute burden on autosomes 1-22 only. Look for short threshold-crossing segments with near-identical start/end in unrelated patients or in all lesions of one patient, and exclude or flag them. For matched lesions from one patient, alterations shared by all lesions do not distinguish them, so also report lesion-private alterations.",
+      "from": [
+        "sl-biodsa-test-36860d45c94e"
+      ],
+      "reason": "Sex-chromosome and germline/artefact segments add counts that are not somatic alterations and can distort between-lesion differences.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-f00106ef5141"
+      }
+    },
+    {
+      "text": "Sample size and study design (library report, not checked by the director; confirm against the files). The clinical table is reported to hold only 5 samples from 3 patients, with three of the samples coming from one patient. At these sizes no significance test is informative: rank tests cannot reach p<0.05, and guidance is to do no inferential statistics below about 5 independent observations per group. Treating segments as independent observations (a t-test or chi-square over hundreds of segments) is pseudoreplication and gives meaningless small p-values. Count independent patients per lesion type and identify which samples are matched within one patient. Make the comparison descriptive and per sample, with the matched within-patient comparison (JP against its associated DCIS and IDC in the same patient) as the primary evidence and unmatched samples as supporting. Base the label on the direction and size of the per-sample differences and their robustness to thresholds and metrics, not on a p-value. Small n alone is not the task's criterion for 'Not verifiable'; that label is defined by the absence of relevant variables.",
+      "from": [
+        "sl-biodsa-test-18df427851b1"
+      ],
+      "reason": "Determines the comparison design (matched, descriptive) and prevents both pseudoreplicated tests and a label chosen for the wrong reason.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-02bb5cb747d6"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat JuP3-JP's low-amplitude gains (|seg.mean| 0.10-0.20, mostly subtelomeric) as exome GC-wave artefacts. Neither file holds GC content, and neither team ran a quantitative test (e.g. interval-by-interval comparison of the same coordinates in the other four samples); the artefact label rests on location and visual similarity. This is the only point at which the ordering of the samples reverses or ties, so the label depends on it.",
+      "Both teams chose the metrics that decide the label (cutoff >=0.2, length-weighted FGA, large/arm-level events) after seeing that a count at 0.1 did not separate the samples. The noise floor was not fixed from the data beforehand, and the same rule was not derived per sample.",
+      "Both assume the flat JP profile means a genuinely quiet lesion rather than a lesion with little lesional DNA in the sequenced material. No purity, ploidy or read-count field exists, so this is untested; a papillomatosis sample is plausibly a mix of lesional and normal cells.",
+      "Both read 'number of copy number alterations' as interchangeable with genome fraction altered / arm-level burden, and read 'compared to' as 'JP greater than DCIS and IDC'.",
+      "Both treat the comparison as JP versus two lesions, but JuP3-DCIS and JuP3-IDC share the same six arm-level events and are one clonal lineage in one patient, so the matched evidence is effectively one JP against one carcinoma lineage.",
+      "Both assign unsuffixed JuP1 and JuP2 to JP from the ID naming alone."
+    ],
+    "unused_evidence": [
+      "Clinical columns TUMOR_SIZE, GRADE, ER, HER2: they are NA for JuP1, JuP2 and JuP3-JP and filled only for the DCIS/IDC samples. Neither team used this pattern, although it bears directly on the lesion assignment of the two unsuffixed samples that both teams flagged as a judgement call.",
+      "num.mark in the seg file: team A used it only as a small-segment filter and team B only as a total. Marker density per Mb (a proxy for gene-dense, GC-rich regions) and marker-weighted rather than length-weighted burden were not used to test the artefact explanation.",
+      "The unmatched samples JuP1 and JuP2 as technical controls: they come from different patients, so a low-amplitude gain at the same coordinates in them and in JuP3-JP cannot be a somatic event of JuP3. Both teams noted 'similar' segments but did not quantify the overlap.",
+      "Mutation table: per-sample sharing pattern (JuP3-JP has 3 rows, all reported shared with DCIS and IDC, none private; JuP1 has 6 and JuP2 has 18). Team B used the count only as a direction check, although a low count is also what low lesional content predicts. Read-count, Mutation_Status and Matched_Norm columns are all empty, so the table cannot give purity.",
+      "Chromosome 23 (X) segments: excluded by team A; team B ran with and without. Unlikely to matter (single near-zero segment in JP) but not reported by A.",
+      "TMB_NONSYNONYMOUS in the clinical table: a different quantity from copy number and correctly not used for the label."
+    ],
+    "unresolved_weak_points": [
+      "Team A: purity of JuP3-JP. Reported, partly addressed by indirect evidence (3 shared mutations; JP seg.mean within +/-0.04 on the arms altered in DCIS/IDC). That bounds only how much of the DCIS/IDC clone is in the JP sample; it does not bound JP-private events, which is what the hypothesis is about. Not resolved.",
+      "Team A: the 0.1-cutoff reversal (JP has the most merged events). Reported and set aside as artefact without a test. Not resolved.",
+      "Team A: JuP1/JuP2 assignment as JP. Reported only; the clinical NA pattern that could support it was not checked.",
+      "Team B: dependence on treating JP's small low-amplitude segments as noise. Reported only. Team B's tie at 0.1 (18/18/17) uses unmerged segments; team A's merged count at the same cutoff puts JP highest, which team B has not confronted.",
+      "Team B: no purity or ploidy information and no baseline recentring (team A found JuP3-DCIS's baseline shifted by about -0.06). Reported only.",
+      "Both: single matched trio. Reported; cannot be resolved with these data."
+    ],
+    "second_readings": [
+      "'Number' of alterations as a count of discrete events (including small low-level ones) rather than fraction of genome altered. On a raw or merged count at the most lenient cutoff the samples tie or JP ranks first, so under this reading the answer depends entirely on whether JP's calls are real.",
+      "'High ... compared to' could be read as an absolute statement about JP (JP has many CNAs) with DCIS/IDC as the reference scale, rather than a strict 'JP > both'. Both readings need JP to carry real alterations, so the same artefact question decides both.",
+      "'Associated DCIS and IDC-NST' restricts the comparison to lesions from the same patient, i.e. only the JuP3 trio; JuP1 and JuP2 have no associated carcinoma in the data and are context only. Both teams did rest on the trio, so this reading does not change their result.",
+      "'JP' as a group (all three JP samples) versus the single matched JP. Both teams report the two unmatched samples as flat, so the readings agree."
+    ],
+    "verdict": "Moderate-to-high trust in the direction: both teams independently found the same large arm-level events in the carcinoma samples and none in JP, and no reading of the task obviously reverses that. But the label rests on one untested shared step, dismissing JP's low-amplitude gains as artefact (the only point where the event count ties or reverses), and on an unmeasured JP purity, with a single matched trio; the answer should go out only after the cross-sample interval check and the pre-fixed noise-floor recount are reported.",
+    "questions": [
+      {
+        "to": "bd32-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You set aside the 0.1-cutoff result (JuP3-JP has the most merged events) as GC-wave artefact, but no file holds GC content and you did not test it. Run this check: for each JuP3-JP interval you called at |log2| 0.10-0.20, compute the marker-weighted mean seg.mean over exactly the same coordinates in JuP3-DCIS, JuP3-IDC, JuP1 and JuP2, each minus that sample's flanking or chromosome baseline. Report, interval by interval, in how many of the other samples the same-direction shift is present and how its size compares with JP's (you wrote that similar segments recur in JuP1, JuP2 and IDC, but not DCIS: say why). Intervals that shift in the two other patients cannot be somatic events of JuP3; intervals seen only in JuP3-JP are not explained by a kit-wide artefact. Does the number of JP-only intervals change which metric you rest the label on?",
+        "from": [
+          "sl-biodsa-test-b84b72706f58"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-c69aacceb97b"
+      },
+      {
+        "to": "bd32-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your purity argument (JP within +/-0.04 on the arms altered in DCIS/IDC) bounds how much of the carcinoma clone is in the JP sample. The hypothesis concerns JP's own alterations, which need not be on those arms. Run this check: (a) for the six arms altered in DCIS/IDC, report JP's marker-weighted mean relative to the rest of its genome and whether the six signs agree with the DCIS/IDC direction more often than chance; (b) list JuP3-JP's mutation rows and state how many are private to JP versus shared, and compare with JuP1 and JuP2; (c) state the largest whole-arm deviation anywhere in JuP3-JP, JuP1 and JuP2 and what lesional fraction a clonal single-copy event of that size would imply. Given (a)-(c), can you distinguish 'JP has few alterations' from 'JP alterations would not be visible in this sample', and does that change your method or your stated confidence?",
+        "from": [
+          "sl-biodsa-test-a90845752495"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-838af6b76922"
+      },
+      {
+        "to": "bd32-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The cutoffs you rest on (>=0.2) were preferred after you saw the ordering reverse at 0.1. Run this check: derive a noise floor from the data by a rule fixed in advance and applied identically to all five samples (for example a multiple of the marker-weighted spread of seg.mean across each sample's segments, or the largest deviation seen in the two unmatched JP-only samples at coordinates shared across patients), then recount merged events, and separately events of at least arm scale and events below it, in each sample at that floor. Is the ordering of JuP3-JP, JuP3-DCIS and JuP3-IDC on the event count (not FGA) the same as at your chosen cutoffs, and if not, does the method change?",
+        "from": [
+          "sl-biodsa-test-445615b2aaf1",
+          "sl-biodsa-test-b84b72706f58"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-e9d075819906"
+      },
+      {
+        "to": "bd32-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You named the JP assignment of JuP1 and JuP2 as a judgement from ID naming and did not use the clinical columns. Run this check: tabulate TUMOR_SIZE, GRADE, ER and HER2 by sample and say whether the missing-value pattern separates carcinoma samples from the others and whether it supports or contradicts your assignment of JuP1 and JuP2. Then state the result twice: once using only lesions from the patient that has all three lesion types (the task says 'associated'), and once with JuP1 and JuP2 added to the JP side. Do the two versions agree, and does either change the method?",
+        "from": [
+          "sl-biodsa-test-445615b2aaf1"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-4a83973cd5a8"
+      },
+      {
+        "to": "bd32-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You moved from segment counts to length-weighted FGA because JP's small low-amplitude segments look like GC-wave artefact, but no file holds GC content and the artefact reading was not tested. Run this check: for each JuP3-JP segment with |seg.mean| >= 0.1, compute the marker-weighted mean seg.mean over exactly the same coordinates in JuP3-DCIS, JuP3-IDC, JuP1 and JuP2, each minus that sample's flanking or chromosome baseline, and report per interval in how many other samples (and in how many other patients) the same-direction shift appears. Intervals that recur in other patients cannot be somatic events of JuP3; intervals seen only in JuP3-JP are not explained by a kit-wide artefact. Does the number of JP-only intervals change which metric you rest the label on?",
+        "from": [
+          "sl-biodsa-test-697f474fd2a1"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-972e27de00ad"
+      },
+      {
+        "to": "bd32-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: The hypothesis speaks of the 'number' of alterations and your counts use unmerged segments (your tie at 0.1; your large-segment count at 0.2), while one fragmented arm can contribute several segments to one sample. You also did not recentre, and one carcinoma sample's baseline may sit below zero. Run this check: merge adjacent same-direction segments into events, recentre each sample on its own marker-weighted median, and recount events at 0.1, 0.2 and 0.3 for the three matched samples, split into events of at least arm scale and smaller events. Is the ordering of the three samples on event count the same at every cutoff, and if it is not, how do you justify the cutoff you rely on without having chosen it after seeing the result?",
+        "from": [
+          "sl-biodsa-test-697f474fd2a1",
+          "sl-biodsa-test-1510ae1349a5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-2839504eed0a"
+      },
+      {
+        "to": "bd32-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You used mutation counts as an orthogonal direction check and named low purity as a possibility without testing it. A low mutation count is also what a sample with little lesional DNA would show, so the check is not independent of that weak point. Run this check: (a) list JuP3-JP's mutation rows and say how many are shared with JuP3-DCIS and JuP3-IDC and how many are private to JP, and compare with the private counts in JuP1 and JuP2; (b) for the arms altered in DCIS/IDC, report JP's marker-weighted mean relative to the rest of its genome and whether the signs follow the DCIS/IDC direction; (c) report the largest whole-arm deviation anywhere in JuP3-JP, JuP1 and JuP2. From (a)-(c), can you distinguish 'JP has few alterations' from 'JP alterations would not be visible in this sample', and does that change your method or confidence?",
+        "from": [
+          "sl-biodsa-test-1510ae1349a5",
+          "sl-biodsa-test-2deab2c0ea72"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-3ab0f1bd3d0f"
+      },
+      {
+        "to": "bd32-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You assumed JuP1 and JuP2 are JP 'from the study naming' and did not use the clinical columns. Run this check: tabulate TUMOR_SIZE, GRADE, ER and HER2 by sample and say whether the missing-value pattern separates carcinoma samples from the others and whether it supports your assignment. Also confirm that JuP1 and JuP2 have the same marker total and genome coverage as the matched trio (you verified this only for the trio). Then state the result once using only the patient with all three lesion types (the task says 'associated') and once with JuP1 and JuP2 added to the JP side. Do the two agree, and does either change the method?",
+        "from": [
+          "sl-biodsa-test-2deab2c0ea72"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-68ac23616441"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In tumour-versus-normal log2 ratio profiles derived from whole-exome sequencing (especially of archival or low-input tissue), what do GC-content 'wave' artefacts look like after segmentation: which genomic regions are typically affected (for example gene-dense, GC-rich subtelomeric regions and chromosomes 16, 17, 19, 22), in which direction and at what amplitude, and what criteria are recommended to tell them apart from true low-level or subclonal copy-number gains when GC content per target is not available?",
+          "why": "Both teams dismissed a set of small low-amplitude gains as GC-wave artefact from their location alone; this is the single step that decides how the samples rank on a count of events, and neither team showed a defined criterion for it.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "For exome-based copy-number segmentation, what log2 ratio is expected for a clonal single-copy gain or loss as a function of the fraction of lesional cells in the sample, and below what lesional-cell fraction do standard callers (for example FACETS, CNVkit, Sequenza) stop detecting arm-level events while somatic point mutations may still be called?",
+          "why": "Neither team could measure purity; they need a quantitative rule to judge whether a flat profile in a sample that still yields a few shared mutations can be read as a truly quiet genome or only as an uninformative one.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When published studies compare the 'number of copy number alterations' between a precursor or benign lesion and a synchronous carcinoma from segmented log2 data, how is that number conventionally defined: count of gained/lost segments, count of merged events or altered chromosome arms, or fraction of genome altered; and what log2 thresholds and minimum segment sizes are standard for such counts?",
+          "why": "The hypothesis is worded as a number of alterations, while both teams decided the label on genome fraction and arm-level burden; if the conventional count includes small low-level segments, the metric choice matters.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In tumour-versus-normal log2 ratio profiles derived from whole-exome sequencing (especially of archival or low-input tissue), what do GC-content 'wave' artefacts look like after segmentation: which genomic regions are typically affected (for example gene-dense, GC-rich subtelomeric regions and chromosomes 16, 17, 19, 22), in which direction and at what amplitude, and what criteria are recommended to tell them apart from true low-level or subclonal copy-number gains when GC content per target is not available?",
+          "answer": "Partly settled. The pages read are array-CGH, SNP-array, shallow-WGS and whole-genome-amplification papers; none is exome-specific, so exome amplitude figures and a validated rule for separating waves from subclonal gains were not found. What they establish: GC waves are deviations of the log ratio from the two-copy baseline whose size and direction follow regional GC content, on every platform. Regions and direction: after a genome-wide GC regression the four most GC-rich chromosomes (19, 22, 17, 16) sat consistently above baseline and the five most AT-rich (4, 13, 5, 6, 3) below; an uncorrected wave on 19p produced a false duplication call, and wave-driven false positives were 2-20 Mb. The direction is not fixed: peaks and troughs fall at the same positions in all samples, but amplitude differs between samples and in a few samples the wave is reversed (another dataset had a recurrent slight dip on chromosome 19 in tumour and normal profiles). Recurrent artefacts also cluster at (peri)centromeric and (sub)telomeric regions; in amplified DNA, over-represented regions are GC-rich and artefacts are reproducible. Amplitude: no universal figure. It grows with low DNA quantity and poor quality; FFPE-related noise is reproducible in size and shape and is not removed by deeper sequencing. Waves were large enough to hide or fragment simulated arm-level changes of +/-0.25 log2, and they add spurious breakpoints. Criteria: no source treats location in a GC-rich region as sufficient. Supported criteria that work without per-target GC are (1) coordination: the same sample shows same-sign small shifts across 16/17/19/22 with opposite-sign shifts on 3/4/5/6/13; (2) recurrence: the same segments at the same coordinates appear in unrelated samples or in normals, whereas true alterations are uncorrelated with the wave; (3) amplitude tracks the sample's noise and the sample has excess segments; (4) orthogonal confirmation (FISH in the source; using allelic imbalance is my inference, not from a page read). Any exclusion should be applied identically to every sample, because 1q, 16p, 17q, 19q and 20 are also genuine recurrent gains in breast lesions.",
+          "sources": [
+            "https://www.jmdjournal.org/article/S1525-1578(12)00174-2/fulltext",
+            "https://doi.org/10.1093/nar/gkn556",
+            "https://doi.org/10.1093/bioinformatics/btp132",
+            "https://d-nb.info/1098924398/34",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4248318/",
+            "https://ncbi.nlm.nih.gov/pmc/articles/PMC2490749/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd32-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-ed0428af4a85"
+            },
+            "bd32-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-003cb525fd54"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In tumour-versus-normal log2 ratio profiles derived from whole-exome sequencing (especially of archival or low-input tissue), what do GC-content 'wave' artefacts look like after segmentation: which genomic regions are typically affected (for example gene-dense, GC-rich subtelomeric regions and chromosomes 16, 17, 19, 22), in which direction and at what amplitude, and what criteria are recommended to tell them apart from true low-level or subclonal copy-number gains when GC content per target is not available? ANSWER: Partly settled. The pages read are array-CGH, SNP-array, shallow-WGS and whole-genome-amplification papers; none is exome-specific, so exome amplitude figures and a validated rule for separating waves from subclonal gains were not found. What they establish: GC waves are deviations of the log ratio from the two-copy baseline whose size and direction follow regional GC content, on every platform. Regions and direction: after a genome-wide GC regression the four most GC-rich chromosomes (19, 22, 17, 16) sat consistently above baseline and the five most AT-rich (4, 13, 5, 6, 3) below; an uncorrected wave on 19p produced a false duplication call, and wave-driven false positives were 2-20 Mb. The direction is not fixed: peaks and troughs fall at the same positions in all samples, but amplitude differs between samples and in a few samples the wave is reversed (another dataset had a recurrent slight dip on chromosome 19 in tumour and normal profiles). Recurrent artefacts also cluster at (peri)centromeric and (sub)telomeric regions; in amplified DNA, over-represented regions are GC-rich and artefacts are reproducible. Amplitude: no universal figure. It grows with low DNA quantity and poor quality; FFPE-related noise is reproducible in size and shape and is not removed by deeper sequencing. Waves were large enough to hide or fragment simulated arm-level changes of +/-0.25 log2, and they add spurious breakpoints. Criteria: no source treats location in a GC-rich region as sufficient. Supported criteria that work without per-target GC are (1) coordination: the same sample shows same-sign small shifts across 16/17/19/22 with opposite-sign shifts on 3/4/5/6/13; (2) recurrence: the same segments at the same coordinates appear in unrelated samples or in normals, whereas true alterations are uncorrelated with the wave; (3) amplitude tracks the sample's noise and the sample has excess segments; (4) orthogonal confirmation (FISH in the source; using allelic imbalance is my inference, not from a page read). Any exclusion should be applied identically to every sample, because 1q, 16p, 17q, 19q and 20 are also genuine recurrent gains in breast lesions. HOW SURE: medium. SOURCES: https://www.jmdjournal.org/article/S1525-1578(12)00174-2/fulltext, https://doi.org/10.1093/nar/gkn556, https://doi.org/10.1093/bioinformatics/btp132, https://d-nb.info/1098924398/34, https://pmc.ncbi.nlm.nih.gov/articles/PMC4248318/, https://ncbi.nlm.nih.gov/pmc/articles/PMC2490749/."
+        },
+        {
+          "question": "For exome-based copy-number segmentation, what log2 ratio is expected for a clonal single-copy gain or loss as a function of the fraction of lesional cells in the sample, and below what lesional-cell fraction do standard callers (for example FACETS, CNVkit, Sequenza) stop detecting arm-level events while somatic point mutations may still be called?",
+          "answer": "Formula settled; tool-specific cut-offs not settled. For a clonal one-copy change in a diploid genome at lesional-cell fraction p, expected log2 ratio = log2(1 + p/2) for a gain and log2(1 - p/2) for a loss (for a subclonal event, replace p by p x cancer-cell fraction). Gain/loss: p=1.0 +0.585/-1.00; 0.8 +0.49/-0.74; 0.6 +0.38/-0.51; 0.5 +0.32/-0.415; 0.4 +0.26/-0.32; 0.3 +0.20/-0.23; 0.2 +0.14/-0.15; 0.1 +0.07/-0.07. CNVkit's documentation gives the pure values and the 50% loss value and suggests cut-offs of 0.1-0.2 with downstream filtering or 0.3 without. Solving the formula, a one-copy gain crosses |log2| 0.3 only at p >= 0.46 (loss p >= 0.38), 0.2 at p >= 0.30 (loss p >= 0.26) and 0.1 at p >= 0.14 (loss p >= 0.13). A clinical CNVkit panel validation confirmed that observed log2 follows this formula under dilution and lost a heterozygous deletion at about 50% purity with a -0.4 cut-off, while a high-level amplification remained detectable down to 20%. A clonal heterozygous point mutation has VAF about p/2, so at p = 0.1-0.2 mutations at 5-10% VAF are still callable at exome depth while a one-copy arm change is only 0.07-0.15 log2; a flat profile is then uninformative rather than quiet. Working rule (my derivation from the formula, not a published cut-off): estimate p as 2 x VAF of the shared truncal mutations; below about 0.25-0.3 a flat profile is uninformative at a 0.2 cut-off; at or above about 0.4-0.5 a flat profile means no clonal arm-level events. Not found: a stated minimum purity for FACETS or Sequenza (the FACETS paper text retrieved gave none; no Sequenza page was read). The CopyDetective paper says the detectable cell fraction is sample-specific, set by coverage and event length, and should be computed per sample.",
+          "sources": [
+            "https://cnvkit.readthedocs.io/en/stable/calling.html",
+            "https://cnvkit.readthedocs.io/en/stable/heterogeneity.html",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC9302205/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7604644/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5027494/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd32-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-e684b66b23f1"
+            },
+            "bd32-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-c773f0966b03"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: For exome-based copy-number segmentation, what log2 ratio is expected for a clonal single-copy gain or loss as a function of the fraction of lesional cells in the sample, and below what lesional-cell fraction do standard callers (for example FACETS, CNVkit, Sequenza) stop detecting arm-level events while somatic point mutations may still be called? ANSWER: Formula settled; tool-specific cut-offs not settled. For a clonal one-copy change in a diploid genome at lesional-cell fraction p, expected log2 ratio = log2(1 + p/2) for a gain and log2(1 - p/2) for a loss (for a subclonal event, replace p by p x cancer-cell fraction). Gain/loss: p=1.0 +0.585/-1.00; 0.8 +0.49/-0.74; 0.6 +0.38/-0.51; 0.5 +0.32/-0.415; 0.4 +0.26/-0.32; 0.3 +0.20/-0.23; 0.2 +0.14/-0.15; 0.1 +0.07/-0.07. CNVkit's documentation gives the pure values and the 50% loss value and suggests cut-offs of 0.1-0.2 with downstream filtering or 0.3 without. Solving the formula, a one-copy gain crosses |log2| 0.3 only at p >= 0.46 (loss p >= 0.38), 0.2 at p >= 0.30 (loss p >= 0.26) and 0.1 at p >= 0.14 (loss p >= 0.13). A clinical CNVkit panel validation confirmed that observed log2 follows this formula under dilution and lost a heterozygous deletion at about 50% purity with a -0.4 cut-off, while a high-level amplification remained detectable down to 20%. A clonal heterozygous point mutation has VAF about p/2, so at p = 0.1-0.2 mutations at 5-10% VAF are still callable at exome depth while a one-copy arm change is only 0.07-0.15 log2; a flat profile is then uninformative rather than quiet. Working rule (my derivation from the formula, not a published cut-off): estimate p as 2 x VAF of the shared truncal mutations; below about 0.25-0.3 a flat profile is uninformative at a 0.2 cut-off; at or above about 0.4-0.5 a flat profile means no clonal arm-level events. Not found: a stated minimum purity for FACETS or Sequenza (the FACETS paper text retrieved gave none; no Sequenza page was read). The CopyDetective paper says the detectable cell fraction is sample-specific, set by coverage and event length, and should be computed per sample. HOW SURE: medium. SOURCES: https://cnvkit.readthedocs.io/en/stable/calling.html, https://cnvkit.readthedocs.io/en/stable/heterogeneity.html, https://pmc.ncbi.nlm.nih.gov/articles/PMC9302205/, https://pmc.ncbi.nlm.nih.gov/articles/PMC7604644/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5027494/."
+        },
+        {
+          "question": "When published studies compare the 'number of copy number alterations' between a precursor or benign lesion and a synchronous carcinoma from segmented log2 data, how is that number conventionally defined: count of gained/lost segments, count of merged events or altered chromosome arms, or fraction of genome altered; and what log2 thresholds and minimum segment sizes are standard for such counts?",
+          "answer": "No single convention; counts and genome fractions are both used, with cut-offs from about 0.08 to 0.3 log2. Kim et al. 2015 (pure DCIS vs synchronous DCIS and IDC; 180K aCGH plus exome) report 'the numbers of CNAs' as a count of gained/lost segments with log2 > 0.3 or < -0.3, with no minimum size stated (medians 28, 71 and 56 per lesion; group difference not significant). Liao et al. 2012 (FFPE BAC aCGH, autosomes only) compare average fractional gain, loss and total fractional CNAs, i.e. fraction of the genome called altered, with data-derived cut-offs of -0.125/+0.1325 (noise mode +/- 1.96 SD), yet describe the result as 'a larger number of CNAs'. Hernandez et al. 2012 (BAC aCGH, microdissected to >70% tumour cells) classify each clone as amplification > 0.45, gain > 0.08 to 0.45, loss < -0.08 and compare per-locus frequencies, not a per-sample total. Pareja et al. 2020 (exome, FACETS) compare the frequency of gains/losses and amplifications/homozygous deletions and count CNA events on phylogeny branches; their cut-offs were not in the text retrieved. Johnson et al. 2012 report percentage of genome shared. Minimum segment sizes were not stated in these studies; a clinical panel pipeline required more than four contiguous bins. No study read counted altered chromosome arms as its 'number'. So a literal 'number of CNAs' is most often a count of threshold-crossing gained/lost segments at about +/-0.3, which excludes small low-level segments; cut-offs near 0.1 come from high-purity microdissected array data with platform-specific noise estimates. The wording 'number' is also used for genome fraction, so reporting both, with the cut-off stated, matches practice.",
+          "sources": [
+            "https://www.oncotarget.com/article/3162/text/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3465468/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4975517/",
+            "https://aacrjournals.org/clincancerres/article/26/14/3682/9977/Whole-Exome-Sequencing-Analysis-of-the-Progression",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3327281/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC9302205/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd32-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-34173a34915f"
+            },
+            "bd32-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-d76df319ee02"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When published studies compare the 'number of copy number alterations' between a precursor or benign lesion and a synchronous carcinoma from segmented log2 data, how is that number conventionally defined: count of gained/lost segments, count of merged events or altered chromosome arms, or fraction of genome altered; and what log2 thresholds and minimum segment sizes are standard for such counts? ANSWER: No single convention; counts and genome fractions are both used, with cut-offs from about 0.08 to 0.3 log2. Kim et al. 2015 (pure DCIS vs synchronous DCIS and IDC; 180K aCGH plus exome) report 'the numbers of CNAs' as a count of gained/lost segments with log2 > 0.3 or < -0.3, with no minimum size stated (medians 28, 71 and 56 per lesion; group difference not significant). Liao et al. 2012 (FFPE BAC aCGH, autosomes only) compare average fractional gain, loss and total fractional CNAs, i.e. fraction of the genome called altered, with data-derived cut-offs of -0.125/+0.1325 (noise mode +/- 1.96 SD), yet describe the result as 'a larger number of CNAs'. Hernandez et al. 2012 (BAC aCGH, microdissected to >70% tumour cells) classify each clone as amplification > 0.45, gain > 0.08 to 0.45, loss < -0.08 and compare per-locus frequencies, not a per-sample total. Pareja et al. 2020 (exome, FACETS) compare the frequency of gains/losses and amplifications/homozygous deletions and count CNA events on phylogeny branches; their cut-offs were not in the text retrieved. Johnson et al. 2012 report percentage of genome shared. Minimum segment sizes were not stated in these studies; a clinical panel pipeline required more than four contiguous bins. No study read counted altered chromosome arms as its 'number'. So a literal 'number of CNAs' is most often a count of threshold-crossing gained/lost segments at about +/-0.3, which excludes small low-level segments; cut-offs near 0.1 come from high-purity microdissected array data with platform-specific noise estimates. The wording 'number' is also used for genome fraction, so reporting both, with the cut-off stated, matches practice. HOW SURE: medium. SOURCES: https://www.oncotarget.com/article/3162/text/, https://pmc.ncbi.nlm.nih.gov/articles/PMC3465468/, https://pmc.ncbi.nlm.nih.gov/articles/PMC4975517/, https://aacrjournals.org/clincancerres/article/26/14/3682/9977/Whole-Exome-Sequencing-Analysis-of-the-Progression, https://pmc.ncbi.nlm.nih.gov/articles/PMC3327281/, https://pmc.ncbi.nlm.nih.gov/articles/PMC9302205/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd32-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd32-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd32-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd32-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd32-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 128.02352491708007,
+      "cost_usd": 0.24826689999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 131.5740454159677,
+      "cost_usd": 0.1868974,
+      "error": null
+    },
+    {
+      "agent": "bd32-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 74.85869787505362,
+      "cost_usd": 0.11783640000000001,
+      "error": null
+    },
+    {
+      "agent": "bd32-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 112.48161075008102,
+      "cost_usd": 0.24254139999999996,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 155.4659323329106,
+      "cost_usd": 0.3042659,
+      "error": null
+    },
+    {
+      "agent": "bd32-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 335.3992120419862,
+      "cost_usd": 0.7844576,
+      "error": null
+    },
+    {
+      "agent": "bd32-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 265.49471266707405,
+      "cost_usd": 0.49793319999999996,
+      "error": null
+    },
+    {
+      "agent": "bd32-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 304.1047802499961,
+      "cost_usd": 0.617194,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

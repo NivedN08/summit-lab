@@ -1,0 +1,534 @@
+{
+  "study": "bd13",
+  "status": "replicated",
+  "final": {
+    "agent": "bd13-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd13/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd13-library": "fable",
+    "bd13-team-a": "fable",
+    "bd13-team-b": "fable",
+    "bd13-team-c": "fable",
+    "bd13-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd13-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd13/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd13-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd13/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd13-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd13/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd13-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd13/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd13-team-a",
+        "bd13-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd13-team-a",
+        "bd13-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The hypothesis is about uterine leiomyosarcoma only, but data_clinical_sample.txt has CANCER_TYPE = 'Uterine Sarcoma' with separate CANCER_TYPE_DETAILED / CANCER_TYPE_DETAILED_CODE / ONCOTREE_CODE columns, so the study may mix histologies; do not assume every sample is leiomyosarcoma. Other uterine sarcoma subtypes have different driver profiles and pooling them would bias the frequency. Check value_counts of CANCER_TYPE_DETAILED and ONCOTREE_CODE (skip the 4 '#' header lines). If more than one histology is present, restrict every numerator and denominator to uterine leiomyosarcoma (ONCOTREE_CODE ULMS / 'Uterine Leiomyosarcoma'); other subtypes may be shown only as contrast.",
+      "from": [
+        "sl-biodsa-test-c19a330986cf"
+      ],
+      "reason": "Defines the analysis population. Without the histology filter the frequency is computed on the wrong cohort.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-a269bcbe6bad"
+      }
+    },
+    {
+      "text": "Samples are not patients. Sample IDs in this study carry T01/T02/T03 suffixes, and a header/row count found 108 samples from 107 patients in data_clinical_sample.txt (so one patient contributes two samples), 108 samples in data_gene_panel_matrix.txt, 108 sample columns in data_cna.txt, 107 rows in data_clinical_patient.txt and 19 rows in data_sv.txt; verify these counts yourself. Counting samples double-counts a patient and breaks independence in a prevalence estimate. List patients with more than one sample and compute frequency per patient (a patient is altered if any of their profiled samples is altered, or use one pre-specified sample per patient); give the per-sample figure only as a sensitivity check.",
+      "from": [
+        "sl-biodsa-test-70683eb91c24",
+        "sl-biodsa-test-d24edfd05ec4"
+      ],
+      "reason": "Sets the unit of analysis (patient, not sample) and gives counts the team can use to check that their file loading and joins are complete.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-0d36ddfdee7d"
+      }
+    },
+    {
+      "text": "Use the right denominator. In cBioPortal-format data a sample with zero called mutations has no rows in data_mutations.txt but was still profiled; using 'samples that appear in the mutation file' (or in the CNA matrix) as the denominator inflates frequency, and counting un-profiled samples as wild-type deflates it. The authoritative record of who was profiled for what is data_gene_panel_matrix.txt (columns mutations, cna, structural_variants; NA = not profiled). Samples span panel versions IMPACT341/410/468 (IM3/IM5/IM6 suffixes). Denominator per data type = samples with a non-NA panel in that file; compare that count with the clinical-sample rows, the unique barcodes in the mutation file and the columns of data_cna.txt. Confirm TP53, RB1 and ATRX have rows in data_cna.txt with non-NA values for every panel version (a gene absent from a panel shows as NA, not 0). If counts differ, use profiled samples/patients as the denominator per gene and per data type; for a union of mutation + CNA + SV, use samples profiled for all three.",
+      "from": [
+        "sl-biodsa-test-d39e2309f778"
+      ],
+      "reason": "A frequency claim depends directly on the denominator; the obvious shortcut (samples present in the mutation file) gives a biased number.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-137ec97dd6fd"
+      }
+    },
+    {
+      "text": "Not every row in data_mutations.txt is a loss-of-function (LoF) event; the file also holds non-protein-altering rows (its first data row is a TERT 5'Flank promoter variant), so counting 'any row for the gene' overstates LoF. Standard truncating/LoF classes in Variant_Classification are Nonsense_Mutation, Frame_Shift_Del, Frame_Shift_Ins, Splice_Site, Translation_Start_Site (and Nonstop_Mutation). In_Frame_Del/Ins and Missense_Mutation alter the protein but are not automatically LoF. Silent, Intron, 3'UTR, 5'UTR, 3'Flank, 5'Flank, IGR, RNA and Splice_Region are low-consequence and must be excluded. Print value_counts of Variant_Classification for each of the three genes before filtering, confirm none of the low-consequence classes is being counted, and count each patient once per gene even if they carry several mutations in it.",
+      "from": [
+        "sl-biodsa-test-7b2b5544fd9e"
+      ],
+      "reason": "The hypothesis is specifically about loss-of-function mutations, so the team needs an explicit, standard rule for which mutation classes count.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-bdc25654e892"
+      }
+    },
+    {
+      "text": "TP53 needs a different LoF definition from RB1 and ATRX. Most inactivating TP53 hits are missense mutations in the DNA-binding domain, which saturation-mutagenesis work shows act by loss of function / dominant-negative effect; dropping all Missense_Mutation rows can cut the TP53 frequency by roughly half. For RB1 and ATRX the opposite holds: missense variants are mostly of uncertain significance, so including them would wrongly inflate those genes; only frameshift/nonsense/splice are safely LoF there. Tabulate Variant_Classification separately for TP53, RB1 and ATRX and compute the TP53 frequency two ways: (i) truncating only, (ii) truncating + missense (optionally restricting missense to DNA-binding-domain codons ~100-300 or known hotspots R175, G245, R248, R249, R273, R282). If TP53 missense rows are numerous, report both definitions, treat TP53 DNA-binding-domain missense as LoF in the primary analysis, and keep RB1/ATRX to truncating classes.",
+      "from": [
+        "sl-biodsa-test-d14252d50065"
+      ],
+      "reason": "A single truncating-only rule applied to all three genes would misclassify TP53; the choice can move the TP53 frequency by a large factor.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-1c8ac204a45c"
+      }
+    },
+    {
+      "text": "Tumour suppressors in sarcomas are often inactivated by homozygous deletion or disruptive structural rearrangement rather than by SNV/indel, so truncating point mutations alone can undercount LoF. For each gene build three per-patient flags: (a) LoF mutation in data_mutations.txt, (b) value -2 (deep deletion) in data_cna.txt, (c) a row in data_sv.txt naming the gene in Site1_Hugo_Symbol or Site2_Hugo_Symbol (check that file for TP53, RB1 and ATRX rows). Report the mutation-only frequency and the union frequency side by side. Because the hypothesis says 'mutations', decide the label on the mutation-only definition, then check whether it would flip under the union definition; if it flips, say so explicitly in the reasoning.",
+      "from": [
+        "sl-biodsa-test-44064451687e"
+      ],
+      "reason": "Tells the team to use the CNA and SV tables as well as the mutation table, and how to reconcile the broader definition with the hypothesis wording.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-91b14e9caa6e"
+      }
+    },
+    {
+      "text": "Partial-gene (exon-level / intragenic) deletions and rearrangements of large tumour suppressors such as RB1 and ATRX fall between data types: they are too large for the SNV/indel caller (so absent from data_mutations.txt) and too small to move the gene-level copy-number call to -2, so they appear, if at all, only as rows in data_sv.txt (Class DELETION/INVERSION/DUPLICATION/TRANSLOCATION with the same gene at one or both sites) or as a short strongly negative segment inside the gene in data_cna_hg19.seg. Conversely, not every SV row naming a gene is LoF (an IGR-to-intron event or a duplication may not disrupt the coding sequence), and one patient can carry a mutation, a deletion and an SV in the same gene, which must be counted once. List every data_sv.txt row where Site1_Hugo_Symbol or Site2_Hugo_Symbol is TP53, RB1 or ATRX and read Class, Site*_Description, Event_Info and Annotation to judge whether the breakpoint lies inside the gene body. In the seg file look for segments with few markers (small num.mark) and seg.mean well below the sample's neighbouring segments that start or end inside RB1 (chr13:48.88-49.06 Mb) or ATRX (chrX:76.76-77.04 Mb), hg19. Build one altered/not-altered flag per patient per gene from the union. Add intragenic SVs with a breakpoint inside the gene to the LoF numerator (report with and without them), mention focal intragenic seg losses only as a sensitivity note, and state that the panel-based frequency for RB1 and ATRX remains a lower bound.",
+      "from": [
+        "sl-biodsa-test-a3fec5128781"
+      ],
+      "reason": "Refines how SV rows should be judged (not every row is LoF, some LoF events are visible only there) and prevents double counting a patient across data types.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-ff602ad04965"
+      }
+    },
+    {
+      "text": "Targeted-panel calls are a lower bound on LoF frequency. The discrete CNA value -2 is a 'putative' deep deletion; low tumour purity pulls log-ratios toward 0 so true homozygous deletions can be called -1 or 0, and panels only detect SV breakpoints that fall in captured exons or selected introns. A low observed frequency is therefore weaker evidence for 'uncommon' than a high observed frequency is against it. A value of -1 (shallow loss) is not by itself LoF and must not be counted. In data_cna_hg19.seg, look at seg.mean for segments overlapping TP53 (chr17:7.57-7.59 Mb), RB1 (chr13:48.88-49.06 Mb) and ATRX (chrX:76.76-77.04 Mb), hg19 coordinates; list samples with strongly negative seg.mean (e.g. < -1) that are not -2 in data_cna.txt, and note how many samples are -1. Report the strict frequency (-2 only) as primary and a relaxed one as sensitivity. Whichever way the strict frequency falls, say how robust the conclusion is; in particular, if it is low, state explicitly that under-detection could not be ruled out.",
+      "from": [
+        "sl-biodsa-test-a7f43b173b6c"
+      ],
+      "reason": "Affects how copy-number values are counted (-2 only, never -1) and how much weight a low or high observed frequency can bear.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-844ce09fc59b"
+      }
+    },
+    {
+      "text": "ATRX is on chromosome X and subject to X-inactivation, so a single truncating hit can abolish function, and copy-number pipelines often treat chrX differently from autosomes: chrX may be missing from the seg file or the discrete CNA matrix, or be coded 'X' vs '23'. (That the pipeline behind this dataset does so is the library's inference, not a documented fact.) Treating a missing ATRX CNA row as 'no deletions' silently biases ATRX downward relative to TP53/RB1. Confirm that ATRX has a row in data_cna.txt with non-NA values, check whether chromosome X/23 occurs in data_cna_hg19.seg, and check SEX in data_clinical_patient.txt. If ATRX CNA is absent or all NA/0, base the ATRX frequency on mutations + SVs only, label it a lower bound, and do not compare it naively with the other two genes.",
+      "from": [
+        "sl-biodsa-test-70c313f54590"
+      ],
+      "reason": "One of the three genes may have missing copy-number data for a technical reason; the team must check before reading absence of deletions as evidence.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-8d2a802862e8"
+      }
+    },
+    {
+      "text": "Not every row is a confident somatic call, and joins between files can silently fail. data_clinical_sample.txt has a SOMATIC_STATUS column (Matched vs possibly Unmatched), the mutation file has Mutation_Status, and data_sv.txt has SV_Status; tumour-only samples can carry unfiltered germline variants. Check value_counts of SOMATIC_STATUS, Mutation_Status and SV_Status, and verify that the sample IDs in the mutation, CNA and SV files all match SAMPLE_ID in the clinical table. An implausibly extreme frequency for any gene (near 0% or near 100%) should first be suspected as a filtering or sample-ID join bug and re-checked before it is accepted. If unmatched samples or germline-flagged rows are found, rerun excluding them as a sensitivity analysis and report whether the frequency changes materially. The label must come from this study's data.",
+      "from": [
+        "sl-biodsa-test-5599c61d47ee"
+      ],
+      "reason": "Data-quality checks (somatic status, ID matching) that can change the counts. The library's figures from other published cohorts were removed so the team is not handed an expected answer.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-fd7b2f2b5b81"
+      }
+    },
+    {
+      "text": "'Uncommon' is a qualitative word and the hypothesis is a conjunction over three genes (TP53, RB1, ATRX), so the label can be steered by choosing the threshold after seeing the numbers. Before computing any frequency, write down a decision rule (for example: 'uncommon' = upper 95% confidence bound below about 10%; 'common' = lower bound above about 20%). Then, for each gene separately, report altered/profiled patients, the proportion, and a 95% Wilson or Clopper-Pearson interval (not Wald; the cohort is small, about 107 patients before any histology restriction, so intervals are wide). Do not report only a pooled figure. If an interval straddles the threshold or the genes disagree, say which gene(s) drive the label: the claim that all three are uncommon is contradicted if any one of them is clearly common, and is supported only if each is clearly rare.",
+      "from": [
+        "sl-biodsa-test-b00976345829",
+        "sl-biodsa-test-d24edfd05ec4"
+      ],
+      "reason": "The label turns on what 'uncommon' means; fixing the rule in advance and reporting per-gene intervals keeps the decision from being fitted to the result.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-688e911c42f8"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams read 'uncommon' as an absolute per-gene frequency cut-off that they chose themselves (roughly <10% uncommon, >20% common). Neither tested a relative reading (how these three genes rank against every other gene on the panel in the same patients), and neither said what their rule returns when a gene lands between the two cut-offs.",
+      "Both teams judged loss of function from Variant_Classification alone. The mutation file carries no functional annotation (Hotspot is 0 in all 344 rows; FILTER, CLIN_SIG, SIFT, PolyPhen and the population-frequency columns are empty), so the step 'TP53 missense = loss of function' rests on outside knowledge. Team A restricted to codons 95-300; team B counted any nonsynonymous call (also for RB1 and ATRX in its broad definition). Neither listed the individual TP53 residues.",
+      "Both teams treated one detected hit (a single truncating call, one -2 call, or one SV row) as loss of function of the gene, without asking whether the call is clonal or whether the second allele is affected. The discrete CNA table holds only -2, 0 and 2, so loss of heterozygosity is invisible there.",
+      "Both teams treated the 71 ONCOTREE ULMS patients as standing for 'uterine leiomyosarcoma'. All 71 are GRADE High and 94 of 108 samples are CURRENT_STAGE IVB, so this is an advanced-disease referral cohort; team B named this, neither tested whether it matters (both did stratify primary vs metastasis).",
+      "Both teams treated every call as a driver-type event and did not separate out samples with very high mutation burden or MSI score, where a truncating call in a large gene can be a passenger."
+    ],
+    "unused_evidence": [
+      "TMB_NONSYNONYMOUS (maximum about 73 per Mb) and MSI_SCORE (maximum about 25; missing in 19 samples) in data_clinical_sample.txt: neither team checked whether the TP53/RB1/ATRX calls sit in hypermutated or MSI-high samples.",
+      "WGD in data_clinical_sample.txt (50 True, 55 False, 3 missing): not used by either team; relevant to reading segment means and allele fractions as one-copy versus two-copy loss.",
+      "t_alt_count / t_ref_count per call: team B reported only the minimum and median allele fraction over all calls; neither team used allele fraction per gene to drop low-fraction (subclonal) calls. Team A did not use it at all.",
+      "Site1/Site2 descriptions in data_sv.txt: the three SV rows naming the genes are one IGR-to-intron inversion ending in ATRX and two within-transcript duplications (TP53, ATRX). Team A read them individually; team B counted any SV row naming the gene.",
+      "All other genes in data_mutations.txt and data_cna.txt: neither team used them as a within-cohort background to say what 'common' and 'uncommon' look like in these same patients.",
+      "CANCER_TYPE_DETAILED_CODE = LMS (80 samples) versus ONCOTREE_CODE = ULMS (71): both teams ran the 80-sample sensitivity, so this is used. Survival columns and FIGO stage are not relevant to a frequency claim."
+    ],
+    "unresolved_weak_points": [
+      "Team A: RB1 under the strict mutation-only reading (9/71, interval straddling its own cut-offs) is reported, not resolved; the label is carried by TP53 only once DNA-binding-domain missense calls are counted, and by ATRX whose mutation-only lower bound (15.5%) is below the team's own 'common' cut-off of 20%. So under truncating-point-mutation-only counting, no gene meets team A's own pre-recorded 'clearly common' criterion; the team did not state what its rule returns in that case.",
+      "Team A: the 10%/20% cut-offs are the team's own convention; reported, not tested against any data-internal benchmark.",
+      "Team B: 'whether an individual variant is truly loss of function was judged from variant class' is reported only. No per-variant review of TP53 missense residues, ATRX/RB1 missense, or the SV rows was done, and no annotation column exists to settle it.",
+      "Team B: its conclusion 'relies on also counting deep deletions'; the seg cross-check is given as medians only, whereas team A found individual -2 calls that the seg file does not support. Team B did not rerun with only seg-supported deletions.",
+      "Team B: its plan left the 10-30% zone undefined ('fails if >20-30%', 'True only if <~10%'), and truncating-only values for TP53 and RB1 fall in that zone."
+    ],
+    "second_readings": [
+      "'Mutations' read narrowly as sequence variants in the mutation file (SNV/indel) versus broadly as any inactivating alteration (deep deletion, structural variant). The per-gene picture differs strongly between the two, most of all for RB1.",
+      "'Loss-of-function' read strictly as truncating classes only versus including TP53 missense in the DNA-binding domain.",
+      "'Uncommon' read as an absolute frequency versus relative to other genes in the same tumours, or relative to the other uterine sarcoma subtypes in the study (both teams have the subtype contrast).",
+      "'TP53, RB1, and ATRX' read gene by gene (must all three be uncommon? is one common gene enough to contradict?) versus as a set (any of the three) versus jointly (all three in the same tumour). Team A stated an 'any gene clearly common' rule; team B did not state one.",
+      "'Uterine leiomyosarcoma' read as ONCOTREE ULMS only (71) versus all LMS-coded tumours including epithelioid and myxoid (80); both teams covered this."
+    ],
+    "verdict": "I trust the agreed label fairly well: both teams restricted to the right patients, checked denominators, germline leakage and the copy-number calls, and their per-gene counts agree with each other across definitions. The one real exposure is definitional, not computational: under the narrowest reading (truncating point mutations only) no gene clears either team's own 'common' cut-off, the cut-offs themselves are self-chosen, and the step that carries the mutation-only verdict (TP53 missense as loss of function) rests on outside knowledge because the file has no functional annotation; the questions ask each team to show the label survives those readings.",
+    "questions": [
+      {
+        "to": "bd13-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Apply your pre-recorded rule to the narrowest reading of the claim: truncating point mutations only (no missense, no deep deletion, no SV), one gene at a time, among the 71 ULMS patients. For each of TP53, RB1 and ATRX state whether the gene comes out 'clearly common', 'clearly uncommon' or in between, and state which label your rule returns if no gene is clearly common and none is clearly uncommon. Does the label you submitted survive this reading, or does it depend on adding TP53 missense or deep deletions, and does that change your method or your stated confidence?",
+        "from": [
+          "sl-biodsa-test-0ab3227d59e0",
+          "sl-biodsa-test-4e9be5f4ec90",
+          "sl-biodsa-test-91b14e9caa6e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-05c1c9e583a4"
+      },
+      {
+        "to": "bd13-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your mutation-only verdict is carried by TP53 missense calls, yet the mutation file has no functional annotation (Hotspot is 0 in every row; CLIN_SIG, SIFT and PolyPhen are empty). List every TP53 missense call in ULMS patients with its residue (HGVSp_Short), allele fraction (t_alt_count / depth) and whether the same patient also has a TP53 truncating call or deep deletion. Recount TP53 mutation-only keeping only missense calls at residues you can name as established inactivating positions, and again dropping calls with allele fraction below 10%. Does TP53 still meet your 'clearly common' criterion under each recount, and does the result change your method?",
+        "from": [
+          "sl-biodsa-test-f43e01aac763",
+          "sl-biodsa-test-2a58e6840305"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-615aad2a5d86"
+      },
+      {
+        "to": "bd13-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your 10%/20% cut-offs for 'uncommon' and 'common' are your own convention. Run a check that does not need them: among the 71 ULMS patients, compute for every gene profiled on all three panel versions the number of patients with (a) any truncating mutation and (b) truncating mutation or deep deletion, and report where TP53, RB1 and ATRX rank and what the frequency of the next most altered genes is. Does this within-cohort ranking agree with the label your absolute cut-offs gave, and would it change how you define 'uncommon'?",
+        "from": [
+          "sl-biodsa-test-4e9be5f4ec90"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-571d3d09d98a"
+      },
+      {
+        "to": "bd13-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Three columns were not used: TMB_NONSYNONYMOUS (maximum about 73 per Mb), MSI_SCORE (maximum about 25, missing for 19 samples) and WGD. Identify which ULMS patients, if any, have TMB above 10 per Mb or an outlying MSI score, list their TP53/RB1/ATRX calls, and recompute the per-gene frequencies without those patients. Separately, tabulate the per-gene frequencies by WGD status. Does either check move any gene across your cut-offs, and does it change your method?",
+        "from": [
+          "sl-biodsa-test-3edfb5484627",
+          "sl-biodsa-test-6bf8229c49a9"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-f8b2d4602609"
+      },
+      {
+        "to": "bd13-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: The claim says 'mutations', and you wrote that your conclusion relies on also counting deep deletions. Recompute the per-patient frequency for each gene from data_mutations.txt alone in the 71 ULMS patients, under (i) truncating classes only and (ii) truncating plus TP53 missense only (no RB1 or ATRX missense), with exact intervals. Your plan left the range between about 10% and 20-30% undefined: state, before looking at the numbers again, what label your rule gives when a gene falls in that range and whether one gene above it is enough to contradict a claim about three genes. Does the label hold on the mutation file alone, and does this change your method?",
+        "from": [
+          "sl-biodsa-test-3b8bdce9d815",
+          "sl-biodsa-test-cc883ca986fc"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-daa85034022d"
+      },
+      {
+        "to": "bd13-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You named as your weakest point that loss-of-function status was judged from variant class, and the file has no annotation column to settle it (Hotspot is 0 in every row; CLIN_SIG, SIFT, PolyPhen empty). Resolve it by reading the variants: list every TP53, RB1 and ATRX call in ULMS patients that is not a truncating class (missense, in-frame, Splice_Region) with its residue and allele fraction, and the three SV rows naming these genes with their Site1/Site2 descriptions (one is an intergenic-to-intron inversion, two are within-transcript duplications). For each, say whether you can defend it as inactivating. Recount your broad definition keeping only the defensible ones. Do the broad frequencies change materially, and does that change your method?",
+        "from": [
+          "sl-biodsa-test-3b8bdce9d815"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-fe3438dc3ffa"
+      },
+      {
+        "to": "bd13-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your deep-deletion cross-check reports only the median segment mean per gene. Run it per patient: for every ULMS patient with a -2 call in TP53, RB1 or ATRX, give the seg.mean of the segment covering the gene and its num.mark, and count the -2 calls whose segment is not clearly negative. Recompute the strict frequencies counting only seg-supported deletions, and also tabulate them by WGD status (a column you did not use). Do RB1 and TP53 stay above the level your plan called 'high', and does this change your method?",
+        "from": [
+          "sl-biodsa-test-3b8bdce9d815",
+          "sl-biodsa-test-9fe17cba67dd"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-b16df3b14f5f"
+      },
+      {
+        "to": "bd13-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: 'Uncommon' has no threshold in the task, and yours was chosen by you. Run two checks that do not depend on it. First, among the 71 ULMS patients rank every gene profiled on all three panel versions by number of patients altered (truncating mutation, and separately truncating mutation or deep deletion) and report where TP53, RB1 and ATRX fall and how far the next genes are behind. Second, identify ULMS patients with TMB_NONSYNONYMOUS above 10 per Mb or an outlying MSI_SCORE and recompute the three frequencies without them. Do these checks agree with the label your threshold gave, and do they change how you define 'uncommon'?",
+        "from": [
+          "sl-biodsa-test-cc883ca986fc",
+          "sl-biodsa-test-c9a8dfc2a1cd"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-10a6dd67d40f"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "How do curated cancer-variant knowledge bases (for example OncoKB) and the IARC/NCI TP53 database classify TP53 missense mutations: which residues or domains are annotated as loss-of-function or likely loss-of-function, and are missense variants outside the DNA-binding domain or at non-hotspot residues generally classed as inactivating or as variants of unknown significance?",
+          "why": "Both teams count TP53 missense calls as loss of function from variant class alone because the data carry no functional annotation; a residue-level definition lets them check each call and settles whether the mutation-only TP53 frequency stands.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In cancer-genomics usage, does the phrase 'loss-of-function mutations' in a tumour suppressor conventionally include homozygous (deep) deletions and disruptive structural rearrangements, or only sequence variants (nonsense, frameshift, splice-site)? How do cBioPortal and OncoKB group these alteration types (for example 'truncating mutations', 'deletion', 'loss-of-function alterations')?",
+          "why": "The per-gene frequencies differ strongly depending on whether deep deletions count as 'mutations'; one team's conclusion relies on counting them, so the convention decides which reading of the claim is primary.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Is there an accepted frequency convention in tumour-genomics reporting for calling a gene alteration 'common', 'frequent' or 'recurrent' versus 'uncommon' or 'rare' within a tumour type (for example cut-offs such as 1%, 5%, 10% or 20% of cases), and how do landmark sequencing-cohort papers typically apply these words?",
+          "why": "Both teams invented their own 10%/20% cut-offs for 'uncommon'; some single-definition frequencies fall between those cut-offs, so an external convention is needed to say whether such values count as uncommon.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "How do curated cancer-variant knowledge bases (for example OncoKB) and the IARC/NCI TP53 database classify TP53 missense mutations: which residues or domains are annotated as loss-of-function or likely loss-of-function, and are missense variants outside the DNA-binding domain or at non-hotspot residues generally classed as inactivating or as variants of unknown significance?",
+          "answer": "OncoKB classes TP53 as a tumour suppressor and uses umbrella terms. 'Truncating Mutations' and 'Deletion' are Likely Oncogenic / Likely Loss-of-function. Any missense in the DNA-binding domain, codons 102-292 ('DNA binding domain missense mutations (102_292mis)'), is Likely Oncogenic / Likely Loss-of-function by default, hotspot or not. There is no umbrella rule for missense outside codons 102-292: only individually curated variants are annotated. In the tetramerization domain, F338I, F341C, R342P, L344P/R, A347T and L348F/S are (likely) loss-of-function, and G356A is Inconclusive. An uncurated missense outside the DBD is therefore effectively of unknown significance and should not be counted as loss of function from variant class alone. The gene page totals are 441 oncogenic, 29 neutral and 30 inconclusive alterations. A few individual DBD variants (L111M, F113L, T125K, H214P) are flagged as having conflicting or weak data; I saw those only in search snippets. The IARC/NCI TP53 database does not classify by variant class or domain. It annotates each variant individually with a transactivation class (functional / partially functional / non-functional / supertrans) from the Kato 2003 yeast assay of 2,314 substitutions, plus a 'DNE / LOF Class' column; I saw these field names in the database's search and results pages as listed in search results, not in a page I read. Kato et al. give the core DBD as residues 94-312 and the tetramerization domain as 323-356, report that 97% of database mutations cluster in the core DBD, and say unreported missense may be non-pathogenic. Reviews I read agree that missense concentrates in the DBD and that loss of function with dominant-negative effect is the selected mechanism. Practical rule for the teams: count truncating variants anywhere plus missense at codons 102-292 as loss of function; treat missense outside 102-292 as VUS unless at a curated tetramerization residue (e.g. R337, L344). Not settled: the TP53 database help page was cut off before its transactivation-class definitions, so the exact activity thresholds were not read. Statements that more than half of rare TP53 variants retain activity came from search snippets only.",
+          "sources": [
+            "https://www.oncokb.org/gene/TP53",
+            "https://www.oncokb.org/gene/TP53/DNA%20binding%20domain%20missense%20mutations",
+            "https://faq.oncokb.org/technical",
+            "https://tp53.cancer.gov/help",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC166245/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7683535/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC11803090/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6168352/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd13-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-dfab73879e75"
+            },
+            "bd13-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-3c2e6a28d39e"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How do curated cancer-variant knowledge bases (for example OncoKB) and the IARC/NCI TP53 database classify TP53 missense mutations: which residues or domains are annotated as loss-of-function or likely loss-of-function, and are missense variants outside the DNA-binding domain or at non-hotspot residues generally classed as inactivating or as variants of unknown significance? ANSWER: OncoKB classes TP53 as a tumour suppressor and uses umbrella terms. 'Truncating Mutations' and 'Deletion' are Likely Oncogenic / Likely Loss-of-function. Any missense in the DNA-binding domain, codons 102-292 ('DNA binding domain missense mutations (102_292mis)'), is Likely Oncogenic / Likely Loss-of-function by default, hotspot or not. There is no umbrella rule for missense outside codons 102-292: only individually curated variants are annotated. In the tetramerization domain, F338I, F341C, R342P, L344P/R, A347T and L348F/S are (likely) loss-of-function, and G356A is Inconclusive. An uncurated missense outside the DBD is therefore effectively of unknown significance and should not be counted as loss of function from variant class alone. The gene page totals are 441 oncogenic, 29 neutral and 30 inconclusive alterations. A few individual DBD variants (L111M, F113L, T125K, H214P) are flagged as having conflicting or weak data; I saw those only in search snippets. The IARC/NCI TP53 database does not classify by variant class or domain. It annotates each variant individually with a transactivation class (functional / partially functional / non-functional / supertrans) from the Kato 2003 yeast assay of 2,314 substitutions, plus a 'DNE / LOF Class' column; I saw these field names in the database's search and results pages as listed in search results, not in a page I read. Kato et al. give the core DBD as residues 94-312 and the tetramerization domain as 323-356, report that 97% of database mutations cluster in the core DBD, and say unreported missense may be non-pathogenic. Reviews I read agree that missense concentrates in the DBD and that loss of function with dominant-negative effect is the selected mechanism. Practical rule for the teams: count truncating variants anywhere plus missense at codons 102-292 as loss of function; treat missense outside 102-292 as VUS unless at a curated tetramerization residue (e.g. R337, L344). Not settled: the TP53 database help page was cut off before its transactivation-class definitions, so the exact activity thresholds were not read. Statements that more than half of rare TP53 variants retain activity came from search snippets only. HOW SURE: medium. SOURCES: https://www.oncokb.org/gene/TP53, https://www.oncokb.org/gene/TP53/DNA%20binding%20domain%20missense%20mutations, https://faq.oncokb.org/technical, https://tp53.cancer.gov/help, https://pmc.ncbi.nlm.nih.gov/articles/PMC166245/, https://pmc.ncbi.nlm.nih.gov/articles/PMC7683535/, https://pmc.ncbi.nlm.nih.gov/articles/PMC11803090/, https://pmc.ncbi.nlm.nih.gov/articles/PMC6168352/."
+        },
+        {
+          "question": "In cancer-genomics usage, does the phrase 'loss-of-function mutations' in a tumour suppressor conventionally include homozygous (deep) deletions and disruptive structural rearrangements, or only sequence variants (nonsense, frameshift, splice-site)? How do cBioPortal and OncoKB group these alteration types (for example 'truncating mutations', 'deletion', 'loss-of-function alterations')?",
+          "answer": "Both tools keep 'mutations' and deletions as separate categories while treating both as inactivating. cBioPortal's query language has distinct data types: Mutations (MUT, with subtypes MISSENSE, NONSENSE, NONSTART, NONSTOP, FRAMESHIFT, INFRAME, SPLICE, TRUNC), Fusions (FUSION) and Copy Number Alterations (AMP, HOMDEL = 'Deep Deletions', GAIN, HETLOSS = 'Shallow Deletions'). A default gene query is 'MUT FUSION AMP HOMDEL', so the default 'altered' frequency includes deep deletions and fusions but not shallow deletions. TRUNC is a mutation subtype and never includes HOMDEL. The DRIVER modifier applies across mutations, fusions and copy-number alterations. OncoKB lists 'Deletion' (defined as copy number loss resulting in partial or whole deletion of the gene) as an entry separate from 'Truncating Mutations' for TP53 and RB1, and annotates both Likely Oncogenic / Likely Loss-of-function; its RB1 summary says the gene is 'inactivated by mutation, deletion or allelic loss'. So in these tools the umbrella word is 'alterations', 'mutations' means sequence variants, and deep deletions and structural variants are loss-of-function alterations but not 'mutations'. The web did not settle a formal rule for the free-text phrase 'loss-of-function mutations'. Search snippets (pages not opened, because the call limit was reached) show mixed prose: some papers write 'loss-of-function mutations or deletions' or 'alterations (truncating mutations, fusions, and homozygous deletion)', while others loosely call a gene 'mutant' when it is lost by copy number. On the tools' nomenclature the strict reading (sequence variants only) is the literal one for 'mutations'; the union with deep deletions and disruptive structural variants is properly 'loss-of-function alterations'. The teams should report both and check whether the label holds under each.",
+          "sources": [
+            "https://docs.cbioportal.org/user-guide/oql/",
+            "https://www.oncokb.org/gene/TP53/Deletion",
+            "https://www.oncokb.org/gene/TP53",
+            "https://www.oncokb.org/gene/RB1",
+            "https://sop.oncokb.org/static/sop/OncoKB_Curation_Standard_Operating_Procedure_v3_1.pdf",
+            "https://faq.oncokb.org/technical"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd13-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-5d7c6b079732"
+            },
+            "bd13-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-a982caa6c1e8"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cancer-genomics usage, does the phrase 'loss-of-function mutations' in a tumour suppressor conventionally include homozygous (deep) deletions and disruptive structural rearrangements, or only sequence variants (nonsense, frameshift, splice-site)? How do cBioPortal and OncoKB group these alteration types (for example 'truncating mutations', 'deletion', 'loss-of-function alterations')? ANSWER: Both tools keep 'mutations' and deletions as separate categories while treating both as inactivating. cBioPortal's query language has distinct data types: Mutations (MUT, with subtypes MISSENSE, NONSENSE, NONSTART, NONSTOP, FRAMESHIFT, INFRAME, SPLICE, TRUNC), Fusions (FUSION) and Copy Number Alterations (AMP, HOMDEL = 'Deep Deletions', GAIN, HETLOSS = 'Shallow Deletions'). A default gene query is 'MUT FUSION AMP HOMDEL', so the default 'altered' frequency includes deep deletions and fusions but not shallow deletions. TRUNC is a mutation subtype and never includes HOMDEL. The DRIVER modifier applies across mutations, fusions and copy-number alterations. OncoKB lists 'Deletion' (defined as copy number loss resulting in partial or whole deletion of the gene) as an entry separate from 'Truncating Mutations' for TP53 and RB1, and annotates both Likely Oncogenic / Likely Loss-of-function; its RB1 summary says the gene is 'inactivated by mutation, deletion or allelic loss'. So in these tools the umbrella word is 'alterations', 'mutations' means sequence variants, and deep deletions and structural variants are loss-of-function alterations but not 'mutations'. The web did not settle a formal rule for the free-text phrase 'loss-of-function mutations'. Search snippets (pages not opened, because the call limit was reached) show mixed prose: some papers write 'loss-of-function mutations or deletions' or 'alterations (truncating mutations, fusions, and homozygous deletion)', while others loosely call a gene 'mutant' when it is lost by copy number. On the tools' nomenclature the strict reading (sequence variants only) is the literal one for 'mutations'; the union with deep deletions and disruptive structural variants is properly 'loss-of-function alterations'. The teams should report both and check whether the label holds under each. HOW SURE: medium. SOURCES: https://docs.cbioportal.org/user-guide/oql/, https://www.oncokb.org/gene/TP53/Deletion, https://www.oncokb.org/gene/TP53, https://www.oncokb.org/gene/RB1, https://sop.oncokb.org/static/sop/OncoKB_Curation_Standard_Operating_Procedure_v3_1.pdf, https://faq.oncokb.org/technical."
+        },
+        {
+          "question": "Is there an accepted frequency convention in tumour-genomics reporting for calling a gene alteration 'common', 'frequent' or 'recurrent' versus 'uncommon' or 'rare' within a tumour type (for example cut-offs such as 1%, 5%, 10% or 20% of cases), and how do landmark sequencing-cohort papers typically apply these words?",
+          "answer": "No. There is no universally accepted cut-off, and two reviews say so explicitly ('a universally accepted frequency threshold for defining rarity is lacking'; 'no unified definition'). The cut-offs with published use are these. 'Rare' means 5% or less of cases of a specific cancer type in precision-oncology and lung-cancer usage; alterations above 5% are described as exceeding the threshold for rare. The Lawrence et al. 2014 pan-cancer analysis of 4,742 tumours describes genes mutated in more than 20% of tumours of a type as 'high' frequency, 2-20% as 'intermediate' frequency, and the rest as lower. Under these, a gene altered in more than 20% of cases is not 'uncommon' by any published usage, and 5% or less is 'rare'. Values between 5% and 20% are 'intermediate': neither rare nor high. A 10% cut-off has no external support that I found, so frequencies between the teams' 10% and 20% cut-offs cannot be called uncommon or common on convention alone. 'Recurrent' is not a frequency band: it denotes repeated or statistically significant occurrence and is applied even to low-frequency long-tail genes; that point rests on search snippets and background knowledge, not a page I read. I did not find or read a landmark paper that defines 'uncommon' numerically.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4048962/",
+            "https://link.springer.com/article/10.1007/s44178-025-00204-1",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC10413877/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd13-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-ff8acc70c94f"
+            },
+            "bd13-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-075f2fdb3722"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Is there an accepted frequency convention in tumour-genomics reporting for calling a gene alteration 'common', 'frequent' or 'recurrent' versus 'uncommon' or 'rare' within a tumour type (for example cut-offs such as 1%, 5%, 10% or 20% of cases), and how do landmark sequencing-cohort papers typically apply these words? ANSWER: No. There is no universally accepted cut-off, and two reviews say so explicitly ('a universally accepted frequency threshold for defining rarity is lacking'; 'no unified definition'). The cut-offs with published use are these. 'Rare' means 5% or less of cases of a specific cancer type in precision-oncology and lung-cancer usage; alterations above 5% are described as exceeding the threshold for rare. The Lawrence et al. 2014 pan-cancer analysis of 4,742 tumours describes genes mutated in more than 20% of tumours of a type as 'high' frequency, 2-20% as 'intermediate' frequency, and the rest as lower. Under these, a gene altered in more than 20% of cases is not 'uncommon' by any published usage, and 5% or less is 'rare'. Values between 5% and 20% are 'intermediate': neither rare nor high. A 10% cut-off has no external support that I found, so frequencies between the teams' 10% and 20% cut-offs cannot be called uncommon or common on convention alone. 'Recurrent' is not a frequency band: it denotes repeated or statistically significant occurrence and is applied even to low-frequency long-tail genes; that point rests on search snippets and background knowledge, not a page I read. I did not find or read a landmark paper that defines 'uncommon' numerically. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC4048962/, https://link.springer.com/article/10.1007/s44178-025-00204-1, https://pmc.ncbi.nlm.nih.gov/articles/PMC10413877/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd13-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd13-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd13-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd13-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd13-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 135.07666941697244,
+      "cost_usd": 0.2774191,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 129.1091877920553,
+      "cost_usd": 0.2236514,
+      "error": null
+    },
+    {
+      "agent": "bd13-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 119.01509812497534,
+      "cost_usd": 0.2420932,
+      "error": null
+    },
+    {
+      "agent": "bd13-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 145.41481158393435,
+      "cost_usd": 0.3355672,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 151.56723812501878,
+      "cost_usd": 0.33643629999999997,
+      "error": null
+    },
+    {
+      "agent": "bd13-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 204.4218798330985,
+      "cost_usd": 0.4852135999999999,
+      "error": null
+    },
+    {
+      "agent": "bd13-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 215.2992680419702,
+      "cost_usd": 0.4640427999999999,
+      "error": null
+    },
+    {
+      "agent": "bd13-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 212.09936316707171,
+      "cost_usd": 0.4456267000000001,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

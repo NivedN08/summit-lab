@@ -1,0 +1,485 @@
+{
+  "study": "bd22",
+  "status": "replicated",
+  "final": {
+    "agent": "bd22-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd22/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd22-library": "fable",
+    "bd22-team-a": "fable",
+    "bd22-team-b": "fable",
+    "bd22-team-c": "fable",
+    "bd22-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd22-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd22/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd22-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd22/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd22-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd22/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd22-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd22/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd22-team-a",
+        "bd22-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd22-team-a",
+        "bd22-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "DATA LAYOUT (from a header read, not an analysis; confirm when you load the files). The cohort is 424 patients with exactly one tumour sample each. The castration-resistance outcome is split across two files: the time is SMP_CRPC_MONTHS in data_clinical_patient.txt (months from SAMPLE COLLECTION to castration resistance or last follow-up; declared as a string but numeric; minimum 0, six values equal 0) and the event flag is IS_CRPC in data_clinical_sample.txt (Yes=240, No=184). Join the two on PATIENT_ID. Covariates available: DZ_VOLUME (high 213 / low 211), DENOVO_METASTATSIS (de-novo 275 / recurrence 149; the column name is spelled this way), ANDROGEN_DEPRIVATION_THERAPY meaning the sample was taken while on continuous ADT (No 330 / Yes 91 / NA 3), BIOPSY_GLEASON_SCORE, PSA, TISSUE_SITE, TUMOR_PURITY (5 missing), GENE_PANEL (IMPACT341 37 / IMPACT410 154 / IMPACT468 233), plus MSI_TYPE, MSI_SCORE and TMB_NONSYNONYMOUS. data_cna.txt holds only the values -2, 0, 2 and NA; AR, SPOP and TP53 have no NA in any sample, so all 424 samples are profiled for all three genes and a sample with no rows in data_mutations.txt is wild-type, not missing. data_mutations.txt has no OncoKB/oncogenic annotation column (only Variant_Classification, HGVSp_Short, Hotspot and similar).",
+      "from": [
+        "sl-biodsa-test-eb2f5064e740"
+      ],
+      "reason": "The outcome needs a time from one file and an event flag from another; a team that finds only one of them could mislabel the task as Not verifiable or analyse a crude flag. It also fixes the denominator (all 424 samples are profiled for the three genes) and names the covariates the other items rely on.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-af3e43489e77"
+      }
+    },
+    {
+      "text": "PITFALL: reading 'rate of castration resistance' as the crude proportion of IS_CRPC=Yes per gene group (chi-square or Fisher). 184 of 424 patients are censored and follow-up length can differ between groups, so crude proportions under-count events and can erase or reverse a real difference. CHECK: compare follow-up among censored patients (SMP_CRPC_MONTHS where IS_CRPC=No) between altered and wild-type groups, and confirm the time and event flag are joined correctly. DO: use time-to-event methods with time=SMP_CRPC_MONTHS and event=IS_CRPC (Kaplan-Meier with log-rank, Cox hazard ratio with 95% CI, or events per person-time rate ratio); report the crude proportion only as a description.",
+      "from": [
+        "sl-biodsa-test-f0d11c24db00"
+      ],
+      "reason": "The choice between a proportion test and a time-to-event analysis is the main method decision and can change the result for each gene.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-13a80dc8bd91"
+      }
+    },
+    {
+      "text": "PITFALL: a wrong definition of 'altered'. (a) data_mutations.txt alone misses copy-number and structural events: AR is altered mainly by amplification (data_cna value 2); TP53 and SPOP can also be hit by deep deletion (-2) and by rearrangement (data_sv.txt). (b) Direction matters by gene role: count AR amplification and AR missense, but not AR deletion; count TP53 loss of function (truncating, splice, hotspot missense, deep deletion), but not TP53 amplification; SPOP drivers are recurrent missense mutations in the substrate-binding MATH domain (roughly codons 80-135, e.g. F133, Y87, F102, W131). (c) The mutation file has no oncogenic annotation, so counting every nonsynonymous variant mixes passengers with drivers and dilutes associations; exclude Silent/intronic/UTR rows and count samples, not variants. CHECK: for each gene list the variant classes, protein changes and CNA values among carriers, and build the denominator from all 424 samples. DO: define alteration = driver-type mutation OR role-consistent CNA OR structural variant, then rerun with the looser 'any nonsynonymous mutation + any CNA' definition as a sensitivity check and report whether the conclusion is the same under both.",
+      "from": [
+        "sl-biodsa-test-858b0efc8b9e"
+      ],
+      "reason": "Group membership for each gene depends entirely on this definition; AR in particular would be nearly empty from the mutation file alone, and a loose definition dilutes any effect.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-804e95fc9f91"
+      }
+    },
+    {
+      "text": "PITFALL: misreading the logic of the claim and of a non-significant result. The hypothesis has three parts with a direction: AR-altered and TP53-altered tumours are claimed to reach castration resistance faster (hazard ratio above 1) and SPOP-altered tumours slower ('inverse', hazard ratio below 1). Calling it False because one gene has p > 0.05 confuses low power with contradiction; calling it True from a two-sided p-value without checking the sign can miss an effect in the wrong direction. DO: for each gene report hazard ratio, 95% CI, direction and number of events, and write down your decision rule before looking at the results. 'False' needs evidence against the claim (an effect in the opposite direction, or a tight CI around HR=1 with adequate events), not merely a wide non-significant CI. Three tests is a small family, so a Bonferroni or Holm check is enough for multiplicity.",
+      "from": [
+        "sl-biodsa-test-65d5618e9e4f"
+      ],
+      "reason": "It sets how the three per-gene results map to the label and stops a wrong label caused by a sign that was not checked or by treating an underpowered gene as a contradiction.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-a36be0dd2ce2"
+      }
+    },
+    {
+      "text": "PITFALL: time zero is tumour sample collection, not ADT start, and 91 of 424 samples were taken while the patient was already on continuous ADT. Those patients have already used up part of their time to resistance, so their sample-to-CRPC times are shorter regardless of genotype. No ADT-start or diagnosis date is in the tables, so a left-truncation correction is not possible. This matters most for AR: AR amplification and AR ligand-binding-domain mutations are rare in hormone-naive prostate cancer and are mostly acquired under androgen deprivation, so an AR alteration in a 'hormone-sensitive' sample may mark prior ADT exposure or emerging resistance rather than a baseline trait, which inflates the AR hazard ratio and gives times at or near 0. CHECK: compare time to CRPC between ANDROGEN_DEPRIVATION_THERAPY Yes and No; cross-tabulate each gene's status against that column; for AR carriers (expect few) look at their SMP_CRPC_MONTHS values, especially zeros and very short times. DO: report each gene's association overall and adjusted for or stratified by ANDROGEN_DEPRIVATION_THERAPY, add a sensitivity analysis restricted to samples taken off ADT (No, n=330), say whether the effect holds there, and check that the AR result does not rest on a handful of events in the first month.",
+      "from": [
+        "sl-biodsa-test-5163ff27e373",
+        "sl-biodsa-test-52c4d4ff01a8"
+      ],
+      "reason": "A known source of bias in the time variable that is tied to one of the three genes; it calls for a stratified and a restricted analysis that a team would not otherwise run.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-7cfe052deb38"
+      }
+    },
+    {
+      "text": "PITFALL: confounding by clinical phenotype. In metastatic hormone-sensitive prostate cancer, high- versus low-volume disease and de-novo versus recurrent metastatic presentation each roughly double the hazard of castration resistance (HR about 1.7-1.9), and genomic alterations such as TP53 are unevenly spread across these phenotypes, so a univariable gene comparison can be a disease-volume effect in disguise. The 'wild-type' reference group for one gene also contains carriers of the other two genes. CHECK: cross-tabulate each gene's status with DZ_VOLUME and DENOVO_METASTATSIS. DO: fit Cox models unadjusted, then adjusted for DZ_VOLUME, and as sensitivity analyses also for DENOVO_METASTATSIS, on-ADT status and the other two genes together. Report whether each gene's direction and size survive adjustment, and state which model the verdict rests on.",
+      "from": [
+        "sl-biodsa-test-fe0c490f93ea"
+      ],
+      "reason": "Adjustment for disease volume could change the size or significance of a gene's effect, so the team needs both models before deciding.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-e798e076f7c1"
+      }
+    },
+    {
+      "text": "PITFALL: sparse-data bias. AR and SPOP alterations are uncommon in hormone-sensitive disease, so a gene group may hold only a few patients or events. Standard Cox partial likelihood then gives unstable or infinite hazard ratios, asymptotic log-rank p-values are unreliable, and adding many covariates (below about 10 events per variable) overfits. CHECK: for each gene tabulate carriers, events among carriers and events among non-carriers before modelling; flag any cell under about 10 events and any Cox fit with a huge coefficient or a convergence warning. DO: in that case use Firth-penalised Cox or an exact/permutation log-rank test, keep the adjustment set small (disease volume first), report the CI width, and do not over-interpret a p-value that comes from fewer than 10 events.",
+      "from": [
+        "sl-biodsa-test-d79624c79ba3"
+      ],
+      "reason": "Two of the three genes are expected to have small carrier groups; the choice of test and the number of covariates must follow the event counts or the estimates are unreliable.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-13a5d4b2c9e2"
+      }
+    },
+    {
+      "text": "PITFALL: unchecked Cox assumptions and event handling. A single hazard ratio misleads if the curves cross or the effect is concentrated early (plausible for AR if events cluster right after sampling). Six patients have time exactly 0, which some software drops or mishandles. Deaths before castration resistance are a competing event (102 deaths in the cohort) that plain censoring treats as non-informative. CHECK: plot Kaplan-Meier curves per gene, test scaled Schoenfeld residuals, list the IS_CRPC status of the time-0 rows, and count patients who died with IS_CRPC=No. DO: if hazards are not proportional, report medians or restricted mean time or a time-split HR next to the Cox HR; keep the time-0 events (add a tiny offset if the software needs positive times) and show the result with and without them; if deaths without CRPC are numerous, confirm with a cause-specific hazard reading or a Fine-Gray model.",
+      "from": [
+        "sl-biodsa-test-cc4bfdab9bf5"
+      ],
+      "reason": "Silently dropped time-0 events and non-proportional hazards can shift a small-group result, especially for AR; the team should know to check before trusting the hazard ratio.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-5fe9090b35aa"
+      }
+    },
+    {
+      "text": "PITFALL: hypermutated or mismatch-repair-deficient tumours can contaminate the gene-altered groups. A small share of prostate tumours sequenced on targeted panels are hypermutated (MSI-high or replication-repair deficient) and carry many passenger mutations in cancer genes, so such a sample can be counted as AR-, SPOP- or TP53-altered through a passenger variant; even recurrent hotspot sites can be passengers at highly mutable positions. With few AR and SPOP carriers, one or two such samples can move the hazard ratio. CHECK: list MSI_TYPE, MSI_SCORE and TMB_NONSYNONYMOUS (data_clinical_sample.txt) for every carrier of each gene; flag carriers that are MSI Instable or have TMB far above the cohort median and whose only alteration in the gene is a non-hotspot missense. DO: rerun each gene's analysis with those samples excluded or reclassified as wild-type and report whether direction and size hold.",
+      "from": [
+        "sl-biodsa-test-789f4e699cd6"
+      ],
+      "reason": "A cheap sensitivity check that matters because the carrier groups for AR and SPOP are small enough for one misclassified sample to move the estimate.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-b2c06c458ec4"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat SMP_CRPC_MONTHS of an IS_CRPC=No patient as a non-informative censoring time. The files show it is not simply last follow-up: 85 of 184 censored patients (76 alive, 9 dead) have a CRPC time shorter than OS_SMP_MONTHS, by up to 44 months, and 2 have a CRPC time longer than OS time. Neither team tested whether this gap (CRPC assessment stopping before vital-status follow-up) differs by gene group.",
+      "Both teams assume alteration detection is equally sensitive in every sample. Calls come from one targeted-panel sample per patient, taken from six tissue sites (204 prostate, 220 metastatic sites), with varying TUMOR_PURITY and SAMPLE_COVERAGE; a low-purity sample labelled wild-type may be a missed carrier, and missed carriers are not random with respect to outcome.",
+      "Both teams take time zero as sample collection and handle prior ADT only through the yes/no ANDROGEN_DEPRIVATION_THERAPY flag (3 patients are NA). Duration of ADT before sampling is unknown, so left truncation is adjusted for by a binary proxy only.",
+      "Both teams treat the cohort as one era. GENE_PANEL (IMPACT341 37, IMPACT410 154, IMPACT468 233) marks calendar period of sequencing, hence follow-up length and possibly first-line treatment; team B saw that panel tracks the crude CRPC proportion but neither team stratified on it.",
+      "Both teams read the hypothesis as three separate per-gene tests that must all pass, and both rest the label on the Cox/log-rank result. The label therefore hangs on the weakest of the three (SPOP, CI upper bound close to 1 in both teams)."
+    ],
+    "unused_evidence": [
+      "TUMOR_PURITY and SAMPLE_COVERAGE (sample file): neither team used them. They determine whether a wild-type call is trustworthy, especially for copy-number calls (AR amplification, TP53 deep deletion).",
+      "GENE_PANEL as a stratifier / calendar-era proxy: team B checked gene coverage and noted the follow-up link, team A did not mention it; neither stratified the survival models by it.",
+      "BIOPSY_GLEASON_SCORE (40 NA) and PSA (patient file): standard prognostic variables for time to castration resistance; neither team's adjustment set includes them.",
+      "TISSUE_SITE: team B adjusted for it; team A did not use it although alteration frequencies differ by site (team B: AR alterations nearly absent from prostate samples).",
+      "OS_SMP_MONTHS / SURVIVAL_STATUS in relation to the CRPC time of censored patients: used only for a composite endpoint (team A) and a consistency flag (team B), not to test differential loss of CRPC assessment.",
+      "data_cna_hg19.seg: neither team used segment values to check the discrete AR / TP53 copy-number calls in data_cna.txt (AR coded only 0 or 2; TP53 only 0 or -2; no -1/+1 level exists).",
+      "MSI_TYPE / TMB_NONSYNONYMOUS: team A excluded hypermutated samples as a check; team B did not report doing so."
+    ],
+    "unresolved_weak_points": [
+      "Both teams name the AR result as weakest (about 19 of 26-27 carriers sampled on ADT, most events within 2 months of sampling, non-proportional hazards in team A). Both mitigated it (ADT-stratified model, off-ADT subset, time-split, RMST) but the off-ADT estimate rests on 7-8 carriers and 4-5 events, and neither fitted a small-sample (penalised or exact) method for that subset. Reported, partly resolved.",
+      "Team A states no Firth or Fine-Gray model was fitted; the composite endpoint stands in for competing risk. Not resolved, though only 11 deaths occurred without CRPC.",
+      "Team B: alteration calls rest on its own inclusion rules with no functional annotation; said to be insensitive but the SPOP numbers under each rule are not given in the note. Team B found two CRPC times longer than OS time and does not say what was done with them."
+    ],
+    "second_readings": [
+      "'Rates of castration resistance' read as the proportion of patients who became castration resistant (IS_CRPC yes/no) rather than a hazard. Team B's own crude Fisher tests are not significant for AR and SPOP under that reading; the label then depends on which reading is right. Both teams chose time-to-event because 184 of 424 are censored, which is defensible, but the dependence is real.",
+      "The claim may be conjunctive (all three genes, SPOP in the opposite direction) or a looser statement that these genes as a set stratify outcome. Both teams used the strict conjunctive reading; under it a single unstable gene (SPOP) changes the label.",
+      "'Associated' may mean univariable or independent of clinical covariates and of each other. Both teams ran both; the results agree, so this reading does not split them.",
+      "Time scale: the only clock in the data starts at sample collection, not at ADT start or metastatic diagnosis. A reader meaning 'time on ADT to resistance' cannot be served exactly by these files; on-ADT samples are where the two clocks differ most."
+    ],
+    "verdict": "Moderate-to-high trust: both teams used time-to-event methods with ADT handling and got the same direction for all three genes, and TP53 and AR look stable. The label nevertheless rests on the weakest gene (SPOP) under a conjunctive reading, and neither team tested differential censoring of CRPC assessment, detection sensitivity (purity, tissue site) or sequencing era, any of which could move a borderline SPOP interval.",
+    "questions": [
+      {
+        "to": "bd22-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Among the 184 IS_CRPC=No patients, 85 have SMP_CRPC_MONTHS shorter than OS_SMP_MONTHS (by up to 44 months; 9 of them died) and 2 have it longer. So the censoring time is not last follow-up. Tabulate the gap (OS_SMP_MONTHS minus SMP_CRPC_MONTHS) among censored patients by AR, SPOP and TP53 status, and rerun each gene once treating censored patients with a gap above a few months as lost-to-assessment under a pessimistic and an optimistic assumption. Also state which time you used for the 11 deaths in your composite endpoint. Does the SPOP or AR interval cross 1 under any of these, and does that change your method?",
+        "from": [
+          "sl-biodsa-test-3079eb42fab5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-7df5dd3000c3"
+      },
+      {
+        "to": "bd22-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your method does not use TISSUE_SITE, TUMOR_PURITY or SAMPLE_COVERAGE. Cross-tabulate carrier frequency for each gene against tissue site (prostate vs metastatic site) and against purity tertile, then rerun the three models stratified by tissue site and again restricted to samples above a purity floor you fix beforehand. Is the wild-type group contaminated by low-purity samples, and does any gene's interval (SPOP in particular) include 1 after this, changing your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-512d1734c62a"
+      },
+      {
+        "to": "bd22-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: GENE_PANEL (IMPACT341 / 410 / 468) marks the calendar period of sequencing and so follow-up length and possibly first-line treatment. Tabulate carriers and events per gene within each panel and rerun the Cox models stratified by panel, and once more adding BIOPSY_GLEASON_SCORE and PSA (neither is in your adjustment set). Do the three hazard ratios keep their direction and exclude 1, or does this change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-538da5735b0e"
+      },
+      {
+        "to": "bd22-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your label requires all three genes, and SPOP is the closest to the null. Your note gives SPOP only under the driver-type definition and the volume-adjusted model. Report the SPOP hazard ratio and interval under each of your three alteration definitions, in the fully adjusted model, in the off-ADT subset and with hypermutated samples excluded, in one table. Is there a defensible specification in which the SPOP interval includes 1, and what does your pre-recorded decision rule say the label is in that case?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-705b8f94bc09"
+      },
+      {
+        "to": "bd22-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You found two CRPC times longer than OS time; the same comparison shows 85 of the 184 IS_CRPC=No patients have SMP_CRPC_MONTHS shorter than OS_SMP_MONTHS (by up to 44 months; 9 of them died). So censoring happens at last CRPC assessment, not last follow-up. Say what you did with the two inconsistent rows, tabulate the gap among censored patients by AR, SPOP and TP53 status, and rerun each gene under a pessimistic and an optimistic assumption for patients with a large gap. Does any interval cross 1, and does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-c8e6b9827b9a"
+      },
+      {
+        "to": "bd22-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You noted that gene panel tracks the crude CRPC proportion through follow-up length but did not stratify on it. Tabulate carriers and events per gene within each panel and rerun the adjusted Cox model stratified by GENE_PANEL as a calendar-era proxy, and once more adding BIOPSY_GLEASON_SCORE and PSA. Do all three hazard ratios keep their direction and exclude 1, or does this change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-9f6debb3d511"
+      },
+      {
+        "to": "bd22-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Neither TUMOR_PURITY nor SAMPLE_COVERAGE appears in your method, and you did not report excluding MSI-Instable / high-TMB samples. Cross-tabulate carrier frequency per gene against purity tertile, rerun the three models restricted to samples above a purity floor fixed beforehand, and rerun excluding MSI-Instable or high-TMB samples (where AR, SPOP or TP53 hits may be passengers). Does any gene's interval include 1 afterwards, changing your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-8a3f83288fe8"
+      },
+      {
+        "to": "bd22-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your crude Fisher tests are not significant for AR and SPOP while the time-to-event tests are, and SPOP is the gene nearest the null in a claim that needs all three. Report the SPOP hazard ratio and interval under each alteration rule you tried (mutation-only vs any), in the ADT-stratified model and in the off-ADT subset, in one table, and state the rule by which you decided that 'rate' means hazard rather than proportion. Is there a defensible specification in which SPOP's interval includes 1, and what label does your rule give then?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-db4c917dcb76"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In a time-to-event analysis where the clock starts at tumour biopsy and some patients had already been on the treatment of interest for an unknown duration before the biopsy (left truncation with unknown entry time), what analyses are recommended to test whether a biomarker is associated with time to treatment resistance, and what are the known biases of adjusting or stratifying only on a yes/no 'already on treatment' flag?",
+          "why": "Both teams name this as their weakest point for one gene and handled it only with a binary flag; knowing the accepted approach and the direction of the bias tells them whether their stratified estimate is enough.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When an event such as disease progression is only known up to the last clinical assessment, which can be much earlier than the last vital-status follow-up, what is the standard convention for the censoring time and what sensitivity analyses are recommended for possibly informative censoring (for example best-case/worst-case imputation or inverse-probability-of-censoring weights)?",
+          "why": "Nearly half of the censored patients here stop being assessed for the event before their last follow-up; neither team tested whether this censoring is informative, and the convention determines how to run that check.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In discrete gene-level copy-number tables produced from tumour-normal targeted hybrid-capture sequencing panels and distributed in cBioPortal format, how are amplifications and deep deletions called (fold-change thresholds, dependence on tumour purity), how are X-chromosome genes handled in male patients, and does a value of 0 distinguish 'no alteration' from 'gene not on the panel'?",
+          "why": "Both teams took the discrete calls at face value and neither used tumour purity or the segment file; if calling sensitivity falls with purity or differs for X-linked genes, the wild-type groups may contain missed carriers.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In a time-to-event analysis where the clock starts at tumour biopsy and some patients had already been on the treatment of interest for an unknown duration before the biopsy (left truncation with unknown entry time), what analyses are recommended to test whether a biomarker is associated with time to treatment resistance, and what are the known biases of adjusting or stratifying only on a yes/no 'already on treatment' flag?",
+          "answer": "Accepted approach when the delay is KNOWN: a delayed-entry (left-truncated) Cox model on the time-since-treatment-start scale, with each patient entering the risk set at the sampling time; it gives an unbiased HR if entry is independent of outcome given covariates and hazards are proportional, and a 'prevalent' covariate is then unnecessary (Azzato 2009). When the delay is UNKNOWN, the same paper states that 'the delayed entry estimator is not a viable option and biases in the parameter estimate can occur'. The remedy the guidance gives is restriction: ENCePP ch. 6 says selection biases 'cannot be removed at the analysis stage if the factors responsible for the selection are not known or not measured' and that prevalence bias 'may be removed by restricting the analysis to incident drug users', at the cost of precision; Ray 2003 adds that even recording prior duration does not resolve it, because the survivors exclude people who failed before follow-up began, and recommends a comparative analysis of new versus prevalent users and a check of whether the hazard varies with time before pooling them. So the recommended set is: (1) off-treatment-at-biopsy patients only, as the unbiased estimate; (2) stratum-specific HRs for on- and off-treatment patients with a biomarker-by-flag interaction test; (3) a proportional-hazards / time-varying-HR check; (4) the pooled stratified estimate reported only as secondary. Biases left by a binary flag (it only lets the baseline hazard differ): (a) survivor selection / depletion of susceptibles - on-treatment patients are those not yet resistant and fast progressors were never sampled, so a harmful biomarker's HR in that stratum is pulled toward 1 (this direction is my inference from the stated mechanism, 'underascertainment of events that occur early in therapy'; no source gives it as a formula for a biomarker); (b) patients in the 'yes' stratum have mixed unknown durations, so if the HR changes with time on treatment the estimate is a different weighted average than in incident patients (Azzato found incident-vs-all differences were due to non-proportional hazards); (c) characteristics measured at entry may already have been changed by the treatment (Ray 2003), which for a treatment-acquired alteration biases away from 1. The net direction is therefore not fixed; the stratified estimate is sufficient only if it agrees with the off-treatment-only estimate. No source read gives a method that recovers an unbiased estimate from a binary flag alone.",
+          "sources": [
+            "https://www.nature.com/articles/6605062",
+            "https://doi.org/10.1093/aje/kwg231",
+            "https://encepp.europa.eu/encepp-toolkit/methodological-guide/chapter-6-methods-address-bias-and-confounding_en",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC11588434/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd22-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-002283e22500"
+            },
+            "bd22-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-ab01784ba872"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In a time-to-event analysis where the clock starts at tumour biopsy and some patients had already been on the treatment of interest for an unknown duration before the biopsy (left truncation with unknown entry time), what analyses are recommended to test whether a biomarker is associated with time to treatment resistance, and what are the known biases of adjusting or stratifying only on a yes/no 'already on treatment' flag? ANSWER: Accepted approach when the delay is KNOWN: a delayed-entry (left-truncated) Cox model on the time-since-treatment-start scale, with each patient entering the risk set at the sampling time; it gives an unbiased HR if entry is independent of outcome given covariates and hazards are proportional, and a 'prevalent' covariate is then unnecessary (Azzato 2009). When the delay is UNKNOWN, the same paper states that 'the delayed entry estimator is not a viable option and biases in the parameter estimate can occur'. The remedy the guidance gives is restriction: ENCePP ch. 6 says selection biases 'cannot be removed at the analysis stage if the factors responsible for the selection are not known or not measured' and that prevalence bias 'may be removed by restricting the analysis to incident drug users', at the cost of precision; Ray 2003 adds that even recording prior duration does not resolve it, because the survivors exclude people who failed before follow-up began, and recommends a comparative analysis of new versus prevalent users and a check of whether the hazard varies with time before pooling them. So the recommended set is: (1) off-treatment-at-biopsy patients only, as the unbiased estimate; (2) stratum-specific HRs for on- and off-treatment patients with a biomarker-by-flag interaction test; (3) a proportional-hazards / time-varying-HR check; (4) the pooled stratified estimate reported only as secondary. Biases left by a binary flag (it only lets the baseline hazard differ): (a) survivor selection / depletion of susceptibles - on-treatment patients are those not yet resistant and fast progressors were never sampled, so a harmful biomarker's HR in that stratum is pulled toward 1 (this direction is my inference from the stated mechanism, 'underascertainment of events that occur early in therapy'; no source gives it as a formula for a biomarker); (b) patients in the 'yes' stratum have mixed unknown durations, so if the HR changes with time on treatment the estimate is a different weighted average than in incident patients (Azzato found incident-vs-all differences were due to non-proportional hazards); (c) characteristics measured at entry may already have been changed by the treatment (Ray 2003), which for a treatment-acquired alteration biases away from 1. The net direction is therefore not fixed; the stratified estimate is sufficient only if it agrees with the off-treatment-only estimate. No source read gives a method that recovers an unbiased estimate from a binary flag alone. HOW SURE: medium. SOURCES: https://www.nature.com/articles/6605062, https://doi.org/10.1093/aje/kwg231, https://encepp.europa.eu/encepp-toolkit/methodological-guide/chapter-6-methods-address-bias-and-confounding_en, https://pmc.ncbi.nlm.nih.gov/articles/PMC11588434/."
+        },
+        {
+          "question": "When an event such as disease progression is only known up to the last clinical assessment, which can be much earlier than the last vital-status follow-up, what is the standard convention for the censoring time and what sensitivity analyses are recommended for possibly informative censoring (for example best-case/worst-case imputation or inverse-probability-of-censoring weights)?",
+          "answer": "Convention: censor at the last adequate disease assessment that showed no event, not at the last vital-status contact. FDA's 2018 oncology endpoint guidance recommends 'assigning the progression date to the earliest time when any progression is observed without prior missing assessments and censoring at the date when the last radiological assessment determined a lack of progression'. Extending the censoring time to last follow-up would count unassessed time as event-free. The same guidance notes that censoring 'assumes that the patients with censored observations have the same risk' as those still followed, and calls censoring deaths in a time-to-progression analysis informative censoring. Recommended sensitivity analyses: (1) bracketing - the Clinical Cancer Research PFS overview says 'the most practical suggestion is to perform sensitivity analyses, making assumptions which likely bracket the truth (treating the times as progressions, then as right censored observations)'; applying the worst case to one group only gives a tipping-point version (tipping-point analysis appeared only in a search result I did not open). (2) FDA: pre-specify a primary and one or more sensitivity analyses, compare adequacy of follow-up between groups, and count deaths among patients lost to assessment, since an imbalance overestimates event-free time in the group with less follow-up. (3) Inverse-probability-of-censoring weights (tutorial, PMC13748472): fit a model (e.g. Cox) for being censored given covariates, weight by 1/P(remaining uncensored), use stabilized or truncated weights for extreme values, and bootstrap the confidence interval because the naive variance has poor coverage; the tutorial's worked cases assume censoring is independent of the event given the measured covariates, so IPCW does not correct dependence on unmeasured factors. A commentary in European Journal of Cancer shows the size of the issue: changing only the censoring rule moved one arm's median PFS from 32 to 43 months. Progression is also interval-censored between assessments; assigning it to the assessment date is the usual convention.",
+          "sources": [
+            "https://www.fda.gov/media/71195/download",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3654394/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC13748472/",
+            "https://www.ejcancer.com/article/S0959-8049(24)00678-6/fulltext"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd22-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-6592d64076aa"
+            },
+            "bd22-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-0e4d712588fe"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When an event such as disease progression is only known up to the last clinical assessment, which can be much earlier than the last vital-status follow-up, what is the standard convention for the censoring time and what sensitivity analyses are recommended for possibly informative censoring (for example best-case/worst-case imputation or inverse-probability-of-censoring weights)? ANSWER: Convention: censor at the last adequate disease assessment that showed no event, not at the last vital-status contact. FDA's 2018 oncology endpoint guidance recommends 'assigning the progression date to the earliest time when any progression is observed without prior missing assessments and censoring at the date when the last radiological assessment determined a lack of progression'. Extending the censoring time to last follow-up would count unassessed time as event-free. The same guidance notes that censoring 'assumes that the patients with censored observations have the same risk' as those still followed, and calls censoring deaths in a time-to-progression analysis informative censoring. Recommended sensitivity analyses: (1) bracketing - the Clinical Cancer Research PFS overview says 'the most practical suggestion is to perform sensitivity analyses, making assumptions which likely bracket the truth (treating the times as progressions, then as right censored observations)'; applying the worst case to one group only gives a tipping-point version (tipping-point analysis appeared only in a search result I did not open). (2) FDA: pre-specify a primary and one or more sensitivity analyses, compare adequacy of follow-up between groups, and count deaths among patients lost to assessment, since an imbalance overestimates event-free time in the group with less follow-up. (3) Inverse-probability-of-censoring weights (tutorial, PMC13748472): fit a model (e.g. Cox) for being censored given covariates, weight by 1/P(remaining uncensored), use stabilized or truncated weights for extreme values, and bootstrap the confidence interval because the naive variance has poor coverage; the tutorial's worked cases assume censoring is independent of the event given the measured covariates, so IPCW does not correct dependence on unmeasured factors. A commentary in European Journal of Cancer shows the size of the issue: changing only the censoring rule moved one arm's median PFS from 32 to 43 months. Progression is also interval-censored between assessments; assigning it to the assessment date is the usual convention. HOW SURE: high. SOURCES: https://www.fda.gov/media/71195/download, https://pmc.ncbi.nlm.nih.gov/articles/PMC3654394/, https://pmc.ncbi.nlm.nih.gov/articles/PMC13748472/, https://www.ejcancer.com/article/S0959-8049(24)00678-6/fulltext."
+        },
+        {
+          "question": "In discrete gene-level copy-number tables produced from tumour-normal targeted hybrid-capture sequencing panels and distributed in cBioPortal format, how are amplifications and deep deletions called (fold-change thresholds, dependence on tumour purity), how are X-chromosome genes handled in male patients, and does a value of 0 distinguish 'no alteration' from 'gene not on the panel'?",
+          "answer": "Calling (MSK-IMPACT validation paper, Cheng 2015): tumour coverage of target regions is compared with a set of unmatched normal FFPE and blood controls (the best comparator is the one with the lowest sum-squared log-ratio and 'may not always be the matched normal'), GC-normalised and segmented by circular binary segmentation; a whole-gene event is called when 'fold change >2.0 (gain) or <-2.0 (loss), P < 0.05 (false discovery rate-corrected)'. Copy-number events found in the matched normal are subtracted as germline. Zehir 2017 describes only 'an in-house developed algorithm' with manual review of every call. Purity: the rule is applied to the observed tumour:normal ratio with no purity or ploidy correction (the 2015 paper lists purity estimation as future work). By arithmetic from the threshold (my derivation, not a quoted statement) an autosomal gene needs about 2 + 2/purity copies to reach 2-fold: 4 copies at 100% purity, 6 at 50%, 12 at 20%. A homozygous deletion gives a ratio of 1 - purity, so it cannot pass the 0.5 threshold unless purity is above about 50%. Deep deletions are therefore under-called in impure samples and amplifications need higher copy number. Samples are accepted down to 10% purity; in the 10,000-patient cohort samples with no alterations were excluded if purity was under 20% 'due to the risk of false negatives'. Only -2, 0 and 2 are produced, so 0 also covers low-level gains and single-copy losses. X-linked genes in males: not settled. Neither MSK-IMPACT paper says how chromosome X is treated in male patients. General practice (CNVkit documentation) is that a male sample against a diploid-X reference sits at log2 about -1 on X unless its X coverage is doubled or a haploid-X ('male') reference is used. The teams can check this in the segment file: X-chromosome segment means centred near 0 in these male patients mean a one-copy baseline was used; centred near -1 means X-linked amplifications are under-called. Value 0: the cBioPortal format defines 0 as 'diploid', -2 as 'a deep loss, possibly a homozygous deletion' and 2 as 'a high-level amplification'. Whether a gene was assayed is recorded in the gene panel matrix file or the gene_panel meta property (NA = sample not profiled), not in the CNA value; the format page does not define NA inside the discrete copy-number matrix. So 0 alone does not distinguish 'not altered' from 'not on the panel'; that needs the gene panel matrix and the panel's gene list.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5808190/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5461196/",
+            "https://docs.cbioportal.org/file-formats/",
+            "https://cnvkit.readthedocs.io/en/stable/sex.html"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd22-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-e21c438b3d62"
+            },
+            "bd22-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-630ee798dbed"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In discrete gene-level copy-number tables produced from tumour-normal targeted hybrid-capture sequencing panels and distributed in cBioPortal format, how are amplifications and deep deletions called (fold-change thresholds, dependence on tumour purity), how are X-chromosome genes handled in male patients, and does a value of 0 distinguish 'no alteration' from 'gene not on the panel'? ANSWER: Calling (MSK-IMPACT validation paper, Cheng 2015): tumour coverage of target regions is compared with a set of unmatched normal FFPE and blood controls (the best comparator is the one with the lowest sum-squared log-ratio and 'may not always be the matched normal'), GC-normalised and segmented by circular binary segmentation; a whole-gene event is called when 'fold change >2.0 (gain) or <-2.0 (loss), P < 0.05 (false discovery rate-corrected)'. Copy-number events found in the matched normal are subtracted as germline. Zehir 2017 describes only 'an in-house developed algorithm' with manual review of every call. Purity: the rule is applied to the observed tumour:normal ratio with no purity or ploidy correction (the 2015 paper lists purity estimation as future work). By arithmetic from the threshold (my derivation, not a quoted statement) an autosomal gene needs about 2 + 2/purity copies to reach 2-fold: 4 copies at 100% purity, 6 at 50%, 12 at 20%. A homozygous deletion gives a ratio of 1 - purity, so it cannot pass the 0.5 threshold unless purity is above about 50%. Deep deletions are therefore under-called in impure samples and amplifications need higher copy number. Samples are accepted down to 10% purity; in the 10,000-patient cohort samples with no alterations were excluded if purity was under 20% 'due to the risk of false negatives'. Only -2, 0 and 2 are produced, so 0 also covers low-level gains and single-copy losses. X-linked genes in males: not settled. Neither MSK-IMPACT paper says how chromosome X is treated in male patients. General practice (CNVkit documentation) is that a male sample against a diploid-X reference sits at log2 about -1 on X unless its X coverage is doubled or a haploid-X ('male') reference is used. The teams can check this in the segment file: X-chromosome segment means centred near 0 in these male patients mean a one-copy baseline was used; centred near -1 means X-linked amplifications are under-called. Value 0: the cBioPortal format defines 0 as 'diploid', -2 as 'a deep loss, possibly a homozygous deletion' and 2 as 'a high-level amplification'. Whether a gene was assayed is recorded in the gene panel matrix file or the gene_panel meta property (NA = sample not profiled), not in the CNA value; the format page does not define NA inside the discrete copy-number matrix. So 0 alone does not distinguish 'not altered' from 'not on the panel'; that needs the gene panel matrix and the panel's gene list. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC5808190/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5461196/, https://docs.cbioportal.org/file-formats/, https://cnvkit.readthedocs.io/en/stable/sex.html."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd22-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd22-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd22-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd22-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd22-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 92.59916300000623,
+      "cost_usd": 0.1794054,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 104.25139650003985,
+      "cost_usd": 0.1559316,
+      "error": null
+    },
+    {
+      "agent": "bd22-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 123.3347615840612,
+      "cost_usd": 0.24697139999999998,
+      "error": null
+    },
+    {
+      "agent": "bd22-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 157.28744750004262,
+      "cost_usd": 0.3112454,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 137.2913517919369,
+      "cost_usd": 0.2586881,
+      "error": null
+    },
+    {
+      "agent": "bd22-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 332.05099254194647,
+      "cost_usd": 0.6918226,
+      "error": null
+    },
+    {
+      "agent": "bd22-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 211.9807299580425,
+      "cost_usd": 0.45729659999999994,
+      "error": null
+    },
+    {
+      "agent": "bd22-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 230.7089894169476,
+      "cost_usd": 0.5429120999999999,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,457 @@
+{
+  "study": "bd07",
+  "status": "replicated",
+  "final": {
+    "agent": "bd07-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd07/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd07-library": "fable",
+    "bd07-team-a": "fable",
+    "bd07-team-b": "fable",
+    "bd07-team-c": "fable",
+    "bd07-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd07-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd07/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd07-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd07/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd07-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd07/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd07-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd07/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd07-team-a",
+        "bd07-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd07-team-a",
+        "bd07-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "CORRECTION - this replaces the earlier briefing item that began 'Get the prevalence denominator right'. Two things in that item were wrong: (1) it said sample P-0000174-T01-IM3 was missing from the '#sequenced_samples' header line of data_mutations.txt - the library now reports it IS in that line; (2) it told you to use the samples in data_gene_panel_matrix.txt (mutations column not NA) as the prevalence denominator - do NOT do that. The library reports, from reading the file headers only, that data_gene_panel_matrix.txt lists just 34 samples (all named P-xxxx-IM3, panel IMPACT341), while data_clinical_sample.txt and data_clinical_patient.txt each have 117 data rows and the '#sequenced_samples' line of data_mutations.txt lists the full set, including research samples named s_JF_thy_* and s_JJ_thy_*. Using the panel matrix as denominator would drop about 83 sequenced tumours and change the prevalence. Verify these counts yourself. Build the denominator from the '#sequenced_samples' line intersected with data_clinical_sample.txt; confirm it is about 117 and that there is one sample per patient. Confirm that the s_JF/s_JJ samples were assayed at the TERT promoter by checking whether some of them carry 5'Flank TERT calls at chr5:1295228 or chr5:1295250. Still true from the earlier item: a MAF has rows only for samples with at least one called mutation, so distinct Tumor_Sample_Barcode values in the MAF are not a denominator either. Report prevalence per histology and pooled with exact binomial CIs over all sequenced samples, and give the panel-matrix-only subset just as a sensitivity check.",
+      "from": [
+        "sl-biodsa-test-611938cb0d1c",
+        "sl-biodsa-test-c8cb70fee1c7"
+      ],
+      "reason": "The team already holds an instruction from me that is now known to be wrong: it tells them to use a 34-sample table as the denominator for a cohort of about 117. Left uncorrected, it would change the prevalence estimate that the 'highly prevalent' half of the hypothesis rests on.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-d44c8c4e60fe"
+      }
+    },
+    {
+      "text": "Data structure, as read by the library from file headers only (no analysis was done; verify each point). data_mutations.txt has t_ref_count, t_alt_count, n_ref_count and n_alt_count filled for all 564 mutation rows, and a Hotspot column. data_clinical_sample.txt has TUMOR_PURITY, SOMATIC_STATUS, SPECIMEN_PRESERVATION_TYPE, CANCER_TYPE_DETAILED and ONCOTREE_CODE. The 341-gene MSK-IMPACT panel includes probes for a roughly 100-bp TERT promoter region covering both hotspots (chr5:1295228 and chr5:1295250, hg19). So read counts, purity and copy number are available for estimating TERT promoter prevalence and clonality in whichever tumours are in the cohort; whether a papillary thyroid carcinoma group is among them is not established and must be checked from CANCER_TYPE_DETAILED / ONCOTREE_CODE. Matched_Norm_Sample_Barcode is filled for only 159 of the 564 mutation rows, so many samples may have been sequenced without a matched normal: check SOMATIC_STATUS per sample before trusting that the other mutations you use as within-sample comparators for the TERT VAF are truly somatic and not germline.",
+      "from": [
+        "sl-biodsa-test-79df378663be"
+      ],
+      "reason": "It tells the team which columns carry the quantities the analysis needs and that the panel does cover the TERT promoter, so they do not wrongly conclude the locus was unassayed. The unmatched-normal warning changes which mutations can safely serve as clonality comparators.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-aafd7c4f3e1b"
+      }
+    },
+    {
+      "text": "Calls in a clinical panel MAF are cut off at the variant caller's floor, and the floor differs between hotspot and non-hotspot mutations. The MSK-IMPACT pipeline requires depth of at least 20 and calls known hotspots at 8 or more mutant reads and VAF of 2% or more, but non-hotspot mutations only at 10 or more mutant reads and VAF of 5% or more. Two consequences. (a) Subclonal mutations below the floor never appear in the table, so in low-purity tumours a finding that 'every detected TERT promoter mutation is clonal' is partly a selection effect. (b) A within-sample comparison of the TERT promoter VAF against all other mutations is asymmetric, because non-hotspot comparators cannot appear below 5% VAF. Check the lowest t_alt_count and VAF among all calls and among TERT promoter calls (use the Hotspot column), and for each sample compute the smallest cancer cell fraction that could have been detected, roughly 2*floor/purity. State clonality as 'clonal among detected mutations'. For the relative comparison, compare TERT against the truncal driver hotspot in the same sample (BRAF V600E or a RAS hotspot, which has the same floor) in preference to all mutations, and name the low-purity samples in which a subclonal TERT mutation could not have been seen at all.",
+      "from": [
+        "sl-biodsa-test-b29efcbef776"
+      ],
+      "reason": "This limits how strongly 'clonal' can be claimed from detected calls and changes the comparator for the purity-free relative-VAF check I recommended earlier; without it the team could overstate clonality.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-60424743ed33"
+      }
+    },
+    {
+      "text": "The cohort appears to mix two specimen batches: research samples named s_JF_thy_* / s_JJ_thy_* (e.g. frozen) and clinical samples named P-xxxx-IM3 (see SPECIMEN_PRESERVATION_TYPE). Batch may be confounded with histology. Formalin fixation causes cytosine deamination, which produces artefactual C:G>T:A changes at low allele frequency (typically under 5-10%). Both TERT promoter hotspots are G>A on the plus strand, the same substitution class, so a low-VAF promoter call in an FFPE sample may be an artefact and not a true subclone; frozen and FFPE samples also differ in depth and sensitivity. Cross-tabulate specimen type/batch by histology and by TERT promoter status. List any TERT promoter call with VAF under 5% or fewer than about 10 alt reads together with its specimen type. Do not build a 'subclonal TERT' conclusion on a few low-VAF FFPE calls. Give prevalence and clonality stratified by batch and check that the conclusion holds in each.",
+      "from": [
+        "sl-biodsa-test-115ff1bc031b"
+      ],
+      "reason": "A batch difference or FFPE artefact could create apparent subclonal TERT calls or a prevalence difference between histologies that is technical, which would distort both halves of the hypothesis.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-88a4f2b5964d"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treated the comparative clause 'compared to PTCs' as non-essential: with zero PTC samples in the tables they scored only the advanced-cancer half and still chose a definite label. Neither wrote down, before seeing results, a rule for which label applies when one arm of a comparison is absent, and neither tested whether the label survives if the clause is essential.",
+      "Both teams judged 'highly prevalent' against an unstated outside benchmark. Team A pre-fixed 'CI lower bound well above ~10%' and team B used 'far above a low-prevalence level'; neither number comes from the data, so an external PTC-like reference entered through the threshold even though both say no outside figure was used. Neither offered a purely in-data yardstick (e.g. where TERT promoter ranks among all panel genes in the same samples).",
+      "Both teams' purity-free clonality check assumes the co-occurring BRAF V600E / RAS hotspot is itself clonal, heterozygous and copy-neutral in every sample. Copy number was adjusted at the TERT locus only; the seg file spans the BRAF and NRAS loci in all 117 samples (HRAS in 114) but neither team says it adjusted the driver side of the ratio. The unexplained excess (TERT VAF above driver VAF in many samples, CCF significantly above 1 in 22) was attributed to 5p gain/LOH or VAF-derived purity without being tested.",
+      "Both teams pooled primaries, recurrences and metastases (92 / 6 / 19 samples) when counting clonal tumours. A metastasis or recurrence passes through a bottleneck, so a mutation that was subclonal in the primary can look clonal there; clonality was stratified by histology and batch but not by sample type.",
+      "Both teams defined 'clonal' by a majority rule with different cut-offs (CCF interval including 1; CCF>=0.8; ratio>=0.75 or >=0.8) and counted different numbers of subclonal cases (7/46 vs 3/55). Neither showed the label is insensitive to the cut-off or said what proportion of subclonal cases would falsify 'are clonal'.",
+      "Both teams took absence of a TERT promoter row as wild-type in the 82 research-batch samples that have no gene-panel row, inferring coverage only from the fact that some calls exist in each batch; per-sample assayability at the promoter (GC-rich, depth about half of other loci) is not documented in any table."
+    ],
+    "unused_evidence": [
+      "PDTC_DEFINITION in the patient table (PDTC-Turin 52, PDTC-MSK 31, blank for all 33 ATC and 1 PDTC). It splits the poorly differentiated group by two diagnostic criteria, which is the only in-data axis of 'how far from differentiated carcinoma' within PDTC. Neither team reported prevalence or clonality by it. It cannot supply a PTC arm, but it could show whether the pooled PDTC result is driven by one definition.",
+      "SAMPLE_TYPE / SITE_OF_RECURRENCE / SAMPLE_TYPE_DETAIL: team B used sample type for prevalence only (metastases vs primaries); neither team used it for clonality.",
+      "Segment copy number at the comparator driver loci (BRAF chr7, NRAS chr1, HRAS chr11) in data_cna_hg19.seg and the gene-level data_cna.txt rows for those genes; only the TERT locus was copy-number adjusted.",
+      "data_sv.txt (12 fusions: RET, ALK, PPARG, BRD4-NUTM1). Fusion-driven tumours have no BRAF/RAS hotspot, so any TERT-mutant tumour among them falls into the 'no independent comparator' group; neither team said how the 13 TERT-mutant samples without a driver hotspot (58 mutant minus 45 with a ratio) were classified or whether another truncal comparator exists for them.",
+      "n_ref_count / n_alt_count and the Caller / Matched_Norm_Sample_Barcode pattern (Caller blank for 159 rows, 'mutect' for 405): two calling pipelines with possibly different floors and normal handling. Team A looked at the call floor overall; neither compared the floor or the TERT-vs-driver ratio between the two pipelines.",
+      "Survival tables (OS_STATUS, OS_MONTHS, data_timeline_status.txt) and stage columns are not relevant to prevalence or clonality and were reasonably left out; M_STAGE could serve as a further within-cohort 'advancedness' stratum but does not replace a PTC arm."
+    ],
+    "unresolved_weak_points": [
+      "Both teams name the label itself as the weakest point (True vs Not verifiable because no PTC samples exist) and both only reported it; both sit at confidence 0.62. Nothing either team ran bears on that choice, so the agreement on the label is agreement on a reading of the task text, not on evidence.",
+      "Team A found that TUMOR_PURITY equals 2 x VAF of a called mutation in 80/94 samples and demoted purity-based CCF. Team B only saw a correlation (Spearman 0.80), did not identify the construction, and still reports 'CCF>=0.8 in 48/55' as primary evidence, which is partly true by construction. The two teams' clonal counts are therefore not independent confirmations of each other.",
+      "Team A: 9 circular plus 3 purity-missing TERT-mutant samples are 'not independently assessable', and 7 of 46 assessable are subclonal; reported, not resolved. Team B: 'highly prevalent has no numeric threshold and PDTC prevalence is 40%' (33-35% in two of three sample sources); reported, not resolved.",
+      "CCF above 1 in a large share of samples is explained by assertion (5p gain/LOH, VAF-derived purity). If it instead reflects a capture or allele bias at the promoter, the ratio-to-driver measure is biased upward and the subclonal count is understated."
+    ],
+    "second_readings": [
+      "'compared to PTCs' may govern both adjectives: the claim would then be a contrast (clonal and common in advanced tumours versus subclonal and uncommon in PTC). Under that reading the data lack one whole arm for both quantities, and the task's label rules must be applied to a missing comparator group rather than to a missing variable.",
+      "'compared to PTCs' may govern only 'highly prevalent', leaving 'clonal' as an absolute statement about advanced cancers that the data can address on their own, while the prevalence contrast still has no comparator.",
+      "'advanced cancers' can mean PDTC and ATC pooled, or each separately. The teams report a clear difference between the two histologies and between batches within PDTC, so a claim that must hold in each group is a harder test than the pooled one.",
+      "'are clonal' can mean every (or nearly every) mutant tumour, or a majority. Both teams used a majority reading; the named subclonal exceptions matter under the stricter one.",
+      "'clonal' is a per-tumour property measured from one sample per patient at one time point; in a metastasis or recurrence sample it describes that lesion, not the primary. Which tumours the claim is about (primaries only, or any sampled lesion) changes the denominator."
+    ],
+    "verdict": "Moderate-to-low trust in the agreed label. The in-data half (TERT promoter mutations common and mostly clonal in PDTC/ATC) is reasonably supported, although the two clonality counts are not independent and rest on an untested copy-neutral driver assumption; but the label itself turns on how the missing PTC arm is read against the task's label definitions, which both teams flagged as their weakest point, resolved the same way without evidence, and hold at 0.62 confidence.",
+    "questions": [
+      {
+        "to": "bd07-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your pre-stated criterion for 'highly prevalent' was a CI lower bound 'well above ~10%'. That figure is not in any table. Replace it with a yardstick taken only from this cohort: rank the TERT promoter among all genes in data_mutations.txt by the fraction of the 117 samples mutated (overall and separately in THPD and THAP), and report where it falls. Then split your answer into the words of the hypothesis that an in-data number supports and the words that no in-data number touches, and state the rule by which the task's three label definitions map that split to a label. Does the label change when the ~10% benchmark is removed, or when the comparative clause is treated as essential?",
+        "from": [
+          "sl-biodsa-test-7132bbfe56be",
+          "sl-biodsa-test-df0f08de12d7"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-b97c714c77fa"
+      },
+      {
+        "to": "bd07-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your primary clonality evidence is the TERT VAF / BRAF-RAS hotspot VAF ratio, with copy number adjusted at the TERT locus only. Read seg.mean in data_cna_hg19.seg at the driver locus used for each sample (BRAF chr7:140453136, NRAS chr1:115256529, HRAS chr11:534288 where a segment spans it) and the corresponding data_cna.txt rows, and recompute the ratio with both loci adjusted. How many of the 45 samples change class (clonal / subclonal), and does the excess of ratios above 1 remain? Does the result change your method or your stated count of subclonal tumours?",
+        "from": [
+          "sl-biodsa-test-bbab10753fac"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-85f7202682c9"
+      },
+      {
+        "to": "bd07-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Clonality was stratified by histology and batch but not by SAMPLE_TYPE (92 primary, 6 recurrence, 19 metastasis). Recount clonal versus subclonal TERT-mutant tumours in primaries only, and separately in recurrences plus metastases, and say in which stratum each of your 7 subclonal cases and each of the 9 circular and 3 purity-missing cases falls. Also say how the 13 TERT-mutant samples with no BRAF/RAS hotspot were classified and whether any of them carries a fusion in data_sv.txt. Does restricting to primaries, or dropping every sample without an independent comparator, change the proportion you rely on for 'clonal'?",
+        "from": [
+          "sl-biodsa-test-bbab10753fac",
+          "sl-biodsa-test-f86cccbdced6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-c75b98148812"
+      },
+      {
+        "to": "bd07-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: PDTC_DEFINITION in data_clinical_patient.txt (PDTC-Turin 52, PDTC-MSK 31) was not used. Tabulate TERT promoter prevalence and your clonality classes by PDTC_DEFINITION, crossed with batch (the Caller column separates the two calling pipelines). Is the pooled PDTC result carried by one definition or one pipeline, and does that change which group you regard as 'advanced cancers' for the claim? Use this only as a within-cohort consistency check, not as a substitute PTC group.",
+        "from": [
+          "sl-biodsa-test-f86cccbdced6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-0db8cb83af72"
+      },
+      {
+        "to": "bd07-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You report 'CCF>=0.8 in 48/55' from TUMOR_PURITY and noted only that purity correlates with TERT VAF. Test how the purity column was built: for every sample with purity, compare TUMOR_PURITY with 2 x VAF of each called mutation in that sample and count exact (rounded) matches, and list the TERT-mutant samples where the match is to the TERT call itself. Then recount your clonal and subclonal tumours after removing every sample whose purity is derived from the TERT call, and treating purity-based CCF as non-independent where purity is derived from the driver. Does your method or your headline clonality count change?",
+        "from": [
+          "sl-biodsa-test-6c9d52db702e",
+          "sl-biodsa-test-eefd13f321ac"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-316cdc1758b6"
+      },
+      {
+        "to": "bd07-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You named as a weak point that 'highly prevalent' has no numeric threshold, and your result note says both strata are 'far above a low-prevalence level' without saying where that level comes from. Build an in-data yardstick: rank the TERT promoter among all genes in data_mutations.txt by fraction of the 117 samples mutated, overall and within THPD and THAP and within each sample source. Then write, for each word of the hypothesis, which in-data number supports it or that none does, and the rule by which the task's label definitions map that to a label. Does the label hold when no outside reference level is used and when the comparative clause is treated as essential?",
+        "from": [
+          "sl-biodsa-test-eefd13f321ac",
+          "sl-biodsa-test-4a68b8693ede"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-f97ab0f18b41"
+      },
+      {
+        "to": "bd07-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your purity-free check divides TERT VAF by the BRAF/RAS hotspot VAF and your copy-number adjustment used the TERT locus. Read seg.mean in data_cna_hg19.seg at the driver locus used in each of the 45 samples (BRAF chr7:140453136, NRAS chr1:115256529, HRAS chr11:534288) and recompute the ratio with both loci adjusted; also report the ratio separately for rows with Caller = 'mutect' and rows with blank Caller. How many samples change class, and does a median ratio above 1 persist in both pipelines? Does this change your method or your subclonal count (you report 3, the other evidence in the lab's memory suggests the count depends on the cut-off)?",
+        "from": [
+          "sl-biodsa-test-6c9d52db702e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-e08fb3ae1568"
+      },
+      {
+        "to": "bd07-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You used SAMPLE_TYPE for prevalence (metastases versus primaries) but not for clonality, and PDTC_DEFINITION (PDTC-Turin 52, PDTC-MSK 31) not at all. Recount clonal versus subclonal TERT-mutant tumours in primaries only versus recurrences plus metastases, and tabulate prevalence and clonality by PDTC_DEFINITION. Report the result under two cut-offs for 'clonal' (your CCF>=0.8 rule and a binomial interval that must include 1). Does the conclusion 'clonal' hold in primary tumours alone and under both cut-offs, and does either split change which tumours you count as the 'advanced cancers' of the claim?",
+        "from": [
+          "sl-biodsa-test-4a68b8693ede"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-0192d4d61b01"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In clinical tumour sequencing studies distributed in cBioPortal-style clinical sample tables, how is a per-sample 'tumor purity' field usually obtained: pathologist estimate from histology, a copy-number/allele-specific algorithm, or a value computed from variant allele frequencies of called mutations (for example twice the VAF of a presumed clonal heterozygous driver)? If VAF-derived purity is used, what do methods papers say about using it to compute cancer cell fraction for other mutations in the same sample?",
+          "why": "One team found the purity column to be VAF-derived and the other only suspected it. Knowing the usual convention tells both teams whether purity-based cancer cell fractions can count as evidence of clonality at all, or whether only purity-free measures are admissible.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When only targeted-panel read counts, purity and segment-level copy number are available (no allele-specific copy number), how do published methods operationally classify a single mutation as clonal versus subclonal: which cancer-cell-fraction rule is standard (for example, upper confidence bound reaching 1, or a posterior probability that CCF exceeds a set value), and how is the ratio of a mutation's VAF to a truncal driver's VAF validated as a substitute, including the need to correct both loci for copy number?",
+          "why": "The teams used different cut-offs and reached different counts of subclonal tumours, and both corrected copy number at only one of the two loci in their ratio. A standard definition would fix the cut-off before the recount and say whether the driver locus must be adjusted.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In hybrid-capture targeted sequencing, do the two recurrent TERT promoter hotspot substitutions (the C>T changes at -124 and -146 from the start codon) show systematically biased variant allele frequencies relative to coding hotspots in the same sample, for instance from GC-rich low-coverage capture, reference-allele dropout, or allele-specific amplification, and in which direction?",
+          "why": "Both teams observed TERT promoter allele fractions that tend to exceed those of the truncal driver and cancer cell fractions above 1, and explained this by assertion. If a known assay bias inflates promoter VAF, a ratio-to-driver test would overstate clonality and understate the number of subclonal tumours.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In clinical tumour sequencing studies distributed in cBioPortal-style clinical sample tables, how is a per-sample 'tumor purity' field usually obtained: pathologist estimate from histology, a copy-number/allele-specific algorithm, or a value computed from variant allele frequencies of called mutations (for example twice the VAF of a presumed clonal heterozygous driver)? If VAF-derived purity is used, what do methods papers say about using it to compute cancer cell fraction for other mutations in the same sample?",
+          "answer": "There is no single convention; the web does not say how any particular study's column was made, so the teams' own check of the column decides that. What the sources establish: (1) In MSK-IMPACT-style clinical cohorts the routine purity value is the pathologist's histological estimate: the MSK-IMPACT methods state that an H&E slide is reviewed by a molecular pathology fellow and annotated for tumour purity (used for sample adequacy; <10% rejected). Histological estimates agree poorly with molecular purity (R2 0.01-0.35 in one validation). (2) Copy-number/allele-specific algorithms (ABSOLUTE, ASCAT and similar) are the standard computational route in research cohorts but fail in copy-number-quiet tumours (thyroid carcinoma is the named example) and in low-purity samples with flat profiles (32% of clinical cases in one series). (3) VAF-derived purity is a recognised fallback, not the default: TPES computes purity = observed VAF / expected VAF (about 0.5, slightly less because of reference-mapping bias) from SNVs that are assumed clonal, heterozygous and in copy-neutral segments, with conservative filtering and several SNVs (concordance reported for >9 SNVs); a Modern Pathology validation used 2 x VAF of KRAS/BRAF at non-amplified diploid loci, with the driver 'assumed to involve all tumor cells' (R2 0.79 against copy-number purity). On using it for CCF: the methods papers treat clonality of the anchor mutation(s) as an assumption of the purity estimate, not as an output. It follows from the formulas (my deduction, not a quoted statement) that if purity = 2 x VAF of an anchor driver, the anchor's CCF is 1 by construction, and for any other mutation at a diploid locus CCF = 2*VAF/purity reduces to VAF_mutation / VAF_anchor. So a purity-based CCF built on VAF-derived purity is the same measurement as the ratio-to-driver test, not a second independent line of evidence; it can show only that the mutation is present in as many cells as the anchor, conditional on the anchor being truncal. The subclonal-reconstruction guide gives diagnostics: known early drivers appearing subclonal means purity is too high; CCF > 1 ('superclonal') means purity underestimated, wrong copy number or germline contamination; SNV-based and CNA-based purity should be compared, especially in tumours with few copy-number changes.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5461196/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6821153/",
+            "https://modernpathology.org/article/S0893-3952(22)00261-7/fulltext",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7867630/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd07-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-fb52dc782e58"
+            },
+            "bd07-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-e5f564a3d1aa"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In clinical tumour sequencing studies distributed in cBioPortal-style clinical sample tables, how is a per-sample 'tumor purity' field usually obtained: pathologist estimate from histology, a copy-number/allele-specific algorithm, or a value computed from variant allele frequencies of called mutations (for example twice the VAF of a presumed clonal heterozygous driver)? If VAF-derived purity is used, what do methods papers say about using it to compute cancer cell fraction for other mutations in the same sample? ANSWER: There is no single convention; the web does not say how any particular study's column was made, so the teams' own check of the column decides that. What the sources establish: (1) In MSK-IMPACT-style clinical cohorts the routine purity value is the pathologist's histological estimate: the MSK-IMPACT methods state that an H&E slide is reviewed by a molecular pathology fellow and annotated for tumour purity (used for sample adequacy; <10% rejected). Histological estimates agree poorly with molecular purity (R2 0.01-0.35 in one validation). (2) Copy-number/allele-specific algorithms (ABSOLUTE, ASCAT and similar) are the standard computational route in research cohorts but fail in copy-number-quiet tumours (thyroid carcinoma is the named example) and in low-purity samples with flat profiles (32% of clinical cases in one series). (3) VAF-derived purity is a recognised fallback, not the default: TPES computes purity = observed VAF / expected VAF (about 0.5, slightly less because of reference-mapping bias) from SNVs that are assumed clonal, heterozygous and in copy-neutral segments, with conservative filtering and several SNVs (concordance reported for >9 SNVs); a Modern Pathology validation used 2 x VAF of KRAS/BRAF at non-amplified diploid loci, with the driver 'assumed to involve all tumor cells' (R2 0.79 against copy-number purity). On using it for CCF: the methods papers treat clonality of the anchor mutation(s) as an assumption of the purity estimate, not as an output. It follows from the formulas (my deduction, not a quoted statement) that if purity = 2 x VAF of an anchor driver, the anchor's CCF is 1 by construction, and for any other mutation at a diploid locus CCF = 2*VAF/purity reduces to VAF_mutation / VAF_anchor. So a purity-based CCF built on VAF-derived purity is the same measurement as the ratio-to-driver test, not a second independent line of evidence; it can show only that the mutation is present in as many cells as the anchor, conditional on the anchor being truncal. The subclonal-reconstruction guide gives diagnostics: known early drivers appearing subclonal means purity is too high; CCF > 1 ('superclonal') means purity underestimated, wrong copy number or germline contamination; SNV-based and CNA-based purity should be compared, especially in tumours with few copy-number changes. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC5461196/, https://pmc.ncbi.nlm.nih.gov/articles/PMC6821153/, https://modernpathology.org/article/S0893-3952(22)00261-7/fulltext, https://pmc.ncbi.nlm.nih.gov/articles/PMC7867630/."
+        },
+        {
+          "question": "When only targeted-panel read counts, purity and segment-level copy number are available (no allele-specific copy number), how do published methods operationally classify a single mutation as clonal versus subclonal: which cancer-cell-fraction rule is standard (for example, upper confidence bound reaching 1, or a posterior probability that CCF exceeds a set value), and how is the ratio of a mutation's VAF to a truncal driver's VAF validated as a substitute, including the need to correct both loci for copy number?",
+          "answer": "CCF rule (settled): two published rules are standard, both applied to CCF computed from VAF, purity and local copy number. (a) McGranahan et al. 2015: clonal if the upper bound of the 95% confidence interval of the CCF is >= 1, subclonal otherwise; chosen deliberately so that subclonal mutations are not overestimated. (b) Landau et al. 2013 (ABSOLUTE): clonal if P(CCF > 0.95) > 0.5, subclonal otherwise. A fixed point-estimate cut-off is not one of the standard rules. CCF = f/(m*rho) * (rho*N_T + 2*(1-rho)), with multiplicity m = max(1, round(f/rho * (rho*N_T + 2*(1-rho)))). Choosing m properly needs allele-specific copy number (total copy number cannot bound it, e.g. copy-neutral LOH); if m = 1 is assumed, a clonal mutation on a gained allele gets a CCF about equal to its true multiplicity (>1). At low depth CCF is coarse (20 reads at 50% purity: one read moves CCF by 0.2), which is why interval rules are used, and the guide warns that small targeted panels rarely support real subclonal reconstruction. Ratio to a truncal driver (not settled): the search found no methods paper that validates the VAF ratio or a cut-off for it; it is not a standardised test. What is published is the principle that two VAFs are directly comparable, and proportional to the fraction of tumour cells, only when both loci have the same copy-number state and normal admixture; otherwise copy number shifts VAF and mimics or hides subclonality. The admissible form is therefore a ratio of copy-number-corrected quantities, [f_T*(rho*N_T + 2(1-rho))/m_T] / [f_D*(rho*N_D + 2(1-rho))/m_D]; purity cancels only when both loci are diploid, so the driver locus must be adjusted as well as the TERT locus. A reasonable pre-fixed rule, by analogy with rule (a) and stated as my extension rather than a published standard: call a mutation subclonal only when the upper 95% bound of its CCF (or of the corrected ratio, carrying binomial uncertainty from both loci) is below 1, and report rule (b) as a sensitivity analysis. One ddPCR study judged clonality by agreement of mutant allele fractions with expected values to within about 10 percentage points. Confidence by part: high for the two CCF rules and the formula; low for the ratio-to-driver test, which the web does not settle.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4636056/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3575604/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7867630/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5538405/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8973808/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd07-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-1af8ab99cb87"
+            },
+            "bd07-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-ca849307a22e"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When only targeted-panel read counts, purity and segment-level copy number are available (no allele-specific copy number), how do published methods operationally classify a single mutation as clonal versus subclonal: which cancer-cell-fraction rule is standard (for example, upper confidence bound reaching 1, or a posterior probability that CCF exceeds a set value), and how is the ratio of a mutation's VAF to a truncal driver's VAF validated as a substitute, including the need to correct both loci for copy number? ANSWER: CCF rule (settled): two published rules are standard, both applied to CCF computed from VAF, purity and local copy number. (a) McGranahan et al. 2015: clonal if the upper bound of the 95% confidence interval of the CCF is >= 1, subclonal otherwise; chosen deliberately so that subclonal mutations are not overestimated. (b) Landau et al. 2013 (ABSOLUTE): clonal if P(CCF > 0.95) > 0.5, subclonal otherwise. A fixed point-estimate cut-off is not one of the standard rules. CCF = f/(m*rho) * (rho*N_T + 2*(1-rho)), with multiplicity m = max(1, round(f/rho * (rho*N_T + 2*(1-rho)))). Choosing m properly needs allele-specific copy number (total copy number cannot bound it, e.g. copy-neutral LOH); if m = 1 is assumed, a clonal mutation on a gained allele gets a CCF about equal to its true multiplicity (>1). At low depth CCF is coarse (20 reads at 50% purity: one read moves CCF by 0.2), which is why interval rules are used, and the guide warns that small targeted panels rarely support real subclonal reconstruction. Ratio to a truncal driver (not settled): the search found no methods paper that validates the VAF ratio or a cut-off for it; it is not a standardised test. What is published is the principle that two VAFs are directly comparable, and proportional to the fraction of tumour cells, only when both loci have the same copy-number state and normal admixture; otherwise copy number shifts VAF and mimics or hides subclonality. The admissible form is therefore a ratio of copy-number-corrected quantities, [f_T*(rho*N_T + 2(1-rho))/m_T] / [f_D*(rho*N_D + 2(1-rho))/m_D]; purity cancels only when both loci are diploid, so the driver locus must be adjusted as well as the TERT locus. A reasonable pre-fixed rule, by analogy with rule (a) and stated as my extension rather than a published standard: call a mutation subclonal only when the upper 95% bound of its CCF (or of the corrected ratio, carrying binomial uncertainty from both loci) is below 1, and report rule (b) as a sensitivity analysis. One ddPCR study judged clonality by agreement of mutant allele fractions with expected values to within about 10 percentage points. Confidence by part: high for the two CCF rules and the formula; low for the ratio-to-driver test, which the web does not settle. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC4636056/, https://pmc.ncbi.nlm.nih.gov/articles/PMC3575604/, https://pmc.ncbi.nlm.nih.gov/articles/PMC7867630/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5538405/, https://pmc.ncbi.nlm.nih.gov/articles/PMC8973808/."
+        },
+        {
+          "question": "In hybrid-capture targeted sequencing, do the two recurrent TERT promoter hotspot substitutions (the C>T changes at -124 and -146 from the start codon) show systematically biased variant allele frequencies relative to coding hotspots in the same sample, for instance from GC-rich low-coverage capture, reference-allele dropout, or allele-specific amplification, and in which direction?",
+          "answer": "Not settled by the web. No page read reports a systematic directional bias (inflated or deflated) of TERT promoter VAF relative to coding hotspots in the same sample, so an upward assay bias cannot be asserted, and neither can its absence be proven from these sources. What is documented is low depth rather than bias: the promoter is >80% GC and is captured poorly; in one hybrid-capture panel mean depth at the promoter was 21.6 versus 885 for other genes (12-13 reads at the two hotspots before bait redesign, about 100-125 after), causing dropout and very noisy allele fractions (14-75% from 7-47 reads in Sanger-confirmed mutant tumours). The only generic directional effect named in the methods papers is reference-mapping bias, which pulls the alternate-allele fraction slightly below its true value for all SNVs; that would understate, not overstate, clonality. A ddPCR study (orthogonal to capture) found TERT promoter mutant allele fractions matching the values expected from clonal 1p/19q or chromosome 10 loss to within 0.5-6.2 points in most tumours, i.e. the mutation behaves as an ordinary clonal heterozygous marker when measured without capture. TERT allele fractions above the driver's and CCF > 1 are therefore better attributed to causes that can be checked in the data: binomial noise at low promoter depth combined with the caller's minimum alt-read floor, which keeps upward-fluctuating calls (my inference, not from a paper); copy number at either locus (gain of the mutant TERT allele on 5p, or extra wild-type copies at the driver locus); or purity set too low. Suggested check: compare depth at the TERT call with depth at the driver call in each sample and see whether ratios above 1 sit in the low-depth TERT calls; use intervals, not point ratios.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8756133/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8973808/",
+            "https://www.jmdjournal.org/article/S1525-1578(18)30076-X/fulltext",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6821153/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6778654/"
+          ],
+          "confidence": "low",
+          "deliveries": {
+            "bd07-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-97c4d8ee9dc8"
+            },
+            "bd07-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-eb279eed4052"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In hybrid-capture targeted sequencing, do the two recurrent TERT promoter hotspot substitutions (the C>T changes at -124 and -146 from the start codon) show systematically biased variant allele frequencies relative to coding hotspots in the same sample, for instance from GC-rich low-coverage capture, reference-allele dropout, or allele-specific amplification, and in which direction? ANSWER: Not settled by the web. No page read reports a systematic directional bias (inflated or deflated) of TERT promoter VAF relative to coding hotspots in the same sample, so an upward assay bias cannot be asserted, and neither can its absence be proven from these sources. What is documented is low depth rather than bias: the promoter is >80% GC and is captured poorly; in one hybrid-capture panel mean depth at the promoter was 21.6 versus 885 for other genes (12-13 reads at the two hotspots before bait redesign, about 100-125 after), causing dropout and very noisy allele fractions (14-75% from 7-47 reads in Sanger-confirmed mutant tumours). The only generic directional effect named in the methods papers is reference-mapping bias, which pulls the alternate-allele fraction slightly below its true value for all SNVs; that would understate, not overstate, clonality. A ddPCR study (orthogonal to capture) found TERT promoter mutant allele fractions matching the values expected from clonal 1p/19q or chromosome 10 loss to within 0.5-6.2 points in most tumours, i.e. the mutation behaves as an ordinary clonal heterozygous marker when measured without capture. TERT allele fractions above the driver's and CCF > 1 are therefore better attributed to causes that can be checked in the data: binomial noise at low promoter depth combined with the caller's minimum alt-read floor, which keeps upward-fluctuating calls (my inference, not from a paper); copy number at either locus (gain of the mutant TERT allele on 5p, or extra wild-type copies at the driver locus); or purity set too low. Suggested check: compare depth at the TERT call with depth at the driver call in each sample and see whether ratios above 1 sit in the low-depth TERT calls; use intervals, not point ratios. HOW SURE: low. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC8756133/, https://pmc.ncbi.nlm.nih.gov/articles/PMC8973808/, https://www.jmdjournal.org/article/S1525-1578(18)30076-X/fulltext, https://pmc.ncbi.nlm.nih.gov/articles/PMC6821153/, https://pmc.ncbi.nlm.nih.gov/articles/PMC6778654/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd07-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd07-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd07-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd07-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd07-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 154.5287844169652,
+      "cost_usd": 0.2518201,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 118.16729883302469,
+      "cost_usd": 0.1922916,
+      "error": null
+    },
+    {
+      "agent": "bd07-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 136.27624683396425,
+      "cost_usd": 0.23569880000000004,
+      "error": null
+    },
+    {
+      "agent": "bd07-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 183.90589329204522,
+      "cost_usd": 0.40505749999999996,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 161.48029879189562,
+      "cost_usd": 0.3562687,
+      "error": null
+    },
+    {
+      "agent": "bd07-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 253.07661316695157,
+      "cost_usd": 0.7041952,
+      "error": null
+    },
+    {
+      "agent": "bd07-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 245.48185741598718,
+      "cost_usd": 0.518234,
+      "error": null
+    },
+    {
+      "agent": "bd07-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 243.01621116604656,
+      "cost_usd": 0.5540335,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

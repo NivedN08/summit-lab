@@ -1,0 +1,474 @@
+{
+  "study": "bd17",
+  "status": "refereed",
+  "final": {
+    "agent": "bd17-team-b",
+    "team": "team-b",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd17/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd17-library": "fable",
+    "bd17-team-a": "fable",
+    "bd17-team-b": "fable",
+    "bd17-team-c": "fable",
+    "bd17-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd17-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd17/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd17-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd17/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd17-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd17/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd17-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd17/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd17-team-a",
+        "bd17-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd17-team-a",
+        "bd17-team-b"
+      ],
+      "fields": {
+        "label": false
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Where the trastuzumab variables live, and how filtering on them can lose the pairs that matter. The library reports that HER2_TTP_ON_1ST_LINE_MONTHS, HER2_RESPONSE, HER2_VITAL_STATUS and HER2_TX_STATUS are columns of data_clinical_sample.txt (not the patient table) and are filled for only about 60 of about 341 samples (HER2_RESPONSE: PR 29, SD 18, CR 9, POD 4; HER2_TX_STATUS: OFF TREATMENT 55, ON TREATMENT 5). The retrospective 'YJ-her' paired samples may carry NA in these columns, and some YJ-her sample IDs sit under P-xxxx patient IDs (reported examples: YJ-her-002-P1 under P-0003981, YJ-her-007-M2 under P-0001158). So a sample-level filter such as 'HER2_RESPONSE not NA' can silently drop exactly the pre/post pairs needed. The data also have no biopsy dates, so the interval between stopping trastuzumab and the POST-TX biopsy cannot be read directly (published re-biopsy studies required progression on trastuzumab and a biopsy within about 3 months). Check: carry the HER2_* values up to patient level by PATIENT_ID; then list every patient who has a POST-TX sample and record whether trastuzumab exposure is documented through the HER2_* columns or through the patient-table TREATMENT / DETAILS_FIRST_LINE_COMMENTS text; note NUMBER_OF_LINES_OF_TREATMENT_FOR_MET_DISEASE as a proxy for therapy given between trastuzumab and the biopsy. If pairs have NA in the HER2_* columns: keep them when trastuzumab exposure is documented elsewhere, report them as a separate stratum with unknown response, and state that later-line therapy between trastuzumab and the biopsy is an unmeasured confounder. Verify these counts and IDs against the files yourself.",
+      "from": [
+        "sl-biodsa-test-306c33979fca"
+      ],
+      "reason": "The earlier briefing told the team to restrict to patients with HER2_RESPONSE / HER2_TTP / HER2_TX_STATUS not NA. This new fact shows that restriction, applied at sample level, can discard the paired samples and so change the size and composition of the informative set, and possibly push the team to 'Not verifiable' by mistake.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-f88356497831"
+      }
+    },
+    {
+      "text": "A second, unpaired line of evidence exists, but its baseline must be defined carefully. Do not choose 'Not verifiable', or rest everything on a handful of sequenced pairs, only because few patients have both a pre- and a post-trastuzumab sequenced sample or because there is no untreated comparison arm. Among trastuzumab-treated patients (one sample per patient), the proportion of sequencing-non-amplified tumours (HER2_IMPACT = DIPLOID) in POST-TX samples can be compared with the proportion in PRE-TX samples (Fisher exact, both proportions with exact CIs), stratified by IHC 3+ versus IHC 2+/FISH+. The PRE-TX discordance between sequencing and IHC/FISH is the internal control for assay and heterogeneity noise; reference: in untreated tumours on this assay sequencing-versus-IHC/FISH concordance is about 98% (248/252), with discordances arising from low tumour content and heterogeneity. Important correction to how this is set up: HER2_IHC_OR_FISH, IHC_HER2 and HER2_FISH are sample-level columns, and the library reports that 10 of the 60 samples carrying trastuzumab outcome data (HER2_RESPONSE not NA) are HER2_IHC_OR_FISH = NEG, and that 13 of the 23 retrospective matched YJ-her samples have HER2_RESPONSE = NA. So HER2_IHC_OR_FISH may describe that specific specimen (possibly a post-treatment retest) rather than the baseline status that qualified the patient for trastuzumab. Check: for multi-sample patients, see whether HER2_IHC_OR_FISH / IHC_HER2 differ between the PRE-TX and POST-TX rows, and tabulate HER2_IHC_OR_FISH by IMPACT_PRE_POST among samples with HER2_RESPONSE not NA. If the values differ within patient, or NEG sits mainly on POST-TX rows: treat IHC/FISH as specimen-specific, define trastuzumab exposure from HER2_RESPONSE or the treatment text and not from HER2_IHC_OR_FISH = POS, and note that a POST-TX specimen that is both IHC/FISH-negative and sequencing-non-amplified in a trastuzumab-treated patient is orthogonal evidence about HER2 status in that specimen. If the values are constant within patient, the column is a baseline label and can be used as the pre-treatment status. If the unpaired contrast and the within-patient pairs disagree, trust the pairs and say why. Choose 'Not verifiable' only if neither the pairs nor this unpaired contrast can be built. This also refines the earlier briefing item on baseline misclassification, which named HER2_IHC_OR_FISH as the clinical baseline to cross-tabulate against.",
+      "from": [
+        "sl-biodsa-test-098e8aad8d8f",
+        "sl-biodsa-test-41668acaf5ba"
+      ],
+      "reason": "It adds an analysis the team would not otherwise run and that bears directly on the True / False / Not verifiable choice, and the correction changes how exposure and baseline are defined: using HER2_IHC_OR_FISH = POS as the cohort filter or as the pre value would be wrong if the column is specimen-specific. The original fact and its correction are merged so the team never sees the uncorrected version.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-1be9722ef071"
+      }
+    },
+    {
+      "text": "Choose the right benchmark for 'associated'. Acquired trastuzumab resistance has several mechanisms, so even if selection of a HER2-negative population is one of them, it is expected in only a subset of patients; the rest progress with HER2 retained, some with other receptor-tyrosine-kinase / RAS / PI3K changes. Published paired pre/post-progression series in gastric and gastro-oesophageal cancer (other cohorts, not this dataset) report loss of HER2 positivity in 29% (14/48), 32% (7/22) and 61% (20/33) of patients, against about 7-12% discordance without anti-HER2 therapy. Therefore 'most post-trastuzumab tumours keep ERBB2 amplification' is not by itself support for 'not associated'. Check: among baseline-amplified, trastuzumab-treated patients with a post-treatment sample, compute the fraction that lost amplification with an exact CI, and ask whether it exceeds the background rate (internal PRE-PRE discordance, or about 10%), not whether it exceeds 50%. Reading the result: loss clearly above background in clonally related pairs is evidence for an association and contradicts a 'not associated' claim even when the majority retain amplification; loss at or below background supports the claim; retained-amplification cases that gained new EGFR / MET / KRAS / PIK3CA alterations are a different mechanism and are neutral to this hypothesis, so do not count them for or against. The label must come from what this dataset shows, not from the literature figures.",
+      "from": [
+        "sl-biodsa-test-025c1d86b5d1"
+      ],
+      "reason": "It fixes the decision rule the team applies to its own numbers. Without it, a team could see a minority of pairs losing amplification and wrongly conclude the hypothesis is supported, or count retained-amplification cases with other alterations as evidence for the null.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-8c6e7b274e2f"
+      }
+    },
+    {
+      "text": "Unconfirmed, check before relying on it: one POST-TX sample of the paired series is reported as named s_YJ_her_013_X1 (patient YJ-her-013, SAMPLE_TYPE Primary), where its sibling samples use the suffix P (primary) or M (metastasis). The data do not define the 'X' suffix; it may denote a xenograft or other derived model rather than a direct patient biopsy. Engrafted tumours lose human stroma (purity near 100%, so log-ratios and VAFs are inflated relative to a biopsy) and can undergo clonal selection at engraftment, although large studies find copy-number profiles mostly conserved. Check: compare this sample's seg.mean dynamic range and somatic VAFs with its paired P sample (VAFs near 0.5 / 1.0 and very sharp segments suggest a pure, model-derived sample). If so: do not let this pair alone decide the label; run the paired analysis with and without it and report both.",
+      "from": [
+        "sl-biodsa-test-360afb1d7a4c"
+      ],
+      "reason": "With few informative pairs, a single pair of doubtful provenance can swing the loss fraction and its CI. The team needs to know to run a with/without sensitivity analysis; the item is flagged as unconfirmed so it is tested, not assumed.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-f0e95958bc4c"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams read 'associated' as 'observed in some clonally related pairs' once the rate test failed: each plan fixed the rule 'False if loss of amplification is clearly above background / enriched', the result (2 of 24, exact CI about 1-27%, no significant test) did not meet it, and both then moved to case-level evidence and still chose False. Neither stated what result would have produced 'True', so the decision rule may be one-sided.",
+      "Both took the 7-12% literature discordance figure as the only background and concluded there is 'no internal background rate', because no baseline-ERBB2-amplified pair lacks trastuzumab. Neither tried an internal background from other amplified genes in the same pairs.",
+      "Both assumed the POST-TX sample was taken after progression on trastuzumab. There are no dates; the only timing evidence (number of lines, HER2_TX_STATUS, sample accession suffix) was not tabulated against the PRE/POST label. In several pairs the sample labelled PRE-TX carries a higher T-number than the POST-TX sample (e.g. T02/T03 = PRE, T01 = POST).",
+      "Both treated a post-treatment sample as a descendant of the pre-treatment sample. In one of the two loss cases the pre sample is a liver metastasis and the post sample is the primary tumour, so 'pre -> post' may be 'metastasis vs primary' rather than change over time.",
+      "Both defined the informative set only from patients with a sequenced PRE-TX sample (24 pairs). Trastuzumab-treated patients with only a POST-TX sample were set aside or used only in an unpaired contrast, on differing beliefs about what HER2_IHC_OR_FISH on a POST row means (team A: specimen-specific; team B: outcome-conditioned / sometimes untested)."
+    ],
+    "unused_evidence": [
+      "data_cna.txt holds 528 genes with 747 amplification calls (value 2). Only ERBB2 (and, for the two loss cases, 17q12 neighbours) was used. The other amplified genes in the same pre/post pairs give an internal estimate of how often an amplification call disappears between two samples of one patient on this assay, in trastuzumab-treated and in chemotherapy-only pairs.",
+      "IHC_HER2 and HER2_FISH on POST-TX rows. In some patients the POST row repeats the PRE row exactly (the same FISH ratio to two decimals on three rows of one patient), in others it differs and looks specimen-specific (e.g. a FISH ratio of 1.00 and IHC 0+ on the two post samples that lost amplification). Neither team worked out which rows are baseline copies and which are post-specimen measurements, although this decides whether post-only trastuzumab patients can be counted as baseline-positive.",
+      "data_sv.txt and ERBB2 rows of data_mutations.txt: one ERBB2 in-frame single-exon deletion is recorded in a POST-TX sample of a trastuzumab-treated responder, and there are 14 ERBB2 mutation rows. Neither team reported them. They bear on an alternative route to resistance with amplification retained, and on whether 'lacking ERBB2 amplification' is the only ERBB2 change after treatment.",
+      "NUMBER_OF_LINES_OF_TREATMENT_FOR_MET_DISEASE, HER2_TX_STATUS and HER2_TTP_ON_1ST_LINE_MONTHS as (weak) timing evidence for when the post sample was taken; team B did not report a split by HER2_RESPONSE (benefit then progression vs progression as best response) at all.",
+      "Private mutations (present in only one sample of a pair) and non-17q copy-number segments, as evidence of lineage direction; teams reported shared mutations and VAFs only."
+    ],
+    "unresolved_weak_points": [
+      "Team A: 'the label rests on two patients; the loss rate is not above the heterogeneity background; no untreated amplified pairs as internal control; no biopsy dates; one of the two losses compares a liver metastasis with the primary.' Reported, not resolved: no internal control was built and the site-confounded case was kept as a loss.",
+      "Team B: 'the contradiction rests on two paired patients rather than a significant association; no background rate of spontaneous loss; P-0000444 could be spatial heterogeneity.' Reported, not resolved. Team B also recalled no handed-down pitfalls, so it did not report the acquired-vs-primary split or the possible model-derived sample (ID ending X1) that team A handled.",
+      "Both teams wrote that a reader could reasonably label the result differently; neither turned that into a test that could separate the labels."
+    ],
+    "second_readings": [
+      "'Associated' as a statistical statement about rates (loss of amplification more frequent after acquired resistance than a comparator) versus an existence statement (selection of a non-amplified population seen in at least some patients who acquired resistance). The teams' plans used the first; their final labels rest on the second.",
+      "Which comparator defines the association: post- vs pre-trastuzumab within patients (used); patients with acquired resistance vs patients with primary progression (team A only, 3 patients in the comparison arm); trastuzumab-treated vs not-treated pairs (no baseline-amplified untreated pairs exist).",
+      "'A tumor subclone lacking ERBB2 amplification' could be read as a pre-existing non-amplified population detectable at baseline (clinically HER2-positive but not amplified by sequencing, or low log-ratio) rather than only as amp-to-non-amp change between two samples; and a strict reader could hold that bulk panel data contain no subclone variable at all (the 'Not verifiable' reading). Both teams considered and rejected the last; neither tested the baseline-heterogeneity reading against time on treatment among patients who first benefited.",
+      "'Acquired' resistance requires initial benefit and a post sample taken at progression; whether the 24 pairs satisfy this was checked by best response in team A only, and by timing in neither."
+    ],
+    "verdict": "Moderate-to-low trust. Both teams found the same two loss cases in 24 pairs, both failed their own pre-stated rate criterion, and both then chose the same label on case-level grounds while naming the same unresolved weaknesses (no internal background, no timing, one site-confounded case); the agreement reflects a shared judgement call rather than two independent confirmations, and an internal background from other amplified genes plus settling what the post-row IHC/FISH means could move it either way.",
+    "questions": [
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You wrote that the data give no internal background rate for loss of amplification. data_cna.txt has 528 genes and several hundred amplification calls besides ERBB2. For the same within-patient pre/post pairs, tabulate every gene outside the ERBB2 17q12 amplicon that is called amplified (2) in the pre sample and record whether it is still amplified in the post sample (and its seg.mean in both), separately for trastuzumab-treated pairs and for the other pairs. How does the per-call and per-patient rate of lost amplification for these other genes compare with the ERBB2 loss rate in the 24 pairs? Then apply the label rule you fixed in your plan ('False if loss clearly above background; True if at/below background with adequate n') to that comparison and say whether it gives the label you submitted, and how many losses out of 24 you would have needed for each of the three labels.",
+        "from": [
+          "sl-biodsa-test-d538fb3c3442",
+          "sl-biodsa-test-b97367aad913"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-cfa58cc1ccc4"
+      },
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You treated HER2_IHC_OR_FISH / IHC_HER2 / HER2_FISH as specimen-specific. In the multi-sample patients, count how often the POST row's IHC and FISH values are identical to the PRE row's (for example the same FISH ratio to two decimals on every row of a patient) versus different. From that, decide for the trastuzumab-treated patients who have only a POST-TX sample whether the IHC/FISH on that row is the diagnostic (baseline) value or a measurement of the post specimen. Does the answer change which patients can enter the denominator of 'HER2-positive at baseline, sampled after trastuzumab', and does your unpaired contrast (which flipped with the baseline definition) change once the row meaning is settled?",
+        "from": [
+          "sl-biodsa-test-374d5f441f0f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-947600f8f3d8"
+      },
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: In P-0000444 the pre sample is a liver metastasis and the post sample is the GEJ primary. Shared mutations show the two are related, not which came from which. List the mutations and non-17q copy-number segments that are private to each sample of this pair (present in the liver metastasis but absent from the post-treatment primary at adequate depth, and the reverse), and do the same for YJ-her-010. Does the post sample look like a later descendant of the pre-treatment population, or like a separate branch that never carried the alterations private to the metastasis? If this pair cannot be ordered in time, what is your count of losses attributable to selection under treatment, and does the label still follow from your rule?",
+        "from": [
+          "sl-biodsa-test-d538fb3c3442"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-419418c0e01b"
+      },
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You noted there are no biopsy dates. Tabulate, for all 24 informative pairs, the sample accession suffix (T01/T02/T03, P1/P2, P/M), the PRE/POST label, NUMBER_OF_LINES_OF_TREATMENT_FOR_MET_DISEASE, HER2_TX_STATUS and HER2_TTP_ON_1ST_LINE_MONTHS. In several pairs the PRE-TX sample has the higher T-number. Is there any pair where the available evidence contradicts 'the POST sample was taken after progression on trastuzumab', and specifically what do these fields say for the two loss patients? Does your result change if pairs whose order cannot be supported are set aside?",
+        "from": [
+          "sl-biodsa-test-b97367aad913"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-71019c428a5c"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You wrote that there is no usable background rate of spontaneous loss because no control pair is ERBB2-amplified at baseline. data_cna.txt has 528 genes and several hundred amplification calls besides ERBB2. For the same within-patient pre/post pairs, tabulate every gene outside the ERBB2 17q12 amplicon that is called amplified (2) in the pre sample and record whether it is still amplified in the post sample (and its seg.mean in both), separately for trastuzumab-treated pairs and your 8 control pairs. How does the rate of lost amplification for these other genes compare with the ERBB2 loss rate in the 24 pairs? Then apply the label rule from your plan ('False if loss is clearly enriched after trastuzumab progression; True if no enrichment with adequate power') and say whether it gives the label you submitted, and how many losses out of 24 you would have needed for each of the three labels.",
+        "from": [
+          "sl-biodsa-test-1a2947dce837",
+          "sl-biodsa-test-c1bd719c6ecd"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-7a5c950ca15c"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You set aside the comparison restricted to HER2_IHC_OR_FISH=POS post-treatment samples (3/35 vs 9/58) as conditioning on the outcome, on the grounds that IHC/FISH is measured on the post biopsy itself. Test that: in the multi-sample patients, count how often the POST row's IHC_HER2 and HER2_FISH are identical to the PRE row's (for example the same FISH ratio to two decimals on every row of a patient) versus different. If many POST rows carry a copied baseline value, which post-only trastuzumab-treated patients are baseline-positive by that field, and does the comparison you discarded then mean something different from what you said? Does this change your denominator or your reading of the unpaired null?",
+        "from": [
+          "sl-biodsa-test-7b7eef2d92b1"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-a4cd8044463a"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: The claim is about acquired resistance, i.e. progression after initial benefit. Your notes do not report the 24 pairs split by HER2_RESPONSE (CR/PR/SD versus POD as best response), HER2_TX_STATUS or HER2_TTP_ON_1ST_LINE_MONTHS, and they do not mention the post sample whose ID ends in X1. Tabulate the pairs by best response and treatment status, and check whether the X1 sample behaves like a patient biopsy (mutation VAFs near 1, extreme segment values would suggest a model-derived sample). In which stratum do the two losses fall, how many pairs are left in the acquired-resistance stratum, and does the comparison between strata change what you conclude or how confident you are?",
+        "from": [
+          "sl-biodsa-test-c1bd719c6ecd"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-af34a8b7ea1b"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: In P-0000444 the pre sample is a liver metastasis and the post sample is the GEJ primary. Shared truncal mutations show the two are related, not which came from which. List the mutations and non-17q copy-number segments private to each sample of this pair (present in the metastasis but absent from the post-treatment primary at adequate depth, and the reverse), and do the same for YJ-her-010. Does the post sample look like a later descendant of the pre-treatment population or like a separate branch? If this pair cannot be ordered in time, what is your count of losses attributable to selection under treatment, and does your label still follow from your plan's rule?",
+        "from": [
+          "sl-biodsa-test-a155d5a2532a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-5ddcd58eb56e"
+      }
+    ]
+  },
+  "referee": {
+    "difference": "X and Y use the same rows and get the same numbers (24 trastuzumab-treated patients with an ERBB2-amplified pre-treatment sample and a post-treatment sample; 2 lose the amplification, P-0000444 and YJ-her-010; no enrichment test reaches significance). They differ only in the standard for the label. X ('False'): orthogonally confirmed cases of an ERBB2-non-amplified clone replacing the amplified one after initial benefit contradict a flat 'not associated' claim. Y ('True'): 2/24 is 'at or below background', where background = loss of amplification calls for non-17q12 genes in the same pairs (11/50 calls, mostly near-threshold flips), so the hypothesis is supported.",
+    "test": "ERBB2-specific background that neither team used, written down before running. (1) code/test1.py + test3.py: every within-patient sample pair in the study; ERBB2 status discordance (HER2_IMPACT AMP vs DIPLOID) in trastuzumab pre->post pairs with amplified baseline versus all other within-patient comparisons (same-timepoint pre/pre and post/post pairs, and pre->post pairs with a diploid baseline), plus direction of discordance (losses vs gains). (2) code/test2.py: among samples of all trastuzumab-treated patients (HER2 cohort fields or trastuzumab in the first-line text), rate of 'doubly negative' samples (IMPACT diploid AND recorded IHC 0/1+ or IHC 2+ with FISH<2) in POST-TX versus PRE-TX samples.",
+    "expected_if_x": "If the losses reflect treatment-associated selection: ERBB2 discordance is confined to trastuzumab pre->post transitions (control pairs concordant), is one-directional (losses, no gains), and doubly-negative HER2 status is more frequent in post-trastuzumab than pre-trastuzumab samples.",
+    "expected_if_y": "If the losses are ordinary sampling/spatial heterogeneity at or below background: ERBB2 discordance appears at a comparable rate (about 8% or more) in control pairs, gains are about as frequent as losses, and the doubly-negative rate is the same in post and pre samples.",
+    "outcome": "All three sub-checks came out in X's direction, none is statistically significant. (1) ERBB2 status discordant in 2/24 trastuzumab pre->post amplified-baseline patients versus 0/12 control comparisons (2 post/post AMP pairs, 2 post/post and 2 pre/pre diploid pairs, 6 diploid-baseline pre->post pairs); Fisher p about 0.53. Direction: 2 losses, 0 gains (sign test p=0.5). (2) Doubly-negative samples: 7/39 POST-TX (18%) vs 6/76 PRE-TX (8%), OR 2.6, Fisher p=0.13 (patient-level 7/37 vs 6/76, p=0.12). A caution found on the way: several trastuzumab-treated patients are HER2-negative already at baseline (e.g. P-0000553 and P-0007227 are IHC/FISH negative and diploid both pre and post), so a HER2-negative post-only sample is not by itself proof of loss; X's '3 post-only probable losses' are weaker than X states. The like-for-like ERBB2 background is 0/12, not the 22-38% Y quotes from other genes' near-threshold call flips, so Y's premise 'at or below every background' does not hold for ERBB2 itself; Y's prediction (discordance in control pairs, symmetric gains, equal negative rates) was not observed in any sub-check, though with these sample sizes it cannot be excluded.",
+    "pick": "X",
+    "reason": "The test is weak (small controls, p>0.1 everywhere), so this is a low-confidence pick, not a proof. It favours X because every ERBB2-specific check points the same way: complete ERBB2 loss with matching IHC/FISH loss occurs only across a trastuzumab pre->post transition in patients who first benefited (CR, TTP 25 mo; SD, TTP 7.6 mo), never in control pairs and never in the gain direction, and HER2-negative tumours are about twice as frequent after trastuzumab as before. Y's 'True' needs positive evidence of no association; its only such evidence is a comparison with non-ERBB2 amplification-call flips, which the ERBB2-specific background (0/12) does not reproduce, and an assumed 30% effect size. X's 'False' rests on confirmed cases (one clean same-site clonal replacement, YJ-her-010; one ambiguous, P-0000444) that the test shows are specific to the post-trastuzumab setting. If 'associated' is held to a strict significance standard the data cannot settle it either way; under that reading neither label is proven, but 'True' is the less supported of the two.",
+    "own_answer": null,
+    "picked_agent": "bd17-team-b",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "bd17-team-b",
+      "Y": "bd17-team-a"
+    }
+  },
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In clinical hybrid-capture targeted sequencing panels of the MSK-IMPACT type, how is a gene-level amplification call made (fold-change and significance thresholds, any manual review), how are the discrete copy-number values 2 / 0 / -2 in a cBioPortal discrete CNA file derived from those calls, and can a gene be reported as amplified when its sample-level log2 ratio is below 1?",
+          "why": "Both teams relied on the curated amplification call and saw amplified calls at low log-ratios; using other genes' amplification calls as an internal background for call loss between paired samples requires knowing how stable and threshold-dependent those calls are.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In institutional clinical sequencing sample identifiers of the form P-#######-T01-IM3, does the T-number (T01, T02, T03) reflect the order in which specimens were collected from the patient or the order in which they were accessioned for sequencing, so that an archival pre-treatment specimen can carry a higher T-number than a later biopsy?",
+          "why": "Neither team has dates; several pairs have a higher T-number on the sample labelled pre-treatment, and the convention decides whether that contradicts the pre/post ordering both teams assumed.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In paired biopsies of the same gastro-oesophageal adenocarcinoma taken at different times or sites without an intervening therapy targeted at the gene in question, how concordant are focal oncogene amplification calls (for example MYC, CCNE1, EGFR, KRAS, CDK6, MET) on targeted sequencing panels, and is a negative-control-gene comparison an accepted way to judge whether loss of a drug-targeted amplification exceeds assay and sampling background?",
+          "why": "Both teams lacked a background rate for spontaneous loss of amplification; this tells them whether, and how, the other amplified genes in the same pairs can serve as that background.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In clinical hybrid-capture targeted sequencing panels of the MSK-IMPACT type, how is a gene-level amplification call made (fold-change and significance thresholds, any manual review), how are the discrete copy-number values 2 / 0 / -2 in a cBioPortal discrete CNA file derived from those calls, and can a gene be reported as amplified when its sample-level log2 ratio is below 1?",
+          "answer": "Call rule: coverage of the gene's target regions in the tumour (normalised for total coverage, square-root transformed, GC-Loess corrected) is compared with a pool of diploid normal FFPE/blood controls. A whole-gene gain or loss is significant when fold change > 2.0 (gain) or < -2.0 (loss) with P < 0.05 after false-discovery-rate correction. Fold change is a linear tumour:normal ratio, so the gain cut-off corresponds to a gene-level log2 ratio of about 1. Germline copy-number calls from the matched normal are subtracted. cBioPortal coding: cBioPortal does not compute or re-threshold discrete CNA values; it loads the integer matrix the submitter provides. In an MSK-IMPACT study 2 is the lab's amplification call, -2 its deep-deletion call and 0 'no call' (not 'diploid'); there is no GISTIC step and no -1/+1 level. Amplified below log2 1: by the published rule, no - the gene's own fold change must exceed 2. The web did not settle whether clinical sign-out review reports amplification below that cut-off; I found no page describing manual review of copy-number calls (the manual-review text I saw concerns mutations). An earlier department note records a 'borderline' fold-change 1.5-2 category from the ERBB2 validation paper; I did not re-read that passage this time. An amplified call beside a log2 value below 1 in a .seg segment mean or a curated sample-level column is not in itself a contradiction, because those are different quantities from the gene-level exon fold change (a segment mean averages neighbouring probes). That last point is my inference, not a sourced statement. Implication for using other genes as background: calls are threshold-dependent, so a gene near fold change 2 flips with a modest purity change while a high-level amplicon does not; stratify any background 'call loss' rate by baseline log-ratio. Evidence quality: the threshold sentence is from the primary validation paper and is repeated in a later paper from the same lab, but I saw it only as search excerpts - the full-text fetches were cut off before the methods section. The cBioPortal statement is likewise from a search excerpt of a cBioPortal forum answer.",
+          "sources": [
+            "https://doi.org/10.1016/j.jmoldx.2014.12.006",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5808190/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6825534/",
+            "https://www.jmdjournal.org/article/S1525-1578(16)30233-1/fulltext",
+            "https://groups.google.com/g/cbioportal/c/qP_OaeRdbDo"
+          ],
+          "confidence": "high for the fold change > 2 / FDR P < 0.05 rule; medium for the cBioPortal 2/0/-2 coding; low for whether amplification is ever reported below log2 ratio 1 (not settled by the web)",
+          "deliveries": {
+            "bd17-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-0e3aea978982"
+            },
+            "bd17-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-53713eac61b6"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In clinical hybrid-capture targeted sequencing panels of the MSK-IMPACT type, how is a gene-level amplification call made (fold-change and significance thresholds, any manual review), how are the discrete copy-number values 2 / 0 / -2 in a cBioPortal discrete CNA file derived from those calls, and can a gene be reported as amplified when its sample-level log2 ratio is below 1? ANSWER: Call rule: coverage of the gene's target regions in the tumour (normalised for total coverage, square-root transformed, GC-Loess corrected) is compared with a pool of diploid normal FFPE/blood controls. A whole-gene gain or loss is significant when fold change > 2.0 (gain) or < -2.0 (loss) with P < 0.05 after false-discovery-rate correction. Fold change is a linear tumour:normal ratio, so the gain cut-off corresponds to a gene-level log2 ratio of about 1. Germline copy-number calls from the matched normal are subtracted. cBioPortal coding: cBioPortal does not compute or re-threshold discrete CNA values; it loads the integer matrix the submitter provides. In an MSK-IMPACT study 2 is the lab's amplification call, -2 its deep-deletion call and 0 'no call' (not 'diploid'); there is no GISTIC step and no -1/+1 level. Amplified below log2 1: by the published rule, no - the gene's own fold change must exceed 2. The web did not settle whether clinical sign-out review reports amplification below that cut-off; I found no page describing manual review of copy-number calls (the manual-review text I saw concerns mutations). An earlier department note records a 'borderline' fold-change 1.5-2 category from the ERBB2 validation paper; I did not re-read that passage this time. An amplified call beside a log2 value below 1 in a .seg segment mean or a curated sample-level column is not in itself a contradiction, because those are different quantities from the gene-level exon fold change (a segment mean averages neighbouring probes). That last point is my inference, not a sourced statement. Implication for using other genes as background: calls are threshold-dependent, so a gene near fold change 2 flips with a modest purity change while a high-level amplicon does not; stratify any background 'call loss' rate by baseline log-ratio. Evidence quality: the threshold sentence is from the primary validation paper and is repeated in a later paper from the same lab, but I saw it only as search excerpts - the full-text fetches were cut off before the methods section. The cBioPortal statement is likewise from a search excerpt of a cBioPortal forum answer. HOW SURE: high for the fold change > 2 / FDR P < 0.05 rule; medium for the cBioPortal 2/0/-2 coding; low for whether amplification is ever reported below log2 ratio 1 (not settled by the web). SOURCES: https://doi.org/10.1016/j.jmoldx.2014.12.006, https://pmc.ncbi.nlm.nih.gov/articles/PMC5808190/, https://pmc.ncbi.nlm.nih.gov/articles/PMC6825534/, https://www.jmdjournal.org/article/S1525-1578(16)30233-1/fulltext, https://groups.google.com/g/cbioportal/c/qP_OaeRdbDo."
+        },
+        {
+          "question": "In institutional clinical sequencing sample identifiers of the form P-#######-T01-IM3, does the T-number (T01, T02, T03) reflect the order in which specimens were collected from the patient or the order in which they were accessioned for sequencing, so that an archival pre-treatment specimen can carry a higher T-number than a later biopsy?",
+          "answer": "The web does not settle this with an explicit rule. Nothing I found says the T-number encodes collection order, and the evidence points to a per-patient counter assigned when a specimen is accessioned for sequencing. (1) The AACR GENIE / Sage staff answer defines T01 only as 'a string used as a unique sample identifier' for that patient, and the IM suffix as a further differentiator (IM3 rows carry panel IMPACT341). (2) The MSK-IMPACT cohort paper says specimens are accessioned by the molecular diagnostics lab when received for testing (search excerpt only). (3) In a public MSK sample table, patient P-0000114 has T01 = lymph-node metastasis with age at sequencing report 58 and T02 = primary tumour with age at sequencing report 59: the T-number follows sequencing-report order, and the primary carries the higher number. (4) MSK-CHORD timeline files hold a sample-acquisition date separately from the sequencing date (P-0002880-T02-IM6: acquired day 622, sequenced day 746). So an archival pre-treatment specimen submitted after a later biopsy can plausibly carry a higher T-number. A higher T-number on a sample labelled pre-treatment therefore does not contradict the curated pre/post label, but the T-number cannot confirm the ordering either. Suggested handling: keep the curated pre/post label as primary and report pairs with inverted T-numbers as a sensitivity stratum.",
+          "sources": [
+            "https://www.synapse.org/Synapse:syn7222066/discussion/threadId=9817",
+            "https://drive.google.com/file/d/1Txdaa7JKOVMS3TZ8g9tkQUzZPkNc2m24/view",
+            "https://groups.google.com/g/cbioportal/c/y_fd7cu-N0M",
+            "https://mskcc-epi-bio.github.io/gnomeR/articles/qa-impact-data.html",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5461196/"
+          ],
+          "confidence": "low to medium: inferred from a non-chronological official definition and a few examples; no explicit statement of the convention was found",
+          "deliveries": {
+            "bd17-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-f8bd72649be7"
+            },
+            "bd17-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-6761880352c2"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In institutional clinical sequencing sample identifiers of the form P-#######-T01-IM3, does the T-number (T01, T02, T03) reflect the order in which specimens were collected from the patient or the order in which they were accessioned for sequencing, so that an archival pre-treatment specimen can carry a higher T-number than a later biopsy? ANSWER: The web does not settle this with an explicit rule. Nothing I found says the T-number encodes collection order, and the evidence points to a per-patient counter assigned when a specimen is accessioned for sequencing. (1) The AACR GENIE / Sage staff answer defines T01 only as 'a string used as a unique sample identifier' for that patient, and the IM suffix as a further differentiator (IM3 rows carry panel IMPACT341). (2) The MSK-IMPACT cohort paper says specimens are accessioned by the molecular diagnostics lab when received for testing (search excerpt only). (3) In a public MSK sample table, patient P-0000114 has T01 = lymph-node metastasis with age at sequencing report 58 and T02 = primary tumour with age at sequencing report 59: the T-number follows sequencing-report order, and the primary carries the higher number. (4) MSK-CHORD timeline files hold a sample-acquisition date separately from the sequencing date (P-0002880-T02-IM6: acquired day 622, sequenced day 746). So an archival pre-treatment specimen submitted after a later biopsy can plausibly carry a higher T-number. A higher T-number on a sample labelled pre-treatment therefore does not contradict the curated pre/post label, but the T-number cannot confirm the ordering either. Suggested handling: keep the curated pre/post label as primary and report pairs with inverted T-numbers as a sensitivity stratum. HOW SURE: low to medium: inferred from a non-chronological official definition and a few examples; no explicit statement of the convention was found. SOURCES: https://www.synapse.org/Synapse:syn7222066/discussion/threadId=9817, https://drive.google.com/file/d/1Txdaa7JKOVMS3TZ8g9tkQUzZPkNc2m24/view, https://groups.google.com/g/cbioportal/c/y_fd7cu-N0M, https://mskcc-epi-bio.github.io/gnomeR/articles/qa-impact-data.html, https://pmc.ncbi.nlm.nih.gov/articles/PMC5461196/."
+        },
+        {
+          "question": "In paired biopsies of the same gastro-oesophageal adenocarcinoma taken at different times or sites without an intervening therapy targeted at the gene in question, how concordant are focal oncogene amplification calls (for example MYC, CCNE1, EGFR, KRAS, CDK6, MET) on targeted sequencing panels, and is a negative-control-gene comparison an accepted way to judge whether loss of a drug-targeted amplification exceeds assay and sampling background?",
+          "answer": "Concordance: discordance is common. The multi-cohort study of paired primary and synchronous metastatic gastro-oesophageal adenocarcinoma (Pectasides et al., Cancer Discovery 2018) reported 'oncogene amplification profiles commonly discordant' within the primary tumour and between primary and disseminated disease. The same group later summarised it as discordance in 42% of single-nucleotide variants/indels and 63% of gene amplifications. Divergent primary/metastasis profiling changed treatment assignment in 32% (9/28) of patients, and a review puts discordant oncogene amplification at about one third of patients (these two figures from search excerpts). Limits: these numbers count any difference in either direction, across sites, on exome or targeted assays with their own thresholds. I did not find per-gene rates for MYC, CCNE1, EGFR, KRAS, CDK6 or MET, nor a rate for serial biopsies on one assay, so there is no clean literature figure for spontaneous loss of an amplification call in the later sample. The background is clearly not negligible and is well above the 7-12% HER2 IHC/FISH primary-versus-metastasis discordance already in department memory. Negative-control genes: I found no source that validates this comparison for amplification loss, and I ran no successful search for the methodological literature. It is the general negative-control-outcome idea from epidemiology applied to this setting - reasonable, but not an established standard in this field. Conditions for it to be valid (my reasoning, not sourced): control genes must share the assay, purity and sampling effects but not be selected by the therapy; exclude genes on the ERBB2 amplicon (17q12 neighbours such as CDK12); match or stratify on baseline log-ratio because near-threshold calls flip more easily; analyse within pair because a purity collapse removes every call in that pair at once; and note that concurrent chemotherapy, and RTK/RAS amplifications that are themselves resistance mechanisms, can move the control genes too. The most informative pattern is at pair level: the ERBB2 call lost while other amplifications in the same pair are retained.",
+          "sources": [
+            "https://www.ncbi.nlm.nih.gov/pubmed/28978556",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6891164/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7232941/",
+            "https://doi.org/10.1158/2159-8290.c.6547418"
+          ],
+          "confidence": "medium that amplification discordance between paired samples is common; low for any specific background rate; low that a negative-control-gene comparison is an accepted standard (not settled by the web)",
+          "deliveries": {
+            "bd17-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-8c129b9efe12"
+            },
+            "bd17-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-25a65f4d99d0"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In paired biopsies of the same gastro-oesophageal adenocarcinoma taken at different times or sites without an intervening therapy targeted at the gene in question, how concordant are focal oncogene amplification calls (for example MYC, CCNE1, EGFR, KRAS, CDK6, MET) on targeted sequencing panels, and is a negative-control-gene comparison an accepted way to judge whether loss of a drug-targeted amplification exceeds assay and sampling background? ANSWER: Concordance: discordance is common. The multi-cohort study of paired primary and synchronous metastatic gastro-oesophageal adenocarcinoma (Pectasides et al., Cancer Discovery 2018) reported 'oncogene amplification profiles commonly discordant' within the primary tumour and between primary and disseminated disease. The same group later summarised it as discordance in 42% of single-nucleotide variants/indels and 63% of gene amplifications. Divergent primary/metastasis profiling changed treatment assignment in 32% (9/28) of patients, and a review puts discordant oncogene amplification at about one third of patients (these two figures from search excerpts). Limits: these numbers count any difference in either direction, across sites, on exome or targeted assays with their own thresholds. I did not find per-gene rates for MYC, CCNE1, EGFR, KRAS, CDK6 or MET, nor a rate for serial biopsies on one assay, so there is no clean literature figure for spontaneous loss of an amplification call in the later sample. The background is clearly not negligible and is well above the 7-12% HER2 IHC/FISH primary-versus-metastasis discordance already in department memory. Negative-control genes: I found no source that validates this comparison for amplification loss, and I ran no successful search for the methodological literature. It is the general negative-control-outcome idea from epidemiology applied to this setting - reasonable, but not an established standard in this field. Conditions for it to be valid (my reasoning, not sourced): control genes must share the assay, purity and sampling effects but not be selected by the therapy; exclude genes on the ERBB2 amplicon (17q12 neighbours such as CDK12); match or stratify on baseline log-ratio because near-threshold calls flip more easily; analyse within pair because a purity collapse removes every call in that pair at once; and note that concurrent chemotherapy, and RTK/RAS amplifications that are themselves resistance mechanisms, can move the control genes too. The most informative pattern is at pair level: the ERBB2 call lost while other amplifications in the same pair are retained. HOW SURE: medium that amplification discordance between paired samples is common; low for any specific background rate; low that a negative-control-gene comparison is an accepted standard (not settled by the web). SOURCES: https://www.ncbi.nlm.nih.gov/pubmed/28978556, https://pmc.ncbi.nlm.nih.gov/articles/PMC6891164/, https://pmc.ncbi.nlm.nih.gov/articles/PMC7232941/, https://doi.org/10.1158/2159-8290.c.6547418."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd17-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd17-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd17-team-a",
+      "round": "challenge",
+      "reason": "the referee's test supported the other answer: The test is weak (small controls, p>0.1 everywhere), so this is a low-confidence pick, not a proof. It favours X because every ERBB2-specific check points the same way: complete ERBB2 loss with matching IHC/FISH loss occurs only across a trastuzumab pre->post transition in patients who first benefited (CR, TTP 25 mo; SD, TTP 7.6 mo), never in control pairs and never in the gain direction, and HER2-negative tumours are about twice as frequent after trastuzumab as before. Y's 'True' needs positive evidence of no association; its only such evidence is a comparison with non-ERBB2 amplification-call flips, which the ERBB2-specific background (0/12) does not reproduce, and an assumed 30% effect size. X's 'False' rests on confirmed cases (one clean same-site clonal replacement, YJ-her-010; one ambiguous, P-0000444) that the test shows are specific to the post-trastuzumab setting. If 'associated' is held to a strict significance standard the data cannot settle it either way; under that reading neither label is proven, but 'True' is the less supported of the two."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd17-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 244.16041883302387,
+      "cost_usd": 0.47000010000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 106.0948169589974,
+      "cost_usd": 0.1889946,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 225.26189012499526,
+      "cost_usd": 0.4859826,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 280.78885029198136,
+      "cost_usd": 0.5438879,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 219.03109579207376,
+      "cost_usd": 0.4644794,
+      "error": null
+    },
+    {
+      "agent": "bd17-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 180.4613110839855,
+      "cost_usd": 0.48886050000000003,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 330.88816145795863,
+      "cost_usd": 0.7457271999999999,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 404.99296566692647,
+      "cost_usd": 0.7551065000000001,
+      "error": null
+    },
+    {
+      "agent": "bd17-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 175.10960225004237,
+      "cost_usd": 0.33441740000000003,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

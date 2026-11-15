@@ -1,0 +1,363 @@
+{
+  "study": "bd11",
+  "status": "replicated",
+  "final": {
+    "agent": "bd11-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd11/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd11-library": "fable",
+    "bd11-team-a": "fable",
+    "bd11-team-b": "fable",
+    "bd11-team-c": "fable",
+    "bd11-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd11-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd11/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd11-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd11/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd11-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd11/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd11-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd11/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd11-team-a",
+        "bd11-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd11-team-a",
+        "bd11-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Do this first: confirm that the supplied study contains the tumour type the hypothesis is about (clear cell renal cell carcinoma, ccRCC; OncoTree code CCRCC, parent RCC, tissue KIDNEY). The library read only file headers and first rows (it tabulated nothing) and saw columns such as IBD and INTERVAL_FROM_LAST_COLONOSCOPY_TO_CAC_DX, PRIMARY_SITE = 'R Colon' and a first row labelled Colorectal Cancer / COAD, which hints that the cohort may be colitis-associated colorectal cancer rather than kidney cancer. This is unverified. Tabulate CANCER_TYPE, CANCER_TYPE_DETAILED, ONCOTREE_CODE, PRIMARY_SITE and TISSUE_SEQUENCED in data_clinical_sample.txt and count the samples and patients that are kidney/ccRCC. If ccRCC samples are present, restrict the analysis to them. If there are none or almost none, do not compute an ITH measure on another tumour type and transfer it to ccRCC, and do not answer from background knowledge of the literature; choose the label by applying the task's own definitions of the three labels to what the tables do and do not contain.",
+      "from": [
+        "sl-biodsa-test-1250fb586ee9"
+      ],
+      "reason": "Whether the relevant population exists in the data decides what analysis is even possible; a team that skips this check could measure heterogeneity in the wrong tumour type or answer from prior knowledge.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-75e314a8af51"
+      }
+    },
+    {
+      "text": "Intratumour heterogeneity (ITH) is a within-tumour property. It is directly measurable only with several spatially separate samples of the same tumour (multi-region sequencing) or with per-mutation cancer cell fractions. A table with one sample per patient shows differences between patients, which is not ITH. Count samples per PATIENT_ID in data_clinical_sample.txt; for patients with more than one sample read SAMPLE_TYPE, TISSUE_SEQUENCED and METASTATIC_SITE to see what the samples are, and check whether any ITH/clonality column exists (CCF, clonal/subclonal flag, region ID). If most patients have one sample and there are no clonality columns, a per-tumour 'ITH present yes/no' call cannot be made for those patients; compute the fraction of tumours with ITH only over tumours with at least two same-tumour samples and state that denominator.",
+      "from": [
+        "sl-biodsa-test-53995304b263"
+      ],
+      "reason": "Fixes the unit of analysis and the denominator; without it a team may mistake between-patient diversity for ITH.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-dba2a9ace3fe"
+      }
+    },
+    {
+      "text": "Not every multi-sample patient is a multi-region case. (a) Differences between a primary and its metastasis, or between samples taken at different times (e.g. before and after therapy), are inter-lesion or temporal heterogeneity; some authors count them as ITH and some do not, so state the definition used and report same-lesion and cross-lesion results separately. (b) Two samples from one patient may be independent primaries (multifocal tumours from field cancerisation), whose total discordance is inter-tumour difference and would inflate an 'ITH present' count: for each within-patient pair count shared versus private somatic mutations and shared copy-number breakpoints, and treat a pair sharing nothing (or only a common hotspot such as KRAS/TP53) as possibly independent, excluded from the ITH denominator or reported separately. (c) In MSK-IMPACT style IDs (e.g. P-0004401-T01-IM5, P-0004401-T02-IM6) the T01/T02 suffix is only a per-patient specimen counter and IMx is the assay version; two T-numbers are separate clinical specimens, not regions of one tumour. (d) From a header read only, the library saw three ID styles in this study (P-00xxxxx-T0x-IMx; s_DK_cac_001_P in the seg and mutation files versus p_DK_cac_001 in the patient table; Foundation TRFxxxxxx), so a naive join can silently drop samples or miscount patients: verify that every Tumor_Sample_Barcode, seg ID and CNA column maps to a row of data_clinical_sample.txt, and list SAMPLE_TYPE, TISSUE_SEQUENCED and panel for each multi-sample patient. Report how many patients truly have two or more comparable samples of one lesion (possibly zero) and do not describe the cohort as multi-region sequenced unless that is what the samples are.",
+      "from": [
+        "sl-biodsa-test-a558208ca30b",
+        "sl-biodsa-test-08eb3afa3381",
+        "sl-biodsa-test-6a24d1985492"
+      ],
+      "reason": "Determines which within-patient comparisons count as evidence about ITH and guards against miscounting patients through ID mismatches.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-8dc06d318aa1"
+      }
+    },
+    {
+      "text": "The hypothesis is a universal claim ('all'). It is not established by n-of-n in a small cohort and is refuted only by a well-supported counter-example. Report the number of evaluable tumours (correct tumour type, at least two same-tumour samples, comparable panels), the number showing ITH, and an exact binomial interval (with 0 exceptions in n the 95% upper bound on the exception rate is about 3/n; the exact lower bound on the proportion is 0.05^(1/n), e.g. 0.74 for n = 10). If the number of evaluable tumours is zero, the proportion is undefined and the data do not address the claim. Detected ITH rises with the number of regions sampled, so a tumour with one or two samples or few compared genes that shows no heterogeneity is absence of evidence, not a homogeneous tumour: for every tumour scored 'no ITH' record the number of samples, the number of genes/mutations compared and the depth, and treat thinly sampled 'homogeneous' tumours as uninformative rather than as counter-examples. A single credible exception decides against a universal claim, so document its sampling and rule out technical explanations first.",
+      "from": [
+        "sl-biodsa-test-34378db20909",
+        "sl-biodsa-test-1b3c3f8dfbb4"
+      ],
+      "reason": "Sets the evidential standard for supporting or refuting an 'all tumours' claim, which governs how counts are turned into a label.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-6db753758b03"
+      }
+    },
+    {
+      "text": "Apparent 'private' mutations between samples of one patient are often technical. (a) Panels: from a header read, the gene panel matrix appears to list IMPACT341, IMPACT410 and IMPACT468, and a FoundationOne panel file is supplied. A gene absent from a sample's panel is 'not profiled', not wild type. Join data_gene_panel_matrix.txt to the sample table and, for each within-patient pair, restrict mutation, CNA and SV comparisons to genes covered by both panels (IMPACT gene lists are not supplied, so use the union of genes mutated on that panel as a lower bound, or restrict to the smallest panel). (b) Detection power: a MAF lists only called variants, so a missing row is not a genotype of zero; in a published replicate study 34-80% of discordant variants that would be read as ITH were noise. For each mutation called in sample A but not in B, compare TUMOR_PURITY and coverage of the two samples and the alt count and VAF in A, and ask whether B could have detected it (expected alt reads = depth_B x VAF_A x purity_B/purity_A). Count as heterogeneous only discordances the partner sample was powered to detect, and report both the naive and the power-filtered result.",
+      "from": [
+        "sl-biodsa-test-1a85fe03d082",
+        "sl-biodsa-test-bede87890864"
+      ],
+      "reason": "Prevents panel differences and low detection power from being counted as biological heterogeneity.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-a3ec3f5e6743"
+      }
+    },
+    {
+      "text": "Copy-number differences between two samples of one patient are easily manufactured by purity and ploidy. The observed log2 ratio of a real event shrinks toward 0 as purity falls (a one-copy loss is -1 only at 100% purity, about -0.4 at 50%), so the thresholded calls in data_cna.txt (-2/-1/0/1/2) and seg.mean values in data_cna_hg19.seg can flip between samples of differing purity with no biological difference; data_cna.txt may also hold NA for genes not on a sample's panel. Before calling a CNA private to one sample, compare TUMOR_PURITY of the two samples, look at the raw seg.mean of the same region in the partner (shifted the same way but below threshold?), and exclude genes that are NA in either sample. Count as copy-number heterogeneity only events with a clearly opposite or absent signal in a partner of adequate purity (roughly 30% or more), prefer segment-level log-ratio comparison after purity scaling over discrete calls, and report CNA-based and mutation-based heterogeneity separately.",
+      "from": [
+        "sl-biodsa-test-c24fa90dcc5b"
+      ],
+      "reason": "The CNA and seg tables are an obvious second route to an ITH call, and this is the main way that route gives false positives.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-2b38a09789aa"
+      }
+    },
+    {
+      "text": "Be careful with single-sample, VAF-based evidence of ITH. Raw VAF is not the fraction of cancer cells carrying a mutation: it depends on purity, local copy number and multiplicity (including copy-neutral LOH), so low-VAF mutations in impure or copy-altered regions are easily mislabelled subclonal, and single-sample ITH methods disagree widely. If single-sample clonality is attempted, compute CCF = VAF x (purity x CN_tumour + 2 x (1 - purity)) / (purity x multiplicity) from TUMOR_PURITY and data_cna_hg19.seg, with a binomial interval from t_alt_count/t_ref_count, and call a mutation subclonal only if the upper CCF bound is clearly below 1 under all plausible multiplicities; with missing purity, panel log-ratio segments without allele-specific copy number, or few mutations per sample, such calls are low-confidence and should not carry a universal claim. VAF-dispersion scores such as MATH (100 x MAD/median of VAFs) are unstable or undefined with the handful of mutations a panel yields (a score of 0 for a sample with 0-1 mutations means 'undefined', not 'homogeneous') and are positive for almost any sample, so 'score > 0 in every tumour' makes the hypothesis trivially true. Count mutations per sample; if a continuous score is used, fix the threshold before looking and show sensitivity to it. Prefer discrete evidence: an event confidently present in one same-tumour sample and confidently absent in another.",
+      "from": [
+        "sl-biodsa-test-66259beefb8a",
+        "sl-biodsa-test-ba4c578bc127"
+      ],
+      "reason": "If the team falls back on single-sample measures, these are the ways such measures produce an artefactual 'ITH everywhere' or 'no ITH' result.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-971ae45fae59"
+      }
+    },
+    {
+      "text": "Some mutation calls may have been made without a patient-matched normal: the library's header read of the mutation file saw Matched_Norm_Sample_Barcode values like 's_Normal_Pooled_FROZEN', Mutation_Status 'SOMATIC_VS_POOL', and Foundation rows with Variant_Type UNK and verification/validation status 'unknown'/'likely'. Such calls contain germline variants at VAF near 0.5 or 1.0 in every sample of a patient, which inflate apparent shared/clonal content and distort VAF-based ITH scores. Tabulate Center, Mutation_Status, Matched_Norm_Sample_Barcode and the SOMATIC_STATUS column of the sample table (Matched vs Unmatched); for unmatched samples look for a VAF spike at 0.5 and check n_alt_count and the population-frequency columns. If found, analyse matched-normal samples separately, or drop variants with population allele frequency above about 0.1-1% and unknown-status Foundation calls, and state that unmatched samples cannot support clonality claims.",
+      "from": [
+        "sl-biodsa-test-e61d2254b888"
+      ],
+      "reason": "Germline contamination changes both shared/private counts and VAF distributions, so it affects any ITH measure built from the mutation table.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-fba76410a1aa"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams take the sample-table tumour-type labels (CANCER_TYPE, CANCER_TYPE_DETAILED, ONCOTREE_CODE) as correct and argue against a hidden kidney tumour only from cohort-level gene frequencies (VHL, PBRM1, BAP1, SETD2 counts; 3p loss in 11 of 130 samples). Neither looked sample by sample for one tumour carrying the kidney pattern together.",
+      "Both teams read the label 'Not verifiable' ('no relevant variables or tables') as covering 'the population the hypothesis is about is absent'. Neither set out which element is missing, the population or the variable, although the two cases are separate under the label definitions.",
+      "Both teams treat 'no CCF / clonality / region column in any file' as 'no within-tumour measure exists'. Neither checked whether such a measure is derivable from what is there (allele counts, purity, segment file).",
+      "Both teams take the zero shared mutations in the six within-patient pairs as showing independent primaries; team B itself says its exact-allele key is unreliable across centres, and neither compared copy-number profiles."
+    ],
+    "unused_evidence": [
+      "data_sv.txt: neither team's method used it. Its first data row is a somatic PBRM1 rearrangement on chromosome 3p, one of the genes both teams used as a kidney hallmark, so the hallmark-gene counts both teams report leave out structural variants.",
+      "t_ref_count / t_alt_count in data_mutations.txt (filled in all 1512 rows on my read), TUMOR_PURITY (filled for 115 of 180 samples) and data_cna_hg19.seg (130 samples): together these allow a per-mutation clonality estimate inside a single sample. Both teams wrote that no clonality variable exists; neither said whether a derivable one bears on the label.",
+      "The 3 samples with CANCER_TYPE 'Cancer of Unknown Primary' (ONCOTREE_CODE ADNOS): the only samples whose organ of origin the label itself leaves open. Neither team listed their PRIMARY_SITE, TISSUE_SEQUENCED or alteration profile separately.",
+      "data_timeline.txt (3 STATUS rows) and the metastasis columns (METASTATIC_SITE, FIRST_SITE_OF_METS, *_FSM): team A text-searched them for kidney terms; they hold no kidney site on my read, so ignoring them does not change the answer.",
+      "data_cna.txt and data_gene_panel_matrix.txt were used only for ID overlap; no bearing on the label once the tumour type is absent."
+    ],
+    "unresolved_weak_points": [
+      "Team A: 'could not rule out from labels alone that a mislabelled kidney tumour is hidden in the cohort' - reported, argued against with cohort-level frequencies, not resolved at sample level.",
+      "Team A and team B: both name the choice between 'Not verifiable' and 'False' (a grader expecting a proxy analysis on the tumours present) as the weakest point; both only report it. Neither states whether a within-tumour measure could be built for the tumours present, which is what decides whether the missing element is the variable, the population, or both.",
+      "Team B: says cross-centre allele matching is unreliable (Foundation rows lack alleles) and that one sample ID fails to join because of a trailing space, yet reports '0 shared mutations' for the within-patient pairs without saying the comparison was redone after fixing either problem.",
+      "Minor disagreement between teams not reconciled: hallmark/driver counts use different denominators (165 vs 180) and KRAS is 45 in one and 47 in the other."
+    ],
+    "second_readings": [
+      "'All ccRCCs' could be read as a universal statement over the ccRCCs in the supplied study; with none present it is vacuously satisfied. Neither team mentions this reading; the task's label definitions (support must come from analysis of the data) argue against it, so I do not think it changes the label.",
+      "The hypothesis could be read loosely as 'ITH is universal in the tumours of this study', i.e. tested on whatever tumours are present. Both teams name and reject this reading; the rejection is reasonable because the hypothesis names a tumour type, but the teams did not check whether that proxy would even be computable.",
+      "'Not verifiable' is defined by absent variables or tables; here the missing thing is primarily the population. A strict reader could ask whether 'False' needs only 'relevant variables identified'. With no ccRCC there is nothing to contradict the claim with, so this reading also does not reach 'False'."
+    ],
+    "verdict": "I trust the agreed answer fairly well: my own read of the sample table confirms that every one of the 180 samples is labelled bowel or adenocarcinoma NOS and no field names the kidney, so the population the hypothesis concerns is absent. The open points are narrow (a sample-level rather than cohort-level check for a hidden kidney tumour using the unused SV table, and a clear statement of what exactly is missing given that allele counts and purity are present); I expect them to tighten the reasoning rather than move the label.",
+    "questions": [
+      {
+        "to": "bd11-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You wrote that you could not rule out a mislabelled kidney tumour and answered it with cohort-level gene frequencies. Run the check at sample level: for every sample, list together any VHL, PBRM1, BAP1 or SETD2 alteration from data_mutations.txt AND from data_sv.txt (which your method did not use; it holds at least one PBRM1 rearrangement) and whether data_cna_hg19.seg shows chromosome 3p loss in that same sample. Is there any single sample that combines a VHL alteration with 3p loss, and what are its PRIMARY_SITE, TISSUE_SEQUENCED and histology fields? Does the result change your count of ccRCC samples and therefore your method?",
+        "from": [
+          "sl-biodsa-test-0280ea71a256"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-a954d25be8f5"
+      },
+      {
+        "to": "bd11-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Three samples have CANCER_TYPE 'Cancer of Unknown Primary' (ONCOTREE_CODE ADNOS), the only samples whose label leaves the organ of origin open. Print for each its PRIMARY_SITE, TISSUE_SEQUENCED, METASTATIC_SITE, SAMPLE_TYPE, panel and full alteration list (mutations, SV, 3p status). Do these fields place all three in the bowel, or is any one compatible with a renal origin? Does the result change your method?",
+        "from": [
+          "sl-biodsa-test-0280ea71a256"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-b74e5426c92c"
+      },
+      {
+        "to": "bd11-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You state that no CCF or clonality variable exists and name the 'Not verifiable' versus 'False' choice as your weakest point without resolving it. Count the samples in which t_ref_count/t_alt_count, TUMOR_PURITY and a segment profile are all present, i.e. where a within-sample clonality measure is derivable even though no column holds one. You need not compute that measure. Given the count, state precisely which element the data lack for this hypothesis (the variable, the population, or both) and whether that changes how the task's three label definitions apply, and so your method.",
+        "from": [
+          "sl-biodsa-test-b6653cad77c2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-9df482b4718f"
+      },
+      {
+        "to": "bd11-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your case against a hidden kidney tumour rests on cohort-level counts (VHL 2, PBRM1 6, BAP1 1, SETD2 6 of 180; 3p loss in 11 of 130). Run it at sample level: do any of the 11 samples with 3p loss also carry a VHL, PBRM1, BAP1 or SETD2 alteration, counting data_sv.txt as well as data_mutations.txt (your hallmark counts do not mention the SV table, which holds at least one PBRM1 rearrangement)? For any such sample print PRIMARY_SITE, TISSUE_SEQUENCED, histology and ONCOTREE_CODE, and do the same for the 3 samples typed 'Cancer of Unknown Primary' / ADNOS. Does the result change your count of ccRCC samples and therefore your method?",
+        "from": [
+          "sl-biodsa-test-c2f4f171635f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-c2c40ad13d8e"
+      },
+      {
+        "to": "bd11-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You report 0 shared mutations in the within-patient pairs but also say exact-allele keys are unreliable across centres and that 'P-0021194-T03-IM7 ' fails to join because of a trailing space. Redo the pair comparison after stripping whitespace from IDs, matching on gene plus protein change as well as on chrom:pos:ref>alt, restricted to genes on both panels, and compare the segment profiles of each pair (two patients have pairs on the same or near-identical MSK panels with the same primary site). Is any pair a same-tumour pair after these fixes, and does that change your statement that the study has no multi-region data, or your method?",
+        "from": [
+          "sl-biodsa-test-afd94574013d",
+          "sl-biodsa-test-e387ef16be87"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-739095809029"
+      },
+      {
+        "to": "bd11-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You state that no clonality or cancer-cell-fraction variable exists and name the 'Not verifiable' versus 'False' choice as your weakest point without resolving it. Count the samples in which t_ref_count/t_alt_count, TUMOR_PURITY and a segment profile are all present, i.e. where a within-sample clonality measure is derivable even though no column holds one. You need not compute that measure. Given the count, state precisely which element the data lack for this hypothesis (the variable, the population, or both) and whether that changes how the task's three label definitions apply, and so your method.",
+        "from": [
+          "sl-biodsa-test-3882b9199faa"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-e183ffb2cbfa"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd11-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd11-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd11-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd11-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd11-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 123.3429297079565,
+      "cost_usd": 0.281572,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 112.76412120799068,
+      "cost_usd": 0.186932,
+      "error": null
+    },
+    {
+      "agent": "bd11-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 93.35314216697589,
+      "cost_usd": 0.20297179999999998,
+      "error": null
+    },
+    {
+      "agent": "bd11-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 105.7391190000344,
+      "cost_usd": 0.2438261,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 122.38406149996445,
+      "cost_usd": 0.2827632,
+      "error": null
+    },
+    {
+      "agent": "bd11-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 186.93255541694816,
+      "cost_usd": 0.4038336,
+      "error": null
+    },
+    {
+      "agent": "bd11-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 227.92127699998673,
+      "cost_usd": 0.42391270000000003,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

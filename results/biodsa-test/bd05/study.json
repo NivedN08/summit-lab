@@ -1,0 +1,405 @@
+{
+  "study": "bd05",
+  "status": "replicated",
+  "final": {
+    "agent": "bd05-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd05/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd05-library": "fable",
+    "bd05-team-a": "fable",
+    "bd05-team-b": "fable",
+    "bd05-team-c": "fable",
+    "bd05-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd05-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd05/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd05-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd05/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd05-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd05/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd05-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd05/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd05-team-a",
+        "bd05-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd05-team-a",
+        "bd05-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The hypothesis is a universal negative about one specific group: 'no patient with nonmutated JAK2 carries a somatic CALR mutation'. It is NOT the textbook statement that CALR and JAK2 mutations are mutually exclusive, which concerns the opposite group (CALR in JAK2-MUTATED patients). Test it by building a patient-level 2x2 table of JAK2-mutated (yes/no) by somatic-CALR-mutated (yes/no) and reading the JAK2-nonmutated row: count how many JAK2-nonmutated patients carry a somatic CALR variant and report the size of that row. The decision rests on that count: a single credible case is enough to break a universal negative, and zero among a reasonable number of profiled JAK2-nonmutated patients is what support would look like. A test of association or an enrichment p-value does not answer the question.",
+      "from": [
+        "sl-biodsa-test-cc83bb940bce"
+      ],
+      "reason": "Reading the claim as the familiar 'mutual exclusivity' statement, or answering it with an association test, examines the wrong cell of the table and can give the wrong label.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-be73585becbc"
+      }
+    },
+    {
+      "text": "Do not choose 'Not verifiable' merely because data_clinical_sample.txt has no JAK2-status or CALR-status column, and do not choose any label from prior belief about MPN biology. The mutation table is itself the relevant variable: gene-level rows (Hugo_Symbol) for JAK2 and CALR, together with the list of sequenced samples, are enough to test a presence/absence claim. Confirm that both JAK2 and CALR can appear in Hugo_Symbol and that the cohort is MPN (CANCER_TYPE / ONCOTREE_CODE in the clinical file), and count the JAK2-nonmutated profiled patients so the denominator is visible. 'Not verifiable' fits only if CALR could not appear in the data at all (for example no indels in the mutation file, or no CALR coverage) or there are no JAK2-nonmutated patients. The claim conditions only on JAK2, not on MPL: an MPL-mutated patient without a JAK2 mutation belongs in the JAK2-nonmutated group.",
+      "from": [
+        "sl-biodsa-test-2fb4d04ea831"
+      ],
+      "reason": "It sets when each label is legitimate and fixes group membership for MPL-mutated patients; a team that looks only for a clinical status column, or that drops MPL patients from the JAK2-nonmutated group, would be working on the wrong variables or the wrong group.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-29a5a1942545"
+      }
+    },
+    {
+      "text": "Define the groups per patient and on sequenced samples only. In a cBioPortal-style data_mutations.txt a sample with no row for a gene is either wild-type or was not profiled, and a sample with zero called mutations does not appear in the file at all, so 'JAK2 nonmutated' cannot be defined from the mutation file alone. Compare the set of SAMPLE_ID in data_clinical_sample.txt with the set of Tumor_Sample_Barcode in data_mutations.txt (every barcode should map to a clinical SAMPLE_ID); check that each clinical sample has sequencing evidence (non-missing TMB_NONSYNONYMOUS, SOMATIC_STATUS) and that the mutation file looks exome-wide (many genes, silent rows present) rather than a small targeted panel. A sequenced sample with no JAK2 row is JAK2-nonmutated; report separately any clinical samples absent from the mutation file instead of silently counting them as wild-type for both genes. The claim is about patients, but rows are one per variant per sample: a patient may have several samples, a variant may appear on duplicate rows, and any sample-level annotation column is repeated on every row of that sample. Check whether PATIENT_ID and SAMPLE_ID are one-to-one, then collapse to one record per patient with boolean flags (has JAK2 mutation, has somatic CALR mutation, has MPL mutation), where a patient is positive if ANY of their samples is. Report counts of patients, not rows or samples.",
+      "from": [
+        "sl-biodsa-test-19848fab4592",
+        "sl-biodsa-test-a8b65ea38466"
+      ],
+      "reason": "The JAK2-nonmutated group is defined by absence of rows, so who was actually sequenced and how rows map to patients decides who is in that group and how many there are.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-d4efcb44c8a1"
+      }
+    },
+    {
+      "text": "'JAK2 mutated' can be defined too narrowly (V617F only) or too broadly (any JAK2 row). MPN JAK2 drivers are V617F (exon 14) plus exon 12 indels/missense around codons 537-547; a mutation file may also hold silent, intronic or UTR JAK2 rows that are not mutations in the sense of the claim. List every JAK2 row with its Variant_Classification, HGVSp_Short and Mutation_Status. The library also reports a study-supplied column named 'JAK2/MPL mutation' in data_mutations.txt that is a sample-level label repeated on every row of the sample, not a per-variant field; confirm it exists and tabulate its unique values. Classify JAK2 status per patient two ways, (a) from nonsynonymous JAK2 rows and (b) from the curated sample-level label, flag every patient where the two disagree, and run the conclusion under both definitions; it should be the same under both before it is trusted. Exome sequencing at ordinary depth does not detect low-burden JAK2 V617F (roughly below 2-5% allele fraction, versus 0.01-1% for allele-specific PCR), so the curated label may reflect a more sensitive clinical assay: where the two disagree the curated label is the better guide, and 'nonmutated JAK2' should be worded as 'not detected at this assay's sensitivity'. The allele burden / alt-read counts of the JAK2 rows show the lowest burden the study reports. This affects which patients fall in the JAK2-nonmutated group, not the logic of the test.",
+      "from": [
+        "sl-biodsa-test-4ddd8bd12287",
+        "sl-biodsa-test-ba6367d378ad"
+      ],
+      "reason": "The whole test hinges on which patients count as JAK2-nonmutated; there are two sources for that status in the data and they may not agree, and a team that does not know the curated column is sample-level could misuse it as a per-variant field.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-298622db6dae"
+      }
+    },
+    {
+      "text": "CALR driver mutations in MPN are exon 9 insertions/deletions (commonly a 52-bp deletion, 'type 1', and a 5-bp insertion, 'type 2', plus more than 50 rarer variants), not point mutations. They are missed if you search for a specific protein-change string, filter to Variant_Type SNP or Variant_Classification Missense_Mutation, or drop indels. The same indel is written differently by different pipelines (e.g. L367fs*46 vs L367Tfs*46, K385fs*47 vs K385Nfs*47) and indel coordinates shift with left/right alignment. Select rows by Hugo_Symbol == 'CALR' with NO filter on Variant_Type or Variant_Classification, and as a backstop also look for rows on chromosome 19 with Start_Position inside the CALR locus (roughly 13.049-13.055 Mb on GRCh37). Then inspect Variant_Classification, Variant_Type, HGVSc/HGVSp and any study-specific DNA-change / protein-change columns for each row. Count CALR by gene and by frameshift/indel class, never by exact string match, and keep INS and DEL rows in every filter.",
+      "from": [
+        "sl-biodsa-test-a4c573e3017f"
+      ],
+      "reason": "A common filtering habit (SNVs or missense only, or matching a protein-change string) would silently remove exactly the variants the claim is about and make CALR look absent.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-bd3e1dd0a87e"
+      }
+    },
+    {
+      "text": "How to decide that a CALR (or JAK2) row is SOMATIC; this replaces any earlier, simpler guidance on the point. (1) The claim says somatic CALR mutations. A mutation file can hold germline or unvalidated calls, and CALR variants that are not exon 9 frameshifts (in-frame exon 9 indels, missense, silent) are usually germline polymorphisms or non-drivers; the established pathogenic MPN CALR mutations are +1 frameshift indels in exon 9. Report in-frame, missense and silent CALR rows separately and say whether the conclusion changes if they are included. (2) Optional columns such as Mutation_Status, Validation_Status, Entrez_Gene_Id, t_alt_count and n_alt_count can be entirely blank in a cBioPortal study file. Filtering on Mutation_Status == 'Somatic' (or on Entrez_Gene_Id, or t_alt_count > 0) then silently returns zero rows, which looks like 'no CALR mutations' or 'no relevant data'. cBioPortal's convention is that only rows explicitly marked Germline are germline; blank or NA is treated as somatic. Before using any of these columns as a filter, print value_counts(dropna=False) for Mutation_Status, Validation_Status, Validation_Method and Entrez_Gene_Id, print the row count before and after every filter step, and assert that the known JAK2 V617F rows survive the same filter chain you apply to CALR. Do not filter on blank columns; select genes by Hugo_Symbol and establish somatic status from the clinical SOMATIC_STATUS (matched vs unmatched), the Validation_Method text and the study-specific read columns (the library reports columns named 'Tumor reads', 'Tumor allele burden (%)', 'Germline reads', 'Germline allele percentage (%)' in data_mutations.txt; confirm in the header). (3) Do not require zero germline reads. In blood cancers the matched 'germline' sample (buccal swab, saliva, T cells, skin) is often contaminated with tumour cells, so a true somatic driver can show a few percent of reads in the normal; a hard 'Germline allele percentage == 0' filter wrongly discards real somatic mutations. For every CALR and JAK2 row compare the germline percentage with the tumour allele burden (and germline reads with tumour reads), and use the germline signal carried by the study's own JAK2 V617F calls to calibrate the contamination level. Treat a variant as somatic when the tumour burden is clearly higher than the germline percentage (germline near 0 or a small fraction of tumour), and as germline only when the germline percentage is around 50% or 100% or similar to the tumour. Report the conclusion with and without the rows that carry low germline signal.",
+      "from": [
+        "sl-biodsa-test-298c22a2c670",
+        "sl-biodsa-test-5599f13d1a9b",
+        "sl-biodsa-test-37a33e482a63"
+      ],
+      "reason": "Whether a CALR call counts as 'somatic' decides the count in the critical cell. Two specific mistakes, filtering on a status column that is blank and insisting on zero reads in the matched normal, would each remove real somatic calls without any error message and could flip the label.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-77db8e9da078"
+      }
+    },
+    {
+      "text": "Short-read exome pipelines have poor sensitivity for long indels: reads carrying the 52-bp CALR deletion are often soft-clipped or mismapped, so a missing CALR call is weaker evidence than a present one. Check whether the mutation file contains any indel longer than about 20 bp at all (compare lengths of Reference_Allele and Tumor_Seq_Allele2 on DEL/INS rows), whether CALR indels carry a Validation_Method or manual-curation flag, and how many JAK2-nonmutated patients have no JAK2, CALR or MPL row. The evidence is asymmetric: a CALR indel call that is present (especially if validated) can be taken at face value, whereas absence of CALR calls should be worded as 'not detected' with this caveat rather than as proof of absence. This is a caveat on how strongly an absence can be read; it does not by itself make the claim 'Not verifiable' when CALR indels can and do appear in the data.",
+      "from": [
+        "sl-biodsa-test-f4c97205b833"
+      ],
+      "reason": "It tells the team how much weight a presence versus an absence of CALR calls can bear, which matters for how firmly a universal-negative claim can be supported from exome data.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-77b93ff3edff"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 4,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Every row of data_mutations.txt is a somatic call. Mutation_Status, Matched_Norm_Sample_Barcode, n_ref_count and n_alt_count are blank on all 1496 rows, so 'somatic' rests on the clinical SOMATIC_STATUS = Matched flag and the study's 'Germline allele percentage (%)' column. Neither team showed the file-wide distribution of that column (team A calibrated only against JAK2 V617F rows).",
+      "A germline allele percentage of exactly 0 is treated as proof that the variant is absent from the normal. Both teams' strict sensitivity set (19 carriers) uses this, yet both report germline depth at CALR as low as 2-3 reads, where 0% carries little information.",
+      "A CALR row is a real detection regardless of how many variant reads support it. 'Tumor allele burden (%)' times 'Tumor reads' gives the supporting read count, and neither team reported it; the one CALR row I read to check the columns (PD10056) has 13 tumour reads at 7.7%.",
+      "'Nonmutated JAK2' means not detected by this study's exome rows or its curated 'JAK2/MPL mutation' label. Both teams state this and ran both definitions, so it is tested as far as the data allow."
+    ],
+    "unused_evidence": [
+      "Validation_Method (9 distinct values, including 'Manual curation', 'Sanger sequencing', 'Targetted resequencing' and the malformed 'Manual curationC' / 'Manual curationTC'). Team A used it for the 25 CALR rows as a whole; team B's checks do not mention it. Neither team reported it per carrier within the strict 19, which is where orthogonal confirmation would make the low read depth irrelevant.",
+      "'Tumor reads' and 'Germline reads' as absolute depths: both teams quote ranges but did not turn percentages into read counts per CALR call.",
+      "TMB_NONSYNONYMOUS in the clinical file is used only to explain the one sample without mutation rows; it has no bearing on the claim.",
+      "The clinical file has no diagnosis subtype (all rows are MPN / Myeloproliferative Neoplasms), so no in-scope question about which patients count as MPN arises. Hotspot is 0 on every row and carries no information."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weakest point: somatic status of individual CALR calls at shallow depth. Both answered it with the 0%-germline subset (19 carriers), but that subset inherits the same shallow depth, so the weak point is narrowed rather than closed. It would be closed by showing at least one JAK2-nonmutated carrier with adequate tumour and germline depth, several supporting tumour reads, no germline variant reads and orthogonal validation.",
+      "Team B's pitfalls_checked list is empty and its checks do not include the long-indel or validation checks; these matter less for a label that rests on calls being present rather than absent.",
+      "The PD9411 label/row disagreement and the PD8641 no-rows sample are resolved for this claim: neither carries CALR under either JAK2 definition."
+    ],
+    "second_readings": [
+      "'Nonmutated JAK2' could mean (a) no JAK2 mutation, with MPL-mutated patients included, or (b) the study's 'unmutated' label, i.e. neither JAK2 nor MPL. Both teams report results that cover both readings and the reading does not move the label.",
+      "'Somatic' could be read strictly as 'declared somatic by a field in the data'. Under that reading the blank Mutation_Status column would push toward Not verifiable. The matched-normal design and the per-row germline columns make this reading weak, but it is the only route by which the label could change, so the file-wide germline check is worth running.",
+      "'Not present in any patients' is a universal negative: one credible case is enough. Both teams read it this way and did not substitute a test of association."
+    ],
+    "verdict": "I trust the agreed label highly: it is a universal negative, both teams read the correct row of the patient-level table under two JAK2 definitions, and the label survives their strictest germline filter. The one gap is that the strict filter rests on the same shallow read depth as the calls it is meant to protect, so the questions ask for per-carrier read counts with validation method and for a file-wide check that the rows are somatic; I expect these to firm up the reasoning rather than move the label.",
+    "questions": [
+      {
+        "to": "bd05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your strict set treats 0% germline as proof of absence, but you report germline depth at CALR as low as 2-3 reads. For each CALR carrier among JAK2-nonmutated patients, convert the percentages to read counts ('Tumor allele burden (%)' x 'Tumor reads', 'Germline allele percentage (%)' x 'Germline reads') and list them beside Validation_Method. How many carriers have at least 3 variant reads in tumour, at least 10 germline reads with zero variant reads, and an orthogonal validation (Sanger or targeted resequencing) rather than manual curation alone? Does the number that survives change your method or your label?",
+        "from": [
+          "sl-biodsa-test-35e4b0585ca9"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-c7e182355a6e"
+      },
+      {
+        "to": "bd05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You judged the germline signal of CALR rows against JAK2 V617F rows only, and Mutation_Status is blank on every row. Tabulate 'Germline allele percentage (%)' across all 1496 rows of the mutation file (for example the share of rows at 0, below 5, 5 to 30, and above 30, and separately for rows with at least 20 germline reads). Does the file behave as a somatic-only call set, or does it hold rows at heterozygous-germline levels? Does the result change how you decide that a CALR row is somatic?",
+        "from": [
+          "sl-biodsa-test-29e6a969ab83"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-f89afe4fc4ce"
+      },
+      {
+        "to": "bd05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your checks do not use the Validation_Method column, and you chose to rely on recurrence of calls because depth is low (germline reads as few as 2). Tabulate Validation_Method for the 25 CALR rows and for your 19 with 0% germline, noting the malformed values ('Manual curationC', 'Manual curationTC'), and for each carrier give the number of variant reads in tumour and the number of germline reads behind the 0%. How many JAK2-nonmutated carriers have orthogonal validation together with at least 10 germline reads and no germline variant reads? Does that count change your method or your label?",
+        "from": [
+          "sl-biodsa-test-d48f3b7f296d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-bcc4e5142c21"
+      },
+      {
+        "to": "bd05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You infer that the rows are somatic from the matched design, with Mutation_Status empty on all rows. Tabulate 'Germline allele percentage (%)' across all 1496 rows (share at 0, below 5, 5 to 30, above 30, and again restricted to rows with at least 20 germline reads). Is the file a somatic-only call set, or does it contain rows at heterozygous-germline levels that would make a non-zero germline percentage in a CALR row mean something different? Does the result change how you classify CALR rows as somatic?",
+        "from": [
+          "sl-biodsa-test-c0edbeda33a2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-d525eddcceae"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In the cBioPortal mutation (MAF) file format, how is a row treated when the Mutation_Status field is left blank: is it taken as somatic by default, and which values of that field mark a row as germline?",
+          "why": "Both teams treat every mutation row as somatic although this field is empty throughout; the format's default settles whether a blank value is a valid basis for calling a row somatic.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In matched tumour-normal sequencing of chronic myeloid blood cancers, how commonly does the constitutional (normal) sample contain tumour-derived variant reads, and what thresholds or rules do somatic callers and published studies use to still call a variant somatic when the normal shows variant reads?",
+          "why": "Both teams explain variant reads in the matched normal as tumour-in-normal contamination without a source; an accepted rule would decide whether calls with a non-zero normal fraction count as somatic or must be set aside.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In the cBioPortal mutation (MAF) file format, how is a row treated when the Mutation_Status field is left blank: is it taken as somatic by default, and which values of that field mark a row as germline?",
+          "answer": "Mutation_Status is an optional column. The format documentation says only: \"Somatic\" or \"Germline\" are supported by the UI in the Mutations tab; \"None\", \"LOH\" and \"Wildtype\" will not be loaded; other values are displayed as text. It does not state in words that a blank is somatic, so the format spec alone does not settle the default. What the code and maintainers show: the only value that marks a row as germline is \"Germline\" (the importer, ImportExtendedMutationData.java, tests equalsIgnoreCase(\"Germline\") and does not reject a row for a blank status), and blank/NA is handled as non-germline. Pull request 8692 fixed study-view filters that broke because a public study (msk_impact_2017) has NA in MUTATION_STATUS, and the maintainer stated the convention as \"Germline == Germline and have everything else be Somatic\". So in cBioPortal a blank Mutation_Status is handled as somatic by default, and only an explicit \"Germline\" marks germline. Caveat for the teams: a blank is the absence of a germline flag, not positive evidence that the submitter verified somatic status; it is a valid basis for not excluding rows, but somatic status should be corroborated from other fields (clinical SOMATIC_STATUS = Matched, the study's own tumour and germline read columns). I could not open the frontend source that implements the germline test, so the case-insensitive match is confirmed only in the importer.",
+          "sources": [
+            "https://docs.cbioportal.org/file-formats/",
+            "https://github.com/cBioPortal/cbioportal/pull/8692",
+            "https://github.com/cBioPortal/cbioportal-core/blob/main/src/main/java/org/mskcc/cbio/portal/scripts/ImportExtendedMutationData.java"
+          ],
+          "confidence": "medium (high that only 'Germline' marks germline; medium that blank defaults to somatic, since this rests on importer code and a maintainer comment rather than a sentence in the format spec)",
+          "deliveries": {
+            "bd05-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-b87b3f776f55"
+            },
+            "bd05-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-fbe0a1041db7"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In the cBioPortal mutation (MAF) file format, how is a row treated when the Mutation_Status field is left blank: is it taken as somatic by default, and which values of that field mark a row as germline? ANSWER: Mutation_Status is an optional column. The format documentation says only: \"Somatic\" or \"Germline\" are supported by the UI in the Mutations tab; \"None\", \"LOH\" and \"Wildtype\" will not be loaded; other values are displayed as text. It does not state in words that a blank is somatic, so the format spec alone does not settle the default. What the code and maintainers show: the only value that marks a row as germline is \"Germline\" (the importer, ImportExtendedMutationData.java, tests equalsIgnoreCase(\"Germline\") and does not reject a row for a blank status), and blank/NA is handled as non-germline. Pull request 8692 fixed study-view filters that broke because a public study (msk_impact_2017) has NA in MUTATION_STATUS, and the maintainer stated the convention as \"Germline == Germline and have everything else be Somatic\". So in cBioPortal a blank Mutation_Status is handled as somatic by default, and only an explicit \"Germline\" marks germline. Caveat for the teams: a blank is the absence of a germline flag, not positive evidence that the submitter verified somatic status; it is a valid basis for not excluding rows, but somatic status should be corroborated from other fields (clinical SOMATIC_STATUS = Matched, the study's own tumour and germline read columns). I could not open the frontend source that implements the germline test, so the case-insensitive match is confirmed only in the importer. HOW SURE: medium (high that only 'Germline' marks germline; medium that blank defaults to somatic, since this rests on importer code and a maintainer comment rather than a sentence in the format spec). SOURCES: https://docs.cbioportal.org/file-formats/, https://github.com/cBioPortal/cbioportal/pull/8692, https://github.com/cBioPortal/cbioportal-core/blob/main/src/main/java/org/mskcc/cbio/portal/scripts/ImportExtendedMutationData.java."
+        },
+        {
+          "question": "In matched tumour-normal sequencing of chronic myeloid blood cancers, how commonly does the constitutional (normal) sample contain tumour-derived variant reads, and what thresholds or rules do somatic callers and published studies use to still call a variant somatic when the normal shows variant reads?",
+          "answer": "It is common and well documented (tumour-in-normal, TiN, contamination). In the Genomics England review of 771 tumour-normal whole-genome pairs (Mitchell et al., Nat Commun 2024), 22 of 24 (91%) sorted CD3+ T-cell normals from myeloproliferative neoplasm patients and 43 of 114 (38%) saliva normals from AML patients were contaminated (tumour read fraction in the normal above 1%); no cultured-fibroblast normal was. Of 108 hotspot driver mutations with tumour VAF above 5% in the AML and MPN cases, 51 had VAF above 1% in the normal and 27 above 5%; JAK2 V617F reached above 10% VAF in the normal in 4 MPN cases. The paper also cites earlier reports of JAK2 V617F in saliva DNA of MPN patients. I did not read a separate contamination rate for CML. There is no single universal threshold; the rules in use are: (a) Genomics England: contamination is flagged at above 1% tumour read fraction in the normal, and such cases are also run tumour-only, removing only variants with population allele frequency above 0.01 or present in a panel of normals. (b) deTiN (Taylor-Weiner et al., Nat Methods 2018): MuTect, Strelka and VarScan lose sensitivity once TiN exceeds 0.02 because they reject variants with reads in the normal, mostly high-allele-fraction clonal drivers; deTiN rescues variants rejected solely for normal evidence when the normal allele count fits 'tumour DNA mixed into the normal at the estimated TiN' better than a germline heterozygous variant or an artifact (posterior above 0.5), treats ExAC frequency of 0.01 or more as germline, and is unreliable when TiN exceeds 0.75. (c) Illumina DRAGEN v3.8: the alt_allele_in_normal filter fires only when the normal alt allele frequency is above 0.2 plus a contamination tolerance (0 in solid-tumour mode, default 0.15 in liquid-tumour mode), and in GATK-acceleration mode no normal artifact is called when normal AF is below 0.1 times tumour AF. Practical consequence: a variant with a non-zero normal fraction still counts as somatic when the normal VAF is well below the tumour VAF and far from the roughly 50% or 100% expected of a germline variant, is in line with the contamination shown by the same patient's other drivers, and is not a common population polymorphism. Requiring zero variant reads in the normal is not the accepted standard in blood cancers.",
+          "sources": [
+            "https://www.nature.com/articles/s41467-023-44158-2",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6528031/",
+            "https://support-docs.illumina.com/SW/DRAGEN_v38/Content/SW/DRAGEN/GPipelinePostSomMat_fDG.htm"
+          ],
+          "confidence": "medium (high that contamination is common in MPN normals; medium on the rule, because several conventions exist and the web does not give one accepted numeric cutoff)",
+          "deliveries": {
+            "bd05-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-fa75941685a5"
+            },
+            "bd05-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-772c92e9a880"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In matched tumour-normal sequencing of chronic myeloid blood cancers, how commonly does the constitutional (normal) sample contain tumour-derived variant reads, and what thresholds or rules do somatic callers and published studies use to still call a variant somatic when the normal shows variant reads? ANSWER: It is common and well documented (tumour-in-normal, TiN, contamination). In the Genomics England review of 771 tumour-normal whole-genome pairs (Mitchell et al., Nat Commun 2024), 22 of 24 (91%) sorted CD3+ T-cell normals from myeloproliferative neoplasm patients and 43 of 114 (38%) saliva normals from AML patients were contaminated (tumour read fraction in the normal above 1%); no cultured-fibroblast normal was. Of 108 hotspot driver mutations with tumour VAF above 5% in the AML and MPN cases, 51 had VAF above 1% in the normal and 27 above 5%; JAK2 V617F reached above 10% VAF in the normal in 4 MPN cases. The paper also cites earlier reports of JAK2 V617F in saliva DNA of MPN patients. I did not read a separate contamination rate for CML. There is no single universal threshold; the rules in use are: (a) Genomics England: contamination is flagged at above 1% tumour read fraction in the normal, and such cases are also run tumour-only, removing only variants with population allele frequency above 0.01 or present in a panel of normals. (b) deTiN (Taylor-Weiner et al., Nat Methods 2018): MuTect, Strelka and VarScan lose sensitivity once TiN exceeds 0.02 because they reject variants with reads in the normal, mostly high-allele-fraction clonal drivers; deTiN rescues variants rejected solely for normal evidence when the normal allele count fits 'tumour DNA mixed into the normal at the estimated TiN' better than a germline heterozygous variant or an artifact (posterior above 0.5), treats ExAC frequency of 0.01 or more as germline, and is unreliable when TiN exceeds 0.75. (c) Illumina DRAGEN v3.8: the alt_allele_in_normal filter fires only when the normal alt allele frequency is above 0.2 plus a contamination tolerance (0 in solid-tumour mode, default 0.15 in liquid-tumour mode), and in GATK-acceleration mode no normal artifact is called when normal AF is below 0.1 times tumour AF. Practical consequence: a variant with a non-zero normal fraction still counts as somatic when the normal VAF is well below the tumour VAF and far from the roughly 50% or 100% expected of a germline variant, is in line with the contamination shown by the same patient's other drivers, and is not a common population polymorphism. Requiring zero variant reads in the normal is not the accepted standard in blood cancers. HOW SURE: medium (high that contamination is common in MPN normals; medium on the rule, because several conventions exist and the web does not give one accepted numeric cutoff). SOURCES: https://www.nature.com/articles/s41467-023-44158-2, https://pmc.ncbi.nlm.nih.gov/articles/PMC6528031/, https://support-docs.illumina.com/SW/DRAGEN_v38/Content/SW/DRAGEN/GPipelinePostSomMat_fDG.htm."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd05-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd05-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd05-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd05-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd05-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 85.91834850003943,
+      "cost_usd": 0.14868520000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 110.49925450002775,
+      "cost_usd": 0.18718289999999999,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 69.07664475007914,
+      "cost_usd": 0.1123426,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 112.95371329202317,
+      "cost_usd": 0.228706,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 83.66842183296103,
+      "cost_usd": 0.20005630000000002,
+      "error": null
+    },
+    {
+      "agent": "bd05-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 187.43113120796625,
+      "cost_usd": 0.4410295000000001,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 120.04550666699652,
+      "cost_usd": 0.256264,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 147.7488381670555,
+      "cost_usd": 0.34789719999999996,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,498 @@
+{
+  "study": "bd36",
+  "status": "replicated",
+  "final": {
+    "agent": "bd36-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd36/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd36-library": "fable",
+    "bd36-team-a": "fable",
+    "bd36-team-b": "fable",
+    "bd36-team-c": "fable",
+    "bd36-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd36-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd36/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd36-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd36/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd36-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd36/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd36-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd36/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd36-team-a",
+        "bd36-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd36-team-a",
+        "bd36-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Detecting chained (interdependent) rearrangements requires junction-level structural-variant calls: both breakpoint coordinates and the orientation of every rearrangement, plus matched copy number. Chain-detection methods (ChainFinder, ClusterSV, LINX) cannot run without them. The library's read of data_sv.txt reports 28 rows, all Event_Info = Fusion (ERG / ETV1 / BRAF), with Site1_Hugo_Symbol equal to Site2_Hugo_Symbol and no chromosome, position or partner-locus columns. CHECK this yourself first: read the data_sv.txt header and rows, confirm whether any Site1/Site2 chromosome or position columns or interchromosomal partner information exist, and check whether any other table holds rearrangement junctions. Whatever you find, do not describe an analysis as having modelled or detected chains unless it actually used junction-level data. State explicitly which half of the hypothesis (interdependent genesis of rearrangements vs. dysregulation of cancer genes) each table can or cannot address, and base the label on what the tables hold, not on what you know of the literature.",
+      "from": [
+        "sl-biodsa-test-d8ee6d611a5f"
+      ],
+      "reason": "This decides what kind of analysis is possible at all. A team that does not inspect the SV table's columns first may either try to infer chains from data that cannot carry them or overlook what the table does contain.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-48c9665297ae"
+      }
+    },
+    {
+      "text": "Copy-number tables (data_cna_hg19.seg, data_cna.txt, data_log2_cna.txt) cannot see balanced or reciprocal rearrangements: when both sides of a break are rejoined there is no substantial copy-number change, so translocations and largely copy-neutral closed chains are invisible to read-depth data, and a copy-number breakpoint gives neither its partner locus nor its orientation. CHECK: before using the seg file as a proxy for rearrangements, list what it can show (unbalanced losses and gains and their edges) and verify whether partner-locus information exists anywhere. Treat copy-number breakpoints as evidence about deletions and gains only: absence of copy-number change is not evidence against chained translocations, presence of deletions is not evidence for them, and translocations must not be counted from copy-number data.",
+      "from": [
+        "sl-biodsa-test-0d864e924f0f"
+      ],
+      "reason": "The seg file is the largest rearrangement-like table and the obvious proxy; the team needs to know the limits of what it can prove in either direction so that neither a positive nor a negative copy-number pattern is over-read.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-b7c11a0f7dea"
+      }
+    },
+    {
+      "text": "A fusion row or a gene deletion shows that a cancer gene is altered, not how the alteration arose: an oncogenic fusion can come from a simple deletion or a reciprocal event as well as from a chain. The tables contain no expression data, so 'dysregulation' is not measured directly (data_sv.txt has only an RNA_Support flag). The only columns describing what a fusion looks like are, per the library's header read, data_sv.txt Event_Info (only the value 'Fusion') and the clinical columns ERG_FISH_RESULT (levels 'Translocation' and 'Translocation with deletion') and ETS_FUSION_SEQ (fusion partner and reading frame); none of them says whether an event belongs to a chain of interdependent rearrangements. CHECK: list which tables could measure dysregulation and whether any column records the mechanism or event class of each fusion or deletion; cross-tabulate ERG_FISH_RESULT against ETS_FUSION_SEQ and data_sv.txt. For ERG fusions the seg file can at most show whether there is an interstitial loss between TMPRSS2 and ERG on 21q22. Do not read the FISH label 'Translocation' as a chained event, and do not treat a frequency of cancer-gene alterations as a frequency of chain-caused dysregulation.",
+      "from": [
+        "sl-biodsa-test-a394816acca2",
+        "sl-biodsa-test-aca3e7893262"
+      ],
+      "reason": "The second half of the hypothesis is about how often chained events account for cancer-gene dysregulation. Counting fusions or deletions of known prostate cancer genes is the tempting shortcut, and the team needs to separate 'gene is altered' from 'gene was altered by this mechanism' and know which columns exist to tell them apart.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-ab98a320b846"
+      }
+    },
+    {
+      "text": "The tables cover different sample sets, so denominators and 'negatives' are easy to get wrong. Per the library's corrected count (to be verified by you): the clinical tables hold 82 samples / 82 patients; data_gene_panel_matrix.txt, data_cna_hg19.seg and data_mutations.txt each hold 57 sample IDs; data_cna.txt and data_log2_cna.txt hold only 56 sample columns (one WGS sample has segments and mutations but no gene-level CNA column); data_sv.txt has 28 fusion rows (26 ERG, 1 ETV1, 1 BRAF), matching the number of clinical rows with a non-NA ETS_FUSION_SEQ. 29 clinical rows are NA in both ERG_FISH_RESULT and ETS_FUSION_SEQ, and 25 are blank in both (the same number as 82 minus 57). A sample missing from a curated SV table may be unassessed or may simply have no curated fusion; it is not proven rearrangement-free. CHECK: intersect sample IDs across all tables, name the one sample missing from data_cna.txt, and confirm whether the 25 blank rows are exactly the samples without WGS tables. Use 57 as the denominator for fusion- and segment-based statements and 56 for gene-level CNA statements, never all clinical rows; treat blank as not assessed, and treat NA as assessed-negative only if you state that reading as an assumption.",
+      "from": [
+        "sl-biodsa-test-aca3e7893262",
+        "sl-biodsa-test-b46bdafdb6bd"
+      ],
+      "reason": "Any frequency the team reports (the hypothesis says 'frequently') depends on the denominator, and the tables disagree on which samples were profiled. An earlier library fact gave slightly wrong counts (about 81 clinical rows, 56 everywhere); this item carries the corrected numbers so the team does not inherit the error.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-81097d5b2bec"
+      }
+    },
+    {
+      "text": "'Interdependent' or simultaneous origin is an inference against a null of independent rearrangements accumulated one after another, and pattern-based shortcuts have high false-positive rates: clustered breakpoints or few copy-number states are suggestive but not conclusive (simulations of purely sequential genomes produce such patterns at a non-trivial rate). Breakpoints that sit close together are also not necessarily mechanistically linked: fragile sites, LINE source regions and recurrently selected driver deletions concentrate independent breaks at the same loci, so a uniform-genome null overstates clustering. CHECK: any statistic offered as evidence of interdependence (clustered breakpoints, deletions on several chromosomes in one sample) must be compared with a simulated or permuted null that keeps each sample's own number of breakpoints and its chromosome/segment lengths, and ideally each locus's breakpoint probability, with multiple-testing correction across samples. Test whether apparently clustered breakpoints recur at the same genomic positions across many samples (fragile site, selection, germline CNV or artifact) or are private to one sample; exclude or model recurrent loci separately. If no adequate null can be built from the available tables, report the pattern as descriptive only and do not call it evidence that the rearrangements arose together.",
+      "from": [
+        "sl-biodsa-test-cd2494db26ed",
+        "sl-biodsa-test-9e6af50ef4e1"
+      ],
+      "reason": "The first half of the hypothesis is a claim about interdependence. If the team builds any within-sample breakpoint statistic, the choice of null model determines whether the result means anything; without this guidance a clustering pattern could be mistaken for evidence of joint origin.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-aad0c8bce85f"
+      }
+    },
+    {
+      "text": "Testing whether deletions or fusions co-occur across tumours with Fisher's exact test or correlation is inflated by differences in per-tumour alteration burden: genomically unstable tumours carry more of everything, so unrelated events co-occur by chance. Separately, co-occurrence across tumours says nothing about events arising in one step within a tumour. CHECK: compute each sample's total copy-number-altered fraction or breakpoint count and see whether a co-occurrence signal survives conditioning on it (a null with sample-specific alteration rates, or stratification by burden). With only about 56-57 WGS samples, power is low. Report burden-adjusted results only, and do not equate cross-tumour co-occurrence with interdependent genesis.",
+      "from": [
+        "sl-biodsa-test-1f1349e76288"
+      ],
+      "reason": "Cross-sample co-occurrence testing is the most likely substitute analysis when within-sample junction data is thin. The team needs to know both its statistical bias and that it answers a different question from the one the hypothesis asks.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-ada8b38e424f"
+      }
+    },
+    {
+      "text": "Different classes of complex rearrangement are easily conflated. Chromothripsis gives tens to hundreds of breakpoints clustered locally on one or two chromosomes, with copy number oscillating between two (occasionally three) states. Breakage-fusion-bridge gives clustered inverted gains. Chromoplexy-type chains are unclustered, number in the tens, span several chromosomes and cause little copy-number change. Different detection criteria also disagree on a subset of genomes. CHECK: for any sample with many copy-number segments, tabulate breakpoints per chromosome and the number of distinct copy-number states per chromosome, to see whether the complexity is a one-chromosome oscillation rather than a multi-chromosome pattern. Do not count chromothripsis-like samples, or samples that simply have a high copy-number-alteration burden, as support for the specific phenomenon named in the hypothesis.",
+      "from": [
+        "sl-biodsa-test-5198785caf50"
+      ],
+      "reason": "The hypothesis names one specific phenomenon. A team that finds highly rearranged samples in the seg file needs criteria to tell which class of event they are looking at before attributing it.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-e350b4076cd5"
+      }
+    },
+    {
+      "text": "Counting breakpoints or focal deletions straight from a WGS read-depth seg file over-counts: GC and replication-timing 'wave' bias, low-mappability regions, germline CNVs and segments supported by few markers create spurious small segments, and segmentation sensitivity varies with tumour purity and coverage, so segments-per-sample is not comparable across samples. CHECK: look at the distribution of num.mark and segment length; flag segments with few markers or tiny |seg.mean|; flag segments whose boundaries recur at identical coordinates in many samples (germline CNV or artifact). Filter by minimum markers/length and a purity-scaled |seg.mean| threshold, merge adjacent segments with near-equal means before counting breakpoints, and show that any conclusion is stable to those filters.",
+      "from": [
+        "sl-biodsa-test-766e8411da84"
+      ],
+      "reason": "Every breakpoint- or deletion-based statistic the team might compute starts from the seg file; unfiltered segment counts would feed noise into the null-model and classification checks in the other items.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-d230ad25eb94"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": true,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams fixed, before looking at the data, a label rule under which 'True' was reachable only with junction-level structural-variant calls (both breakends plus orientation). Because both had already been told the SV table has no coordinates, no result from these tables could have produced 'True' or 'False'; the agreement is therefore agreement on a rule, not on evidence. Neither team tested whether the task's own definition of 'Not verifiable' ('the data hold no relevant variables or tables') is as strict as their rule.",
+      "Both teams treated the short, few-marker, strongly negative segments in data_cna_hg19.seg (about a quarter to a third of all segments; many have 2 markers and span tens to thousands of base pairs) as segmentation noise and filtered them out (min-marker thresholds of 10-100). Neither tested whether these are sample-private somatic deletions with real breakpoints, germline CNVs, or artefacts, although team A noted in passing that they are 'small, private, strongly negative'.",
+      "Both teams stated that the data contain 'no partner locus' for any rearrangement. The clinical column ETS_FUSION_SEQ does name the partner gene and the configuration of each of the 28 fusions (in-frame, out-of-frame, transcript, antisense, intergenic, reversed gene order, and partners on a different chromosome or far away on the same chromosome). Both cross-tabulated it but neither used it as locus-pair information.",
+      "Both teams read 'dysregulation' as requiring expression data and 'chromoplexy accounts for' as requiring a per-event mechanism label. Neither considered that genomic disruption (fusion, deletion) of a cancer gene could be the operational meaning of dysregulation in a DNA-only study.",
+      "Both teams assumed per-sample purity is the only detection confounder of segment and deletion counts; neither checked batch (patient-table COHORT: Uropath 47 / WCMC 10) or sample type (2 metastases)."
+    ],
+    "unused_evidence": [
+      "ETS_FUSION_SEQ (clinical sample table): partner gene and configuration for each fusion, e.g. TMPRSS2-ERG in-frame / out-of-frame / transcript, SLC45A3-ERG, NRF1-BRAF, 'ERG-TMPRSS2' reversed order, an antisense fusion and an intergenic ETV1 event. It is the only place where a second locus of a rearrangement is named; used only for counting.",
+      "ERG_FISH_RESULT (clinical sample table): two classes, 'Translocation' (11) and 'Translocation with deletion' (12). It is a direct per-sample record of whether a translocation came with a deletion. Team A showed it agrees with the seg file (11/12 vs 0/11 interstitial 21q22 loss) but neither team asked what the 11 fusions without interstitial loss imply about where the intervening sequence went, or looked at the rest of the genome in the two classes.",
+      "The unfiltered small segments of data_cna_hg19.seg (num.mark 2-9, base-pair-scale coordinates). Both teams discarded them.",
+      "data_gene_panel_matrix.txt: lists structural_variants = WGS for all 57 samples, i.e. SVs were assayed genome-wide in every sample and data_sv.txt is a curated positive list. Teams used it for denominators only.",
+      "data_clinical_patient.txt: COHORT (Uropath / WCMC), stage, PSA, percent Gleason 4/5, age; and SAMPLE_TYPE (55 primary, 2 metastasis). Not used by either team, including as a batch check on segment counts.",
+      "data_log2_cna.txt (continuous gene-level copy number) and PURITY_ABSOLUTE (second purity estimate) were not used; data_mutations.txt (2,755 coding WGS calls) was used only to confirm it holds no SVs."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weakest point: the choice between 'Not verifiable' and 'True' rests on a judgement about what counts as a 'relevant variable', and a more lenient reading could call the hypothesis supported. Neither resolved it; both only reported it (confidence 0.62 and 0.60).",
+      "Team B found focal deletions co-occurring across chromosomes far beyond a shuffle null (p<0.0002) and set it aside because deletion counts correlate with purity and segment count, but never ran a purity-conditioned version of the test. The confounding is asserted, not tested.",
+      "Team A's dispersion null used chromosome-level probabilities and filter-dependent calls, and it found deletions on FEWER chromosomes than expected in 18/54 samples. Team B's test found MORE cross-chromosome co-occurrence than expected. The two proxies are different statistics (within-sample dispersion given count vs. across-sample overdispersion of count) and have not been reconciled; fragmentation of single large losses into many segments could produce both.",
+      "Team B explicitly did not attempt to use copy-number breakpoint adjacency at all; team A reported a burden-adjusted null result on cancer-gene deletion co-occurrence (17 vs 19.8 expected, p=0.92) but declared it uninformative in either direction without saying why a null on a relevant variable maps to 'Not verifiable' rather than to evidence."
+    ],
+    "second_readings": [
+      "Label threshold: the task says 'Not verifiable' means 'the data hold no relevant variables or tables', with an example where the variable class is absent altogether. Here the study has an SV table, a FISH column recording translocation with or without deletion, fusion partner annotations, and genome-wide WGS segment-level deletions. A reader could hold that relevant variables exist, so the label must be decided between 'True' and 'False' on what those variables show, rather than defaulting to 'Not verifiable' because the ideal variable is missing.",
+      "The first sentence ('By modeling ... can be identified; this can be called chromoplexy') can be read as a methodological framing/definition rather than the claim to be tested; the testable content would then be that translocations and deletions co-arise in a coordinated way and that such events frequently hit prostate cancer genes.",
+      "'Dysregulation of prostate cancer genes' can mean genomic disruption (fusion of ERG/ETV1/BRAF, deletion of PTEN, NKX3-1, TP53, CDKN1B, CHD1) rather than measured expression change.",
+      "'Frequently' can be per tumour (share of tumours with the pattern), per gene (share of cancer-gene lesions arising within the pattern), or per event; the teams did not fix which."
+    ],
+    "verdict": "I trust the agreed answer only moderately: both teams reached it through the same pre-set rule (no junction-level SV calls means nothing can count), both named that very judgement as their weakest point with about 0.6 confidence, and neither resolved it against the task's narrower definition of 'Not verifiable'. The answer may well survive, but it should not go out until the teams have shown, clause by clause, that the FISH translocation/deletion classes, the fusion-partner annotations and the unfiltered segment-level deletions really cannot bear on the claim, and until the purity-conditioned and fragmentation-corrected versions of their own proxy tests have been run and reconciled.",
+    "questions": [
+      {
+        "to": "bd36-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your pre-set rule allowed 'True' only if junction-level chains could be modelled, so no result from these tables could ever have given 'True' or 'False'. The task defines 'Not verifiable' as 'the data hold no relevant variables or tables'. Check: build a table with one row per clause of the hypothesis (a translocation arising together with a deletion at a locus; interdependence of deletions/rearrangements across loci within one tumour; prostate cancer genes frequently hit by such events) and, for each row, list every column that bears on it (ERG_FISH_RESULT's two classes, ETS_FUSION_SEQ partner and configuration, data_sv.txt, seg boundaries, data_cna.txt gene deletions) with the result of the test you actually ran on it, marked supportive / contradicting / uninformative. Read against the task's three label definitions exactly as written, does this table change your label rule, and if a clause has a relevant variable with a clear result, why does that result not count?",
+        "from": [
+          "sl-biodsa-test-39d6ca0d600d",
+          "sl-biodsa-test-eb4280008296"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-77c94e16ccb6"
+      },
+      {
+        "to": "bd36-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your notes say the data hold no partner loci, but ETS_FUSION_SEQ names the partner gene and configuration of each of the 28 fusions (including a partner on another chromosome, a reversed gene order, an antisense fusion and an intergenic event), and you found that 0 of 11 FISH 'Translocation' samples have interstitial 21q22 loss. Check: for each of the 28 fusion samples, using the UNFILTERED seg file, list the segment boundaries and copy-number state within a fixed window around both named partner genes, and count focal-deletion breakpoints on other chromosomes in the same sample; compare the 'Translocation' class, the 'Translocation with deletion' class and fusion-negative samples of similar purity. Does this give you locus-pair information you had treated as absent, and does it change what you count as a relevant variable for the translocation-plus-deletion clause?",
+        "from": [
+          "sl-biodsa-test-7126ae6d2e2a",
+          "sl-biodsa-test-0047109d1610"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-c5f879aa7c47"
+      },
+      {
+        "to": "bd36-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You filtered out the few-marker segments (31% of 19,493; 87% strongly negative; many have 2 markers and span tens to thousands of bp) as unreliable, while also noting they are small and private. Check: for these segments, tabulate (a) how many recur at identical coordinates in two or more samples versus being private, (b) whether their per-sample count depends on patient COHORT (Uropath vs WCMC), sample type and purity, and (c) whether, within a sample, they fall inside fixed windows around the fusion partner genes and the deleted cancer genes more often than under a length-matched random placement. If they are private and locus-enriched rather than recurrent or batch-driven, does that change your decision to treat them as noise, and does your dispersion result hold when they are kept?",
+        "from": [
+          "sl-biodsa-test-eb4280008296"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-8117714b187a"
+      },
+      {
+        "to": "bd36-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your dispersion test found focal deletions on fewer chromosomes than the null in 18/54 samples, using chromosome-level probabilities. Fragmentation of one large loss into many segments would give that result by itself. Check: (i) collapse all focal deletions that lie within one contiguous window (e.g. one arm or a fixed number of Mb) into a single event and re-run the within-sample test with a locus-level (binned) null; (ii) on the collapsed events, test across samples whether the number of distinct chromosomes carrying an event is overdispersed relative to a null that conditions on purity and total event count. Do (i) and (ii) agree with each other and with your original reading 'locally clustered, not multi-chromosome', and does the outcome change whether you regard the seg file as able to test interdependence?",
+        "from": [
+          "sl-biodsa-test-eb4280008296"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-25892a921600"
+      },
+      {
+        "to": "bd36-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your decision rule allowed 'True' only if linked breakpoints or a 'strong proxy' showed interdependence of translocations AND deletions, and you had already seen that linked breakpoints are absent. The task defines 'Not verifiable' as 'the data hold no relevant variables or tables'. Check: build a table with one row per clause of the hypothesis (a translocation arising together with a deletion at a locus; interdependence of deletions/rearrangements across loci within one tumour; prostate cancer genes frequently hit by such events) and, for each row, list every column that bears on it (ERG_FISH_RESULT's two classes, ETS_FUSION_SEQ partner and configuration, data_sv.txt, seg boundaries, data_cna.txt gene deletions) with the result of the test you actually ran, marked supportive / contradicting / uninformative. Read against the task's three label definitions exactly as written, does this table change your label rule, and what result on these columns would you have accepted as moving the label either way?",
+        "from": [
+          "sl-biodsa-test-905a92e0e3da"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-f381ad0426d0"
+      },
+      {
+        "to": "bd36-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You found cross-chromosome co-occurrence of focal deletions far beyond the shuffle null (p<0.0002) and discounted it because counts correlate with purity and segment count, but you did not run a test that conditions on those. Check: repeat the permutation (a) within purity strata or restricted to samples above the median WGS purity, (b) permuting only among samples matched on total segment count, and (c) separately by patient COHORT (Uropath vs WCMC). Does the excess persist, shrink or vanish, and does either outcome change how you use this result in your label?",
+        "from": [
+          "sl-biodsa-test-3b6da477be6d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-9c83960cb6e7"
+      },
+      {
+        "to": "bd36-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your co-occurrence statistic is an across-sample one (variance of the number of chromosomes with deletions) and can be produced by a few high-burden samples or by single large losses fragmented into many segments. Check: collapse focal deletions within one contiguous window (e.g. one arm or a fixed number of Mb) into one event, then test within each sample, conditional on its event count, whether the events lie on more or fewer distinct chromosomes than a count-preserving, locus-probability-preserving null (multiple-testing corrected), and tabulate breakpoints and distinct copy-number states per chromosome for the highest-burden samples. Does the within-sample result point the same way as your across-sample result, and does it change your statement that deletions 'co-occur across chromosomes'?",
+        "from": [
+          "sl-biodsa-test-3b6da477be6d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-5ce4b42afbe0"
+      },
+      {
+        "to": "bd36-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your notes say no partner locus exists and you called the 21q22 fusion-deletion association a single-locus mechanism, but ETS_FUSION_SEQ names the partner gene and configuration of each of the 28 fusions (including a partner on another chromosome, a reversed gene order, an antisense fusion and an intergenic event), and ERG_FISH_RESULT separates 'Translocation' (11) from 'Translocation with deletion' (12). You also dropped all segments with num.mark<50, which removes the many 2-marker, base-pair-scale, strongly negative segments. Check: using the UNFILTERED seg file, for each fusion sample list segment boundaries and copy-number state within a fixed window around both named partner genes, by FISH class; and test whether the dropped small segments are private to one sample (versus recurring at identical coordinates) and whether they fall near the fusion partner genes and deleted cancer genes more often than a length-matched random placement. Does this change your view that the fusion evidence is single-locus only, or your choice of the num.mark filter?",
+        "from": [
+          "sl-biodsa-test-f920131da5e1"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-78fe2d42a823"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "Is there any published, validated way to infer chained (interdependent) rearrangement events of the chromoplexy type from copy-number segment profiles alone, without junction-level structural-variant calls? In particular, what is a 'deletion bridge' in the original chain-detection model, how is it defined from copy-number data, and how specific is a pattern of small deletions at multiple loci on different chromosomes for chained rearrangement versus independent events?",
+          "why": "Both teams assumed copy-number segments cannot test interdependence at all. If chained events leave a defined copy-number footprint, the segment file is a relevant variable and the label rule both teams used is too strict; if not, their rule stands.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In segment (.seg) files derived from tumour/normal whole-genome sequencing rather than arrays, what does the num.mark field count, and what do segments with only 2 markers spanning tens to a few thousand base pairs with strongly negative log ratios usually represent? Do common WGS copy-number pipelines (for example read-depth segmenters used at large sequencing centres around 2011-2013) seed segment boundaries from rearrangement breakpoints, so that such small segments mark somatic deletion junctions, or are they typically germline CNVs or noise?",
+          "why": "Both teams filtered these small segments out as noise. Whether they are breakpoint-defined somatic deletions decides whether the filtered analyses discarded the most relevant evidence in the data.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In break-apart FISH assays for ERG rearrangement in prostate tumours, what do the two result classes 'translocation' (split signal) and 'translocation with deletion' (loss of one signal) mean mechanistically? When a fusion between two genes about 3 Mb apart on the same chromosome arm occurs without loss of the intervening sequence, what does that imply about where the intervening segment went and whether more than two breakpoints or other chromosomes must be involved?",
+          "why": "This column was used by both teams only as a consistency check. If the no-deletion class implies a multi-breakpoint, copy-neutral rearrangement, the column is a direct per-sample variable on how translocations and deletions arise together, which bears on whether the hypothesis is testable here.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "Is there any published, validated way to infer chained (interdependent) rearrangement events of the chromoplexy type from copy-number segment profiles alone, without junction-level structural-variant calls? In particular, what is a 'deletion bridge' in the original chain-detection model, how is it defined from copy-number data, and how specific is a pattern of small deletions at multiple loci on different chromosomes for chained rearrangement versus independent events?",
+          "answer": "No such method was found. A 2024 review states that chromoplexy events have so far been inferred solely from whole-genome sequencing data, and the chain methods described in the pages read build graphs from rearrangement junctions (breakpoints as nodes, rearrangements as edges, e.g. clustering breakpoints closer than 10 kb). Reviews describe chromoplexy as leaving little or no copy-number change, so most of a chain is invisible to a segment file. A 'deletion bridge' is a deleted stretch at the junctions of a chain that spans the sequence between breakpoints belonging to two different fusions (equivalently, a looped rearrangement cluster in which a deletion spans two breakpoints, so the paired breakpoints sit further apart than in a precise balanced join). Copy number supplies the loss; the junction calls are what show that the two edges of the loss are joined to other loci rather than to each other. In a segment file a bridge therefore looks the same as a simple, independent two-break deletion. Specificity is not established: no page read gives a figure for how specific small deletions at several loci are for chained versus independent events. Bridges are described as occurring only 'occasionally' alongside mostly copy-neutral junctions, and were present in about 60% (30/52) of chromoplectic Ewing sarcomas. Multi-locus small deletions are at most a compatible footprint, not a test of interdependence, so the teams' rule (segments alone cannot test interdependence) stands on this evidence. Not settled: the numeric bridge criteria of the original chain-detection model (copy-ratio cut-off, maximum bridge length). They are in the methods of the paper that appears to be the source of this task; it came up in search and I did not open it. The reviews I opened do summarise that paper's conclusions; I have not relayed them because they are not evidence from the task's tables.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7616040/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6176908/",
+            "https://www.nature.com/articles/s12276-018-0112-3",
+            "https://www.mdpi.com/1422-0067/26/8/3826"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd36-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-93fad576fb30"
+            },
+            "bd36-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-28b079050b2d"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Is there any published, validated way to infer chained (interdependent) rearrangement events of the chromoplexy type from copy-number segment profiles alone, without junction-level structural-variant calls? In particular, what is a 'deletion bridge' in the original chain-detection model, how is it defined from copy-number data, and how specific is a pattern of small deletions at multiple loci on different chromosomes for chained rearrangement versus independent events? ANSWER: No such method was found. A 2024 review states that chromoplexy events have so far been inferred solely from whole-genome sequencing data, and the chain methods described in the pages read build graphs from rearrangement junctions (breakpoints as nodes, rearrangements as edges, e.g. clustering breakpoints closer than 10 kb). Reviews describe chromoplexy as leaving little or no copy-number change, so most of a chain is invisible to a segment file. A 'deletion bridge' is a deleted stretch at the junctions of a chain that spans the sequence between breakpoints belonging to two different fusions (equivalently, a looped rearrangement cluster in which a deletion spans two breakpoints, so the paired breakpoints sit further apart than in a precise balanced join). Copy number supplies the loss; the junction calls are what show that the two edges of the loss are joined to other loci rather than to each other. In a segment file a bridge therefore looks the same as a simple, independent two-break deletion. Specificity is not established: no page read gives a figure for how specific small deletions at several loci are for chained versus independent events. Bridges are described as occurring only 'occasionally' alongside mostly copy-neutral junctions, and were present in about 60% (30/52) of chromoplectic Ewing sarcomas. Multi-locus small deletions are at most a compatible footprint, not a test of interdependence, so the teams' rule (segments alone cannot test interdependence) stands on this evidence. Not settled: the numeric bridge criteria of the original chain-detection model (copy-ratio cut-off, maximum bridge length). They are in the methods of the paper that appears to be the source of this task; it came up in search and I did not open it. The reviews I opened do summarise that paper's conclusions; I have not relayed them because they are not evidence from the task's tables. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC7616040/, https://pmc.ncbi.nlm.nih.gov/articles/PMC6176908/, https://www.nature.com/articles/s12276-018-0112-3, https://www.mdpi.com/1422-0067/26/8/3826."
+        },
+        {
+          "question": "In segment (.seg) files derived from tumour/normal whole-genome sequencing rather than arrays, what does the num.mark field count, and what do segments with only 2 markers spanning tens to a few thousand base pairs with strongly negative log ratios usually represent? Do common WGS copy-number pipelines (for example read-depth segmenters used at large sequencing centres around 2011-2013) seed segment boundaries from rearrangement breakpoints, so that such small segments mark somatic deletion junctions, or are they typically germline CNVs or noise?",
+          "answer": "num.mark is the number of markers inside the segment: array probes, or read-depth bins/data points for sequencing. The CBS documentation defines the column as 'the number of markers in the segment' and sets the default minimum for a changed segment at 2 markers, so a 2-marker segment is the smallest the segmenter can emit. The read-depth segmenter published by the Broad in 2009 (SegSeq) places boundaries only from tumour/normal read counts in local windows of about 300-400 normal reads, followed by merging; it does not use rearrangement junctions. Seeding segment boundaries from SV breakpoints was presented as a new feature by CONSERTING in 2015, which also says read-depth-only tools bury real focal changes among hundreds or thousands of false CNAs from coverage bias, mapping ambiguity and library artefacts. So breakpoint-seeded segmentation was not the common default in 2011-2013 on the evidence read. Standard practice treats tiny few-marker segments as unreliable or germline: GISTIC joins segments with fewer than 4 markers to their neighbour by default and accepts a germline-CNV exclusion file, the GDC pipeline masks probe sets in frequent germline CNVs, and the cBioPortal SEG format example itself contains a 2-marker, 134-bp, -1.50 row between long near-zero segments. The default reading of 2-marker, tens-to-thousands-bp, strongly negative segments is germline CNV or noise, not somatic deletion junctions. Not settled: how this study's seg file was produced. No page read describes it, and I did not open the study itself. Two markers spanning only tens of base pairs fits array-probe spacing better than WGS bins, so the premise that the file is WGS-derived should be checked: a total num.mark near 1.8 million per sample would point to a SNP array, and tiny segments recurring at identical coordinates across samples would point to germline CNV or artefact.",
+          "sources": [
+            "https://rdrr.io/bioc/DNAcopy/man/segment.html",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC2630795/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4591043/",
+            "https://broadinstitute.github.io/gistic2/",
+            "https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/CNV_Pipeline/",
+            "https://docs.cbioportal.org/file-formats/"
+          ],
+          "confidence": "medium for what num.mark means and how small segments are conventionally treated; low for what the small segments are in this particular file",
+          "deliveries": {
+            "bd36-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-a9853dc958b1"
+            },
+            "bd36-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-24a376c00b53"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In segment (.seg) files derived from tumour/normal whole-genome sequencing rather than arrays, what does the num.mark field count, and what do segments with only 2 markers spanning tens to a few thousand base pairs with strongly negative log ratios usually represent? Do common WGS copy-number pipelines (for example read-depth segmenters used at large sequencing centres around 2011-2013) seed segment boundaries from rearrangement breakpoints, so that such small segments mark somatic deletion junctions, or are they typically germline CNVs or noise? ANSWER: num.mark is the number of markers inside the segment: array probes, or read-depth bins/data points for sequencing. The CBS documentation defines the column as 'the number of markers in the segment' and sets the default minimum for a changed segment at 2 markers, so a 2-marker segment is the smallest the segmenter can emit. The read-depth segmenter published by the Broad in 2009 (SegSeq) places boundaries only from tumour/normal read counts in local windows of about 300-400 normal reads, followed by merging; it does not use rearrangement junctions. Seeding segment boundaries from SV breakpoints was presented as a new feature by CONSERTING in 2015, which also says read-depth-only tools bury real focal changes among hundreds or thousands of false CNAs from coverage bias, mapping ambiguity and library artefacts. So breakpoint-seeded segmentation was not the common default in 2011-2013 on the evidence read. Standard practice treats tiny few-marker segments as unreliable or germline: GISTIC joins segments with fewer than 4 markers to their neighbour by default and accepts a germline-CNV exclusion file, the GDC pipeline masks probe sets in frequent germline CNVs, and the cBioPortal SEG format example itself contains a 2-marker, 134-bp, -1.50 row between long near-zero segments. The default reading of 2-marker, tens-to-thousands-bp, strongly negative segments is germline CNV or noise, not somatic deletion junctions. Not settled: how this study's seg file was produced. No page read describes it, and I did not open the study itself. Two markers spanning only tens of base pairs fits array-probe spacing better than WGS bins, so the premise that the file is WGS-derived should be checked: a total num.mark near 1.8 million per sample would point to a SNP array, and tiny segments recurring at identical coordinates across samples would point to germline CNV or artefact. HOW SURE: medium for what num.mark means and how small segments are conventionally treated; low for what the small segments are in this particular file. SOURCES: https://rdrr.io/bioc/DNAcopy/man/segment.html, https://pmc.ncbi.nlm.nih.gov/articles/PMC2630795/, https://pmc.ncbi.nlm.nih.gov/articles/PMC4591043/, https://broadinstitute.github.io/gistic2/, https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/CNV_Pipeline/, https://docs.cbioportal.org/file-formats/."
+        },
+        {
+          "question": "In break-apart FISH assays for ERG rearrangement in prostate tumours, what do the two result classes 'translocation' (split signal) and 'translocation with deletion' (loss of one signal) mean mechanistically? When a fusion between two genes about 3 Mb apart on the same chromosome arm occurs without loss of the intervening sequence, what does that imply about where the intervening segment went and whether more than two breakpoints or other chromosomes must be involved?",
+          "answer": "The assay uses a centromeric (3' ERG, red) and a telomeric (5' ERG, green) probe that overlap as yellow on a normal allele. A split into separate red and green signals means ERG is rearranged with both sides still present in the nucleus; this is the 'translocation' class, also called insertion or Esplit. A lone red signal with the green one lost means rearrangement with interstitial deletion of the roughly 3 Mb between ERG and TMPRSS2; this is the 'translocation with deletion' class, or Edel, and was confirmed on SNP arrays as a hemizygous 21q22.2-3 loss. Both classes correspond to TMPRSS2-ERG fusion; deletion accounted for about 60% of rearranged primaries in the defining study. TMPRSS2 and ERG lie in the same orientation, so fusing them on one chromosome requires the intervening DNA to leave its place. In the no-deletion class it has been moved rather than lost: sources describe insertion of the sequence at separate location(s) in the genome, or exchange between the two chromosome 21 homologues, or microdeletion with concurrent translocation. In an earlier seven-genome sequencing study, copy-neutral TMPRSS2-ERG fusions sat inside balanced 'closed chains': one a quartet of rearrangements over 4 loci on chromosomes 1 and 21, another a trio wholly within chromosome 21. The FISH class alone does not prove more than two breakpoints or involvement of another chromosome: an exchange between the two homologues needs only two breaks and no other chromosome (this step is my inference from the mechanisms listed, not a statement in a source). The assay cannot see losses smaller than the probes, and the deletion class does not say whether the loss was a simple deletion or part of a chain. The column is a per-sample variable for copy-loss versus copy-retaining fusion mechanism; the retaining class is suggestive of a multi-breakpoint balanced rearrangement but does not identify a chain or test interdependence. One paper on retention of the interstitial genes (Murphy 2017) failed to load and was not read.",
+          "sources": [
+            "https://aacrjournals.org/cancerres/article/66/17/8337/526226/TMPRSS2-ERG-Fusion-Associated-Deletions-Provide",
+            "https://www.jmdjournal.org/article/S1525-1578(12)00100-6/pdf",
+            "https://ncbi.nlm.nih.gov/pmc/articles/PMC1601467/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8126330/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3075885/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3632390/",
+            "https://www.nature.com/articles/ncponc0945.pdf"
+          ],
+          "confidence": "high for what the two classes mean; medium for what the no-deletion class implies",
+          "deliveries": {
+            "bd36-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-5f68617f41a6"
+            },
+            "bd36-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-329f745a9f9e"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In break-apart FISH assays for ERG rearrangement in prostate tumours, what do the two result classes 'translocation' (split signal) and 'translocation with deletion' (loss of one signal) mean mechanistically? When a fusion between two genes about 3 Mb apart on the same chromosome arm occurs without loss of the intervening sequence, what does that imply about where the intervening segment went and whether more than two breakpoints or other chromosomes must be involved? ANSWER: The assay uses a centromeric (3' ERG, red) and a telomeric (5' ERG, green) probe that overlap as yellow on a normal allele. A split into separate red and green signals means ERG is rearranged with both sides still present in the nucleus; this is the 'translocation' class, also called insertion or Esplit. A lone red signal with the green one lost means rearrangement with interstitial deletion of the roughly 3 Mb between ERG and TMPRSS2; this is the 'translocation with deletion' class, or Edel, and was confirmed on SNP arrays as a hemizygous 21q22.2-3 loss. Both classes correspond to TMPRSS2-ERG fusion; deletion accounted for about 60% of rearranged primaries in the defining study. TMPRSS2 and ERG lie in the same orientation, so fusing them on one chromosome requires the intervening DNA to leave its place. In the no-deletion class it has been moved rather than lost: sources describe insertion of the sequence at separate location(s) in the genome, or exchange between the two chromosome 21 homologues, or microdeletion with concurrent translocation. In an earlier seven-genome sequencing study, copy-neutral TMPRSS2-ERG fusions sat inside balanced 'closed chains': one a quartet of rearrangements over 4 loci on chromosomes 1 and 21, another a trio wholly within chromosome 21. The FISH class alone does not prove more than two breakpoints or involvement of another chromosome: an exchange between the two homologues needs only two breaks and no other chromosome (this step is my inference from the mechanisms listed, not a statement in a source). The assay cannot see losses smaller than the probes, and the deletion class does not say whether the loss was a simple deletion or part of a chain. The column is a per-sample variable for copy-loss versus copy-retaining fusion mechanism; the retaining class is suggestive of a multi-breakpoint balanced rearrangement but does not identify a chain or test interdependence. One paper on retention of the interstitial genes (Murphy 2017) failed to load and was not read. HOW SURE: high for what the two classes mean; medium for what the no-deletion class implies. SOURCES: https://aacrjournals.org/cancerres/article/66/17/8337/526226/TMPRSS2-ERG-Fusion-Associated-Deletions-Provide, https://www.jmdjournal.org/article/S1525-1578(12)00100-6/pdf, https://ncbi.nlm.nih.gov/pmc/articles/PMC1601467/, https://pmc.ncbi.nlm.nih.gov/articles/PMC8126330/, https://pmc.ncbi.nlm.nih.gov/articles/PMC3075885/, https://pmc.ncbi.nlm.nih.gov/articles/PMC3632390/, https://www.nature.com/articles/ncponc0945.pdf."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd36-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd36-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd36-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd36-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd36-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 127.48526037496049,
+      "cost_usd": 0.2126165,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 119.41961204097606,
+      "cost_usd": 0.16653600000000002,
+      "error": null
+    },
+    {
+      "agent": "bd36-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 141.45567829196807,
+      "cost_usd": 0.2606657,
+      "error": null
+    },
+    {
+      "agent": "bd36-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 168.41059133294038,
+      "cost_usd": 0.31555500000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 186.826136333053,
+      "cost_usd": 0.37760070000000007,
+      "error": null
+    },
+    {
+      "agent": "bd36-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 412.3900600000052,
+      "cost_usd": 0.7652235,
+      "error": null
+    },
+    {
+      "agent": "bd36-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 280.59330008295365,
+      "cost_usd": 0.49290510000000004,
+      "error": null
+    },
+    {
+      "agent": "bd36-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 297.5970780000789,
+      "cost_usd": 0.5232601,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

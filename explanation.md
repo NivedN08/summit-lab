@@ -266,6 +266,9 @@ Fable alone answered "not verifiable" on both attempts; the data in fact settles
 **O-10 · Nov 14, 17:02 · Measured (both pilots) · Fable alone fails in one way on BioDSA-1K, and the lab shares it when both teams do.**
 All four failed single attempts on the pilot tasks judged a settled claim "not verifiable". On bd04 both lab teams did the same, the challenge did not move them, and the lab reported a wrong answer as replicated. The same happened on scBench task sc01. With every agent on the same model, a mistake the model makes every time survives the whole lab.
 
+**O-11 · Nov 14, 19:54 · Measured (BioDSA-1K test, task bd36) · The director's challenge broke a shared mistake that Fable alone made four times out of four.**
+Both teams answered "Not verifiable": the data have no junction-level structural-variant calls, so in their reading the claim could not be tested. Every single Fable attempt said the same. Because the teams agreed, the director challenged the answer. It named assumptions both teams shared (a rule, fixed before looking at the data, under which only junction-level calls could settle the claim) and evidence neither had used: two clinical columns that name each fusion's partner gene and record whether each translocation came with a deletion. Both teams had read those columns but used them only for counting. After running the checks, both teams independently changed to "True", which passed. This is the failure O-10 describes, and the first time in a test run the challenge fixed it. On bd17 the same step went the other way: the challenge moved team A off a passing answer, and the referee then picked team B's passing one.
+
 ## 6. Ideas
 
 **N-1 · Nov 14, 11:30, updated 11:33 · Open · Enforce the memory boundary with infrastructure, not with a prompt.**
@@ -560,3 +563,26 @@ Commands: `python3 -m lab.run lab --benchmark scbench --studies sc02,...,sc36 (a
 What this shows. On scBench the lab added nothing to its own analysts: 23 of 33, against 24 of 33 for one Opus attempt and 23 of 33 for a vote over two. Opus alone also did slightly better than Fable alone here (71% of attempts against 67%), so Opus is not the weaker model on this benchmark. Seven tasks failed in every arm, single or lab, Opus or Fable, with or without web research (sc03, sc04, sc16, sc21, sc25, sc33, sc36): both models share those blind spots, and the lab's research did not remove them. Inside the lab, the steps after the first answers did net good: 9 rescues against 3 damages (question round 4 and 2, referee 3 and 1, third team 2 and 0; the revision round's 3 and 1 are already inside the question round's count). Agreement is evidence but not proof: 16 of 21 replicated answers passed (76%), against 7 of 12 for every other label (58%).
 
 What it does not show. It is not a win: the same score at eleven to twelve times the cost. The rescues did not lift the lab above a single attempt because the lab's first answers started lower: team A (briefed by the library) passed 19 of 33 on its first answer and team B (data only) 21 of 33, against 24 of 33 for one Opus attempt alone. So the library's briefing did not improve first answers here; the later steps then won back what was lost. Differences of two to five tasks in 33 are within what one run per arm can produce by chance. The challenge step, which costs a director run and a round of replies on every agreed answer, changed nothing in the score here.
+
+**M-14 · Nov 14, 19:54 · Measured · BioDSA-1K test: an all-Fable lab 27 of 36, Fable alone 26 of 36.**
+Commands: `python3 -m lab.run lab --benchmark biodsa --studies bd05,...,bd40 --run-dir runs/biodsa-test --memory past --backend modal --parallel 8` (resumed after the usage limit, I-13), then `baseline ... --attempts 4`, `grade`, `measures`, after every agent had exited. Scored by exact match on the label (BioDSA-1K ships no grader code). Records: `results/biodsa-test/`.
+
+| | 36 test tasks |
+|---|---|
+| Lab (all Fable) | 27 of 36 |
+| Fable alone | 104 of 144 attempts (72%); 26 of 36 on the first attempt; 26 of 36 by vote |
+| Where they differ | bd36: lab right, Fable alone wrong four times (O-11). Nowhere the other way |
+| Fable alone, attempt to attempt | every task passed 4 of 4 or 0 of 4: no repeat ever changed the result |
+| Teams' first answers | team A 26 of 36, team B 26 of 36; they agreed in all 36, both wrong in 10 |
+| By label (tasks, passed) | replicated 34, 26; refereed 2, 1 |
+| False agreement | 8 of 34 replicated answers failed |
+| Challenge of agreed answers | 36 challenged, 33 drew questions, 1 changed the agreed answer (bd36); rescued 1, damaged 0 at the final answer. On bd17 it moved one team off a passing answer and the referee recovered it |
+| Selection | the lab passed all 27 tasks where some lab answer passed |
+| How answers failed | lab: 8 settled claims judged "Not verifiable", 1 unverifiable claim judged settled. Fable alone: 36 and 4 attempts |
+| Web search | library 539 calls, research on demand 297, team A 15; 3 refused by the budget; 9 learned facts written |
+| Research on demand | 90 questions, 2 blocked by the leak check, 176 findings delivered |
+| Cost | lab 346 runs, 1,014 minutes of agent time, $118.00 ($3.28 a task); Fable alone 156 runs (144 graded attempts and 12 stopped by the usage limit and re-run), 179 minutes, $15.87 |
+
+What this shows. This is the first test where the lab scored above the single model, by one task, and the way it did so is the point: Fable alone gives the same answer every time on this benchmark, so repeats and votes cannot fix anything. The lab fixed one shared mistake by challenging an agreed answer with evidence both teams had passed over. The steps did no net harm here: no final answer went from passing to failing.
+
+What it does not show. One task in 36 is not a difference we can call real. Eight of the nine remaining failures are the same mistake as bd36 (a settled claim judged "Not verifiable"), and the challenge did not catch them. The lab cost about 30 single attempts per task. Whether web search helped is the next run: the same 36 tasks with all search off (D-20).

@@ -1,0 +1,449 @@
+{
+  "study": "bd39",
+  "status": "replicated",
+  "final": {
+    "agent": "bd39-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd39/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd39-library": "fable",
+    "bd39-team-a": "fable",
+    "bd39-team-b": "fable",
+    "bd39-team-c": "fable",
+    "bd39-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "bd39-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd39/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd39-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd39/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd39-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd39/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd39-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd39/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd39-team-a",
+        "bd39-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd39-team-a",
+        "bd39-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Check the study population before any statistics. The hypothesis is about PitNETs (pituitary neuroendocrine tumours). The library read only the file headers and reports that all 471 samples in data_clinical_sample.txt are labelled Colorectal Cancer (ONCOTREE codes COAD 347, READ 96, COADREAD 13, MACR 10, SRCCR 5) and that no file contains the strings 'pituit' or 'PitNET'. Verify this yourself: tabulate CANCER_TYPE, CANCER_TYPE_DETAILED and ONCOTREE_CODE and search every table for pituitary terms. The relationship between TP53 status and aneuploidy/LOH is tissue-specific, so an association measured in another cancer type is not evidence for or against a claim about PitNETs. If the mismatch holds, state it explicitly in the reasoning and choose the label by applying the task's own definitions of the three labels to what the data do and do not contain.",
+      "from": [
+        "sl-biodsa-test-47150ea84d8e",
+        "sl-biodsa-test-3baca60928ca"
+      ],
+      "reason": "Whether the cohort is the population named in the hypothesis determines what any result from these tables can mean; a team that skips this check would report a result from a different disease as if it tested the claim.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-6a182ced7493"
+      }
+    },
+    {
+      "text": "'Fraction of LOH' is an allele-specific metric. In the MSK facets-suite definition it is (autosomal length of segments whose minor/lesser copy number lcn is 0) divided by (autosomal length of segments with non-missing lcn), chromosomes 1-22. It needs FACETS-style total and minor copy number (tcn/lcn) derived from germline heterozygous-SNP allele ratios, and cannot be computed from total-copy-number log ratios. The library's header read reports: data_cna_hg19.seg has only ID, chrom, loc.start, loc.end, num.mark, seg.mean; data_cna.txt holds gene-level discrete calls (-2..2); no clinical column name contains LOH, PURITY, PLOIDY or FRACTION. Verify by listing the columns of every file, including the '#' description lines. Two tempting reconstructions do not work: (1) read counts in data_mutations.txt (t_ref_count, t_alt_count, n_ref_count, n_alt_count) are at somatic variant sites where the normal is homozygous reference, so they give no B-allele-frequency track; (2) inferring LOH from the TP53 mutation's VAF (e.g. VAF > 0.5) needs purity and locus copy number that are absent, describes only the TP53 locus on 17p rather than the genome-wide fraction, and is undefined for TP53-wild-type tumours so it cannot be compared between groups. Do not build a fraction-LOH variable from somatic read counts or VAFs.",
+      "from": [
+        "sl-biodsa-test-39d3785648fd",
+        "sl-biodsa-test-3baca60928ca",
+        "sl-biodsa-test-329d33fe6f72"
+      ],
+      "reason": "The team must know what the outcome variable in the hypothesis actually is and how to check whether the data contain it, so they neither miss a real LOH column nor invent a substitute and call it fraction LOH.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-cbfd9688ae3c"
+      }
+    },
+    {
+      "text": "Three variables in or derivable from these files are easily mistaken for fraction LOH and are different quantities. (a) Fraction of genome lost (length of segments with negative seg.mean below a threshold): copy-neutral LOH and gain-with-LOH leave total copy number unchanged or raised and are invisible to log ratios (allele-specific reanalysis of TCGA reclassified about 9% of copy-number-neutral and 7% of gain calls as LOH), while in whole-genome-doubled tumours a relative loss (e.g. 3 of 4 copies) gives a negative log ratio without LOH. TP53-mutant tumours are enriched for genome doubling, so the proxy's error differs between the two groups being compared. (b) Fraction Genome Altered (FGA): length of segments with |seg.mean| above a threshold (usually 0.2) over total segmented length; it counts gains and losses alike and says nothing about allelic state. TP53 mutation versus FGA/aneuploidy is a well-known positive association in many cancers, so substituting FGA tends to return 'supports' whatever is true for LOH. (c) The clinical sample table has a column 'LST' (integers 0, 1, 2, ...; 178 of 471 missing; description says only 'LST'). If it is the genomic-scar score it counts large-scale state transitions (breakpoints between adjacent segments of at least 10 Mb), not LOH; in a colorectal table it may mean something else entirely. Read its '#' description and value range. If you compute any of these, write down exactly which segments enter the numerator, the threshold, and that the denominator is summed segment length; name it 'FGA' or 'fraction genome lost', never 'fraction LOH'; report it only as a caveated proxy/sensitivity analysis and do not let it alone decide between the labels.",
+      "from": [
+        "sl-biodsa-test-be73be49debb",
+        "sl-biodsa-test-d67f08102c61",
+        "sl-biodsa-test-ff69227bdd63"
+      ],
+      "reason": "These are the substitutes a team is most likely to reach for; using one silently would answer a different question and is biased toward a positive result.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-20d0bacaee67"
+      }
+    },
+    {
+      "text": "If you form TP53-mutant and TP53-wild-type groups, define them per sample, not per variant row: Hugo_Symbol == TP53 with a non-silent Variant_Classification (exclude Silent, intron, UTR, flank rows); optionally also count TP53 deep deletion in data_cna.txt and TP53 events in data_sv.txt. A sample absent from data_mutations.txt is wild-type only if it was profiled: confirm with data_gene_panel_matrix.txt (panels IMPACT341, IMPACT410 and IMPACT468 all include TP53). The library's header read reports 471 samples from 471 patients (no repeated patients), 466 sample IDs in the seg file (the 5 without segments have no copy-number data and must be dropped, not scored as zero), and 41 samples with USED_IN_GENOMIC_ANALYSIS = No. Restrict to samples with both mutation and seg data, run any comparison with and without the 41 flagged samples, and report group sizes.",
+      "from": [
+        "sl-biodsa-test-a473afdd52d4"
+      ],
+      "reason": "Group definition and the analysis set directly change group sizes and any test result; these are the specific errors the library has seen in this kind of table.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-ec791b3b3ff9"
+      }
+    },
+    {
+      "text": "If you run a seg.mean-based burden versus TP53-status comparison as a proxy analysis, three things can manufacture or distort the association within this cohort. (1) Tumour purity: normal admixture compresses log ratios toward 0 and lowers mutation VAF, so low-purity samples look both copy-number quiet and TP53 wild-type. There is no purity column; use a per-sample proxy (e.g. maximum or median VAF = t_alt_count/(t_alt_count+t_ref_count), or the spread of seg.mean), check whether it differs between groups and correlates with the burden, and repeat restricted to adequately pure samples or adjust for it. (2) Panel version: samples were run on IMPACT341 (n=79), IMPACT410 (n=239) and IMPACT468 (n=153), which differ in probe density and so in segment count and resolution; compare the burden and TP53 frequency across panels, stratify or adjust, and check the effect of dropping segments with very low num.mark. (3) MSI status: in colorectal cancer, MSI-high and hypermutated tumours are near-diploid and rarely TP53-mutant, so a pooled comparison partly contrasts MSI with MSS tumours. MSI_TYPE values seen: Stable 428, Instable 27, Indeterminate 8, Do not report 7, NA 1; give an MSS-only (non-hypermutated, using TMB_NONSYNONYMOUS) estimate or adjust. Genome fractions are bounded, skewed and zero-inflated: length-weight the fraction and use a rank-based test (Mann-Whitney) with medians and an effect size rather than a t-test alone.",
+      "from": [
+        "sl-biodsa-test-13924428e1d2",
+        "sl-biodsa-test-5e2ef982a17a",
+        "sl-biodsa-test-ed33730cf2da"
+      ],
+      "reason": "Only relevant if the team runs a proxy comparison, but then these confounders and the choice of test change the size and credibility of the result they report.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-9cc262dfbc6e"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 7,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams decide the label by reading the label definitions strictly: an absent study population (no PitNET samples) plus an absent outcome variable (no fraction LOH) means 'Not verifiable'. Neither team wrote down whether each ground alone is enough, although the task's definition of that label speaks only of missing variables or tables, not of a missing population.",
+      "Both teams assume the cohort labels are complete and correct (CANCER_TYPE, ONCOTREE_CODE, HISTOLOGY) and that no hidden subset exists. I checked the structure myself: 471 samples, 471 patients, every sample ID in the mutation, segment, CNA, SV and panel files is in the clinical table, all are colorectal codes, histology is adenocarcinoma variants. This assumption holds.",
+      "Both teams assume that 'fraction of LOH' means the genome-wide allele-specific fraction per tumour and that nothing in the seven files can give it. Structure check agrees: the segment file has only ID, chrom, loc.start, loc.end, num.mark, seg.mean; the gene-level CNA table holds only -2, 0 and 2 (no -1 hemizygous-loss calls); the mutation table has no allele-specific copy-number or zygosity columns.",
+      "Both teams used the same exploratory proxy (length-weighted fraction of genome with seg.mean below -0.2, Mann-Whitney by TP53 mutation status) and got the same numbers, so the proxy agreement is one analysis done twice, not two independent lines of evidence."
+    ],
+    "unused_evidence": [
+      "Clinical column LST (integers 0-14, 178 of 471 missing): both teams set it aside without finding out what it is. Its missingness follows clinical variables, not the assay: it is present in 271 of 350 synchronous-metastasis samples but in only 22 of 119 metachronous ones, is missing for all 41 samples with USED_IN_GENOMIC_ANALYSIS = No, and is spread over all three panels. That pattern was not examined by either team; it is the only column whose name could be read as a genomic-instability score.",
+      "USED_IN_GENOMIC_ANALYSIS flag (41 = No, all with APC_GROUPS and LST missing): team A stratified on it, team B did not use it.",
+      "Mutation_Status is UNKNOWN for 73 of 4579 mutation rows: neither team reports whether any TP53 call is among them.",
+      "data_sv.txt has one event involving TP53 and data_cna.txt has TP53 deep-deletion calls: neither team says whether these samples sit in the mutant or the wild-type group. The hypothesis says 'mutations', so this affects only the exploratory proxy.",
+      "Survival, metastasis-site, treatment, MSI score and APC-group columns are not relevant to this hypothesis; ignoring them cannot change the label."
+    ],
+    "unresolved_weak_points": [
+      "Team A's weakest point (choice between 'Not verifiable' and 'True' if a grader accepts the tumour-type substitution and the loss proxy) is reported, not resolved. It cannot be resolved by a statistic, but it can be narrowed: team A has not stated that reaching 'True' needs two separate substitutions (tumour type and outcome measure) and that the outcome-variable ground alone already matches the task's own example for 'Not verifiable'.",
+      "Team B's weakest point is the same one and is equally only reported. Team B also lists no pitfalls checked, did not de-duplicate the 8 doubled segment profiles, and did not test the proxy against purity or the 41 flagged samples, so its description of the proxy as pointing 'towards True' is less tested than team A's.",
+      "Team A showed the proxy difference shrinks a lot under each control taken one at a time (wild-type median moves from 0.027 to 0.061-0.074) but never applied the controls together, so how much of the proxy signal is left is unknown."
+    ],
+    "second_readings": [
+      "'PitNETs' could be read loosely as 'the tumours in the supplied study'. Under that reading the population ground falls away and the label rests only on whether fraction LOH exists or can be derived.",
+      "'Fraction of LOH' could be read as the share of tumours showing LOH at the TP53 locus (loss of the remaining allele in mutant tumours) instead of the genome-wide fraction per tumour. Team A was briefed on why somatic VAFs cannot give this; team B's notes do not address it.",
+      "'Associated with TP53 mutations' could include any TP53 alteration (deep deletion, structural variant) or only non-silent mutations; this changes group membership for a handful of samples in the exploratory proxy only."
+    ],
+    "verdict": "I trust the agreed label fairly well: I confirmed from the file structure that all 471 samples are colorectal, that no sample ID sits outside the clinical table, and that no file holds allele-specific copy number, so both the population and the outcome named in the hypothesis are absent. The residual risk is not statistical but one of reading (a grader accepting both the cohort and a copy-loss proxy), plus one loose end, the unexplained LST column, which neither team resolved.",
+    "questions": [
+      {
+        "to": "bd39-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You set the LST column aside without establishing what it measures. Run two checks: (1) cross-tabulate LST missing/present against TIMING_METS, STAGE_AT_DIAGNOSIS, SURGERY_PRIMARY_TUMOR, panel and USED_IN_GENOMIC_ANALYSIS; (2) for samples with LST, count from the de-duplicated segment file the breakpoints between adjacent segments of at least 10 Mb and correlate that count with LST. Do the results show LST to be a clinical variable or a copy-number-derived score, and does either result change your statement that no LOH-related variable exists in the data?",
+        "from": [
+          "sl-biodsa-test-ff69227bdd63",
+          "sl-biodsa-test-20d0bacaee67"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-a302bf7602cc"
+      },
+      {
+        "to": "bd39-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your label rests on two grounds at once (no PitNET samples, no fraction-LOH variable). Make a two-row table from the data: for the exposure (TP53 mutation status) and the outcome (fraction LOH), list the exact columns or files that would be needed and mark each as present or absent. Then state the label you would give if the cohort were accepted as the study population and only the outcome ground remained. Does the label hold on that ground alone under the task's own wording of the three labels, or does it depend on the tumour-type mismatch?",
+        "from": [
+          "sl-biodsa-test-430cc40d47b9"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-8890cbbb57a2"
+      },
+      {
+        "to": "bd39-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your weakest point says a grader who accepts the proxy would see a clear positive association, yet each control you applied one at a time roughly doubled or tripled the wild-type median. Apply the controls together (MSI stable and non-hypermutated, USED_IN_GENOMIC_ANALYSIS = Yes, max-VAF purity proxy at or above 0.3, or purity proxy as a covariate in a rank-based model) and report group sizes, medians and the effect size. Does the result change how you describe the proxy in your reasoning, or the confidence you put on the label?",
+        "from": [
+          "sl-biodsa-test-baf8a28294a9"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-e3cc91dbd6ef"
+      },
+      {
+        "to": "bd39-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You report LST only as 'missing in 178/471'. Cross-tabulate LST missing/present against TIMING_METS, STAGE_AT_DIAGNOSIS, panel and USED_IN_GENOMIC_ANALYSIS, and test whether LST can be reproduced from the segment file (for example a count of breakpoints between segments of at least 10 Mb, after removing the duplicated profiles). Does this tell you whether LST is clinical or genomic, and does it change your statement that the data hold no LOH measure?",
+        "from": [
+          "sl-biodsa-test-0020c662665f",
+          "sl-biodsa-test-ff69227bdd63"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-e74e9c95c0c0"
+      },
+      {
+        "to": "bd39-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: 'Fraction of LOH' can also be read as the share of tumours with LOH at the TP53 locus itself. Check what the data hold for that reading: the segment covering TP53 on 17p in each sample, the TP53 variant allele fraction (t_alt_count / (t_ref_count + t_alt_count)) in mutant samples, and whether any purity, ploidy or minor-copy-number value exists to turn these into an allelic state that is defined in both mutant and wild-type tumours. Is this reading testable with these files, and does the outcome change your label or only your reasoning text?",
+        "from": [
+          "sl-biodsa-test-c9f742d64fb0"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-749ed7484e56"
+      },
+      {
+        "to": "bd39-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your reasoning says the exploratory proxy 'would point towards True', but you did not remove the 8 doubled segment profiles, did not use the USED_IN_GENOMIC_ANALYSIS flag (41 samples = No, all with APC_GROUPS missing) and did not test tumour purity. Re-run the proxy after de-duplication, excluding the 41 flagged samples, within MSI-stable tumours, and within strata of a purity proxy (highest somatic VAF per sample). Does the direction and size hold when these are applied together, and does that change the way you word the proxy or your confidence?",
+        "from": [
+          "sl-biodsa-test-2ada7b48ace0"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-4117aa2e798f"
+      },
+      {
+        "to": "bd39-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your label rests on two grounds at once (population absent, LOH variable absent), and 73 of 4579 mutation rows have Mutation_Status = UNKNOWN. First count how many TP53 rows are UNKNOWN and how many samples have a TP53 deep deletion or structural variant but no TP53 mutation, and say which group they were put in. Then state the label you would give if the cohort were accepted as the study population and only the outcome-variable ground remained. Does the label depend on the tumour-type mismatch, or does it stand on the missing outcome variable alone?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-1e314443a40c"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In clinical annotation tables of solid-tumour sequencing cohorts with metastatic disease, what can the abbreviation 'LST' denote when it is a small non-negative integer per patient: the genomic-scar count 'large-scale state transitions', or a clinical quantity? And can large-scale state transitions be computed at all from targeted-panel total-copy-number segments without allele-specific data?",
+          "why": "Neither team established what this column is. If it is a clinical quantity it is irrelevant; if it is a genomic-scar score it shows that an instability measure was supplied and the teams need to say why it is or is not an LOH measure.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In the cBioPortal study file format, which files and columns conventionally carry allele-specific copy-number results (for example FACETS-derived total and minor copy number, mutation-level ASCN annotation columns, or sample-level attributes for fraction LOH, purity, ploidy and genome doubling), and what are their standard names?",
+          "why": "Both teams concluded that no LOH information exists by searching for a few terms. A list of the standard places and column names lets them confirm the absence systematically instead of by keyword.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Is there any validated method for estimating the genome-wide fraction of LOH from total-copy-number log-ratio segments alone (no B-allele frequencies, no purity or ploidy estimate), and how well does a losses-only fraction agree with allele-specific fraction LOH in tumours with frequent whole-genome doubling?",
+          "why": "The only route to a different label is treating the copy-loss fraction as a stand-in for fraction LOH. Knowing whether that substitution has any published support settles whether the teams were right to keep it out of the label.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In clinical annotation tables of solid-tumour sequencing cohorts with metastatic disease, what can the abbreviation 'LST' denote when it is a small non-negative integer per patient: the genomic-scar count 'large-scale state transitions', or a clinical quantity? And can large-scale state transitions be computed at all from targeted-panel total-copy-number segments without allele-specific data?",
+          "answer": "The web does not settle what this column is. No page I read defines an integer per-patient clinical quantity abbreviated LST. Two readings exist. (a) Genomic scar: Large-scale State Transitions, a count of chromosomal breaks between adjacent segments >10 Mb after filtering alterations <3 Mb (Popova 2012), used for HRD scoring. It is a breakpoint count, not an LOH measure: in TCGA the number of LSTs and telomeric-allelic-imbalance events rises with the number of whole-genome doublings while the number of LOH events falls. (b) Clinical: in colorectal literature LST means laterally spreading tumour, an endoscopic lesion type (non-polypoid lesion >10 mm); that is a category, not an integer count, so it fits the column poorly. Second part: yes in principle, but not validated for panels. shallowHRD counts 'Large-scale Genomic Alterations, evaluated in a similar way to LSTs but independent of the ploidy, with no reference to an absolute copy number' from read-depth ratio segments, so an LST-like count needs no allele-specific data. It is built and validated for genome-wide shallow WGS (>0.3x, 20-60 kb windows); I found nothing validating it on targeted-panel segment files. Whichever reading holds, LST is not fraction LOH. The teams can tell the readings apart from the data: a scar count in chromosomally unstable tumours usually runs into the tens (this range is my background knowledge, not from a page read), and it should track the number of large breakpoints in the seg file.",
+          "sources": [
+            "https://github.com/aeeckhou/shallowHRD",
+            "https://doi.org/10.1200/po.22.00555",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6353652/",
+            "https://bioinfo-diag.fr/documents/2023/2023-05-16_Shallow_HRD_POPOVA.pdf"
+          ],
+          "confidence": "low for what the column denotes (not settled by the web); high that LST as a genomic scar is a breakpoint count and not an LOH measure; medium that an LST-like count is computable from total copy number only on genome-wide data. The last two source links (laterally spreading tumour definition, Popova slide definition of LST) were seen as search excerpts only, not opened.",
+          "deliveries": {
+            "bd39-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-5b73c472f0fb"
+            },
+            "bd39-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-afb18410913c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In clinical annotation tables of solid-tumour sequencing cohorts with metastatic disease, what can the abbreviation 'LST' denote when it is a small non-negative integer per patient: the genomic-scar count 'large-scale state transitions', or a clinical quantity? And can large-scale state transitions be computed at all from targeted-panel total-copy-number segments without allele-specific data? ANSWER: The web does not settle what this column is. No page I read defines an integer per-patient clinical quantity abbreviated LST. Two readings exist. (a) Genomic scar: Large-scale State Transitions, a count of chromosomal breaks between adjacent segments >10 Mb after filtering alterations <3 Mb (Popova 2012), used for HRD scoring. It is a breakpoint count, not an LOH measure: in TCGA the number of LSTs and telomeric-allelic-imbalance events rises with the number of whole-genome doublings while the number of LOH events falls. (b) Clinical: in colorectal literature LST means laterally spreading tumour, an endoscopic lesion type (non-polypoid lesion >10 mm); that is a category, not an integer count, so it fits the column poorly. Second part: yes in principle, but not validated for panels. shallowHRD counts 'Large-scale Genomic Alterations, evaluated in a similar way to LSTs but independent of the ploidy, with no reference to an absolute copy number' from read-depth ratio segments, so an LST-like count needs no allele-specific data. It is built and validated for genome-wide shallow WGS (>0.3x, 20-60 kb windows); I found nothing validating it on targeted-panel segment files. Whichever reading holds, LST is not fraction LOH. The teams can tell the readings apart from the data: a scar count in chromosomally unstable tumours usually runs into the tens (this range is my background knowledge, not from a page read), and it should track the number of large breakpoints in the seg file. HOW SURE: low for what the column denotes (not settled by the web); high that LST as a genomic scar is a breakpoint count and not an LOH measure; medium that an LST-like count is computable from total copy number only on genome-wide data. The last two source links (laterally spreading tumour definition, Popova slide definition of LST) were seen as search excerpts only, not opened.. SOURCES: https://github.com/aeeckhou/shallowHRD, https://doi.org/10.1200/po.22.00555, https://pmc.ncbi.nlm.nih.gov/articles/PMC6353652/, https://bioinfo-diag.fr/documents/2023/2023-05-16_Shallow_HRD_POPOVA.pdf."
+        },
+        {
+          "question": "In the cBioPortal study file format, which files and columns conventionally carry allele-specific copy-number results (for example FACETS-derived total and minor copy number, mutation-level ASCN annotation columns, or sample-level attributes for fraction LOH, purity, ploidy and genome doubling), and what are their standard names?",
+          "answer": "The cBioPortal file-format specification documents allele-specific copy number (ASCN) in exactly two places. (1) data_mutations.txt, as namespace columns that are imported only when the mutation meta file declares 'namespaces: ascn': ASCN.ASCN_METHOD (e.g. 'FACETS'), ASCN.CCF_EXPECTED_COPIES, ASCN.CCF_EXPECTED_COPIES_UPPER, ASCN.EXPECTED_ALT_COPIES, ASCN.CLONAL, ASCN.TOTAL_COPY_NUMBER, ASCN.MINOR_COPY_NUMBER, ASCN.ASCN_INTEGER_COPY_NUMBER; all eight are required once the namespace is declared. They are per-mutation, so they describe allelic state only at mutated loci. (2) data_clinical_sample.txt, attribute ASCN_WGD with values 'WGD' or 'no WGD'. The specification defines no standard slot for genome-wide allele-specific segments and no standard attribute name for fraction LOH, purity or ploidy. The SEG file is fixed at ID, chrom, loc.start, loc.end, num.mark, seg.mean. Discrete CNA is gene-level -2..2. Arm-level CNA is a Generic Assay with only Loss/Gain/Unchanged. FRACTION_GENOME_ALTERED and MUTATION_COUNT are computed by the portal and should not be in the files. MAF rows with Mutation_Status 'LOH' are not loaded. Fraction LOH, purity, ploidy or FACETS tcn/lcn would therefore appear only as study-specific custom clinical columns or extra seg columns with non-standard names. Systematic absence check: (i) no MAF column begins 'ASCN.'; (ii) no ASCN_WGD in the sample table; (iii) the seg file has exactly the six standard columns (no tcn, lcn, tcn.em, lcn.em, cf); (iv) case-insensitive header scan of both clinical tables for LOH, PURITY, PLOIDY, WGD, DOUBL, FACETS, TCN, LCN, MCN, MINOR, ALLEL, CCF, CLONAL, HRD, TAI; (v) no generic-assay file among the supplied files.",
+          "sources": [
+            "https://github.com/cBioPortal/cbioportal/blob/master/docs/File-Formats.md",
+            "https://github.com/mskcc/facets-suite"
+          ],
+          "confidence": "high for the documented ASCN columns, ASCN_WGD and the fixed seg format (read in full); medium for the statement that no standard name exists for fraction LOH, purity or ploidy (it rests on their absence from the specification; individual studies use their own custom names, which I did not survey)",
+          "deliveries": {
+            "bd39-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-75ded6e41bc4"
+            },
+            "bd39-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-d83ec9bb57d0"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In the cBioPortal study file format, which files and columns conventionally carry allele-specific copy-number results (for example FACETS-derived total and minor copy number, mutation-level ASCN annotation columns, or sample-level attributes for fraction LOH, purity, ploidy and genome doubling), and what are their standard names? ANSWER: The cBioPortal file-format specification documents allele-specific copy number (ASCN) in exactly two places. (1) data_mutations.txt, as namespace columns that are imported only when the mutation meta file declares 'namespaces: ascn': ASCN.ASCN_METHOD (e.g. 'FACETS'), ASCN.CCF_EXPECTED_COPIES, ASCN.CCF_EXPECTED_COPIES_UPPER, ASCN.EXPECTED_ALT_COPIES, ASCN.CLONAL, ASCN.TOTAL_COPY_NUMBER, ASCN.MINOR_COPY_NUMBER, ASCN.ASCN_INTEGER_COPY_NUMBER; all eight are required once the namespace is declared. They are per-mutation, so they describe allelic state only at mutated loci. (2) data_clinical_sample.txt, attribute ASCN_WGD with values 'WGD' or 'no WGD'. The specification defines no standard slot for genome-wide allele-specific segments and no standard attribute name for fraction LOH, purity or ploidy. The SEG file is fixed at ID, chrom, loc.start, loc.end, num.mark, seg.mean. Discrete CNA is gene-level -2..2. Arm-level CNA is a Generic Assay with only Loss/Gain/Unchanged. FRACTION_GENOME_ALTERED and MUTATION_COUNT are computed by the portal and should not be in the files. MAF rows with Mutation_Status 'LOH' are not loaded. Fraction LOH, purity, ploidy or FACETS tcn/lcn would therefore appear only as study-specific custom clinical columns or extra seg columns with non-standard names. Systematic absence check: (i) no MAF column begins 'ASCN.'; (ii) no ASCN_WGD in the sample table; (iii) the seg file has exactly the six standard columns (no tcn, lcn, tcn.em, lcn.em, cf); (iv) case-insensitive header scan of both clinical tables for LOH, PURITY, PLOIDY, WGD, DOUBL, FACETS, TCN, LCN, MCN, MINOR, ALLEL, CCF, CLONAL, HRD, TAI; (v) no generic-assay file among the supplied files. HOW SURE: high for the documented ASCN columns, ASCN_WGD and the fixed seg format (read in full); medium for the statement that no standard name exists for fraction LOH, purity or ploidy (it rests on their absence from the specification; individual studies use their own custom names, which I did not survey). SOURCES: https://github.com/cBioPortal/cbioportal/blob/master/docs/File-Formats.md, https://github.com/mskcc/facets-suite."
+        },
+        {
+          "question": "Is there any validated method for estimating the genome-wide fraction of LOH from total-copy-number log-ratio segments alone (no B-allele frequencies, no purity or ploidy estimate), and how well does a losses-only fraction agree with allele-specific fraction LOH in tumours with frequent whole-genome doubling?",
+          "answer": "I found no validated method, and no source reporting a concordance figure between a losses-only fraction and allele-specific fraction LOH; the web does not supply a number that would support the substitution. This is absence of evidence within a 10-call search, but the sources read argue against the substitution in principle. The FACETS paper states copy-neutral LOH is 'not detectable by analyzing total copy number alone' and that segmenting total read count 'will inevitably miss' it. An allele-specific reanalysis of 4,950 TCGA tumours reclassified as LOH 9% of apparent copy-number wild-type calls and 7% of gain calls. In the MSK-IMPACT genome-doubling study (9,692 patients, FACETS), WGD occurred in 28.2% of advanced cancers and 36% of colorectal cancers (only microsatellite-stable ones), with median ploidy 3.3 versus 2.1; about 70% of arm- or chromosome-length single-copy losses in WGD tumours arose after doubling (total 3, major 2, minor 1), so they are losses relative to ploidy that keep heterozygosity and are not LOH. Conversely copy-neutral LOH that is later doubled (total 4, minor 0) reads as neutral or gain. WGD is associated with TP53 mutation in the same study, so the proxy's error differs between the two groups being compared. A copy-loss fraction is therefore a different variable from fraction LOH, and keeping it out of the label has published support.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5027494/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6072608/",
+            "https://www.cell.com/cell-systems/fulltext/S2405-4712(21)00383-5",
+            "https://doi.org/10.1200/po.22.00555"
+          ],
+          "confidence": "medium: high that total copy number alone cannot detect copy-neutral LOH and that post-WGD losses are mostly not LOH; the claim that no validated total-copy-number-only method exists is a negative result from a limited search, and no quantitative agreement figure was found",
+          "deliveries": {
+            "bd39-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-3e6e144afe03"
+            },
+            "bd39-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-36a59da2396f"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Is there any validated method for estimating the genome-wide fraction of LOH from total-copy-number log-ratio segments alone (no B-allele frequencies, no purity or ploidy estimate), and how well does a losses-only fraction agree with allele-specific fraction LOH in tumours with frequent whole-genome doubling? ANSWER: I found no validated method, and no source reporting a concordance figure between a losses-only fraction and allele-specific fraction LOH; the web does not supply a number that would support the substitution. This is absence of evidence within a 10-call search, but the sources read argue against the substitution in principle. The FACETS paper states copy-neutral LOH is 'not detectable by analyzing total copy number alone' and that segmenting total read count 'will inevitably miss' it. An allele-specific reanalysis of 4,950 TCGA tumours reclassified as LOH 9% of apparent copy-number wild-type calls and 7% of gain calls. In the MSK-IMPACT genome-doubling study (9,692 patients, FACETS), WGD occurred in 28.2% of advanced cancers and 36% of colorectal cancers (only microsatellite-stable ones), with median ploidy 3.3 versus 2.1; about 70% of arm- or chromosome-length single-copy losses in WGD tumours arose after doubling (total 3, major 2, minor 1), so they are losses relative to ploidy that keep heterozygosity and are not LOH. Conversely copy-neutral LOH that is later doubled (total 4, minor 0) reads as neutral or gain. WGD is associated with TP53 mutation in the same study, so the proxy's error differs between the two groups being compared. A copy-loss fraction is therefore a different variable from fraction LOH, and keeping it out of the label has published support. HOW SURE: medium: high that total copy number alone cannot detect copy-neutral LOH and that post-WGD losses are mostly not LOH; the claim that no validated total-copy-number-only method exists is a negative result from a limited search, and no quantitative agreement figure was found. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC5027494/, https://pmc.ncbi.nlm.nih.gov/articles/PMC6072608/, https://www.cell.com/cell-systems/fulltext/S2405-4712(21)00383-5, https://doi.org/10.1200/po.22.00555."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd39-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd39-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd39-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd39-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd39-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 100.81012362497859,
+      "cost_usd": 0.17836359999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 92.60472658299841,
+      "cost_usd": 0.1684482,
+      "error": null
+    },
+    {
+      "agent": "bd39-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 110.16045016690623,
+      "cost_usd": 0.21904160000000003,
+      "error": null
+    },
+    {
+      "agent": "bd39-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 159.64674429199658,
+      "cost_usd": 0.1535464,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 193.50815899996087,
+      "cost_usd": 0.35216819999999993,
+      "error": null
+    },
+    {
+      "agent": "bd39-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 224.39403545798268,
+      "cost_usd": 0.5740350000000001,
+      "error": null
+    },
+    {
+      "agent": "bd39-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 190.9718782090349,
+      "cost_usd": 0.3702465,
+      "error": null
+    },
+    {
+      "agent": "bd39-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 228.4490376249887,
+      "cost_usd": 0.34989339999999997,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

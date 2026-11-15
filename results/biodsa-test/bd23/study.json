@@ -1,0 +1,221 @@
+{
+  "study": "bd23",
+  "status": "replicated",
+  "final": {
+    "agent": "bd23-team-a",
+    "team": "team-a",
+    "round": "analysis",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd23/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd23-library": "fable",
+    "bd23-team-a": "fable",
+    "bd23-team-b": "fable",
+    "bd23-team-c": "fable",
+    "bd23-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd23-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd23/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd23-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd23/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd23-team-a",
+        "bd23-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "First step, before any statistics: confirm that the supplied tables are the cohort the hypothesis is about. The hypothesis concerns radiation-associated sarcomas (RT-AS = angiosarcoma, RT-MPNST = malignant peripheral nerve sheath tumour, RT-UPS = undifferentiated pleomorphic sarcoma). The library read only the header and the first 3 rows of data_clinical_patient.txt and data_clinical_sample.txt (not the full tables) and reported that those rows were TCGA-AB-xxxx patients with CANCER_TYPE 'Leukemia' / ONCOTREE_CODE 'AML' and AML-specific columns (FAB, BM_BLAST_PERCENTAGE, CYTOGENETICS, INDUCTION, TRANSPLANT_TYPE); the patient columns it listed were PATIENT_ID, SEX, RACE, FAB, AGE, BM_BLAST_PERCENTAGE, WBC, PB_BLAST_PERCENTAGE, AML_IN_SKIN_PERCENTAGE, CYTOGENETICS, CYTOGENETIC_CODE_OTHER, RISK_CYTO, HISTOLOGICAL_SUBTYPE, RISK_MOLECULAR, DFS_MONTHS, DFS_STATUS, INDUCTION, TRANSPLANT_TYPE, DARK_ZONE_STAT, OS_MONTHS, OS_STATUS, with no column naming radiation, latency or an interval to diagnosis. This is a partial read that the director has not checked; do not take it on trust. Verify it yourself on ALL rows: tabulate every distinct value of CANCER_TYPE, CANCER_TYPE_DETAILED, ONCOTREE_CODE and HISTOLOGICAL_SUBTYPE, and search every column name, every '#' description line and every string value of both clinical tables (case-insensitive) for radiat, RT, latency, interval, angiosarcoma, MPNST, nerve sheath, UPS, undifferentiated pleomorphic, sarcoma. Record in your reasoning which grouping column and which interval column exist, or that none do. Whether a statistical test can be run at all depends on this check; the label must then follow from the task's own label definitions applied to what you actually found.",
+      "from": [
+        "sl-biodsa-test-8e59da875000"
+      ],
+      "reason": "Whether the histotype groups and the radiation-to-diagnosis interval exist in these tables decides whether any test can be run, so it changes the whole analysis path. The library's observation rests on 3 rows only, so the team must be told both what was seen and that it is unverified.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-7085000cc490"
+      }
+    },
+    {
+      "text": "Do not substitute a proxy for the variable the hypothesis names. The interval from radiation to diagnosis (latency) means time from radiotherapy for the earlier primary cancer (usually its first day) to histologic diagnosis of the sarcoma. Age at diagnosis, disease-free months, overall-survival months and time to relapse are not that quantity, and non-sarcoma subtype columns (for example leukemia FAB or cytogenetic groups) are not sarcoma histotypes. For any column you intend to use as the interval, read its '#' description line and confirm it names a radiation start point and a diagnosis end point; for any grouping column, confirm it really holds angiosarcoma / MPNST / UPS labels together with a radiation-associated flag. If only proxies exist, treat the variable as absent: do not run the comparison on proxies and do not base a verdict on such a test.",
+      "from": [
+        "sl-biodsa-test-e4abcbbc1a76"
+      ],
+      "reason": "A team that finds no exact column is tempted to test a look-alike (age, DFS, OS) and report a verdict from it; this defines what counts as the real variable and stops a verdict being drawn from the wrong quantity.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-09c2ff5552e1"
+      }
+    },
+    {
+      "text": "Parsing and unit of analysis in the clinical files: the tables have 4 leading '#' metadata lines (display name, description, datatype, priority) before the real header, so read with comment='#' or skiprows=4, and search those '#' description lines in both files for the variable you need. A radiation-to-diagnosis interval is a patient-level attribute, but one patient can have several samples (primary, recurrence, metastasis); merging onto the sample table duplicates values and inflates n. Missing values can appear as blank, 'NA', 'n.d.' or '[Not Available]', and numeric columns may load as strings. Confirm row count equals the number of unique PATIENT_ID, coerce the interval to numeric with errors='coerce' and count how many became NaN, analyse one row per patient, and report how many patients were dropped for missing values.",
+      "from": [
+        "sl-biodsa-test-65c95e50ffe7"
+      ],
+      "reason": "Mis-reading the header lines can hide the column descriptions needed for the variable search, and sample-level duplication or string-coded missing values would change group sizes and p-values.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-ab0b3094ad81"
+      }
+    },
+    {
+      "text": "If the groups and interval exist: the hypothesis is a conjunction (RT-AS lower than RT-MPNST AND RT-AS lower than RT-UPS). A significant 3-group Kruskal-Wallis omnibus, or one test of AS against pooled MPNST+UPS, does not establish it: the omnibus can be driven by a single pair, and pooling lets the larger group mask a null result for the smaller one. Run the two pairwise comparisons separately (AS vs MPNST, AS vs UPS), check the direction of each median difference, and report n per group. Require both pairwise tests to be significant in the stated direction (intersection-union logic: each at alpha 0.05, no extra multiplicity penalty is needed for a conjunction), and also report Dunn or pairwise Wilcoxon p-values with Holm adjustment after the omnibus, so the verdict is shown not to depend on the adjustment choice.",
+      "from": [
+        "sl-biodsa-test-02fd71bbb64d"
+      ],
+      "reason": "It fixes which tests and which decision rule answer a two-part claim; an omnibus or pooled test could give the opposite label from the two pairwise tests.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-f0fc1311738a"
+      }
+    },
+    {
+      "text": "If the groups and interval exist: rank tests are not tests of medians. Wilcoxon-Mann-Whitney and Kruskal-Wallis test stochastic ordering (the chance that a value from one group is below a value from the other) and can be significant with equal medians, or non-significant with different medians, unless the group distributions have the same shape and spread; latency intervals are typically right-skewed with unequal spread. Report each group's median, IQR, range and n and compare the distribution shapes. If shapes or spreads differ, back the 'median is lower' claim with a median-targeted analysis alongside the rank test (Mood's median test, a permutation test on the difference in medians, a bootstrap confidence interval for the difference in medians, or quantile regression) and say which quantity each p-value refers to. Mood's test is robust but has low power at small n.",
+      "from": [
+        "sl-biodsa-test-7ab47889033f"
+      ],
+      "reason": "The hypothesis is worded about the median, and the default rank test answers a different question; where the two disagree the label depends on which one the team used.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-6c60a8d957a2"
+      }
+    },
+    {
+      "text": "If the groups and interval exist: expect small, unbalanced groups; in radiation-associated sarcoma series MPNST is usually much rarer than angiosarcoma or undifferentiated sarcoma, so the MPNST group may hold only a handful of patients. Count patients (not samples) with a non-missing interval per group and note ties. If any group has fewer than about 10, use exact or permutation p-values (for example scipy.stats.mannwhitneyu with method='exact', or scipy.stats.permutation_test), report an effect size with a confidence interval (Hodges-Lehmann shift or bootstrap median difference), and state the group sizes in the reasoning. Asymptotic p-values are unreliable at such sizes, and a non-significant result at n<10 is weak evidence.",
+      "from": [
+        "sl-biodsa-test-70ffa845e7e8"
+      ],
+      "reason": "With a very small group the choice between asymptotic and exact p-values can move a result across the significance line, and it affects how a non-significant pairwise test should be read.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-6ef6ae0eb7bc"
+      }
+    },
+    {
+      "text": "If an interval column exists, check how it is defined before comparing groups. Radiation-associated sarcoma criteria impose a minimum latent period (variously 6 months, 2 years, or 3-4 years), the start point may be first day of RT, end of RT, or diagnosis of the primary cancer, units may be months or years, and patients with several RT courses have several possible start dates. Read the column description for start event, end event and unit; inspect the minimum and any zero, negative or implausibly small values; check that all groups share the same floor and that there is one value per patient. If units or definitions are mixed across rows, harmonise before testing; if a minimum-latency floor is visible, say that the medians are conditional on it and compare groups only under one definition.",
+      "from": [
+        "sl-biodsa-test-7fcce5f83d6a"
+      ],
+      "reason": "Mixed units or start points across rows would distort the group medians directly, so the check has to come before the comparison.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-22dc95cf131f"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 0,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed that a radiation-to-diagnosis interval or a sarcoma histotype, if present, would be recognisable from column names, '#' descriptions or string values. Both tested this by full keyword search and by listing every clinical column; my own structural read agrees (21 patient columns and 11 sample columns, all AML-specific or generic survival fields).",
+      "Both teams assumed that clinical variables cannot be hidden inside the gene-by-sample matrices. I checked the headers of all seven matrices: each has only Hugo_Symbol, Entrez_Gene_Id and TCGA-AB sample columns (191, 191, 194, 194, 173, 173, 173), so the assumption holds.",
+      "Both teams assumed that the task's label rule for absent variables applies when the cohort itself is a different disease. The task text defines 'Not verifiable' as the data holding no relevant variables or tables, and 'False' as requiring that the relevant variables be identified and analysed, so this reading follows the task's own definitions."
+    ],
+    "unused_evidence": [
+      "The molecular files (CNA, segments, methylation, mRNA, mutations, SV, gene-panel matrix) were used only for ID and header checks. They hold genomic measurements for the same 200 TCGA-AB AML samples and no clinical, radiation or histology fields, so they cannot supply either the three groups or the interval.",
+      "Patient columns AGE, DFS_MONTHS, OS_MONTHS, HISTOLOGICAL_SUBTYPE, INDUCTION and TRANSPLANT_TYPE were read and deliberately not used. Their '#' descriptions are age at diagnosis, disease-free months since initial treatment, survival months since diagnosis, AML cytogenetic class, induction regimen and transplant type; none names a radiation start point or a sarcoma histotype, so leaving them out cannot change the answer."
+    ],
+    "unresolved_weak_points": [
+      "Team A's weak point (a variable encoded under a name the keyword search missed) was resolved: the team listed all clinical columns and all numeric columns directly, and my read of the headers and description lines matches.",
+      "Team B's weak point (large numeric matrices searched only by header) is resolved by structure: my header check shows those files contain only gene identifiers and TCGA-AB sample columns, and a clinical interval cannot be stored in a gene-by-sample matrix.",
+      "Team B's second weak point (the choice between 'Not verifiable' and 'False' is a judgement) is not resolvable by any data check; it is settled by the task's label definitions, which both teams applied the same way."
+    ],
+    "second_readings": [
+      "I looked for a second reading under which the hypothesis could be tested on this cohort (for example, an interval from some radiation exposure to AML diagnosis, or groups defined other than by sarcoma histotype). None is available: RT-AS, RT-MPNST and RT-UPS are sarcoma histotypes with zero patients here, and no column records prior radiation, prior therapy or any exposure date.",
+      "'Initial diagnosis' could in principle point at AGE or OS_MONTHS as the end point, but without a radiation start point and without the three groups no interval can be formed, so this reading leads to the same label."
+    ],
+    "verdict": "I trust the agreed answer (Not verifiable) highly. The supplied tables are a 200-patient acute myeloid leukaemia cohort (200/200 samples ONCOTREE AML, all IDs TCGA-AB in every file) with no radiation, latency or sarcoma-histotype variable anywhere, which I confirmed independently from the clinical headers, description lines and the headers of all matrices; there is no concrete data check left whose result could change the method, so I ask no questions.",
+    "questions": []
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd23-team-b",
+      "round": "analysis",
+      "reason": "agreed with bd23-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd23-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 67.73638670798391,
+      "cost_usd": 0.13286969999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 81.77278995804954,
+      "cost_usd": 0.136588,
+      "error": null
+    },
+    {
+      "agent": "bd23-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 68.78854249999858,
+      "cost_usd": 0.1197411,
+      "error": null
+    },
+    {
+      "agent": "bd23-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 82.66680516593624,
+      "cost_usd": 0.14670899999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 55.74530237505678,
+      "cost_usd": 0.17798660000000002,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

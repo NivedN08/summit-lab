@@ -1,0 +1,520 @@
+{
+  "study": "bd29",
+  "status": "replicated",
+  "final": {
+    "agent": "bd29-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd29/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd29-library": "fable",
+    "bd29-team-a": "fable",
+    "bd29-team-b": "fable",
+    "bd29-team-c": "fable",
+    "bd29-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd29-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd29/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd29-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd29/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd29-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd29/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd29-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd29/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd29-team-a",
+        "bd29-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd29-team-a",
+        "bd29-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Identifying the cohort: 'TCC' will not appear as a column value. TCC = transitional cell carcinoma = urothelial carcinoma of the bladder. The library's read of the file headers indicates the whole study is bladder urothelial carcinoma (every sample ONCOTREE_CODE BLCA). Check this yourself by tabulating ONCOTREE_CODE and CANCER_TYPE_DETAILED in data_clinical_sample.txt. If they are constant, the TCC cohort is all profiled samples and that is the main denominator; do not answer 'Not verifiable' because no 'TCC' label exists, and do not subset. Breakdowns by Invasive/Superficial subtype or Primary/Recurrence sample type are a secondary sensitivity view only, not the main estimate.",
+      "from": [
+        "sl-biodsa-test-9643a4886a8d"
+      ],
+      "reason": "Without this a team may fail to map 'TCC' onto the data and either answer Not verifiable or choose a wrong subset as denominator.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-51440f92c33d"
+      }
+    },
+    {
+      "text": "Meaning of 'altered' when only mutation data exist: the study ships a mutation table and no copy-number or structural-variant table. Two opposite errors are possible. (a) Answering 'Not verifiable' because CNA/SV data are missing: a somatic mutation is a gene alteration, so the relevant variable is present. (b) Presenting the mutation-only frequency as the total alteration rate. Confirm which molecular files exist and that data_gene_panel_matrix.txt marks every sample as profiled for mutations. Then evaluate the hypothesis on mutation frequency, state that it is a lower bound on total alteration frequency (CNA unassessed), and reserve 'Not verifiable' for the case where the genes could not have been observed at all.",
+      "from": [
+        "sl-biodsa-test-cfc60f332a0e"
+      ],
+      "reason": "Decides how the label options apply: missing CNA data should not by itself lead to Not verifiable.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-461e30740bda"
+      }
+    },
+    {
+      "text": "Absence of calls is evidence of absence only if the region was assayed. STAG2 is on chromosome X, and some somatic pipelines drop or under-call sex chromosomes; exome kits also differ in gene coverage. Before interpreting a zero or low count: (1) confirm the MAF has mutations on chrX at a plausible rate, including in genes near STAG2, and likewise on chr12 near ESPL1; (2) confirm the gene panel matrix describes every sample as genome-wide (WXS/WGS) rather than a targeted panel. If chrX or the locus is systematically empty, the STAG2 half of the claim is Not verifiable rather than False. If the region is populated, a zero or low count is real evidence against 'frequently altered'. STAG2 is hemizygous in males, so tabulate STAG2-mutated samples by SEX as context.",
+      "from": [
+        "sl-biodsa-test-653059388823"
+      ],
+      "reason": "Separates a True/False reading from Not verifiable for STAG2, and stops a low count being read wrongly in either direction.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-1c7860dfa7cf"
+      }
+    },
+    {
+      "text": "Do not look the genes up by exact current HUGO symbol only. The library's header read indicates this MAF uses outdated symbols (e.g. NALP6, the previous symbol of NLRP6) and has an empty Entrez_Gene_Id column, so an exact match on 'STAG2' or 'ESPL1' could return zero rows for a gene that is present under another name. Search Hugo_Symbol case-insensitively for the approved symbols and their aliases/previous symbols (STAG2: SA2, SA-2, SCC3B, STAG-2; ESPL1: ESP1, KIAA0165, SEPA, separase). Confirm independently by genomic position (GRCh37: STAG2 about chrX:123.09-123.24 Mb; ESPL1 about chr12:53.66-53.69 Mb) and by the RefSeq / Transcript_ID / HGVSc columns. Pool rows under all names for the same locus before counting samples. If a gene is absent under every alias and no rows fall in its coordinates, that is a zero count, not missing data.",
+      "from": [
+        "sl-biodsa-test-b6ef4b081367"
+      ],
+      "reason": "A symbol mismatch would silently produce a false zero and so a wrong label; the position check is the safeguard.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-a54395d204b5"
+      }
+    },
+    {
+      "text": "Numerator and denominator for a gene's frequency. A MAF has one row per mutation, so samples without a mutation in the gene (or with no rows at all) are absent from it. Dividing by the number of samples that appear in the MAF, or by mutation rows, distorts the frequency. Numerator = number of unique Tumor_Sample_Barcode with at least one qualifying mutation in the gene (a sample with several mutations counts once). Denominator = number of samples marked as profiled in data_gene_panel_matrix.txt. Compare that number with the distinct barcodes in the MAF and with the clinical sample table, and confirm every MAF barcode exists in the clinical table. Report n/N explicitly for each gene.",
+      "from": [
+        "sl-biodsa-test-a304d66838d4"
+      ],
+      "reason": "The whole verdict rests on a frequency; a wrong denominator or counting rows instead of samples changes it.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-e1565f53b532"
+      }
+    },
+    {
+      "text": "Not every MAF row for a gene is an alteration. The usual definition of an altered sample uses protein-affecting variants only: Frame_Shift_Del/Ins, Splice_Site, Translation_Start_Site, Nonsense_Mutation, Nonstop_Mutation, In_Frame_Del/Ins, Missense_Mutation. Part of this cohort is described as WGS, so the MAF may also hold Silent, Intron, UTR, Flank, IGR or RNA rows that carry a gene symbol. Tabulate Variant_Classification (and Consequence) for the whole file and for STAG2 and ESPL1. Compute the frequency on non-silent coding plus splice-site variants, report how the count changes if silent/non-coding rows are included, and do not let a silent or non-coding row alone make a sample 'altered'.",
+      "from": [
+        "sl-biodsa-test-af5279b31221"
+      ],
+      "reason": "Changes the numerator for both genes if silent or non-coding rows are present.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-e81282bc9215"
+      }
+    },
+    {
+      "text": "Fix the meaning of 'frequently' before looking at the counts. There is no universal threshold: in pan-cancer exome analyses only a few cancer genes exceed 20% of tumours of a type and most genuine cancer genes sit at 2-20%, so a cutoff such as >20% or >50% would reject most real recurrently mutated genes, while accepting any single mutated sample would accept everything. Set a rule in advance that combines (i) n/N with a 95% confidence interval, (ii) the gene's rank or percentile among all genes in this cohort by mutated-sample count, and (iii) comparison with the frequencies of the cohort's top genes. For the interval do not use the Wald (normal-approximation) interval, which behaves badly for small counts in a cohort of about 100; use Wilson, Jeffreys or Clopper-Pearson, e.g. statsmodels.stats.proportion.proportion_confint(n, N, method='wilson'). Under such a rule the claim is supported when each gene is recurrently mutated clearly above the typical gene in the cohort and in the intermediate-or-higher range, and contradicted when a gene has zero or only sporadic (about one sample, within background) mutations. Judge and report the two genes separately: the hypothesis needs both. Say so explicitly if the data are too thin to separate recurrent from sporadic.",
+      "from": [
+        "sl-biodsa-test-eb25848cea22",
+        "sl-biodsa-test-13edee0714b0"
+      ],
+      "reason": "'Frequently' is the judgement the label turns on; a pre-set, cohort-relative rule with a proper interval prevents an arbitrary or post-hoc cutoff.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-d3f0a84f51c5"
+      }
+    },
+    {
+      "text": "'Frequently altered' is a descriptive prevalence claim, not a claim that the gene is a proven driver. Let the label rest on prevalence (n/N, interval, rank against the cohort's top genes and against background). Do not reject a gene only because its mutations are scattered missense, and do not let a driver-like pattern rescue a gene hit in only one or two samples; with fewer than about 5-10 mutations in a gene, pattern fractions (e.g. >20% truncating for a tumour suppressor) are too unstable to decide anything. Do run these context checks, because raw frequency can mislead: mutation counts scale with coding length, local background rate and tumour mutation burden, so long passenger genes (TTN, MUC16, olfactory receptors) top raw lists and a few hypermutated samples can put mutations into almost any gene. (1) Compute per-sample mutation counts and see whether the samples mutated in STAG2/ESPL1 are mostly the high-burden ones; recompute the frequency without the top-burden outliers. (2) Compare the observed mutated-sample count with a length-scaled expectation (cohort non-silent rate per coding bp x gene coding length x N). (3) Report the truncating fraction and the number of distinct positions per gene. If formal tools (MutSigCV, dNdScv) cannot be run because silent mutations or coverage are missing, say so. Note: the two library facts behind this item pull in different directions (one says the label rests on prevalence, the other says to call a gene frequently mutated only if the excess over background survives); the director's reading is prevalence first, with the background and burden checks reported as a robustness view that should be flagged if it overturns the raw picture.",
+      "from": [
+        "sl-biodsa-test-27fd4599afa0",
+        "sl-biodsa-test-29cb0444b701"
+      ],
+      "reason": "Stops the team from applying a driver-significance test to a prevalence claim, while still catching a frequency that is produced by gene length or a few hypermutated samples.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-15345ba98f17"
+      }
+    },
+    {
+      "text": "Check that each gene's hits are independent somatic events. The same indel or SNV at exactly the same position in several tumours is, outside known hotspots, more often a sequencing/alignment artefact (slippage at mononucleotide repeats, low-complexity sequence) or germline leakage than true recurrence. The library's header read saw an identical in-frame 3-bp deletion in one gene in two samples within the first rows of this MAF, and the t_alt_count/t_ref_count columns look empty, so allele-fraction or depth filters cannot be applied. For STAG2 and ESPL1 list every row (sample, position, ref/alt, Variant_Classification, HGVSp_Short, dbSNP_RS, Hotspot) and count distinct variants versus mutated samples. Cohort-wide, tabulate how many (Chromosome, Start_Position, alleles) keys occur in two or more samples and whether they carry dbSNP ids or are indels in repeats. Also check whether mutation calling looks homogeneous across samples (per-sample mutation counts by SAMPLE_TYPE and by assay, since the cohort mixes primary/recurrent tumours and WXS/WGS); if assays differ in yield, give per-assay frequencies. If a gene's count rests mainly on one identical variant repeated across samples, report the frequency with and without it and do not call the gene frequently altered on that variant alone; if the hits are different variants at different positions in different samples, treat them as independent and say so.",
+      "from": [
+        "sl-biodsa-test-e0390e940c4c",
+        "sl-biodsa-test-742cdbb85037"
+      ],
+      "reason": "A numerator inflated by a repeated artefact or germline variant would wrongly support the claim; this sensitivity check can change the count.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-b0b2f2b5af28"
+      }
+    },
+    {
+      "text": "Base the verdict strictly on n/N in the deposited tables, not on remembered literature frequencies. Cancer sequencing studies often use a two-stage design (exome/genome discovery set, then a targeted prevalence screen of candidate genes in additional tumours), so published percentages may rest on a larger or different set of samples than the ones deposited, and discovery-set frequencies of selected genes are subject to winner's-curse inflation. Count how many samples the deposited data contain and use that; do not expect the deposited table to reproduce any headline figure you recall, and do not adjust your result toward one.",
+      "from": [
+        "sl-biodsa-test-742cdbb85037"
+      ],
+      "reason": "Prevents the label being set by recalled published numbers that may refer to a different denominator than the data in hand.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-8517d1cc9fec"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams fixed the meaning of 'frequently' as raw prevalence (about 5% of tumours, or 'several %', plus a high rank by mutated-sample count) and judged both genes by it. Neither tested whether that rule discriminates in this file: how many genes it would call 'frequently altered', and whether long passenger-type genes (team A itself reports TTN at the same mutated-sample count as ESPL1) pass it too.",
+      "Both teams used the same kind of background model (per-sample burden x gene length, uniform rate, gene length taken from outside the data) and neither calibrated it against the file. Team A reports it over-predicts TTN several-fold and MUC16 entirely; team B reports the ESPL1 result does not survive doubling the rate. Neither established which rate the data support for ESPL1.",
+      "Both teams treated 'remove the most mutated tumours' as a pure passenger check. Neither tested whether mutation burden tracks clinical stratum (SUBTYPE invasive/superficial, TNM, GRADE), in which case that exclusion removes a legitimate part of the TCC population rather than outliers.",
+      "Both teams took Variant_Classification at face value for the STAG2 and ESPL1 rows and did not cross-check it against the Consequence, HGVSc/HGVSp, Transcript_ID/RefSeq and Protein_position columns.",
+      "Both teams equate 'altered' with 'non-silent somatic mutation' because the study has no copy-number or structural-variant table, and read the result as a lower bound. This is stated by both and is reasonable, but it is an assumption about the hypothesis, not a tested fact.",
+      "Both teams read the hypothesis as a conjunction (each gene must be frequent on its own) rather than as a statement about the pair."
+    ],
+    "unused_evidence": [
+      "Silent rows for the two genes. Both teams excluded them from the numerator (correct) but neither used them as a local, data-based background: the gene's own non-silent:silent ratio against the cohort-wide ratio. Team A noted ESPL1's silent count is above expectation and stopped there. This could change how the ESPL1 'excess over background' is read.",
+      "SUBTYPE (62 invasive / 37 superficial), TNM (21 values) and GRADE (1/2/3). Team A reported one subtype split as context; team B did not use them. Neither related them to burden or asked whether the ESPL1 frequency is cohort-wide or confined to one stratum.",
+      "Consequence (39 values, including combined terms such as 'missense_variant,splice_region_variant'), HGVSc, HGVSp, Transcript_ID, RefSeq, Protein_position, Codons: populated for almost every row and not used by either team to verify the per-row calls for the two genes.",
+      "TMB_NONSYNONYMOUS in the sample table: team B used it, team A used MAF-derived burden; nobody confirmed the two agree per sample (cheap check that the burden covariate is the same thing in both analyses).",
+      "GENE_PANEL (57 'WXS,WGS' vs 42 'WXS,WGS,RNA-Seq') and SAMPLE_TYPE (86 primary / 13 recurrence): used by one team each as sensitivity views; no sign that either changes the answer.",
+      "Columns that are empty in every row (dbSNP_RS, allele counts, validation status, matched-normal alleles) and Hotspot (0 in every row): cannot be used; both teams noticed. Not a gap."
+    ],
+    "unresolved_weak_points": [
+      "Both teams name ESPL1 as the weak half and both only reported it. Team A wrote a rule in advance that includes 'clear excess over length-scaled background, not driven by ... hypermutators', then found ESPL1 burden-dependent with only a nominal excess, and kept the label on prevalence alone. The rule's own clauses were not all met and this was not reconciled.",
+      "Team B's background test for ESPL1 is, by its own account, a crude length model that fails when the rate is doubled. The team did not determine which rate the data support, so the test neither confirms nor refutes.",
+      "Team A's warning that the mutation file looks curated and contains artefact-like recurrent variants (identical variants in many samples, adjacent-position pairs) was resolved only for 'no repeated variant in the two genes'. Whether the rank of ESPL1 is stable once artefact-like genes are set aside was asserted ('would only improve'), not computed.",
+      "Resolved by both, by test: suffixed sample IDs are distinct patients; gene aliases and coordinates; chrX assayability; cohort is all TCC."
+    ],
+    "second_readings": [
+      "'Frequently' as absolute prevalence (share of tumours) versus 'recurrently, beyond what background mutation explains'. The two readings agree for STAG2 and may not for ESPL1. This is the only reading on which the label could move.",
+      "'STAG2 and ESPL1' as two separate claims that must each hold, versus one claim about the pair (tumours with an alteration in either gene). Team B computed the either-gene count; team A did not. This second reading cannot make the claim weaker than the conjunction.",
+      "'Altered' as any genomic alteration (mutation, copy number, rearrangement) versus mutation only. The data hold only mutations, so only a lower bound can be measured; both teams say so.",
+      "'In TCC tumors' as the whole cohort versus within each clinical subtype. If one gene is essentially confined to one subtype, 'frequent in TCC' rests on the cohort's subtype mix."
+    ],
+    "verdict": "Moderately high trust. The cohort, denominator, gene lookup, assayability and sample independence were tested by both teams and hold, and the STAG2 half is robust under every check either team ran. The label rests on the ESPL1 half and on reading 'frequently' as raw prevalence; both teams named this as their weakest point and reported it without resolving it with a data-based check (local silent-mutation background, calibration of the background model, whether the prevalence rule discriminates, burden versus clinical stratum), so the answer should not go out until those checks are run.",
+    "questions": [
+      {
+        "to": "bd29-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You noted that ESPL1 carries more silent mutations than your model expects, but did not use it. For ESPL1 and for STAG2, count non-silent and silent mutations and compare each gene's non-silent:silent ratio with the cohort-wide ratio from the same file (exact binomial test), and recompute the ESPL1 expectation using a background rate scaled to the gene's own silent count instead of the uniform rate. Does ESPL1 still show an excess over background, and does the result change how you apply the 'clear excess over background' clause of the rule you wrote before the analysis?",
+        "from": [
+          "sl-biodsa-test-6af29bd3bda0",
+          "sl-biodsa-test-c7af6d04c1b3"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-705449573c77"
+      },
+      {
+        "to": "bd29-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Apply your pre-set rule to every gene in the file, not only to the two target genes. How many genes does it label 'frequently altered'? List every gene whose non-silent mutated-sample count is equal to or higher than ESPL1's (you report TTN at the same count), flag those driven by one repeated variant, and give each one's count after removing the top-10% burden samples. Is ESPL1's fall under that exclusion typical or unusual among genes at its rank, and what is its rank once artefact-like genes are removed (computed, not assumed)? Does the rule separate recurrent targets from passenger genes in this file, and if not, does that change the criterion you rely on?",
+        "from": [
+          "sl-biodsa-test-78bbe08eb0d5",
+          "sl-biodsa-test-f48f59bb4259"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-337f4bb6250f"
+      },
+      {
+        "to": "bd29-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your burden-exclusion check treats the most mutated tumours as outliers. Test whether burden tracks clinical stratum: compare per-sample non-silent burden across SUBTYPE, TNM T-stage and GRADE, and tabulate which strata the top-10% burden samples belong to. Then give each gene's frequency with a confidence interval within invasive and within superficial tumours, and within burden tertiles inside the invasive group. Is the ESPL1 frequency a property of the whole TCC cohort, of one clinical stratum, or of a handful of high-burden tumours regardless of stratum, and does that change the denominator or the reading of the exclusion check?",
+        "from": [
+          "sl-biodsa-test-6af29bd3bda0"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-972d4a30c7e6"
+      },
+      {
+        "to": "bd29-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your counts rest on Variant_Classification alone. For every STAG2 and ESPL1 row, print Variant_Classification next to Consequence, HGVSc, HGVSp_Short, Transcript_ID, RefSeq and Protein_position. Check that each counted row has a protein-level change on one consistent coding transcript of that gene, that no row counted as non-silent is splice-region-only, intronic or synonymous by Consequence (and the reverse), and whether two rows in the same sample sit at adjacent positions and are one event. Does any sample enter or leave either numerator, and does that change your method?",
+        "from": [
+          "sl-biodsa-test-e81282bc9215"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-f3e30add9885"
+      },
+      {
+        "to": "bd29-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your ESPL1 background test changes its verdict when the rate is doubled, and you did not establish which rate the data support. Calibrate it on the file: (a) run the same test on every gene and report how many genes reach a P-value as small as ESPL1's, and how well expected and observed counts agree for long genes; (b) compare ESPL1's and STAG2's non-silent:silent ratio with the cohort-wide ratio (exact binomial test), using the genes' own silent mutations as a local background. Which rate multiplier do these checks support for ESPL1, and does the result change whether you count the background test as evidence for the claim?",
+        "from": [
+          "sl-biodsa-test-bf7cebbd7d91"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-d1173b96e59e"
+      },
+      {
+        "to": "bd29-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your decision rule ('top ranks, several % of tumours') was not tested for whether it discriminates. List every gene whose non-silent mutated-sample count is equal to or higher than ESPL1's, flag those whose count comes from one identical variant repeated across samples (artefact-like), and give each remaining gene's count after dropping the most mutated tumours. How many genes would your rule call 'frequently altered', are long passenger-type genes among them, and where does ESPL1 sit in that list by burden-dependence? Does this change the criterion you use for 'frequently'?",
+        "from": [
+          "sl-biodsa-test-3441722107ae",
+          "sl-biodsa-test-6e82c9ab07de"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-e2a4e58b014f"
+      },
+      {
+        "to": "bd29-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your method did not use SUBTYPE, TNM or GRADE. Compare per-sample burden across these strata and tabulate which strata the most mutated tumours you dropped belong to. Then give each gene's frequency with an exact confidence interval within invasive and within superficial tumours and by grade. Is each gene's frequency cohort-wide or concentrated in one clinical stratum, and is your 'drop the most mutated tumours' sensitivity check removing outliers or removing a clinical subgroup of TCC? Does that change the method or the weight you give that check?",
+        "from": [
+          "sl-biodsa-test-bf7cebbd7d91"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-fe44f2b63d88"
+      },
+      {
+        "to": "bd29-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You defined 'altered' from Variant_Classification only. For every STAG2 and ESPL1 row, print Variant_Classification next to Consequence, HGVSc, HGVSp_Short, Transcript_ID, RefSeq and Protein_position, and check that each counted row is a protein-level change on one consistent coding transcript of that gene, that the two classification columns agree on silent versus non-silent, and whether two rows in one sample at adjacent positions are a single event. Also confirm that the clinical TMB_NONSYNONYMOUS you used orders samples the same way as non-silent counts from the mutation file. Does any sample enter or leave either numerator, or any tumour change burden group, and does that change your method?",
+        "from": [
+          "sl-biodsa-test-adb5ef7c5673"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-3855832b77e5"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In cancer-genomics literature, when a gene is described as 'frequently altered' or 'frequently mutated' in a tumour type, is there a conventional prevalence floor (a percentage of tumours), or is the term normally tied to statistical significance above background mutation rate (for example MutSigCV or dNdScv q-values)? How do large cohort papers use the phrase for genes mutated in a single-digit percentage of tumours?",
+          "why": "Both teams' label depends on a prevalence threshold they chose themselves; a documented convention would tell them whether prevalence alone, or excess over background, is the right criterion for the weaker of the two genes.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How is a gene-level non-silent to silent (dN/dS-type) comparison defined for somatic mutation data, what non-silent:silent ratio is expected under neutrality in an exome given typical mutation spectra, and how many mutations per gene are needed for such a test to have useful power? What does dNdScv require as input and can it run on a mutation table without coverage or allele counts?",
+          "why": "Both teams said formal significance tools could not be run and fell back on an uncalibrated gene-length model; knowing the neutral expectation and input requirements would let them use the silent mutations already in the file as a local background.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In whole-exome somatic mutation studies, what approaches are recommended for judging whether a gene's mutations in high-mutation-burden tumours are passengers (per-sample burden-aware null models such as Poisson-binomial, covariate-adjusted background rates, exclusion of hypermutated samples), and what are the known failure modes of a uniform per-base rate scaled by coding length (for example over-prediction for very long or late-replicating genes)?",
+          "why": "Each team built its own burden-by-length null and saw signs it is miscalibrated; an account of the standard corrections and their failure modes would tell them how far to trust the excess-over-background result for the gene concentrated in high-burden tumours.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In cancer-genomics literature, when a gene is described as 'frequently altered' or 'frequently mutated' in a tumour type, is there a conventional prevalence floor (a percentage of tumours), or is the term normally tied to statistical significance above background mutation rate (for example MutSigCV or dNdScv q-values)? How do large cohort papers use the phrase for genes mutated in a single-digit percentage of tumours?",
+          "answer": "No conventional prevalence floor was found: none of the sources read defines 'frequently mutated/altered' by a percentage of tumours, and the web does not settle a numeric cutoff. Large cohort papers tie gene-level claims to statistical excess over background, and report prevalence only as a description. Lawrence et al. 2014 (4,742 tumours, 21 types) define candidate cancer genes as genes with somatic point mutations 'at a statistically significant rate or pattern' (MutSig, FDR q<=0.1) and state that 'the mere presence of somatic mutations is insufficient to implicate a gene', because 93% of all genes carried mutations in at least five samples. The same paper uses prevalence bands descriptively: >20% of tumours is 'a high proportion', 2-20% is 'intermediate frequency', and most cancer genes are in the 2-20% band or lower; half of its significant gene-by-tumour-type pairs involved <=6.1% of patients and a quarter <=3.1%. So single-digit-percent genes are routinely reported as significantly/recurrently mutated, but only when the excess over background is significant; prevalence alone is not the criterion. Conversely, Lawrence et al. 2013 show that 'mutated at a significant frequency' under a naive background gave 450 genes in 178 lung squamous tumours, many implausible (olfactory receptors, TTN, MUC16), and the FLAGS paper uses 'frequently mutated genes' purely descriptively for genes that often carry variants because they are long. Two practical points from the same sources: (a) power is low in small cohorts - Lawrence 2014 found sample sizes of that study inadequate to detect genes mutated at 5% above background in 17 of 21 tumour types under an exome-wide threshold (p<=0.1/20,000), so non-significance in about 100 tumours is not evidence of no excess; (b) both Lawrence 2014 and Martincorena 2017 use restricted hypothesis testing on a pre-specified gene list to regain power, so testing only the two named genes without exome-wide correction is an accepted practice.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4048962/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3919509/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5720395/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4267152/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd29-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-47760bad0320"
+            },
+            "bd29-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-920fe451c0ca"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cancer-genomics literature, when a gene is described as 'frequently altered' or 'frequently mutated' in a tumour type, is there a conventional prevalence floor (a percentage of tumours), or is the term normally tied to statistical significance above background mutation rate (for example MutSigCV or dNdScv q-values)? How do large cohort papers use the phrase for genes mutated in a single-digit percentage of tumours? ANSWER: No conventional prevalence floor was found: none of the sources read defines 'frequently mutated/altered' by a percentage of tumours, and the web does not settle a numeric cutoff. Large cohort papers tie gene-level claims to statistical excess over background, and report prevalence only as a description. Lawrence et al. 2014 (4,742 tumours, 21 types) define candidate cancer genes as genes with somatic point mutations 'at a statistically significant rate or pattern' (MutSig, FDR q<=0.1) and state that 'the mere presence of somatic mutations is insufficient to implicate a gene', because 93% of all genes carried mutations in at least five samples. The same paper uses prevalence bands descriptively: >20% of tumours is 'a high proportion', 2-20% is 'intermediate frequency', and most cancer genes are in the 2-20% band or lower; half of its significant gene-by-tumour-type pairs involved <=6.1% of patients and a quarter <=3.1%. So single-digit-percent genes are routinely reported as significantly/recurrently mutated, but only when the excess over background is significant; prevalence alone is not the criterion. Conversely, Lawrence et al. 2013 show that 'mutated at a significant frequency' under a naive background gave 450 genes in 178 lung squamous tumours, many implausible (olfactory receptors, TTN, MUC16), and the FLAGS paper uses 'frequently mutated genes' purely descriptively for genes that often carry variants because they are long. Two practical points from the same sources: (a) power is low in small cohorts - Lawrence 2014 found sample sizes of that study inadequate to detect genes mutated at 5% above background in 17 of 21 tumour types under an exome-wide threshold (p<=0.1/20,000), so non-significance in about 100 tumours is not evidence of no excess; (b) both Lawrence 2014 and Martincorena 2017 use restricted hypothesis testing on a pre-specified gene list to regain power, so testing only the two named genes without exome-wide correction is an accepted practice. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC4048962/, https://pmc.ncbi.nlm.nih.gov/articles/PMC3919509/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5720395/, https://pmc.ncbi.nlm.nih.gov/articles/PMC4267152/."
+        },
+        {
+          "question": "How is a gene-level non-silent to silent (dN/dS-type) comparison defined for somatic mutation data, what non-silent:silent ratio is expected under neutrality in an exome given typical mutation spectra, and how many mutations per gene are needed for such a test to have useful power? What does dNdScv require as input and can it run on a mutation table without coverage or allele counts?",
+          "answer": "Definition: dN/dS for somatic data is the ratio of non-synonymous to synonymous mutations normalised by what is expected neutrally given the gene's sequence composition and the mutation spectrum (Martincorena 2017 use a 192-rate trinucleotide, strand-aware Poisson model and separate ratios for missense, nonsense and essential-splice mutations); synonymous mutations are assumed neutral and serve as the background, dN/dS=1 is neutrality, and a gene dN/dS of 10 means about 90% of its non-synonymous mutations are drivers. Simpler versions test observed non-silent counts with a binomial against (silent rate x neutral NS:S ratio x length) (Krauthammer-group paper, PMC3989533). Neutral expectation: about 3 non-silent to 1 silent. Greenman 2006 estimate the null silent fraction as 0.246 ('silent:nonsilent ratio in the absence of selection will typically be 1:3') and warn that spectrum or composition can change it substantially; Lawrence 2014 use 'the 3:1 typical ratio of non-silent to silent mutations' in their power model, and their exome-wide counts (540,831 missense + 46,264 nonsense + 33,637 splice vs 207,144 synonymous) give 3.0:1 (missense:silent 2.6:1). The ratio is spectrum-dependent: UV C>T at dipyrimidines gives a mean per-gene NS:S of 1.67 and 1.93 overall in sun-exposed melanoma, so the cohort's own exome-wide non-silent:silent ratio (ideally excluding known drivers) should be used as the neutral value rather than a fixed 3. Genome-wide dN/dS in cancer is close to 1, and Tokheim 2016 note the non-silent:silent ratio varies far less across tumours than mutation rate does. Power: a gene-only (local) test is weak. Martincorena 2017 say the per-gene-rate model (dNdSloc) 'lacks statistical power to detect positively selected genes in smaller datasets'; the dNdScv vignette says it is 'typically only powered in very large datasets' (in 196 simulated breast exomes it detected only ARID1A); Lawrence 2013 say silent substitutions alone are too sparse to correct rates gene-by-gene. No source read gives a minimum count; by the library's own arithmetic (one-sided binomial against a 25% silent fraction, not from a source) a gene needs at least 11 mutations with 0 silent, 18 with 1 silent, 23 with 2 silent to reach p<0.05, so a gene with a handful of mutations cannot be tested this way and the result should be reported as uninformative, not as evidence of neutrality. dNdScv input: a 5-column table (sampleID, chr, pos, ref, alt) of independent somatic events, substitutions and indels, which must include the synonymous mutations because the background is fitted on them; it needs no coverage, depth or allele counts for exome/genome data (the only coverage argument, dc, is for duplex sequencing). Reference annotation and covariates for GRCh37/hg19 ship with the R package (refdb='hg19' default). Defaults: samples with more than 3,000 coding mutations are dropped and at most 3 mutations per gene per sample are kept (set to Inf to disable); the vignette warns that theta<1 signals a poorly fitting dataset. So it can run on a MAF-derived table without coverage or allele counts provided the R package is installed locally; whether the package is available offline in the teams' environment was not checked.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5720395/",
+            "https://github.com/im3sanger/dndscv/blob/master/vignettes/dNdScv.Rmd",
+            "https://github.com/im3sanger/dndscv/blob/master/man/dndscv.Rd",
+            "https://github.com/im3sanger/dndscv",
+            "https://doi.org/10.1534/genetics.105.044677",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4048962/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3989533/",
+            "https://www.pnas.org/doi/full/10.1073/pnas.1616440113"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd29-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-8a9b7b1c105f"
+            },
+            "bd29-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-6d97842806ac"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How is a gene-level non-silent to silent (dN/dS-type) comparison defined for somatic mutation data, what non-silent:silent ratio is expected under neutrality in an exome given typical mutation spectra, and how many mutations per gene are needed for such a test to have useful power? What does dNdScv require as input and can it run on a mutation table without coverage or allele counts? ANSWER: Definition: dN/dS for somatic data is the ratio of non-synonymous to synonymous mutations normalised by what is expected neutrally given the gene's sequence composition and the mutation spectrum (Martincorena 2017 use a 192-rate trinucleotide, strand-aware Poisson model and separate ratios for missense, nonsense and essential-splice mutations); synonymous mutations are assumed neutral and serve as the background, dN/dS=1 is neutrality, and a gene dN/dS of 10 means about 90% of its non-synonymous mutations are drivers. Simpler versions test observed non-silent counts with a binomial against (silent rate x neutral NS:S ratio x length) (Krauthammer-group paper, PMC3989533). Neutral expectation: about 3 non-silent to 1 silent. Greenman 2006 estimate the null silent fraction as 0.246 ('silent:nonsilent ratio in the absence of selection will typically be 1:3') and warn that spectrum or composition can change it substantially; Lawrence 2014 use 'the 3:1 typical ratio of non-silent to silent mutations' in their power model, and their exome-wide counts (540,831 missense + 46,264 nonsense + 33,637 splice vs 207,144 synonymous) give 3.0:1 (missense:silent 2.6:1). The ratio is spectrum-dependent: UV C>T at dipyrimidines gives a mean per-gene NS:S of 1.67 and 1.93 overall in sun-exposed melanoma, so the cohort's own exome-wide non-silent:silent ratio (ideally excluding known drivers) should be used as the neutral value rather than a fixed 3. Genome-wide dN/dS in cancer is close to 1, and Tokheim 2016 note the non-silent:silent ratio varies far less across tumours than mutation rate does. Power: a gene-only (local) test is weak. Martincorena 2017 say the per-gene-rate model (dNdSloc) 'lacks statistical power to detect positively selected genes in smaller datasets'; the dNdScv vignette says it is 'typically only powered in very large datasets' (in 196 simulated breast exomes it detected only ARID1A); Lawrence 2013 say silent substitutions alone are too sparse to correct rates gene-by-gene. No source read gives a minimum count; by the library's own arithmetic (one-sided binomial against a 25% silent fraction, not from a source) a gene needs at least 11 mutations with 0 silent, 18 with 1 silent, 23 with 2 silent to reach p<0.05, so a gene with a handful of mutations cannot be tested this way and the result should be reported as uninformative, not as evidence of neutrality. dNdScv input: a 5-column table (sampleID, chr, pos, ref, alt) of independent somatic events, substitutions and indels, which must include the synonymous mutations because the background is fitted on them; it needs no coverage, depth or allele counts for exome/genome data (the only coverage argument, dc, is for duplex sequencing). Reference annotation and covariates for GRCh37/hg19 ship with the R package (refdb='hg19' default). Defaults: samples with more than 3,000 coding mutations are dropped and at most 3 mutations per gene per sample are kept (set to Inf to disable); the vignette warns that theta<1 signals a poorly fitting dataset. So it can run on a MAF-derived table without coverage or allele counts provided the R package is installed locally; whether the package is available offline in the teams' environment was not checked. HOW SURE: high. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC5720395/, https://github.com/im3sanger/dndscv/blob/master/vignettes/dNdScv.Rmd, https://github.com/im3sanger/dndscv/blob/master/man/dndscv.Rd, https://github.com/im3sanger/dndscv, https://doi.org/10.1534/genetics.105.044677, https://pmc.ncbi.nlm.nih.gov/articles/PMC4048962/, https://pmc.ncbi.nlm.nih.gov/articles/PMC3989533/, https://www.pnas.org/doi/full/10.1073/pnas.1616440113."
+        },
+        {
+          "question": "In whole-exome somatic mutation studies, what approaches are recommended for judging whether a gene's mutations in high-mutation-burden tumours are passengers (per-sample burden-aware null models such as Poisson-binomial, covariate-adjusted background rates, exclusion of hypermutated samples), and what are the known failure modes of a uniform per-base rate scaled by coding length (for example over-prediction for very long or late-replicating genes)?",
+          "answer": "Recommended practice in the sources read: (1) estimate the background per gene AND per patient - MutSigCV uses patient-specific mutation frequency and spectrum plus gene-specific rates from expression level and replication time, estimating a background 'for each gene-patient-category combination' from silent and flanking non-coding mutations and pooling genes with similar covariates because per-gene silent counts are too sparse; (2) model the remaining gene-to-gene rate variation as overdispersion - dNdScv fits a negative-binomial (Gamma-Poisson) regression of synonymous counts on 20 covariates and combines it with the gene's own synonymous count; (3) limit or separate hypermutators - dNdScv by default removes samples with more than 3,000 coding mutations and caps mutations per gene per sample at 3, and Martincorena 2017 restrict driver-number analyses to tumours with fewer than 500 coding mutations because 'even very small inaccuracies in these models can lead to considerable biases in samples with large numbers of mutations'; they find dN/dS very close to 1 in APOBEC, tobacco and mismatch-repair hypermutators, i.e. the great majority of coding mutations in such tumours are passengers; (4) use ratiometric evidence (non-silent:silent ratio, inactivating fraction, clustering), which Tokheim 2016 show is far less sensitive to unexplained rate variability than rate-based tests. The term 'Poisson-binomial' does not appear in the sources read; the nearest documented form is Lawrence 2014's per-patient probability of at least one non-silent hit, p0 = 1-(1-mu*f_g)^(L*3/4), tested binomially across patients, which becomes a Poisson-binomial when mu is made patient-specific (library's inference). Failure modes of a uniform per-base rate x coding length: the direction is the opposite of the example in the question. Lawrence 2013 show a uniform rate UNDER-predicts background for long, low-expressed, late-replicating genes (olfactory receptors, TTN, MUC16, RYR2/3, CSMD3), producing false positives even though length was already accounted for; mutation rate differs about 2.9-fold between extreme expression percentiles and about 2.9-fold between latest and earliest replication percentiles, and the gene-specific rate factor at the 90th percentile is 3.9x the median (Lawrence 2014). It correspondingly OVER-predicts for highly expressed, early-replicating genes (known cancer genes trend this way), giving false negatives ('false-negative results if the baseline frequency is overestimated'). The problem grows with sample size and with tumour mutation rate; in a neutral melanoma simulation the uniform dN/dS model called 368 genes significant at q<0.05 versus none for the local or covariate models; Tokheim 2016 show unexplained rate variability of CV 0.05-0.2 sharply raises false positives at high background rates, and that MutSigCV p-values are conservative in the P<=0.05 range. Pooling burden across patients is also unsafe: Lawrence 2013 state patient heterogeneity can produce both false positives and false negatives. Implication for trust: an excess-over-background result from a burden x length null is at best order-of-magnitude (a factor of roughly 3-4 either way from unmodelled gene-level rate variation alone); for a gene whose hits sit mainly in high-burden tumours, check whether the excess survives after dropping those tumours or giving each tumour its own rate, and whether the gene's own non-silent:silent ratio and truncating fraction depart from the cohort-wide values; if not, the mutations are consistent with passengers.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3919509/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4048962/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5720395/",
+            "https://github.com/im3sanger/dndscv/blob/master/man/dndscv.Rd",
+            "https://www.pnas.org/doi/full/10.1073/pnas.1616440113"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd29-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-478fb1128930"
+            },
+            "bd29-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-0299b49ba84a"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In whole-exome somatic mutation studies, what approaches are recommended for judging whether a gene's mutations in high-mutation-burden tumours are passengers (per-sample burden-aware null models such as Poisson-binomial, covariate-adjusted background rates, exclusion of hypermutated samples), and what are the known failure modes of a uniform per-base rate scaled by coding length (for example over-prediction for very long or late-replicating genes)? ANSWER: Recommended practice in the sources read: (1) estimate the background per gene AND per patient - MutSigCV uses patient-specific mutation frequency and spectrum plus gene-specific rates from expression level and replication time, estimating a background 'for each gene-patient-category combination' from silent and flanking non-coding mutations and pooling genes with similar covariates because per-gene silent counts are too sparse; (2) model the remaining gene-to-gene rate variation as overdispersion - dNdScv fits a negative-binomial (Gamma-Poisson) regression of synonymous counts on 20 covariates and combines it with the gene's own synonymous count; (3) limit or separate hypermutators - dNdScv by default removes samples with more than 3,000 coding mutations and caps mutations per gene per sample at 3, and Martincorena 2017 restrict driver-number analyses to tumours with fewer than 500 coding mutations because 'even very small inaccuracies in these models can lead to considerable biases in samples with large numbers of mutations'; they find dN/dS very close to 1 in APOBEC, tobacco and mismatch-repair hypermutators, i.e. the great majority of coding mutations in such tumours are passengers; (4) use ratiometric evidence (non-silent:silent ratio, inactivating fraction, clustering), which Tokheim 2016 show is far less sensitive to unexplained rate variability than rate-based tests. The term 'Poisson-binomial' does not appear in the sources read; the nearest documented form is Lawrence 2014's per-patient probability of at least one non-silent hit, p0 = 1-(1-mu*f_g)^(L*3/4), tested binomially across patients, which becomes a Poisson-binomial when mu is made patient-specific (library's inference). Failure modes of a uniform per-base rate x coding length: the direction is the opposite of the example in the question. Lawrence 2013 show a uniform rate UNDER-predicts background for long, low-expressed, late-replicating genes (olfactory receptors, TTN, MUC16, RYR2/3, CSMD3), producing false positives even though length was already accounted for; mutation rate differs about 2.9-fold between extreme expression percentiles and about 2.9-fold between latest and earliest replication percentiles, and the gene-specific rate factor at the 90th percentile is 3.9x the median (Lawrence 2014). It correspondingly OVER-predicts for highly expressed, early-replicating genes (known cancer genes trend this way), giving false negatives ('false-negative results if the baseline frequency is overestimated'). The problem grows with sample size and with tumour mutation rate; in a neutral melanoma simulation the uniform dN/dS model called 368 genes significant at q<0.05 versus none for the local or covariate models; Tokheim 2016 show unexplained rate variability of CV 0.05-0.2 sharply raises false positives at high background rates, and that MutSigCV p-values are conservative in the P<=0.05 range. Pooling burden across patients is also unsafe: Lawrence 2013 state patient heterogeneity can produce both false positives and false negatives. Implication for trust: an excess-over-background result from a burden x length null is at best order-of-magnitude (a factor of roughly 3-4 either way from unmodelled gene-level rate variation alone); for a gene whose hits sit mainly in high-burden tumours, check whether the excess survives after dropping those tumours or giving each tumour its own rate, and whether the gene's own non-silent:silent ratio and truncating fraction depart from the cohort-wide values; if not, the mutations are consistent with passengers. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC3919509/, https://pmc.ncbi.nlm.nih.gov/articles/PMC4048962/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5720395/, https://github.com/im3sanger/dndscv/blob/master/man/dndscv.Rd, https://www.pnas.org/doi/full/10.1073/pnas.1616440113."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd29-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd29-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd29-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd29-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd29-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 103.06144358299207,
+      "cost_usd": 0.18142160000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 112.07350204093382,
+      "cost_usd": 0.1685714,
+      "error": null
+    },
+    {
+      "agent": "bd29-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 140.19533391704317,
+      "cost_usd": 0.2187058,
+      "error": null
+    },
+    {
+      "agent": "bd29-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 179.83237808395643,
+      "cost_usd": 0.3482712,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 151.56580145901535,
+      "cost_usd": 0.3307368,
+      "error": null
+    },
+    {
+      "agent": "bd29-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 226.10688808304258,
+      "cost_usd": 0.6530993,
+      "error": null
+    },
+    {
+      "agent": "bd29-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 230.54570483299904,
+      "cost_usd": 0.4339636,
+      "error": null
+    },
+    {
+      "agent": "bd29-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 246.74868975009304,
+      "cost_usd": 0.5183038,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}
