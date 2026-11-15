@@ -83,6 +83,13 @@ def mock_script(adapter):
             return {"findings": []}
         if "# Your job: referee" in brief:
             return {"pick": "X", "reason": "mock referee", "test": "none", "own_answer": None}
+        if "# Your job: head of the library" in brief:
+            return {"verdict": "mock: the findings apply", "strong": [], "weak": [], "missing": []}
+        if "# Your job: head of Team" in brief:
+            notes = [{"from": [], "why": "mock review",
+                      "text": "NOTE FROM THE HEAD OF TEAM B: check whether any sample id repeats. Does it change your method?"}] \
+                if "# Your job: head of Team B" in brief else []
+            return {"verdict": "mock review", "approve": not notes, "notes": notes}
         revising = "# Your job: analyst, answering the director's questions" in brief
         number = 2.0 if agent.id.endswith("team-b") and not revising else 1.0
         study = next(s for s in adapter.studies() if s.id == study_id)
@@ -196,7 +203,8 @@ def make_config(args) -> Config:
                   referee=not args.no_referee, challenge=not args.no_challenge,
                   team_search=not (args.no_team_search or no_search), research=not (args.no_research or no_search),
                   brief_teams=brief_teams(args.brief_teams), director_model=args.director_model,
-                  worker_model=args.model, team_b_model=args.team_b_model)
+                  worker_model=args.model, team_b_model=args.team_b_model,
+                  heads=bool(getattr(args, "heads", False)), head_model=getattr(args, "head_model", None) or "fable")
 
 
 def cmd_lab(args) -> int:
@@ -448,6 +456,10 @@ def build_parser() -> argparse.ArgumentParser:
                    help="report agreeing first answers as replicated without the director's challenge")
     p.add_argument("--brief-teams", default="team-a",
                    help="teams that receive the director's briefing, comma-separated (default: team-a)")
+    p.add_argument("--heads", action="store_true",
+                   help="add department heads (library, team A, team B) who read every department and review "
+                        "their department's work (D-22; off in the frozen version 3)")
+    p.add_argument("--head-model", default="fable", help="model for the department heads")
     p.set_defaults(fn=cmd_lab)
 
     p = sub.add_parser("baseline", help="run single-agent attempts")

@@ -79,6 +79,26 @@ def study_section(record: dict, grade: dict | None) -> list[str]:
             state = "delivered" if q["delivered"] else "blocked (" + "; ".join(q["reasons"]) + ")"
             lines.append(f"- question to {q['to']}, {state}: {q['question']}")
         lines.append("")
+    heads = record.get("heads") or {}
+    if heads:
+        lines.append("Department heads (D-22):")
+        lib = heads.get("library")
+        if isinstance(lib, dict):
+            lines.append(f"- head of the library: {lib.get('verdict') or 'no verdict'} ({len(lib.get('weak') or [])} weak, "
+                         f"{len(lib.get('missing') or [])} missing)")
+        for team in ("team-a", "team-b"):
+            rv = heads.get(team)
+            if not isinstance(rv, dict):
+                continue
+            notes = rv.get("notes") or []
+            sent = sum(bool(n.get("delivered")) for n in notes)
+            outcome = ("revised, answer changed" if rv.get("changed_answer") else "revised, answer kept") \
+                if rv.get("revised") else "no revision"
+            lines.append(f"- head of {team}: {sent} of {len(notes)} notes delivered; {outcome}. {rv.get('verdict') or ''}".rstrip())
+            for n in notes:
+                if not n.get("delivered"):
+                    lines.append(f"  - note blocked ({'; '.join(n.get('reasons') or [])}): {n.get('text')}")
+        lines.append("")
     if record.get("questions"):
         lines.append("Questions the director wrote:")
         for q in record["questions"]:

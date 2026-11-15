@@ -19,6 +19,10 @@ How rescues and damage (d) are counted, step by step:
                   A referee that picked neither and gave no usable answer changed nothing.
   third team      per study: what the lab would have reported without team C (the referee's own
                   valid answer, else no answer, which counts as failing) against the final answer.
+  head review     per team, when department heads ran (D-22) and the team's head sent notes: its
+                  first answer against the answer it used after the review (the reviewed one when
+                  valid, else the first). With heads on, the answer a team hands to the comparison
+                  ("handed") is the reviewed one when valid; the later steps start from it.
   research        per team, in studies where research on demand delivered at least one finding:
                   the team's first answer against the answer it used after the revision round
                   that followed the findings (the revised one when valid, else the first).
@@ -119,6 +123,12 @@ class Run:
                 out.append((c, doc if isinstance(doc, dict) else None))
         return out
 
+    def handed(self, sid: str, team: str) -> str:
+        """The id of the answer a team handed to the first comparison: its head-reviewed answer when
+        there is a valid one (D-22), else its first."""
+        review = self.cand(sid, f"{team}-review")
+        return f"{team}-review" if review and review.get("valid") else f"{team}-analysis"
+
     def latest_valid(self, sid: str, team: str) -> str | None:
         """The id of the team's answer the protocol used last (revised if valid, else first)."""
         ids = [_cid(c["team"], c["round"]) for c in self.candidates(sid) if c.get("team") == team and c.get("valid")]
@@ -213,7 +223,7 @@ def false_agreement(run: Run) -> dict:
     failed = [sid for sid in replicated if not run.lab_passed(sid)]
     agreed = [sid for sid in run.lab_ids if any(c.get("round") == "analysis" and c.get("agree")
                                                 for c in run.records[sid].get("comparisons") or [])]
-    wrong = {sid: sum(not run.passed[sid].get(f"{t}-analysis", False) for t in FIRST_TEAMS) for sid in agreed}
+    wrong = {sid: sum(not run.passed[sid].get(run.handed(sid, t), False) for t in FIRST_TEAMS) for sid in agreed}
     return {"replicated_failed": count(len(failed), len(replicated)), "replicated_failed_studies": failed,
             "first_answers_agreed": len(agreed),
             "first_agreed_both_wrong": sum(1 for n in wrong.values() if n == 2),
@@ -238,17 +248,30 @@ def steps(run: Run) -> dict:
     r_changes, r_compared, r_ran, r_nothing = [], 0, 0, 0
     c_changes, c_ran, c_without_answer = [], 0, 0
     ch_changes, ch_compared = [], 0
+    h_changes, h_compared, h_reviews, h_delivered = [], 0, 0, 0
     for sid in run.lab_ids:
         grades, record = run.passed[sid], run.records[sid]
         if record.get("challenged"):
             ch_compared += 1
-            _tally(ch_changes, sid, "study", grades.get("team-a-analysis", False), run.lab_passed(sid))
+            _tally(ch_changes, sid, "study", grades.get(run.handed(sid, "team-a"), False), run.lab_passed(sid))
+        heads = record.get("heads") or {}
         for team in FIRST_TEAMS:
+            review_record = heads.get(team)
+            if isinstance(review_record, dict) and review_record.get("ran"):
+                h_reviews += 1
+                h_delivered += sum(bool(n.get("delivered")) for n in review_record.get("notes") or [])
+            reviewed = run.cand(sid, f"{team}-review")
+            if reviewed is not None and f"{team}-analysis" in grades:
+                h_compared += 1
+                first = grades[f"{team}-analysis"]
+                after = grades.get(f"{team}-review", False) if reviewed.get("valid") else first
+                _tally(h_changes, sid, team, first, after)
             revised = run.cand(sid, f"{team}-revise")
-            if revised is None or f"{team}-analysis" not in grades:
+            handed = run.handed(sid, team)
+            if revised is None or handed not in grades:
                 continue
             q_compared += 1
-            first = grades[f"{team}-analysis"]
+            first = grades[handed]
             after = grades.get(f"{team}-revise", False) if revised.get("valid") else first
             _tally(q_changes, sid, team, first, after)
         ref = record.get("referee")
@@ -276,7 +299,8 @@ def steps(run: Run) -> dict:
             _tally(c_changes, sid, "study", before, run.lab_passed(sid))
     return {"questions": _step(q_changes, q_compared), "challenge": _step(ch_changes, ch_compared),
             "referee": _step(r_changes, r_compared, ran=r_ran, settled_nothing=r_nothing),
-            "team_c": _step(c_changes, c_ran, ran=c_ran, no_answer_without_it=c_without_answer)}
+            "team_c": _step(c_changes, c_ran, ran=c_ran, no_answer_without_it=c_without_answer),
+            "heads": _step(h_changes, h_compared, reviews=h_reviews, notes_delivered=h_delivered)}
 
 
 # ----- e. selection -----
@@ -301,6 +325,8 @@ def noticing(run: Run) -> dict:
     changed, fixed = 0, 0
     for sid in run.lab_ids:
         for cand, doc in run.team_results(sid):
+            if cand.get("round") == "review":     # replies to a department head, not a first answer
+                continue
             if cand.get("round") in REVISING:
                 for r in (doc or {}).get("replies") or []:
                     if isinstance(r, dict):
@@ -317,10 +343,11 @@ def noticing(run: Run) -> dict:
             delivered += bool(q.get("delivered"))
             blocked += not q.get("delivered")
         for team in FIRST_TEAMS:
-            first, revised = run.cand(sid, f"{team}-analysis"), run.cand(sid, f"{team}-revise")
+            handed = run.handed(sid, team)
+            first, revised = run.cand(sid, handed), run.cand(sid, f"{team}-revise")
             if first and revised and revised.get("valid") and revised.get("answer") != first.get("answer"):
                 changed += 1
-                fixed += (not run.passed[sid].get(f"{team}-analysis", False)) and run.passed[sid].get(f"{team}-revise", False)
+                fixed += (not run.passed[sid].get(handed, False)) and run.passed[sid].get(f"{team}-revise", False)
     if no_signs:
         run.missing.append(f"{no_signs} team answer(s) came with no warning_signs list")
     return {"warning_signs": signs, "team_answers_with_signs_list": sign_files, "questions_proposed": proposed,
@@ -346,7 +373,7 @@ def library(run: Run) -> dict:
                 with_sources += bool(links)
                 sources += len(links)
         for cand, doc in run.team_results(sid):
-            if cand.get("round") in REVISING:
+            if cand.get("round") in REVISING or cand.get("round") == "review":
                 continue
             items = (doc or {}).get("pitfalls_checked")
             if not isinstance(items, list):
@@ -452,10 +479,11 @@ def research(run: Run) -> dict:
             reached = True
             for team in FIRST_TEAMS:
                 cand = run.cand(sid, f"{team}-{round_}")
-                if cand is None or f"{team}-analysis" not in run.passed[sid]:
+                handed = run.handed(sid, team)
+                if cand is None or handed not in run.passed[sid]:
                     continue
                 compared += 1
-                first = run.passed[sid][f"{team}-analysis"]
+                first = run.passed[sid][handed]
                 after = run.passed[sid].get(f"{team}-{round_}", False) if cand.get("valid") else first
                 _tally(changes, sid, team, first, after)
         if reached:
@@ -570,6 +598,9 @@ def summary_lines(m: dict) -> list[str]:
               f"({st['questions']['compared']} team answers). Referee: {st['referee']['rescued']} rescued, "
               f"{st['referee']['damaged']} damaged. Team C: {st['team_c']['rescued']} rescued, "
               f"{st['team_c']['damaged']} damaged.",
+              *([f"  Department heads: {st['heads']['reviews']} team reviews, {st['heads']['notes_delivered']} notes "
+                 f"delivered; {st['heads']['compared']} answers revised after a review: {st['heads']['rescued']} rescued, "
+                 f"{st['heads']['damaged']} damaged."] if st.get("heads", {}).get("reviews") else []),
               f"  Selection: the lab passed {frac(sel['lab_passed'])} studies where some answer passed; shipped a "
               f"failing one in: {', '.join(sel['passing_candidate_but_failing_final']) or 'none'}.",
               f"  Noticing: {n['warning_signs']} warning signs; {n['questions_proposed']} questions, "

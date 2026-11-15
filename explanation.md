@@ -30,6 +30,7 @@ A research lab run by AI agents, built for one question: can a team of agents re
 | Team A and Team B | Opus | Its own team's memory only | Each analyses the data without seeing the other. Team A gets the library's briefing; team B does not. Each writes its plan first and records every warning sign it notices |
 | Referee | Opus | Called only on disagreement | Gets both answers without knowing whose is whose. Must design and run a test that tells them apart; may not simply vote |
 | Team C | Opus | Its own memory only | Called only when the referee cannot settle it |
+| Department heads (only with `--heads`, D-22) | Fable | Every department, the other heads' notes and the study's event log | Head of the library reviews the library's findings before the briefing; heads of Team A and Team B review their own scientist's answer before the comparison and may send it notes, which pass the leak check and may not draw on the other team |
 
 **How one study runs** (version 2, from D-15; version 1 briefed both teams and reported agreed answers without a challenge).
 
@@ -233,6 +234,17 @@ Why: judges should be able to see the lab's method, not only read about it. In `
 Visitors can ask any agent a question. The answer comes from Claude playing that agent, given only what that agent could read at that moment of the replay, under the same rule as section 3: Team B asked about Team A says it cannot see Team A's work. A lab guide answers from the whole log, including grades, and says no agent saw them. Without the local server the page answers from the log without a model.
 Data: `web/build_data.py` reads only `events.jsonl`, `study.json`, `results.json` and `records/exa_calls.jsonl`, never `data/` or workspaces, and drops local paths. The test run (`results/test-v2`) is the default; a run still in `runs/` appears live when the server runs.
 Status: built; the server's 44 tests pass, and one question through the Claude command-line tool was answered in about 5 seconds and respected the boundary. Not a measurement of the lab.
+
+**D-22 · Nov 14, 17:45 · Decided · Department heads, as a switch for a new arm.**
+Why: the team asked for a lab shaped like a real one, with a head for each department who can read every department's memory and logs, while workers read only their own. The memory layer was built for this (section 3, M-1), but until now the director was the only head.
+What it is (`--heads`, off by default, so version 3 stays frozen for its test tasks, D-20): three heads on Fable 5.2, for the library, Team A and Team B. They share a department, `heads`, that only heads and the director can read. Each reads every department's memory and is given the study's event log. Workers read only their own department, as before.
+- The head of the library reviews the library's findings before the director's briefing: does each apply to this data, is it backed by a source, what is missing. The director's brief carries the review; the director still decides what goes down.
+- The heads of Team A and Team B each review their own scientist's first answer before the comparison and may send it up to four notes. The lab delivers a note only if it passes the leak check against the other team's answer and cites no fact from the other team's department. A team that receives a note revises once; a revised answer that is not valid is not used.
+Why heads review their own department instead of relaying between teams: a head who reads both blind teams is a second path for one team's answer to reach the other. Crossing between teams stays with the director and the leak check. Unlike the rehearsal's heads (section 1), a head here cannot overrule an answer; it can only ask its own scientist to check something.
+Cost: up to three more Fable sessions per study, plus up to two revisions.
+Measures: a new step, "head review", counts per team how often the review turned a failing first answer into a passing one or the reverse. The later steps now start from the answer a team handed to the comparison (its reviewed answer when valid).
+What we expect, written before any run: the reviews will catch some format problems and warning signs a scientist recorded and did not act on, so some first answers will change; we do not know whether more will be rescued than damaged. Blindness could weaken in ways the checks miss: a head could steer its scientist without numbers and without citing a fact.
+Status: built and tested with scripted agents (10 new tests; 266 tests pass); one free end-to-end run with the scripted backend went library, library review, briefing, analysis, both team reviews, a delivered note, a revision, then the question round. No run with real agents yet.
 
 ## 5. Agent observations
 
