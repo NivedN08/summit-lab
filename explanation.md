@@ -556,6 +556,6 @@ Commands: `python3 -m lab.run lab --benchmark scbench --studies sc02,...,sc36 (a
 | Research on demand | 88 questions, 12 blocked by the leak check, 150 findings delivered; the revision round after it rescued 3, damaged 1 |
 | Cost | lab 300 runs, 814 minutes of agent time, $101.33 ($3.07 a task); Fable alone 66 runs, 179 minutes, $9.23 ($0.14 an attempt) |
 
-What this shows. A lab whose analysts are the weaker model reached the same score as the stronger model working alone, on 33 tasks it had never been tuned on. The steps after the first answers did net good: 9 rescues against 4 damages. Agreement is evidence but not proof: 16 of 21 replicated answers passed (76%), against 7 of 12 for every other label (58%).
+What this shows. A lab whose analysts are the weaker model reached the same score as the stronger model working alone, on 33 tasks it had never been tuned on. The steps after the first answers did net good: 9 rescues against 3 damages (question round 4 and 2, referee 3 and 1, third team 2 and 0; the revision round's 3 and 1 are already inside the question round's count). Agreement is evidence but not proof: 16 of 21 replicated answers passed (76%), against 7 of 12 for every other label (58%).
 
 What it does not show. It is not a win: 23 against 23, at eleven times the cost. Until the Opus-alone number is in, we cannot say how much the lab added to its own analysts. One run per arm. The challenge step, which costs a director run and a round of replies on every agreed answer, changed nothing in the score here.
