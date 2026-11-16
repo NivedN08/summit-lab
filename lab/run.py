@@ -9,9 +9,16 @@
   prereg    freeze a batch's pre-registration (prereg/<batch>.json) or check it (lab/prereg.py)
   replay    rebuild each study's decision from events.jsonl and check it against study.json
   arm       run a control arm: --arm self (self-challenge) or --arm vote (same-cost vote), lab/arms.py
+  loop      the improvement loop (lab/autoloop.py): propose a move, run it on the dev panel against
+            the incumbent, accept it only when code says it beat noise; up to --max-moves moves
 
 Version 4: `lab --preset v4` turns on the "Not verifiable" re-check and the damage guard
 (--recheck, --guard); `arm` takes the same two flags.
+
+The improvement loop's settings (lab/autoloop.py), each off by default: `lab` and `arm` take
+--prompt-dir (prompt overrides); `lab` also takes --config-file (Config fields from a variant's
+config.json), --snapshot-first-round (keep each first team's workspace after the analysis round)
+and --reuse-first-round RUN_DIR (copy that run's first round instead of running it).
 
 Guardrails: `lab`, `baseline` and `arm` take --max-usd, a hard dollar cap for the run directory
 (lab/budget.py), required with the claude and modal backends; --prereg <spec> checks the run
@@ -115,6 +122,8 @@ def mock_script(adapter):
             path.write_text(json.dumps(values, indent=2))
 
     def script(agent, brief, workspace):
+        if PROPOSER_HEADING in brief:
+            return mock_proposer(brief, workspace)
         study_id = workspace.parent.name
         if "# Your job: director, challenging one analyst's answer" in brief:
             return {"untested_assumptions": [], "unused_evidence": [], "unresolved_weak_points": [],
@@ -157,6 +166,28 @@ def mock_script(adapter):
         return {"answer_file": answer_file(study), "method": "mock", "warning_signs": [], "confidence": 0.0}
 
     return script
+
+
+PROPOSER_HEADING = "# Your job: propose one change to the lab"
+# The mock proposer's moves, in turn by how many moves the loop has proposed. The second is not a
+# switch a move may flip, so the loop falls back to its rules there: both paths run in a mock loop.
+MOCK_MOVES = (
+    {"kind": "threshold", "target": "recheck_p", "value": 0.1, "rationale": "mock: a looser p threshold"},
+    {"kind": "toggle", "target": "max_agents", "value": True, "rationale": "mock: not a switch a move may flip"},
+    {"kind": "add_check", "target": "guard_strict_decimals", "value": True, "rationale": "mock: stricter quotes"},
+    {"kind": "edit_section", "target": "analyst_revise.md#Working limits", "rationale": "mock: one more limit",
+     "value": "- You have {time_limit_minutes} minutes in total. When they run out you are stopped, and only what is "
+              "in `{answer_file}` at that moment counts.\n- Check every number you report against the output that "
+              "printed it."},
+)
+
+
+def mock_proposer(brief: str, workspace: pathlib.Path) -> dict:
+    """The mock proposer: writes the next of MOCK_MOVES (by the brief's count of moves so far) as move.json."""
+    found = re.search(r"Moves proposed so far: (\d+)", brief)
+    move = MOCK_MOVES[int(found.group(1) if found else 0) % len(MOCK_MOVES)]
+    (workspace / "move.json").write_text(json.dumps(move, indent=2))
+    return {"move_file": "move.json", "lesson": "mock: no lesson"}
 
 
 def check_can_run(adapter, backend: str, studies) -> None:
@@ -259,12 +290,69 @@ def make_config(args) -> Config:
     """The lab's Config from the `lab` command's flags. --no-search turns off every web search:
     the library (and with it the briefing), team A's search and research on demand."""
     no_search = bool(getattr(args, "no_search", False))
-    return Config(**v4_switches(args), max_agents=args.parallel, max_searches=args.max_searches,
-                  library=not (args.no_library or no_search), questions=not args.no_questions,
-                  referee=not args.no_referee, challenge=not args.no_challenge,
-                  team_search=not (args.no_team_search or no_search), research=not (args.no_research or no_search),
-                  brief_teams=brief_teams(args.brief_teams), director_model=args.director_model,
-                  worker_model=args.model, team_b_model=args.team_b_model, max_usd=getattr(args, "max_usd", None))
+    config = Config(**v4_switches(args), max_agents=args.parallel, max_searches=args.max_searches,
+                    library=not (args.no_library or no_search), questions=not args.no_questions,
+                    referee=not args.no_referee, challenge=not args.no_challenge,
+                    team_search=not (args.no_team_search or no_search), research=not (args.no_research or no_search),
+                    brief_teams=brief_teams(args.brief_teams), director_model=args.director_model,
+                    worker_model=args.model, team_b_model=args.team_b_model, max_usd=getattr(args, "max_usd", None),
+                    prompt_dir=prompt_dir(args), snapshot_first_round=bool(getattr(args, "snapshot_first_round", False)),
+                    reuse_first_round=reuse_dir(args))
+    return with_config_file(config, getattr(args, "config_file", None))
+
+
+# Config fields a --config-file may not set: they belong to one run and have their own flags.
+RUN_ONLY_FIELDS = ("max_agents", "max_usd", "prompt_dir", "reuse_first_round", "snapshot_first_round")
+
+
+def with_config_file(config: Config, path) -> Config:
+    """Config with the fields of a JSON file (a variant's config.json, lab/autoloop.py) in place of
+    the flags' values. Unknown fields and the run-only ones (RUN_ONLY_FIELDS) are refused."""
+    if not path:
+        return config
+    import dataclasses
+    try:
+        doc = json.loads(pathlib.Path(path).read_text())
+    except (OSError, ValueError) as err:
+        raise SystemExit(f"--config-file {path}: {err}")
+    if not isinstance(doc, dict):
+        raise SystemExit(f"--config-file {path} must hold a JSON object of Config fields")
+    known = {f.name for f in dataclasses.fields(Config)}
+    wrong = sorted(set(doc) - known)
+    if wrong:
+        raise SystemExit(f"--config-file {path} names fields that are not Config fields: {', '.join(wrong)}")
+    run_only = sorted(set(doc) & set(RUN_ONLY_FIELDS))
+    if run_only:
+        raise SystemExit(f"--config-file {path} may not set {', '.join(run_only)}: use their flags")
+    values = {**dataclasses.asdict(config), **doc}
+    values["brief_teams"] = tuple(values["brief_teams"])
+    values["checks"] = tuple(values.get("checks") or ())
+    try:
+        return Config(**values)
+    except (TypeError, ValueError) as err:
+        raise SystemExit(f"--config-file {path}: {err}")
+
+
+def prompt_dir(args) -> str | None:
+    """--prompt-dir as an absolute path, refused when it is not a folder."""
+    value = getattr(args, "prompt_dir", None)
+    if not value:
+        return None
+    path = pathlib.Path(value).resolve()
+    if not path.is_dir():
+        raise SystemExit(f"--prompt-dir {value} is not a folder")
+    return str(path)
+
+
+def reuse_dir(args) -> str | None:
+    """--reuse-first-round as an absolute path, refused when it is not a run directory."""
+    value = getattr(args, "reuse_first_round", None)
+    if not value:
+        return None
+    path = pathlib.Path(value).resolve()
+    if not (path / "events.jsonl").is_file():
+        raise SystemExit(f"--reuse-first-round {value} is not a lab run directory (no events.jsonl)")
+    return str(path)
 
 
 PRESETS = {"v4": {"recheck": True, "guard": True}}   # --preset name -> the Config switches it turns on
@@ -654,7 +742,8 @@ def cmd_arm(args) -> int:
         raise SystemExit("--arm vote takes either --attempts K or --match-cost LAB_RUN_DIR")
     if args.arm == "self" and (args.attempts or args.match_cost):
         raise SystemExit("--attempts and --match-cost are for --arm vote")
-    config = Config(**v4_switches(args), max_agents=args.parallel, worker_model=args.model, max_usd=args.max_usd)
+    config = Config(**v4_switches(args), max_agents=args.parallel, worker_model=args.model, max_usd=args.max_usd,
+                    prompt_dir=prompt_dir(args))
     k, matched = args.attempts, None
     if args.match_cost:
         try:
@@ -681,7 +770,7 @@ def cmd_arm(args) -> int:
     try:
         if args.arm == "vote":
             out = arms.run_vote_arm(adapter, backend, log, run_dir, studies, k, args.model, args.parallel,
-                                    timeout_s=args.timeout, max_usd=args.max_usd)
+                                    timeout_s=args.timeout, max_usd=args.max_usd, prompt_dir=config.prompt_dir)
         else:
             out = arms.run_self_arm(adapter, backend, log, run_dir, studies, args.model, args.parallel, config,
                                     timeout_s=args.timeout, max_usd=args.max_usd)
@@ -731,6 +820,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--brief-teams", default="team-a",
                    help="teams that receive the director's briefing, comma-separated (default: team-a)")
     add_v4(p)
+    add_prompt_dir(p)
+    p.add_argument("--config-file", metavar="JSON", default=None,
+                   help="Config fields from a JSON file (a variant's config.json), in place of the flags' values")
+    p.add_argument("--snapshot-first-round", action="store_true",
+                   help="keep each first team's workspace as it stands after the analysis round, in "
+                        "<study>/first-round/, so a later run can reuse it (Config.snapshot_first_round)")
+    p.add_argument("--reuse-first-round", metavar="RUN_DIR", default=None,
+                   help="copy that run's first round (library, briefing, analysis) instead of running it; "
+                        "every later step runs live (Config.reuse_first_round)")
     add_guardrails(p)
     p.set_defaults(fn=cmd_lab)
 
@@ -789,9 +887,95 @@ def build_parser() -> argparse.ArgumentParser:
                    help="--arm vote: k = that lab run's mean dollars per study / mean dollars per single attempt "
                         "(at least 3)")
     add_v4(p)
+    add_prompt_dir(p)
     add_guardrails(p)
     p.set_defaults(fn=cmd_arm)
+
+    p = sub.add_parser("loop", help="the improvement loop: propose, evaluate on the dev panel, accept by code")
+    p.add_argument("--benchmark", required=True)
+    p.add_argument("--studies", required=True, help="the dev panel: comma-separated study ids")
+    p.add_argument("--incumbent-run", required=True, metavar="RUN_DIR",
+                   help="a finished lab run of the incumbent on the panel, made with --snapshot-first-round")
+    p.add_argument("--run-root", required=True, help="folder for the loop's runs, variants and (with mock) ledger")
+    p.add_argument("--backend", choices=["claude", "mock", "modal"], default="mock")
+    p.add_argument("--memory", choices=["past", "local"], default="local")
+    p.add_argument("--parallel", type=int, default=4, help="agents running at once in each evaluation run")
+    p.add_argument("--max-usd", type=float, default=None,
+                   help="total dollar cap across every move; required with --backend claude or modal")
+    p.add_argument("--move-max-usd", type=float, default=None, help="dollar cap per evaluation run")
+    p.add_argument("--max-moves", type=int, default=8)
+    p.add_argument("--noise-threshold", type=float, default=None,
+                   help="T: the net rescues a move needs (default 2 until Phase 1 measures it)")
+    p.add_argument("--noise-threshold-source", default=None, help="where T came from, for the ledger")
+    p.add_argument("--cost-ratio-max", type=float, default=1.25)
+    p.add_argument("--max-damage", type=int, default=1)
+    p.add_argument("--variants-dir", default=None, help="default: <run-root>/variants")
+    p.add_argument("--incumbent", default=None, metavar="VARIANT_DIR",
+                   help="the incumbent variant (default: <variants-dir>/v4-base, made from --preset v4)")
+    p.add_argument("--model", default="opus", help="v4-base's workers (when it is made here)")
+    p.add_argument("--director-model", default="opus", help="v4-base's director (when it is made here)")
+    p.add_argument("--proposer-model", default="opus")
+    p.add_argument("--ledger", default=None,
+                   help="the research ledger to append to (default: ledger/ledger.jsonl; with --backend mock, "
+                        "<run-root>/ledger.jsonl)")
+    p.add_argument("--lessons", choices=["local", "past"], default=None,
+                   help="also keep the proposer's lessons in memory (optional; the ledger is the main memory)")
+    p.set_defaults(fn=cmd_loop)
     return parser
+
+
+def add_prompt_dir(p) -> None:
+    p.add_argument("--prompt-dir", default=None, metavar="DIR",
+                   help="a folder of prompt overrides: DIR/<name>.md replaces lab/prompts/<name>.md (Config.prompt_dir)")
+
+
+def cmd_loop(args) -> int:
+    """Run the improvement loop (lab/autoloop.py) and print its ledger summary."""
+    from lab import autoloop
+    from lab import ledger as ledger_mod
+    require_max_usd(args)
+    if args.backend == "modal" and args.memory != "past":
+        raise SystemExit("--backend modal needs --memory past")
+    adapter = load_adapter(args.benchmark, args.backend)
+    studies = pick_studies(adapter, args.studies)
+    root = pathlib.Path(args.run_root).resolve()
+    root.mkdir(parents=True, exist_ok=True)
+    variants = pathlib.Path(args.variants_dir or root / "variants").resolve()
+    if args.incumbent:
+        incumbent = pathlib.Path(args.incumbent).resolve()
+    else:
+        base_args = build_parser().parse_args(["lab", "--benchmark", args.benchmark, "--run-dir", str(root),
+                                               "--preset", "v4", "--model", args.model,
+                                               "--director-model", args.director_model])
+        incumbent = autoloop.make_base_variant(variants, make_config(base_args))
+    problems = autoloop.check_incumbent_run(incumbent, pathlib.Path(args.incumbent_run), [s.id for s in studies])
+    if problems:
+        raise SystemExit(f"--incumbent-run {args.incumbent_run} does not stand for the incumbent {incumbent.name}:\n"
+                         + "\n".join(f"  - {x}" for x in problems)
+                         + f"\nMake it with: python3 -m lab.run lab --benchmark {args.benchmark} --studies "
+                         f"{args.studies} --config-file {incumbent / 'config.json'} --prompt-dir {incumbent / 'prompts'} "
+                         "--snapshot-first-round --run-dir <dir> --backend ... --max-usd ...")
+    if args.ledger:
+        ledger_path = pathlib.Path(args.ledger)
+    else:
+        ledger_path = root / "ledger.jsonl" if args.backend == "mock" else ledger_mod.default_path()
+    given = args.noise_threshold is not None
+    settings = autoloop.LoopSettings(
+        benchmark=args.benchmark, panel=[s.id for s in studies], incumbent_run=pathlib.Path(args.incumbent_run),
+        root=root, backend=args.backend, memory=args.memory, parallel=args.parallel, max_usd=args.max_usd,
+        move_max_usd=args.move_max_usd, max_moves=args.max_moves,
+        noise_threshold=args.noise_threshold if given else 2,
+        noise_source=args.noise_threshold_source or ("given with --noise-threshold" if given
+                                                     else autoloop.DEFAULT_T_SOURCE),
+        cost_ratio_max=args.cost_ratio_max, max_damage=args.max_damage, ledger_path=ledger_path,
+        variants_dir=variants, incumbent=incumbent, proposer_model=args.proposer_model, lessons=args.lessons)
+    loop = autoloop.Loop(settings, adapter=adapter)
+    summary = loop.run()
+    entries = [e for e in ledger_mod.entries(ledger_path) if (e.get("data") or {}).get("loop") == loop.id]
+    print(f"\nloop {loop.id}: stopped ({summary['reason']}); {summary['moves']} move(s); "
+          f"incumbent {summary['incumbent']}; ledger {ledger_path}")
+    print("\n".join(autoloop.ledger_summary(entries)) or "no moves")
+    return 0
 
 
 def add_v4(p) -> None:

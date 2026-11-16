@@ -12,6 +12,8 @@ A spec is JSON in `prereg/<batch>.json` with these fields:
   primary_endpoint  the one number the batch is judged on
   stop_rules        when to stop
   notes             anything else
+  status            optional: "draft" while the design may still change (freeze refuses a draft),
+                    or "final"
 
 `freeze(spec)` writes `prereg/<batch>.lock`: one sha256 over the spec's canonical JSON, the git
 HEAD and the sha256 of every `lab/prompts/*.md` and `lab/**/*.py`, plus each of those parts.
@@ -43,6 +45,8 @@ from typing import Any
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 FIELDS = ("batch", "benchmark", "studies", "arms", "config", "seeds", "max_usd", "primary_endpoint",
           "stop_rules", "notes")
+OPTIONAL_FIELDS = ("status",)
+STATUSES = ("draft", "final")
 BATCH_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 NOT_A_CHECKOUT = None   # what git_head() returns when the root is not the top of a git checkout
 
@@ -114,7 +118,9 @@ def load_spec(spec_path: pathlib.Path | str) -> dict:
     if not isinstance(spec, dict):
         raise PreregError(spec_path, ["the spec must be a JSON object"])
     problems = [f'missing field "{f}"' for f in FIELDS if f not in spec]
-    problems += [f'unknown field "{f}"' for f in spec if f not in FIELDS]
+    problems += [f'unknown field "{f}"' for f in spec if f not in FIELDS + OPTIONAL_FIELDS]
+    if "status" in spec and spec["status"] not in STATUSES:
+        problems.append(f'"status" must be one of {", ".join(STATUSES)}')
     batch = spec.get("batch")
     if not isinstance(batch, str) or not BATCH_NAME.match(batch):
         problems.append('"batch" must be a name of letters, digits, dots, dashes and underscores')
@@ -153,6 +159,9 @@ def freeze(spec_path: pathlib.Path | str, root: pathlib.Path | None = None) -> s
     changed returns the same hash; a lock that no longer matches is never overwritten."""
     spec_path = pathlib.Path(spec_path)
     spec = load_spec(spec_path)
+    if spec.get("status") == "draft":
+        raise PreregError(spec_path, ['the spec is a draft ("status": "draft"); set it to "final" when the design '
+                                      "and the code are settled, then freeze"])
     root = pathlib.Path(root or ROOT)
     files, head, s_hash = code_files(root), git_head(root), spec_hash(spec)
     sha = combined_hash(s_hash, head, files)

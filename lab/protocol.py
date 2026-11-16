@@ -33,6 +33,16 @@ an accepted re-check and the referee's own answer each need `evidence.json` that
 (check_evidence). A change that fails keeps the earlier answer ("guard.blocked"); the blocked answer
 is still graded.
 
+Reuse mode (Config.reuse_first_round, for the improvement loop in lab/autoloop.py): steps 1 to 3
+are not run. StudyRun.load_first_round copies another run's first round instead: each first team's
+workspace as it stood after the analysis round (`<study>/first-round/<team>/`, which that run wrote
+because Config.snapshot_first_round was on), its analysis-round candidates and its `library/`, and
+with local memory its first-round memory writes; the briefing is passed down again. Event
+"study.reused" names the source. Every later step runs live.
+
+Prompt overlay (Config.prompt_dir): template() reads `<prompt_dir>/<name>.md` when it exists, else
+lab/prompts/<name>.md. Checks (Config.checks) are the code-level switches in lab/check_registry.py.
+
 The answer file is the study's first deliverable (answer_file): `answer.json` for GeneBench,
 `eval_answer.json` for scBench. Briefs name it through the {answer_file} field.
 
@@ -68,11 +78,13 @@ import time
 import uuid
 from typing import Any
 
+from lab import check_registry
 from lab.budget import Budget, BudgetExceeded, prior_spend
 from lab.contracts import DIRECTOR, WORKER, Adapter, Agent, AgentResult, Backend, EventLog, Memory, Org, Study
 from lab.gateway import Gateway
 from lab.inventory import INVENTORY_FILE, build_inventory, hypothesis_text, render_inventory
 from lab.limits import UsageLimit   # defined there so lab.budget can subclass it; still importable from here
+from lab.memory_local import LocalMemory
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PROMPTS = ROOT / "lab" / "prompts"
@@ -141,6 +153,19 @@ REFEREE_EVIDENCE_NOTE = (
     "file. The output file must be one your script wrote, not the script itself and not a lab file "
     "(`evidence.json`, `result.json`, `test_result.json` or the answer file), and at least one quoted number must "
     "be computed by the script rather than typed into it. If any check fails, your own answer is not used.")
+# Added to the evidence note only when the guard_strict_decimals check is on (lab/check_registry.py).
+STRICT_DECIMALS_NOTE = (" Every decimal number you quote in `result` must show at least {digits} significant digits "
+                        "(0.0123, not 0.01), so print your numbers with enough digits.")
+
+
+def evidence_note(cfg: "Config", note: str = EVIDENCE_NOTE) -> str:
+    """The {evidence_note} field: empty with the guard off; with it on, `note`, plus the strict-decimals
+    sentence when that check is on."""
+    if not cfg.guard:
+        return ""
+    if check_registry.is_on(cfg, check_registry.GUARD_STRICT_DECIMALS):
+        return note + STRICT_DECIMALS_NOTE.format(digits=check_registry.STRICT_MIN_DIGITS)
+    return note
 
 
 @dataclasses.dataclass
@@ -168,6 +193,14 @@ class Config:
     recheck_p: float = 0.05      # ... a new "True" needs a test with p at most this
     recheck_min_n: int = 20      # ... and any new label a test on at least this many rows
     guard: bool = False          # the damage guard: a changed answer needs evidence.json that code can check
+    # ----- the improvement loop (lab/autoloop.py); each off by default -----
+    prompt_dir: str | None = None        # a folder of prompt overrides: <prompt_dir>/<name>.md replaces lab/prompts/<name>.md
+    reuse_first_round: str | None = None  # a run directory whose first round (library, briefing, analysis) is copied in
+    snapshot_first_round: bool = False   # keep a copy of each team's workspace right after the analysis round
+    checks: tuple = ()                   # ids from lab/check_registry.py that are switched on (a set, kept sorted)
+
+    def __post_init__(self):
+        self.checks = check_registry.normalize(self.checks)
 
     def timeout(self, role: str) -> int:
         return int(self.timeouts.get(role, 1800))
@@ -175,27 +208,36 @@ class Config:
 
 # ----- briefs -----
 
-def template(name: str) -> str:
+def template(name: str, prompt_dir: str | pathlib.Path | None = None) -> str:
+    """A prompt template: `<prompt_dir>/<name>.md` when prompt_dir is set and has that file (a
+    variant's overlay, lab/autoloop.py), else lab/prompts/<name>.md. lab/prompts is never written."""
+    if prompt_dir:
+        own = pathlib.Path(prompt_dir) / f"{name}.md"
+        if own.is_file():
+            return own.read_text()
     return (PROMPTS / f"{name}.md").read_text()
 
 
-def make_brief(name: str, agent: Agent | None, **fields: Any) -> str:
-    """Fill a prompt template. Lab agents get common.md in front; pass agent=None for none."""
+def make_brief(name: str, agent: Agent | None, *, prompt_dir: str | pathlib.Path | None = None, **fields: Any) -> str:
+    """Fill a prompt template. Lab agents get common.md in front; pass agent=None for none.
+    prompt_dir: an overlay folder for template() (Config.prompt_dir)."""
     fields = {"tools": str(TOOLS), **fields}
-    body = template(name).format(**fields)
+    body = template(name, prompt_dir).format(**fields)
     if agent is None:
         return body
-    head = template("common").format(agent_id=agent.id, department=agent.department, **fields)
+    head = template("common", prompt_dir).format(agent_id=agent.id, department=agent.department, **fields)
     return head.rstrip() + "\n\n" + body
 
 
-def challenge_brief(agent: Agent | None, fields: dict, teams: int = 2) -> str:
+def challenge_brief(agent: Agent | None, fields: dict, teams: int = 2,
+                    prompt_dir: str | pathlib.Path | None = None) -> str:
     """The director's challenge of an answer: of the answer two blind teams agree on
     (director_challenge.md), or of one analyst's answer (director_challenge_single.md, the
     self-challenge arm, which has no memory: pass agent=None)."""
     if teams not in (1, 2):
         raise ValueError("the challenge is of one team's answer or of two teams' agreed answer")
-    return make_brief("director_challenge" if teams == 2 else "director_challenge_single", agent, **fields)
+    return make_brief("director_challenge" if teams == 2 else "director_challenge_single", agent,
+                      prompt_dir=prompt_dir, **fields)
 
 
 # ----- answers -----
@@ -460,7 +502,13 @@ def _read(path: pathlib.Path) -> str:
         return f.read(GUARD_MAX_OUTPUT_CHARS)
 
 
-def check_evidence(workspace: pathlib.Path, started: float, answer_file: str | None = None) -> tuple[bool, str]:
+def is_decimal_quote(token: str) -> bool:
+    """Whether a quoted number is a decimal: written with a decimal point or an exponent."""
+    return "." in token or "e" in token.lower()
+
+
+def check_evidence(workspace: pathlib.Path, started: float, answer_file: str | None = None,
+                   strict_decimals: bool = False) -> tuple[bool, str]:
     """The damage guard's check of `evidence.json` in a workspace: (passed, reason).
 
     evidence.json must be a regular file (not a symbolic link) with all four fields. `result` must
@@ -471,7 +519,9 @@ def check_evidence(workspace: pathlib.Path, started: float, answer_file: str | N
     file must have been written at or after the round's start (GUARD_SLACK_S of clock slack) and at
     or after the script's last change. Each of the first GUARD_MAX_NUMBERS numbers in `result` must
     be one the output file shows (same_number; signs ignored), and at least one of them must not
-    also be written in the script: a number the script itself holds shows nothing it computed."""
+    also be written in the script: a number the script itself holds shows nothing it computed.
+    With strict_decimals (the guard_strict_decimals check), every decimal quote among them must
+    show at least check_registry.STRICT_MIN_DIGITS significant digits."""
     ws = pathlib.Path(workspace).resolve()
     if is_link(ws / EVIDENCE_FILE):
         return False, f"{EVIDENCE_FILE} is a symbolic link; the lab reads only a regular file"
@@ -485,6 +535,13 @@ def check_evidence(workspace: pathlib.Path, started: float, answer_file: str | N
     quoted = numbers_written(result)[:GUARD_MAX_NUMBERS]
     if not quoted:
         return False, "result quotes no number"
+    if strict_decimals:
+        for token in quoted:
+            number = Written.parse(token)
+            if is_decimal_quote(token) and number is not None \
+                    and significant_digits(number.value) < check_registry.STRICT_MIN_DIGITS:
+                return False, (f"the number {token} in result shows fewer than {check_registry.STRICT_MIN_DIGITS} "
+                               "significant digits (guard_strict_decimals)")
     files = {}
     for key in ("script", "output_file"):
         name = doc[key]
@@ -691,6 +748,56 @@ def unfinished_agents(log: EventLog) -> list[dict]:
             and last_finish.get((e.get("agent"), e.get("study"), e.get("phase")), 0) < e["seq"]]
 
 
+# ----- reuse mode -----
+
+FIRST_ROUND_DIR = "first-round"
+FIRST_TEAMS = ("team-a", "team-b")
+FIRST_ROUND_PHASES = ("library", "briefing", "analysis")
+
+
+class FirstRoundMissing(RuntimeError):
+    """A run asked to reuse a first round that the source run does not have."""
+
+
+def _source_events(run_dir: pathlib.Path, study_id: str) -> list[dict]:
+    """The source run's events of the study's first round: from its last study.start up to the
+    end of the analysis round (its last analysis candidate, or its study.reused when it was itself
+    reused). memory.write and memory.pass_down events carry no study, so every event in that span
+    is kept; callers filter by department."""
+    path = pathlib.Path(run_dir) / "events.jsonl"
+    events = []
+    for line in (path.read_text().splitlines() if path.is_file() else []):
+        try:
+            e = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(e, dict):
+            events.append(e)
+    starts = [e["seq"] for e in events if e.get("kind") == "study.start" and e.get("study") == study_id]
+    if not starts:
+        return []
+    ends = [e["seq"] for e in events if e.get("study") == study_id and e["seq"] > starts[-1] and (
+        (e.get("kind") in ("candidate", "candidate.none") and e.get("round") == "analysis")
+        or e.get("kind") == "study.reused")]
+    if not ends:
+        return []
+    return [e for e in events if starts[-1] <= e["seq"] <= max(ends)]
+
+
+def first_round_cost(events: list[dict], study_id: str) -> tuple[float | None, int]:
+    """(dollars, agent runs) of a study's first round in `events` (from _source_events): its library,
+    briefing and analysis runs, plus what a reused source carried in. Dollars are None when any
+    run reported no cost."""
+    runs = [e for e in events if e.get("kind") == "agent.finish" and e.get("phase") in FIRST_ROUND_PHASES
+            and e.get("study") == study_id]
+    carried = [e for e in events if e.get("kind") == "study.reused" and e.get("study") == study_id]
+    count = len(runs) + sum(int(e.get("first_round_runs") or 0) for e in carried)
+    costs = [e.get("cost_usd") for e in runs] + [e.get("first_round_cost_usd") for e in carried]
+    if any(c is None for c in costs):
+        return None, count
+    return round(sum(float(c) for c in costs), 6), count
+
+
 # ----- one candidate answer -----
 
 @dataclasses.dataclass
@@ -857,6 +964,11 @@ class StudyRun:
             if getattr(self.cfg, switch):
                 self.record["switches"][switch] = True
                 self.record[switch] = []
+        if check_registry.is_on(self.cfg, check_registry.RECHECK_ON_AGREED_NV):
+            self.record.setdefault("recheck", [])
+        for key in ("checks", "prompt_dir", "reuse_first_round"):   # the improvement loop's settings, when set
+            if getattr(self.cfg, key):
+                self.record["switches"][key] = list(self.cfg.checks) if key == "checks" else str(getattr(self.cfg, key))
         self.candidates: list[Candidate] = []
         self.start_seq = 0
 
@@ -864,6 +976,14 @@ class StudyRun:
 
     def agent(self, suffix: str) -> Agent:
         return self.lab.org.agent("director" if suffix == "director" else f"{self.study.id}-{suffix}")
+
+    def brief(self, name: str, agent: Agent | None, **fields) -> str:
+        """make_brief through the run's prompt overlay (Config.prompt_dir)."""
+        return make_brief(name, agent, prompt_dir=self.cfg.prompt_dir, **fields)
+
+    @property
+    def strict_decimals(self) -> bool:
+        return check_registry.is_on(self.cfg, check_registry.GUARD_STRICT_DECIMALS)
 
     def dept(self, team: str) -> str:
         return f"{self.study.id}-{team}"
@@ -973,12 +1093,12 @@ class StudyRun:
     def library(self) -> None:
         agent = self.agent("library")
         self.lab.open_budget(agent.id, self.cfg.max_searches, "library")
-        brief = make_brief("library", agent, **self.fields())
+        brief = self.brief("library", agent, **self.fields())
         self.run_agent(agent, brief, "library", [self.study.data_dir, TOOLS], "library", "library")
 
     def briefing(self) -> list[dict]:
         director = self.agent("director")
-        brief = make_brief("director_relay", director,
+        brief = self.brief("director_relay", director,
                            **self.fields(team_departments=", ".join(self.dept(t) for t in self.briefed)))
         result = self.run_agent(director, brief, "director-briefing", [TOOLS], "briefing", "director")
         items = result.result.get("pass_down") if result.ok else None
@@ -1005,13 +1125,13 @@ class StudyRun:
         agent = self.agent(team)
         extra = {}
         if team == "team-a" and self.cfg.team_search:
-            extra["search"] = "\n\n" + make_brief("team_search", None, **self.fields()).strip()
+            extra["search"] = "\n\n" + self.brief("team_search", None, **self.fields()).strip()
             self.lab.open_budget(agent.id, self.cfg.team_searches, "team-a")
         if template_name == "analyst_revise" and self.research_on:
             extra["findings_note"] = FINDINGS_NOTE.format(tools=TOOLS)
         if template_name == "analyst_revise" and self.cfg.guard:
-            extra["evidence_note"] = EVIDENCE_NOTE
-        brief = make_brief(template_name, agent, **self.fields(diversity=DIVERSITY[team],
+            extra["evidence_note"] = evidence_note(self.cfg)
+        brief = self.brief(template_name, agent, **self.fields(diversity=DIVERSITY[team],
                                                                situation=SITUATION.get(round_, ""), **extra))
         result = self.run_agent(agent, brief, team, [self.study.data_dir, TOOLS], phase, "analyst")
         return self.take(team, round_, result, self.dir / team)
@@ -1027,7 +1147,7 @@ class StudyRun:
         """The director's question round: write, leak-check and deliver. Returns every question."""
         director = self.agent("director")
         teams_dir = self.team_notes(self.dir / "director-questions")
-        brief = make_brief("director_crossexam", director, **self.fields(teams_dir=str(teams_dir),
+        brief = self.brief("director_crossexam", director, **self.fields(teams_dir=str(teams_dir),
                                                                          **self.research_fields()))
         result = self.run_agent(director, brief, "director-questions", [TOOLS], "questions", "director")
         doc = result.result if result.ok else {}
@@ -1049,7 +1169,8 @@ class StudyRun:
         """The director challenges an agreed answer. Records its findings, delivers its questions, returns them."""
         director = self.agent("director")
         teams_dir = self.team_notes(self.dir / "director-challenge")
-        brief = challenge_brief(director, self.fields(teams_dir=str(teams_dir), **self.research_fields()), teams=2)
+        brief = challenge_brief(director, self.fields(teams_dir=str(teams_dir), **self.research_fields()), teams=2,
+                                prompt_dir=self.cfg.prompt_dir)
         result = self.run_agent(director, brief, "director-challenge", [self.study.data_dir, TOOLS], "challenge",
                                 "director")
         doc = result.result if result.ok else {}
@@ -1072,7 +1193,7 @@ class StudyRun:
         """The director brief's research section and result.json shape, or nothing when research is off."""
         if not self.research_on:
             return {}
-        section = make_brief("director_research", None, **self.fields()).strip()
+        section = self.brief("director_research", None, **self.fields()).strip()
         return {"research": "\n\n" + section, "research_shape": RESEARCH_SHAPE}
 
     def names_source(self, text: str) -> bool:
@@ -1112,7 +1233,7 @@ class StudyRun:
         self.lab.open_budget(agent.id, self.cfg.research_searches, "research")
         listing = "\n".join(f"{i}. {q['question']}" + (f"\n   Why it matters: {q['why']}" if q["why"] else "")
                             for i, q in enumerate(sent, 1))
-        brief = make_brief("library_research", agent, **self.fields(research_questions=listing))
+        brief = self.brief("library_research", agent, **self.fields(research_questions=listing))
         since = self.log("research.start", round=round_, questions=len(sent))["seq"]
         result = self.run_agent(agent, brief, "library-research", [TOOLS], "research", "research")
         entry["ran"], entry["error"] = bool(result.ok), None if result.ok else result.error
@@ -1197,9 +1318,9 @@ class StudyRun:
             (folder / self.deliverable).write_text(json.dumps(scrub(doc, names, keep=("answer",)), indent=2))
             note = load_doc(self.dir / "candidates" / f"{cand.team}-{cand.round}-result.json")
             (folder / "method.json").write_text(json.dumps(scrub(note if isinstance(note, dict) else {}, names), indent=2))
-        brief = make_brief("referee", agent, **self.fields(
+        brief = self.brief("referee", agent, **self.fields(
             candidates_dir=str(ws / "candidates"), time_limit_minutes=self.cfg.timeout("referee") // 60,
-            evidence_note=REFEREE_EVIDENCE_NOTE if self.cfg.guard else ""))
+            evidence_note=evidence_note(self.cfg, REFEREE_EVIDENCE_NOTE)))
         started = time.time()
         result = self.run_agent(agent, brief, "referee", [self.study.data_dir, TOOLS], "referee", "referee")
         verdict = dict(result.result) if result.ok else {"pick": "neither", "reason": f"referee run failed: {result.error}"}
@@ -1216,7 +1337,7 @@ class StudyRun:
             self.add(cand)
             verdict["own_answer_valid"] = cand.valid
             if cand.valid and self.cfg.guard:    # the referee's own answer would replace both teams' answers
-                ok, why = check_evidence(ws, started, self.deliverable)
+                ok, why = check_evidence(ws, started, self.deliverable, self.strict_decimals)
                 self.guard_event("referee", "referee", ok, why, cand, None)
                 if not ok:
                     cand.not_used = f"blocked by the damage guard: {why}"
@@ -1251,12 +1372,17 @@ class StudyRun:
         self.dir.mkdir(parents=True)
         self.start_seq = self.log("study.start")["seq"]
         briefing = []
-        if self.cfg.library:
-            self.library()
-            self.wait_visible({self.agent("director").id: self.library_facts()})
-            briefing = self.briefing()
-        a, b = self.both(self.analyse)
-        if self.cfg.recheck:
+        if self.cfg.reuse_first_round:
+            a, b, briefing = self.load_first_round(self.cfg.reuse_first_round)
+        else:
+            if self.cfg.library:
+                self.library()
+                self.wait_visible({self.agent("director").id: self.library_facts()})
+                briefing = self.briefing()
+            a, b = self.both(self.analyse)
+            if self.cfg.snapshot_first_round:
+                self.snapshot_first_round()
+        if self.recheck_wanted(a, b):
             a, b = self.rechecked(a, b)
         va, vb = bool(a and a.valid), bool(b and b.valid)
         if not (va and vb):
@@ -1314,7 +1440,7 @@ class StudyRun:
         marked not used."""
         if after is before or all(field_agreement(self.lab.adapter, self.study, before.path, after.path).values()):
             return after
-        ok, why = check_evidence(self.dir / team, started, self.deliverable)
+        ok, why = check_evidence(self.dir / team, started, self.deliverable, self.strict_decimals)
         self.guard_event(team, round_, ok, why, after, before)
         if ok:
             return after
@@ -1330,6 +1456,15 @@ class StudyRun:
             self.log("guard.blocked", team=team, round=round_, reason=why)
 
     # ----- the "Not verifiable" re-check -----
+
+    def recheck_wanted(self, a: Candidate | None, b: Candidate | None) -> bool:
+        """Config.recheck re-checks every team whose first answer abstains, agreed or not. Without it,
+        the recheck_on_agreed_nv check (lab/check_registry.py) re-checks only when both teams abstain."""
+        if self.cfg.recheck:
+            return True
+        if not check_registry.is_on(self.cfg, check_registry.RECHECK_ON_AGREED_NV):
+            return False
+        return all(c is not None and c.valid and abstains(self.lab.adapter, self.study, c.values) for c in (a, b))
 
     def rechecked(self, a: Candidate | None, b: Candidate | None) -> tuple:
         """Re-check each team's first answer that abstains, both at once. Returns the answers in use."""
@@ -1361,10 +1496,10 @@ class StudyRun:
         agent = self.agent(team)
         self.log("recheck.start", team=team, before=before, unused_files=len(inventory["unused_files"]),
                  unused_columns=inventory["unused_columns_total"])
-        brief = make_brief("analyst_recheck", agent, **self.fields(
+        brief = self.brief("analyst_recheck", agent, **self.fields(
             inventory=render_inventory(inventory), max_p=self.cfg.recheck_p, min_n=self.cfg.recheck_min_n,
             time_limit_minutes=self.cfg.timeout("recheck") // 60,
-            evidence_note=EVIDENCE_NOTE if self.cfg.guard else ""))
+            evidence_note=evidence_note(self.cfg)))
         started = time.time()
         result = self.run_agent(agent, brief, team, [self.study.data_dir, TOOLS], "recheck", "recheck")
         new = self.take(team, "recheck", result, ws)
@@ -1372,7 +1507,7 @@ class StudyRun:
         if test is not None:
             (self.dir / "candidates" / f"{team}-recheck-{TEST_FILE}").write_text(json.dumps(test, indent=2) + "\n")
         if accepted and self.cfg.guard:
-            ok, why = check_evidence(ws, started, self.deliverable)
+            ok, why = check_evidence(ws, started, self.deliverable, self.strict_decimals)
             self.guard_event(team, "recheck", ok, why, new, cand)
             if not ok:
                 accepted, reason = False, f"blocked by the damage guard: {why}"
@@ -1388,6 +1523,104 @@ class StudyRun:
                                        "reason": reason, "candidate": f"{team}-recheck", "test": test,
                                        "in_use": in_use.id})
         return in_use
+
+    # ----- reuse mode: the first round of another run (Config.reuse_first_round) -----
+
+    def snapshot_first_round(self) -> None:
+        """Copy each first team's workspace as it stands right after the analysis round to
+        `<study>/first-round/<team>/` (Config.snapshot_first_round). Later rounds overwrite the
+        workspaces, so this copy is what a reused run starts from. Links are copied as links."""
+        for team in FIRST_TEAMS:
+            source = self.dir / team
+            if source.is_dir():
+                shutil.copytree(source, self.dir / FIRST_ROUND_DIR / team, symlinks=True)
+        self.log("first_round.snapshot", teams=[t for t in FIRST_TEAMS if (self.dir / t).is_dir()])
+
+    def load_first_round(self, src: str | pathlib.Path) -> tuple:
+        """Copy another run's first round of this study in place of running the library, the
+        briefing and the analysis: each first team's workspace from its snapshot (`first-round/`,
+        required), the analysis-round candidates (re-checked with this adapter's format check), and
+        `library/` when there is one. With local memory, the source's first-round memory writes by the
+        library and the two teams are written again, and the briefing is passed down again under the
+        director's name, so later rounds can recall them; other memory backends get the pass-downs
+        only. Logs `study.reused`. Returns (team A's answer, team B's answer, the briefing)."""
+        src_run = pathlib.Path(src).resolve()
+        sdir = src_run / self.study.id
+        record = load_doc(sdir / "study.json")
+        if not isinstance(record, dict):
+            raise FirstRoundMissing(f"{sdir} has no study.json: the source run did not finish {self.study.id}")
+        snap = sdir / FIRST_ROUND_DIR
+        missing = [t for t in FIRST_TEAMS if not (snap / t).is_dir()]
+        if missing:
+            raise FirstRoundMissing(f"{snap} has no snapshot of {', '.join(missing)}: run the source with "
+                                    "snapshot_first_round (--snapshot-first-round) before reusing it")
+        for team in FIRST_TEAMS:
+            shutil.copytree(snap / team, self.dir / team, symlinks=True)
+            if self.cfg.snapshot_first_round:      # so this run can be reused in turn
+                shutil.copytree(snap / team, self.dir / FIRST_ROUND_DIR / team, symlinks=True)
+        if (sdir / "library").is_dir():
+            shutil.copytree(sdir / "library", self.dir / "library", symlinks=True)
+        store = self.dir / "candidates"
+        store.mkdir(parents=True, exist_ok=True)
+        found: dict[str, Candidate | None] = {t: None for t in FIRST_TEAMS}
+        for c in record.get("candidates") or []:
+            team = c.get("team")
+            if c.get("round") != "analysis" or team not in found:
+                continue
+            for name in (f"{team}-analysis.json", f"{team}-analysis-result.json"):
+                if (sdir / "candidates" / name).is_file():
+                    shutil.copyfile(sdir / "candidates" / name, store / name)
+            path = store / f"{team}-analysis.json"
+            filled = path.is_file() and path.read_text().strip()
+            problems = list(self.lab.adapter.problems(self.study, self.deliverable, path)) if filled \
+                else ["no answer file"]
+            cand = Candidate(team, c.get("agent") or self.agent(team).id, "analysis", path, problems,
+                             answer_values(path) if not problems else {})
+            self.add(cand)
+            found[team] = cand
+        events = _source_events(src_run, self.study.id)
+        replayed, ids = self.replay_first_round_memory(events)
+        briefing = []
+        for item in record.get("briefing") or []:
+            entry = {**item, "fact_ids": {t: ids.get(f, f) for t, f in (item.get("fact_ids") or {}).items()}}
+            briefing.append(entry)
+        self.record["briefing"] = briefing
+        cost, runs = first_round_cost(events, self.study.id)
+        self.record["reused"] = {"from": str(src_run), "memory_replayed": replayed, "first_round_cost_usd": cost,
+                                 "first_round_runs": runs}
+        self.log("study.reused", source=str(src_run),
+                 candidates=[{"team": t, "round": "analysis", "valid": bool(c and c.valid),
+                              "problems": (c.problems if c else ["no answer in the source run"])}
+                             for t, c in found.items()],
+                 briefing=len(briefing), memory_replayed=replayed, first_round_cost_usd=cost, first_round_runs=runs)
+        return found["team-a"], found["team-b"], briefing
+
+    def replay_first_round_memory(self, events: list[dict]) -> tuple[dict, dict]:
+        """Write the source's first-round memory again: with local memory, each memory.write by this
+        study's library and first teams; then each briefing pass-down from the director to a first
+        team (any backend), with `came_from` pointing at the new fact ids. Returns (counts, old fact
+        id -> new fact id)."""
+        ids: dict[str, str] = {}
+        local = isinstance(self.lab.memory, LocalMemory)
+        writers = {library_department(self.study), *(self.dept(t) for t in FIRST_TEAMS)}
+        writes = passes = 0
+        if local:
+            for e in events:
+                if e.get("kind") == "memory.write" and e.get("department") in writers and e.get("text"):
+                    ids[e.get("fact_id")] = self.lab.memory.write(e.get("actor"), e["text"], e.get("label") or "")
+                    writes += 1
+        waits: dict[str, list[str]] = {}
+        teams = {self.dept(t) for t in FIRST_TEAMS}
+        for e in events:
+            if e.get("kind") == "memory.pass_down" and e.get("actor") == "director" and e.get("to_department") in teams:
+                came_from = [ids.get(str(f), str(f)) for f in e.get("came_from") or []]
+                new = self.pass_down(e["to_department"], e.get("text") or "", came_from, e.get("reason") or "")
+                ids[e.get("fact_id")] = new
+                waits.setdefault(e["to_department"], []).append(new)   # a team's agent id is its department
+                passes += 1
+        self.wait_visible(waits)
+        return {"writes": writes if local else None, "pass_downs": passes,
+                "note": None if local else "memory writes are replayed only with local memory"}, ids
 
     # ----- the record -----
 

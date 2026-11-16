@@ -3,7 +3,9 @@
 `decide(events, study_id)` reapplies the decision rules of StudyRun.run (lab/protocol.py) to the
 events of the study's last attempt (from its last study.start): candidate, candidate.none,
 compare, relay.leak_check, research.delivered, referee.verdict, recheck.verdict and guard.blocked,
-plus the switches in the lab.start event that started it. Events of a control arm (they carry an
+plus the switches in the lab.start event that started it. A study run in reuse mode (Config.
+reuse_first_round) has no analysis-round candidate events; its study.reused event lists the
+first-round candidates it copied in, and decide() reads them in their place. Events of a control arm (they carry an
 "arm" field: lab/arms.py) are not the lab's and are left out. It never reads study.json, and it ignores study.final, so the
 two are independent records of the same decision.
 
@@ -78,7 +80,10 @@ def decide(events: list[dict], study_id: str) -> dict:
     switch = {k: bool(config.get(k, default)) for k, default in SWITCH_DEFAULTS.items()}
     valid: dict[tuple[str, str], bool] = {}           # (team, round) -> the answer passed the format check
     for e in evs:
-        if e["kind"] == "candidate":
+        if e["kind"] == "study.reused":       # reuse mode: the first round came from another run
+            for c in e.get("candidates") or []:
+                valid[(c.get("team"), c.get("round") or "analysis")] = bool(c.get("valid"))
+        elif e["kind"] == "candidate":
             valid[(e.get("team"), e.get("round"))] = bool(e.get("valid"))
         elif e["kind"] == "candidate.none":
             valid[(e.get("team"), e.get("round"))] = False
@@ -183,6 +188,9 @@ def describe(e: dict) -> str | None:
     kind = e.get("kind")
     if kind == "study.start":
         return "study started"
+    if kind == "study.reused":
+        firsts = ", ".join(f"{c.get('team')} {'valid' if c.get('valid') else 'invalid'}" for c in e.get("candidates") or [])
+        return f"first round reused from {e.get('source')} ({firsts})"
     if kind == "agent.finish" and e.get("role") not in ARM_ROLES:   # single agents and control arms are not the lab
         state = "ok" if e.get("ok") else f"failed ({e.get('error')})"
         return (f"{e.get('phase')}: {e.get('agent')} ran, attempt {e.get('attempt')}, {state}, "

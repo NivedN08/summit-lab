@@ -24,9 +24,10 @@ def attempt_dir(run_dir: pathlib.Path, study_id: str, k: int) -> pathlib.Path:
     return pathlib.Path(run_dir) / "baseline" / study_id / f"attempt-{k}"
 
 
-def baseline_brief(study: Study, timeout_s: int = 1800) -> str:
-    """A single agent's brief (baseline.md): the task text and the data, nothing else."""
-    return make_brief("baseline", None, statement=study.statement, data_dir=str(study.data_dir),
+def baseline_brief(study: Study, timeout_s: int = 1800, prompt_dir=None) -> str:
+    """A single agent's brief (baseline.md): the task text and the data, nothing else.
+    prompt_dir: a prompt overlay folder (Config.prompt_dir), for the self-challenge arm's solver."""
+    return make_brief("baseline", None, prompt_dir=prompt_dir, statement=study.statement, data_dir=str(study.data_dir),
                       time_limit_minutes=timeout_s // 60, answer_file=answer_file(study))
 
 

@@ -43,8 +43,9 @@ from lab.contracts import WORKER, Adapter, Agent, AgentResult, Backend, EventLog
 from lab.inventory import CODE_SUFFIXES, INVENTORY_FILE, build_inventory, hypothesis_text, render_inventory
 from lab.measures import LAB_ROLES
 from lab.protocol import (DIVERSITY, EVIDENCE_NOTE, QUESTIONS_FILE, AgentRunner, Candidate, Config, abstains,
-                          agent_file, answer_file, answer_values, challenge_brief, check_evidence, field_agreement,
-                          load_doc, local_data_dir, make_brief, recheck_verdict, restore_kept)
+                          agent_file, answer_file, answer_values, challenge_brief, check_evidence, evidence_note,
+                          field_agreement, load_doc, local_data_dir, make_brief, recheck_verdict, restore_kept)
+from lab import check_registry
 
 MIN_VOTE_K = 3
 # The vote arm's approach hints: the two analysts' DIVERSITY lines (team C's needs warning signs a single
@@ -71,22 +72,22 @@ def vote_dir(run_dir: pathlib.Path, study_id: str, k: int) -> pathlib.Path:
     return pathlib.Path(run_dir) / "arms" / "vote" / study_id / f"attempt-{k}"
 
 
-def vote_brief(study: Study, k: int, timeout_s: int = 1800) -> str:
+def vote_brief(study: Study, k: int, timeout_s: int = 1800, prompt_dir=None) -> str:
     """Attempt k's brief: the single agent's brief with the k-th approach hint (they rotate)."""
-    return make_brief("vote_arm", None, statement=study.statement, data_dir=str(study.data_dir),
+    return make_brief("vote_arm", None, prompt_dir=prompt_dir, statement=study.statement, data_dir=str(study.data_dir),
                       time_limit_minutes=timeout_s // 60, answer_file=answer_file(study),
                       hint=VOTE_HINTS[(k - 1) % len(VOTE_HINTS)])
 
 
-def self_challenge_brief(study: Study, teams_dir: pathlib.Path) -> str:
+def self_challenge_brief(study: Study, teams_dir: pathlib.Path, prompt_dir=None) -> str:
     """The challenger's brief: the director's challenge of one analyst's answer, with no memory."""
     return challenge_brief(None, {"statement": study.statement, "data_dir": str(study.data_dir),
-                                  "teams_dir": str(teams_dir), "study_id": study.id}, teams=1)
+                                  "teams_dir": str(teams_dir), "study_id": study.id}, teams=1, prompt_dir=prompt_dir)
 
 
-def self_revise_brief(study: Study, timeout_s: int = 1800, evidence_note: str = "") -> str:
+def self_revise_brief(study: Study, timeout_s: int = 1800, evidence_note: str = "", prompt_dir=None) -> str:
     """The solver's revision brief: the lab's analyst_revise.md, with the questions and replies in files."""
-    return make_brief("analyst_revise", None, statement=study.statement, data_dir=str(study.data_dir),
+    return make_brief("analyst_revise", None, prompt_dir=prompt_dir, statement=study.statement, data_dir=str(study.data_dir),
                       time_limit_minutes=timeout_s // 60, answer_file=answer_file(study), situation=SELF_SITUATION,
                       questions_source=SELF_QUESTIONS_SOURCE, reply_note=SELF_REPLY_NOTE, findings_note="",
                       evidence_note=evidence_note, search="")
@@ -94,10 +95,10 @@ def self_revise_brief(study: Study, timeout_s: int = 1800, evidence_note: str = 
 
 def recheck_brief(study: Study, inventory: dict, cfg: Config, timeout_s: int = 1800) -> str:
     """The re-check brief without the lab's common section (the arm has no memory)."""
-    return make_brief("analyst_recheck", None, statement=study.statement, data_dir=str(study.data_dir),
-                      time_limit_minutes=timeout_s // 60, answer_file=answer_file(study),
+    return make_brief("analyst_recheck", None, prompt_dir=cfg.prompt_dir, statement=study.statement,
+                      data_dir=str(study.data_dir), time_limit_minutes=timeout_s // 60, answer_file=answer_file(study),
                       inventory=render_inventory(inventory), max_p=cfg.recheck_p, min_n=cfg.recheck_min_n,
-                      evidence_note=EVIDENCE_NOTE if cfg.guard else "")
+                      evidence_note=evidence_note(cfg))
 
 
 # Notes fields that tell the answer or that it changed: dropped from what the self arm's challenger reads.
@@ -221,7 +222,8 @@ class SelfArm:
         new = self.take("recheck", result)
         accepted, reason, test = recheck_verdict(new, self.ws, started, self.cfg)
         if accepted and self.cfg.guard:
-            ok, why = check_evidence(self.ws, started, self.deliverable)
+            ok, why = check_evidence(self.ws, started, self.deliverable,
+                                      check_registry.is_on(self.cfg, check_registry.GUARD_STRICT_DECIMALS))
             self.guard_event("recheck", ok, why, new, cand)
             if not ok:
                 accepted, reason = False, f"blocked by the damage guard: {why}"
@@ -256,7 +258,7 @@ class SelfArm:
         doc = load_doc(note) if note else None
         if isinstance(doc, dict):
             (notes / "result.json").write_text(json.dumps(notes_without_answer(doc, [c.values for c in self.candidates if c.valid]), indent=2) + "\n")
-        result = self.run_agent(self.challenger, self_challenge_brief(self.study, notes), folder, "self-challenge")
+        result = self.run_agent(self.challenger, self_challenge_brief(self.study, notes, self.cfg.prompt_dir), folder, "self-challenge")
         doc = result.result if result.ok else {}
         raw = doc.get("questions") if isinstance(doc.get("questions"), list) else []
         questions = [q["question"].strip() for q in raw
@@ -273,7 +275,7 @@ class SelfArm:
     def revise(self, current: Candidate, questions: list[str]) -> tuple[Candidate, str]:
         """The solver answers the questions. Returns the answer it uses after, and the arm's status."""
         (self.ws / QUESTIONS_FILE).write_text(json.dumps({"questions": questions}, indent=2) + "\n")
-        brief = self_revise_brief(self.study, self.timeout_s, EVIDENCE_NOTE if self.cfg.guard else "")
+        brief = self_revise_brief(self.study, self.timeout_s, evidence_note(self.cfg), self.cfg.prompt_dir)
         started = time.time()
         rev = self.take("revise", self.run_agent(self.solver, brief, self.ws, "self-revise"))
         if rev is None or not rev.valid:
@@ -281,7 +283,8 @@ class SelfArm:
         if all(field_agreement(self.adapter, self.study, current.path, rev.path).values()):
             return rev, "kept"
         if self.cfg.guard:
-            ok, why = check_evidence(self.ws, started, self.deliverable)
+            ok, why = check_evidence(self.ws, started, self.deliverable,
+                                      check_registry.is_on(self.cfg, check_registry.GUARD_STRICT_DECIMALS))
             self.guard_event("revise", ok, why, rev, current)
             if not ok:
                 rev.not_used = f"blocked by the damage guard: {why}"
@@ -293,7 +296,7 @@ class SelfArm:
             self.dir.rename(self.dir.with_name(f"{self.study.id}.stale-{time.strftime('%Y%m%d%H%M%S')}"))
         self.ws.mkdir(parents=True)
         self.log("arm.start")
-        current = self.take("solo", self.run_agent(self.solver, baseline_brief(self.study, self.timeout_s), self.ws,
+        current = self.take("solo", self.run_agent(self.solver, baseline_brief(self.study, self.timeout_s, self.cfg.prompt_dir), self.ws,
                                                    "self-solo"))
         if current is not None and current.valid and self.cfg.recheck \
                 and abstains(self.adapter, self.study, current.values):
@@ -343,7 +346,7 @@ def run_self_arm(adapter: Adapter, backend: Backend, log: EventLog, run_dir: pat
 
 def run_vote_arm(adapter: Adapter, backend: Backend, log: EventLog, run_dir: pathlib.Path, studies: list[Study],
                  attempts: int, model: str, max_agents: int, timeout_s: int = 1800,
-                 max_usd: float | None = None) -> dict:
+                 max_usd: float | None = None, prompt_dir=None) -> dict:
     """Run `attempts` vote-arm agents per study, skipping attempts already done. Returns {study: {k: ok}}."""
     runner = make_runner(backend, log, max_agents, max_usd)
     run_dir = pathlib.Path(run_dir).resolve()
@@ -354,7 +357,7 @@ def run_vote_arm(adapter: Adapter, backend: Backend, log: EventLog, run_dir: pat
     def one(study: Study, k: int) -> bool:
         agent = Agent(f"vote-{study.id}-{k}", WORKER, "vote-arm", model)
         ws = vote_dir(run_dir, study.id, k)
-        result = runner.run(agent, vote_brief(study, k, timeout_s), ws, readable=[pathlib.Path(study.data_dir)],
+        result = runner.run(agent, vote_brief(study, k, timeout_s, prompt_dir), ws, readable=[pathlib.Path(study.data_dir)],
                             env=None, timeout_s=timeout_s, study=study.id, phase=f"vote-{k}", role="vote-arm",
                             brief_file=ws.parent / "briefs" / f"attempt-{k}.md")
         log.append("arm.attempt", "lab", arm="vote", study=study.id, attempt_number=k, ok=result.ok,
