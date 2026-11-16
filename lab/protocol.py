@@ -8,6 +8,10 @@ For each study S the lab runs, in order (explanation.md, section 1, and D-8 to D
                  teams in Config.brief_teams only (default team A), so the two teams start from
                  different information (I-11).
   3. analysis    `S-team-a` and `S-team-b` analyse blind, at the same time.
+  3a. re-check   (Config.recheck, off by default) a team that answered "Not verifiable" (the adapter's
+                 abstains(), else that label on a BioDSA-style benchmark) gets an inventory of the data
+                 files and their unused columns and looks once more (role and phase "recheck"). Code
+                 decides whether the new answer replaces the abstention (recheck_verdict).
   4. compare     one valid: "single-source". None: "no-answer". Both valid and agreeing: step 4a.
   4a. challenge  the director tries to break the agreed answer and writes questions for both teams.
                  No questions: "replicated". Otherwise the lab delivers them as in step 5, both
@@ -23,6 +27,11 @@ For each study S the lab runs, in order (explanation.md, section 1, and D-8 to D
   7. team C      on "neither", a third blind team runs with the questions as warning signs.
                  Agreeing with A or B: "third-team". Otherwise "unresolved".
   8. record      `<run_dir>/<S>/final/<answer file>` and `<run_dir>/<S>/study.json`, event "study.final".
+
+Damage guard (Config.guard, off by default): a changed answer in the challenge or question round,
+an accepted re-check and the referee's own answer each need `evidence.json` that code can check
+(check_evidence). A change that fails keeps the earlier answer ("guard.blocked"); the blocked answer
+is still graded.
 
 The answer file is the study's first deliverable (answer_file): `answer.json` for GeneBench,
 `eval_answer.json` for scBench. Briefs name it through the {answer_file} field.
@@ -46,7 +55,10 @@ from __future__ import annotations
 
 import concurrent.futures
 import dataclasses
+import decimal
+import fnmatch
 import json
+import math
 import pathlib
 import random
 import re
@@ -59,6 +71,7 @@ from typing import Any
 from lab.budget import Budget, BudgetExceeded, prior_spend
 from lab.contracts import DIRECTOR, WORKER, Adapter, Agent, AgentResult, Backend, EventLog, Memory, Org, Study
 from lab.gateway import Gateway
+from lab.inventory import INVENTORY_FILE, build_inventory, hypothesis_text, render_inventory
 from lab.limits import UsageLimit   # defined there so lab.budget can subclass it; still importable from here
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -85,6 +98,49 @@ FINDINGS_NOTE = ("\n\nThe director may also have passed down findings from the l
 # The end of the director's result.json shape, when research on demand is on (its {research_shape} field).
 RESEARCH_SHAPE = ', "research_questions": [{"question": "...", "why": "..."}]'
 MAX_RESEARCH_QUESTIONS = 3
+# analyst_revise.md's {questions_source} and {reply_note} fields: where the questions are and where the
+# replies go. The lab's defaults are these; the self-challenge arm (lab/arms.py) puts both in files instead.
+QUESTIONS_SOURCE = ("The director has read both teams' records and has passed down questions for you. Read them "
+                    "with `python3 {tools}/memory.py recall \"questions from the director\"`.")
+REPLY_NOTE = 'Record what you found for each question with `memory.py write`, label "REPLY". '
+
+# ----- the "Not verifiable" re-check (Config.recheck) -----
+NOT_VERIFIABLE = "Not verifiable"
+SETTLED = ("True", "False")
+# Adapters whose answers use BioDSA's labels; the re-check falls back to the label rule for these
+# when the adapter has no abstains() method of its own.
+LABEL_ADAPTERS = {"biodsa", "biodsa-1k", "biodsa-heldout", "biodsa-1k-heldout", "planted"}
+TEST_FILE = "test_result.json"
+TEST_FIELDS = ("test", "variables", "statistic", "p_value", "n", "direction")
+
+# ----- the damage guard (Config.guard) -----
+EVIDENCE_FILE = "evidence.json"
+QUESTIONS_FILE = "director_questions.json"   # the self-challenge arm's questions, in the solver's folder (lab/arms.py)
+EVIDENCE_FIELDS = ("field", "script", "output_file", "result")
+GUARD_SLACK_S = 2.0          # clock slack when comparing an output file's time with the round's start
+GUARD_MAX_NUMBERS = 10       # how many numbers of `result` are looked for in the output file
+GUARD_MAX_OUTPUT_CHARS = 5_000_000
+# The {evidence_note} field: empty unless the guard is on.
+EVIDENCE_NOTE = (
+    "\n\nThe lab accepts a change to your answer only with evidence it can check. If you change your answer, "
+    "write `evidence.json` in this folder: {\"field\": \"the answer field you changed\", \"script\": \"the "
+    "script you ran, a path in this folder\", \"output_file\": \"the file that script wrote its output to, a path "
+    "in this folder\", \"result\": \"the numbers that decided the change, quoted exactly as the output file shows "
+    "them\"}. The lab checks by code that the script and the output file exist, that the output file was written "
+    "during this round and after the script was last saved, and that every number in `result` appears in the "
+    "output file. The output file must be one your script wrote, not the script itself and not a lab file "
+    "(`evidence.json`, `result.json`, `test_result.json` or your answer file), and at least one quoted number must "
+    "be computed by the script rather than typed into it. If any check fails, your earlier answer stands.")
+REFEREE_EVIDENCE_NOTE = (
+    "\n\nThe lab accepts an `own_answer` only with evidence it can check. If you give one, write `evidence.json` "
+    "in this folder: {\"field\": \"the answer field your test decided\", \"script\": \"the script you ran, a "
+    "path in this folder\", \"output_file\": \"the file that script wrote its output to, a path in this "
+    "folder\", \"result\": \"the numbers that decided your answer, quoted exactly as the output file shows "
+    "them\"}. The lab checks by code that the script and the output file exist, that the output file was written "
+    "during your run and after the script was last saved, and that every number in `result` appears in the output "
+    "file. The output file must be one your script wrote, not the script itself and not a lab file "
+    "(`evidence.json`, `result.json`, `test_result.json` or the answer file), and at least one quoted number must "
+    "be computed by the script rather than typed into it. If any check fails, your own answer is not used.")
 
 
 @dataclasses.dataclass
@@ -108,6 +164,10 @@ class Config:
     brief_teams: tuple = ("team-a",)   # the first teams that receive the director's briefing
     seed: int | None = None      # for the referee's X/Y order; None means random
     max_usd: float | None = None   # hard dollar cap for the run directory (lab.budget); None means no cap
+    recheck: bool = False        # re-check a team's "Not verifiable" answer against an inventory of the data
+    recheck_p: float = 0.05      # ... a new "True" needs a test with p at most this
+    recheck_min_n: int = 20      # ... and any new label a test on at least this many rows
+    guard: bool = False          # the damage guard: a changed answer needs evidence.json that code can check
 
     def timeout(self, role: str) -> int:
         return int(self.timeouts.get(role, 1800))
@@ -127,6 +187,15 @@ def make_brief(name: str, agent: Agent | None, **fields: Any) -> str:
         return body
     head = template("common").format(agent_id=agent.id, department=agent.department, **fields)
     return head.rstrip() + "\n\n" + body
+
+
+def challenge_brief(agent: Agent | None, fields: dict, teams: int = 2) -> str:
+    """The director's challenge of an answer: of the answer two blind teams agree on
+    (director_challenge.md), or of one analyst's answer (director_challenge_single.md, the
+    self-challenge arm, which has no memory: pass agent=None)."""
+    if teams not in (1, 2):
+        raise ValueError("the challenge is of one team's answer or of two teams' agreed answer")
+    return make_brief("director_challenge" if teams == 2 else "director_challenge_single", agent, **fields)
 
 
 # ----- answers -----
@@ -161,6 +230,294 @@ def field_agreement(adapter: Adapter, study: Study, a: pathlib.Path, b: pathlib.
     if hasattr(adapter, "field_agreement"):
         return {k: bool(v) for k, v in adapter.field_agreement(study, a, b).items()}
     return {"all": adapter.agreement(study, study.deliverables[0], a, b) >= 1.0}
+
+
+# ----- the "Not verifiable" re-check -----
+
+def abstains(adapter: Adapter, study: Study, values: dict) -> bool:
+    """Whether an answer abstains: the adapter's own abstains(study, values) when it has one, else
+    the label "Not verifiable" for the adapters that use BioDSA's labels (LABEL_ADAPTERS)."""
+    own = getattr(adapter, "abstains", None)
+    if callable(own):
+        return bool(own(study, values))
+    return getattr(adapter, "name", None) in LABEL_ADAPTERS and isinstance(values, dict) \
+        and values.get("label") == NOT_VERIFIABLE
+
+
+def local_data_dir(adapter: Adapter, study: Study) -> pathlib.Path | None:
+    """A copy of the study's data this process can read: the adapter's local_data_dir(study) when it
+    has one, else study.data_dir when that exists here. None when the data are only on a Modal Volume."""
+    own = getattr(adapter, "local_data_dir", None)
+    path = own(study) if callable(own) else study.data_dir
+    path = pathlib.Path(path) if path else None
+    return path if path is not None and path.is_dir() else None
+
+
+def is_link(path: pathlib.Path) -> bool:
+    try:
+        return path.is_symlink()
+    except (OSError, ValueError):
+        return False
+
+
+def agent_file(workspace: pathlib.Path, name: str) -> pathlib.Path | None:
+    """A file an agent wrote in its workspace, or None: the lab reads and copies only a regular file
+    inside the workspace, never a symbolic link (it would let an agent hand the lab another file)."""
+    ws = pathlib.Path(workspace).resolve()
+    path = ws / str(name)
+    try:
+        if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to(ws):
+            return None
+    except (OSError, ValueError):
+        return None
+    return path
+
+
+def _finite(value, name: str) -> tuple[float | None, str | None]:
+    """A test_result.json field as a finite number: (value, None), or (None, why not). Numbers and
+    strings that parse as one are accepted; true and false are not."""
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        return None, f"{name} is {value!r}, not a number"
+    try:
+        number = float(value.strip() if isinstance(value, str) else value)
+    except (ValueError, OverflowError):
+        return None, f"{name} is {value!r}, not a number"
+    if math.isnan(number):
+        return None, f"{name} is {value!r}, not a number (NaN)"
+    if math.isinf(number):
+        return None, f"{name} is {value!r}, an infinite number"
+    return number, None
+
+
+def _p_value(value) -> tuple[float | None, str | None]:
+    """p_value as a number in [0, 1]: (p, None), or (None, why not). A string like "<0.001" counts
+    as 0.001, the bound it states."""
+    if isinstance(value, str):
+        value = value.strip()
+        value = value[2:] if value.startswith("<=") else value[1:] if value.startswith("<") else value
+    p, why = _finite(value, "p_value")
+    if why:
+        return None, why
+    if p < 0:
+        return None, f"p_value is {p}, a negative number"
+    if p > 1:
+        return None, f"p_value is {p}, over 1"
+    return p, None
+
+
+def recheck_verdict(cand: "Candidate | None", workspace: pathlib.Path, started: float,
+                    cfg: "Config") -> tuple[bool, str, dict | None]:
+    """The code's verdict on a re-check: (accepted, reason, the parsed test_result.json or None).
+    A new label replaces "Not verifiable" only when it is True or False and test_result.json (a
+    regular file, not a symbolic link) was written in this round with all six fields: `test` a
+    non-empty string, `variables` a non-empty list of non-empty strings, `n` a finite number at least
+    cfg.recheck_min_n, `p_value` a number in [0, 1] ("<0.001" counts as 0.001), and `direction`
+    exactly "supports" or "contradicts" (any case). A True needs "supports" and p_value at most
+    cfg.recheck_p; a False needs "contradicts" (and no p threshold, as the brief says)."""
+    link = is_link(pathlib.Path(workspace) / TEST_FILE)
+    path = None if link else agent_file(workspace, TEST_FILE)
+    test = load_doc(path) if path else None
+    test = test if isinstance(test, dict) else None
+    if cand is None or not cand.valid:
+        return False, "the re-check gave no valid answer", test
+    label = cand.values.get("label")
+    if label not in SETTLED:
+        return False, f"the answer is still {label!r}", test
+    if link:
+        return False, f"{TEST_FILE} is a symbolic link; the lab reads only a regular file", None
+    if test is None:
+        return False, f"no readable {TEST_FILE}", None
+    missing = [k for k in TEST_FIELDS if k not in test or test[k] in (None, "")]
+    if missing:
+        return False, f"{TEST_FILE} lacks {', '.join(missing)}", test
+    if path.stat().st_mtime < started - GUARD_SLACK_S:
+        return False, f"{TEST_FILE} was written before the re-check began", test
+    if not isinstance(test["test"], str) or not test["test"].strip():
+        return False, f"test is {test['test']!r}, not a non-empty string", test
+    variables = test["variables"]
+    if not isinstance(variables, list) or not variables \
+            or not all(isinstance(v, str) and v.strip() for v in variables):
+        return False, f"variables is {variables!r}, not a non-empty list of non-empty strings", test
+    n, why = _finite(test["n"], "n")
+    if why:
+        return False, why, test
+    if n < cfg.recheck_min_n:
+        return False, f"n is {test['n']!r}, under {cfg.recheck_min_n}", test
+    p, why = _p_value(test["p_value"])
+    if why:
+        return False, why, test
+    raw = test["direction"]
+    direction = raw.strip().lower() if isinstance(raw, str) else None
+    if direction not in ("supports", "contradicts"):
+        return False, f'direction is {raw!r}, not "supports" or "contradicts"', test
+    if label == "True":
+        # a significant effect in the opposite direction must not become "True"
+        if direction != "supports":
+            return False, f"True, but the direction is {raw!r}, not one that supports the claim", test
+        if p > cfg.recheck_p:
+            return False, f"p_value is {test['p_value']!r}, over {cfg.recheck_p}", test
+        return True, f"True with p_value {test['p_value']} and n {test['n']}", test
+    if direction != "contradicts":
+        return False, f"False, but the direction is {raw!r}, not one that contradicts the claim", test
+    return True, f"False with a direction that contradicts the claim and n {test['n']}", test
+
+
+def restore_kept(ws: pathlib.Path, kept: "Candidate", kept_note: pathlib.Path, deliverable: str) -> None:
+    """After a re-check the lab did not accept, put the kept answer back in the team's folder: the
+    answer file gets the kept candidate's content and result.json the kept round's note (or is removed
+    when that round wrote none). Later rounds, briefs and the director then see the answer in use, and
+    a revision that keeps "the answer in the folder" keeps that one."""
+    ws = pathlib.Path(ws)
+    for name, source in ((deliverable, kept.path), ("result.json", kept_note)):
+        target = ws / name
+        if is_link(target) or target.is_file():
+            target.unlink()
+        if pathlib.Path(source).is_file():
+            shutil.copyfile(source, target)
+
+
+# ----- the damage guard -----
+
+# A number as written: digits with optional thousands separators, decimals and exponent. Not one
+# that starts inside a word or another number ("FEV1", "1.2.3"). Signs are not part of it.
+NUMBER_TOKEN = re.compile(r"(?<![A-Za-z0-9_.])(?:\d{1,3}(?:,\d{3})+(?!\d)(?:\.\d+)?|\d+(?:\.\d+)?|\.\d+)(?:[eE][-+]?\d+)?")
+PLAIN_TOKEN = re.compile(r"(?<![A-Za-z0-9_.])(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][-+]?\d+)?")
+SCI_TOLERANCE = decimal.Decimal("1e-9")
+# Files an agent writes for the lab's protocol, never a script's output (the study's answer file too).
+PROTOCOL_FILES = (EVIDENCE_FILE, TEST_FILE, "result.json", INVENTORY_FILE, QUESTIONS_FILE)
+
+
+@dataclasses.dataclass(frozen=True)
+class Written:
+    """One number as written: its value, whether it is in scientific notation, and its decimals."""
+    value: decimal.Decimal
+    sci: bool
+    places: int
+
+    @classmethod
+    def parse(cls, token: str) -> "Written | None":
+        plain = token.replace(",", "")
+        try:
+            value = decimal.Decimal(plain)
+        except decimal.InvalidOperation:
+            return None
+        sci = "e" in plain.lower()
+        places = 0 if sci or "." not in plain else len(plain.split(".")[1])
+        return cls(value, sci, places)
+
+
+def numbers_written(text: str) -> list[str]:
+    """Every number token in the text, thousands separators kept as written ("1,234")."""
+    return NUMBER_TOKEN.findall(text)
+
+
+def output_numbers(text: str) -> list["Written"]:
+    """The numbers an output file shows. A comma group counts both joined ("12,140" is 12140) and as
+    its parts (12 and 140), since a CSV row writes numbers that way too."""
+    tokens = NUMBER_TOKEN.findall(text) + PLAIN_TOKEN.findall(text)
+    return [w for w in (Written.parse(t) for t in dict.fromkeys(tokens)) if w is not None]
+
+
+def same_number(quoted: "Written", shown: "Written") -> bool:
+    """Whether a number quoted in `result` is one the output shows. Scientific notation on either side:
+    equal values within a relative 1e-9. A quoted integer: an integer token of the same value. A quoted
+    decimal with d decimals: a token with at least d decimals that rounds half up to it; and when the
+    two values differ (the quote is rounded), the quote must show at least two significant digits, so
+    0.01 does not stand for 0.006 nor 0.006 for 0.0055, while 0.0031 stands for 0.00312."""
+    try:
+        if quoted.sci or shown.sci:
+            q, s = quoted.value, shown.value
+            return abs(q - s) <= SCI_TOLERANCE * max(abs(q), abs(s))
+        if quoted.places == 0:
+            return shown.places == 0 and quoted.value == shown.value
+        if shown.places < quoted.places:
+            return False
+        with decimal.localcontext() as ctx:
+            ctx.prec = max(28, len(shown.value.as_tuple().digits) + 2)
+            if shown.value.quantize(decimal.Decimal(1).scaleb(-quoted.places),
+                                    rounding=decimal.ROUND_HALF_UP) != quoted.value:
+                return False
+        return shown.value == quoted.value or significant_digits(quoted.value) >= 2
+    except decimal.DecimalException:
+        return False
+
+
+def significant_digits(value: decimal.Decimal) -> int:
+    """How many significant digits a number is written with: 0.0031 has two, 0.10 two, 0.01 one."""
+    digits = "".join(map(str, value.as_tuple().digits)).lstrip("0")
+    return len(digits)
+
+
+def is_protocol_file(name: str, answer_file: str | None) -> bool:
+    """Whether a file name is one the lab's protocol has an agent write (or the study's answer file)."""
+    low = name.lower()
+    return low in PROTOCOL_FILES or (answer_file is not None and name == pathlib.Path(answer_file).name) \
+        or fnmatch.fnmatch(low, "*answer*.json")
+
+
+def _read(path: pathlib.Path) -> str:
+    with open(path, errors="replace") as f:
+        return f.read(GUARD_MAX_OUTPUT_CHARS)
+
+
+def check_evidence(workspace: pathlib.Path, started: float, answer_file: str | None = None) -> tuple[bool, str]:
+    """The damage guard's check of `evidence.json` in a workspace: (passed, reason).
+
+    evidence.json must be a regular file (not a symbolic link) with all four fields. `result` must
+    quote at least one number. The script and the output file must be regular files inside the
+    workspace, not symbolic links, and not the same file; the output file must not be a file the
+    lab's protocol has the agent write (evidence.json, test_result.json, result.json, the inventory,
+    the questions file, the study's answer file `answer_file`, or any `*answer*.json`). The output
+    file must have been written at or after the round's start (GUARD_SLACK_S of clock slack) and at
+    or after the script's last change. Each of the first GUARD_MAX_NUMBERS numbers in `result` must
+    be one the output file shows (same_number; signs ignored), and at least one of them must not
+    also be written in the script: a number the script itself holds shows nothing it computed."""
+    ws = pathlib.Path(workspace).resolve()
+    if is_link(ws / EVIDENCE_FILE):
+        return False, f"{EVIDENCE_FILE} is a symbolic link; the lab reads only a regular file"
+    doc = load_doc(ws / EVIDENCE_FILE)
+    if not isinstance(doc, dict):
+        return False, f"no readable {EVIDENCE_FILE}"
+    missing = [k for k in EVIDENCE_FIELDS if k not in doc]
+    if missing:
+        return False, f"{EVIDENCE_FILE} lacks {', '.join(missing)}"
+    result = doc["result"] if isinstance(doc["result"], str) else json.dumps(doc["result"])
+    quoted = numbers_written(result)[:GUARD_MAX_NUMBERS]
+    if not quoted:
+        return False, "result quotes no number"
+    files = {}
+    for key in ("script", "output_file"):
+        name = doc[key]
+        if not isinstance(name, str) or not name.strip():
+            return False, f"the {key} {name!r} is not a file in the working folder"
+        if is_link(ws / name):
+            return False, f"the {key} {name!r} is a symbolic link; the lab reads only a regular file"
+        path = agent_file(ws, name)
+        if path is None:
+            return False, f"the {key} {name!r} is not a file in the working folder"
+        files[key] = path.resolve()
+    if is_protocol_file(files["output_file"].name, answer_file):
+        return False, (f"the output_file {doc['output_file']!r} is a file the lab's protocol has the agent "
+                       "write, not a script's output")
+    if files["output_file"] == files["script"]:
+        return False, "the output_file is the script itself"
+    out_time, script_time = files["output_file"].stat().st_mtime, files["script"].stat().st_mtime
+    if out_time < started - GUARD_SLACK_S:
+        return False, "the output file was written before this round began"
+    if out_time < script_time:
+        return False, "the output file is older than the script"
+    shown = output_numbers(_read(files["output_file"]))
+    in_script = output_numbers(_read(files["script"]))
+    computed = 0
+    for token in quoted:
+        number = Written.parse(token)
+        if number is None or not any(same_number(number, s) for s in shown):
+            return False, f"the number {token} in result does not appear in the output file"
+        if not any(same_number(number, s) for s in in_script):
+            computed += 1
+    if not computed:
+        return False, "every number in result is also written in the script, so none shows what the script computed"
+    return True, "the evidence checks out"
 
 
 # ----- leak check -----
@@ -344,14 +701,26 @@ class Candidate:
     path: pathlib.Path  # the lab's copy, outside every workspace
     problems: list
     values: dict
+    not_used: str | None = None   # why the lab kept an earlier answer over this valid one (guard, re-check)
 
     @property
     def valid(self) -> bool:
         return not self.problems
 
+    @property
+    def usable(self) -> bool:
+        return self.valid and not self.not_used
+
+    @property
+    def id(self) -> str:
+        return "referee-own" if self.team == "referee" else f"{self.team}-{self.round}"
+
     def record(self) -> dict:
-        return {"team": self.team, "agent": self.agent, "round": self.round, "path": str(self.path),
-                "valid": self.valid, "problems": self.problems, "answer": self.values}
+        out = {"team": self.team, "agent": self.agent, "round": self.round, "path": str(self.path),
+               "valid": self.valid, "problems": self.problems, "answer": self.values}
+        if self.not_used:
+            out["not_used"] = self.not_used
+        return out
 
 
 # ----- the lab -----
@@ -484,6 +853,10 @@ class StudyRun:
             "candidates": [], "comparisons": [], "briefing": [], "questions": [], "warning_signs_to_team_c": [],
             "challenged": False, "challenge_questions": None, "challenge_changed_answer": None, "challenge": None,
             "referee": None, "research": [], "not_chosen": [], "agent_runs": [], "unsanctioned_pass_downs": []}
+        for switch in ("recheck", "guard"):       # recorded only when on, so a default study.json is unchanged
+            if getattr(self.cfg, switch):
+                self.record["switches"][switch] = True
+                self.record[switch] = []
         self.candidates: list[Candidate] = []
         self.start_seq = 0
 
@@ -511,7 +884,8 @@ class StudyRun:
         s = self.study
         return {"statement": s.statement, "data_dir": str(s.data_dir), "max_searches": self.cfg.max_searches,
                 "team_searches": self.cfg.team_searches, "research_searches": self.cfg.research_searches,
-                "search": "", "findings_note": "", "research": "", "research_shape": "",
+                "search": "", "findings_note": "", "research": "", "research_shape": "", "evidence_note": "",
+                "questions_source": QUESTIONS_SOURCE.format(tools=TOOLS), "reply_note": REPLY_NOTE,
                 "study_id": s.id,
                 "time_limit_minutes": self.cfg.timeout("analyst") // 60, "answer_file": self.deliverable,
                 "library_department": library_department(s),
@@ -527,26 +901,30 @@ class StudyRun:
                 self.log("candidate.none", team=team, round=round_, reason=result.error or "run failed")
                 return None
         name = result.result.get("answer_file") or self.deliverable
-        source = (workspace / str(name)).resolve()
-        if not source.is_relative_to(workspace.resolve()) or not source.is_file():
-            source = workspace / self.deliverable
+        source = agent_file(workspace, name) or agent_file(workspace, self.deliverable)   # never a symbolic link
         store = self.dir / "candidates"
         store.mkdir(parents=True, exist_ok=True)
         path = store / f"{team}-{round_}.json"
-        if source.is_file():
+        if source:
             shutil.copyfile(source, path)
         else:
             path.write_text("")
-        if (workspace / "result.json").is_file():
-            shutil.copyfile(workspace / "result.json", store / f"{team}-{round_}-result.json")
-        problems = list(self.lab.adapter.problems(self.study, self.deliverable, path)) if source.is_file() \
+        note = agent_file(workspace, "result.json")
+        if note:
+            shutil.copyfile(note, store / f"{team}-{round_}-result.json")
+        problems = list(self.lab.adapter.problems(self.study, self.deliverable, path)) if source \
             else ["no answer file"]
         cand = Candidate(team, self.agent(team).id if team != "referee" else self.agent("referee").id,
                          round_, path, problems, answer_values(path) if not problems else {})
-        self.candidates.append(cand)
-        self.record["candidates"].append(cand.record())
+        self.add(cand)
         self.log("candidate", team=team, round=round_, valid=cand.valid, problems=problems)
         return cand
+
+    def add(self, cand: Candidate) -> None:
+        """Keep a candidate. study.json's list is rebuilt from these at the end (finish), so a later
+        mark (not_used) reaches it."""
+        self.candidates.append(cand)
+        self.record["candidates"].append(cand.record())
 
     def compare(self, x: Candidate, y: Candidate, round_: str) -> bool:
         fields = field_agreement(self.lab.adapter, self.study, x.path, y.path)
@@ -585,8 +963,8 @@ class StudyRun:
         teams_dir = ws / "teams"
         teams_dir.mkdir(parents=True, exist_ok=True)
         for team in ("team-a", "team-b"):
-            note = self.dir / team / "result.json"
-            if note.is_file():
+            note = agent_file(self.dir / team, "result.json")    # never a symbolic link
+            if note:
                 shutil.copyfile(note, teams_dir / f"{self.dept(team)}.json")
         return teams_dir
 
@@ -631,6 +1009,8 @@ class StudyRun:
             self.lab.open_budget(agent.id, self.cfg.team_searches, "team-a")
         if template_name == "analyst_revise" and self.research_on:
             extra["findings_note"] = FINDINGS_NOTE.format(tools=TOOLS)
+        if template_name == "analyst_revise" and self.cfg.guard:
+            extra["evidence_note"] = EVIDENCE_NOTE
         brief = make_brief(template_name, agent, **self.fields(diversity=DIVERSITY[team],
                                                                situation=SITUATION.get(round_, ""), **extra))
         result = self.run_agent(agent, brief, team, [self.study.data_dir, TOOLS], phase, "analyst")
@@ -669,8 +1049,7 @@ class StudyRun:
         """The director challenges an agreed answer. Records its findings, delivers its questions, returns them."""
         director = self.agent("director")
         teams_dir = self.team_notes(self.dir / "director-challenge")
-        brief = make_brief("director_challenge", director, **self.fields(teams_dir=str(teams_dir),
-                                                                         **self.research_fields()))
+        brief = challenge_brief(director, self.fields(teams_dir=str(teams_dir), **self.research_fields()), teams=2)
         result = self.run_agent(director, brief, "director-challenge", [self.study.data_dir, TOOLS], "challenge",
                                 "director")
         doc = result.result if result.ok else {}
@@ -818,8 +1197,10 @@ class StudyRun:
             (folder / self.deliverable).write_text(json.dumps(scrub(doc, names, keep=("answer",)), indent=2))
             note = load_doc(self.dir / "candidates" / f"{cand.team}-{cand.round}-result.json")
             (folder / "method.json").write_text(json.dumps(scrub(note if isinstance(note, dict) else {}, names), indent=2))
-        brief = make_brief("referee", agent, **self.fields(candidates_dir=str(ws / "candidates"),
-                                                           time_limit_minutes=self.cfg.timeout("referee") // 60))
+        brief = make_brief("referee", agent, **self.fields(
+            candidates_dir=str(ws / "candidates"), time_limit_minutes=self.cfg.timeout("referee") // 60,
+            evidence_note=REFEREE_EVIDENCE_NOTE if self.cfg.guard else ""))
+        started = time.time()
         result = self.run_agent(agent, brief, "referee", [self.study.data_dir, TOOLS], "referee", "referee")
         verdict = dict(result.result) if result.ok else {"pick": "neither", "reason": f"referee run failed: {result.error}"}
         pick = str(verdict.get("pick") or "").strip().upper()
@@ -832,9 +1213,14 @@ class StudyRun:
             path.write_text(json.dumps(own, indent=2))
             problems = list(self.lab.adapter.problems(self.study, self.deliverable, path))
             cand = Candidate("referee", agent.id, "referee", path, problems, answer_values(path) if not problems else {})
-            self.candidates.append(cand)
-            self.record["candidates"].append(cand.record())
+            self.add(cand)
             verdict["own_answer_valid"] = cand.valid
+            if cand.valid and self.cfg.guard:    # the referee's own answer would replace both teams' answers
+                ok, why = check_evidence(ws, started, self.deliverable)
+                self.guard_event("referee", "referee", ok, why, cand, None)
+                if not ok:
+                    cand.not_used = f"blocked by the damage guard: {why}"
+                    verdict["own_answer_blocked"] = True
         self.record["referee"] = {**verdict, "mapping": mapping}
         self.log("referee.verdict", pick=verdict["pick"], picked_agent=verdict["picked_agent"],
                  own_answer_valid=verdict["own_answer_valid"])
@@ -870,6 +1256,8 @@ class StudyRun:
             self.wait_visible({self.agent("director").id: self.library_facts()})
             briefing = self.briefing()
         a, b = self.both(self.analyse)
+        if self.cfg.recheck:
+            a, b = self.rechecked(a, b)
         va, vb = bool(a and a.valid), bool(b and b.valid)
         if not (va and vb):
             if va or vb:
@@ -904,20 +1292,111 @@ class StudyRun:
         c = self.team_c(briefing, questions, a, b)
         if c and c.valid and (self.compare(c, a, "third-team") or self.compare(c, b, "third-team")):
             return self.finish("third-team", c)
-        own = next((x for x in self.candidates if x.team == "referee" and x.valid), None)
+        own = next((x for x in self.candidates if x.team == "referee" and x.usable), None)
         return self.finish("unresolved", own or (c if c and c.valid else None), verdict=verdict)
 
     def revised(self, a: Candidate, b: Candidate, round_: str) -> tuple[Candidate, Candidate]:
-        """Both teams answer the director's questions. A team whose revised answer is not valid keeps its first."""
+        """Both teams answer the director's questions. A team whose revised answer is not valid keeps its first.
+        With the damage guard, a team whose revision changed its answer without evidence keeps its first too."""
+        started = time.time()
         a2, b2 = self.both(self.analyse, "analyst_revise", round_, round_)
-        return (a2 if a2 and a2.valid else a), (b2 if b2 and b2.valid else b)
+        a3, b3 = (a2 if a2 and a2.valid else a), (b2 if b2 and b2.valid else b)
+        if self.cfg.guard:
+            a3 = self.guarded("team-a", round_, a, a3, started)
+            b3 = self.guarded("team-b", round_, b, b3, started)
+        return a3, b3
+
+    # ----- the damage guard -----
+
+    def guarded(self, team: str, round_: str, before: Candidate, after: Candidate, started: float) -> Candidate:
+        """The answer a team uses after a round: `after`, unless it changes `before` without evidence
+        that check_evidence accepts. A blocked answer stays among the candidates (it is graded) but is
+        marked not used."""
+        if after is before or all(field_agreement(self.lab.adapter, self.study, before.path, after.path).values()):
+            return after
+        ok, why = check_evidence(self.dir / team, started, self.deliverable)
+        self.guard_event(team, round_, ok, why, after, before)
+        if ok:
+            return after
+        after.not_used = f"blocked by the damage guard: {why}"
+        return before
+
+    def guard_event(self, team: str, round_: str, ok: bool, why: str, cand: Candidate, kept: Candidate | None) -> None:
+        self.record["guard"].append({"team": team, "round": round_, "passed": ok, "reason": why,
+                                     "candidate": cand.id, "kept": None if ok or kept is None else kept.id})
+        if ok:
+            self.log("guard.passed", team=team, round=round_)
+        else:
+            self.log("guard.blocked", team=team, round=round_, reason=why)
+
+    # ----- the "Not verifiable" re-check -----
+
+    def rechecked(self, a: Candidate | None, b: Candidate | None) -> tuple:
+        """Re-check each team's first answer that abstains, both at once. Returns the answers in use."""
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            fa = pool.submit(self.recheck, "team-a", a)
+            fb = pool.submit(self.recheck, "team-b", b)
+            return fa.result(), fb.result()
+
+    def recheck(self, team: str, cand: Candidate | None) -> Candidate | None:
+        """When a team's valid answer abstains ("Not verifiable"), give the team an inventory of the
+        data its work never mentions and ask it to test the claim (analyst_recheck.md, role "recheck",
+        the team's own agent and folder, so it stays blind to the other team). The re-check's answer is
+        a candidate of its own (round "recheck"); it replaces the team's answer only when
+        recheck_verdict accepts it, and with the guard on, only when its evidence checks out too.
+        When it does not, the team's folder gets the kept answer back (restore_kept), so later rounds
+        see the answer the lab uses. Returns the answer the team uses from now on."""
+        if cand is None or not cand.valid or not abstains(self.lab.adapter, self.study, cand.values):
+            return cand
+        before = cand.values.get("label")
+        data = local_data_dir(self.lab.adapter, self.study)
+        if data is None:
+            reason = "no local copy of the data to list (it is only on a Modal Volume)"
+            self.log("recheck.skipped", team=team, reason=reason)
+            self.record["recheck"].append({"team": team, "skipped": True, "reason": reason})
+            return cand
+        ws = self.dir / team
+        inventory = build_inventory(data, ws, hypothesis_text(self.study.statement), answer_file=self.deliverable)
+        (ws / INVENTORY_FILE).write_text(json.dumps(inventory, indent=2) + "\n")
+        agent = self.agent(team)
+        self.log("recheck.start", team=team, before=before, unused_files=len(inventory["unused_files"]),
+                 unused_columns=inventory["unused_columns_total"])
+        brief = make_brief("analyst_recheck", agent, **self.fields(
+            inventory=render_inventory(inventory), max_p=self.cfg.recheck_p, min_n=self.cfg.recheck_min_n,
+            time_limit_minutes=self.cfg.timeout("recheck") // 60,
+            evidence_note=EVIDENCE_NOTE if self.cfg.guard else ""))
+        started = time.time()
+        result = self.run_agent(agent, brief, team, [self.study.data_dir, TOOLS], "recheck", "recheck")
+        new = self.take(team, "recheck", result, ws)
+        accepted, reason, test = recheck_verdict(new, ws, started, self.cfg)
+        if test is not None:
+            (self.dir / "candidates" / f"{team}-recheck-{TEST_FILE}").write_text(json.dumps(test, indent=2) + "\n")
+        if accepted and self.cfg.guard:
+            ok, why = check_evidence(ws, started, self.deliverable)
+            self.guard_event(team, "recheck", ok, why, new, cand)
+            if not ok:
+                accepted, reason = False, f"blocked by the damage guard: {why}"
+        after = new.values.get("label") if new is not None and new.valid else None
+        if new is not None and new.valid and not accepted:
+            new.not_used = f"the re-check's verdict kept the earlier answer: {reason}"
+        if not accepted:
+            restore_kept(ws, cand, self.dir / "candidates" / f"{team}-{cand.round}-result.json", self.deliverable)
+        in_use = new if accepted else cand
+        self.log("recheck.verdict", team=team, before=before, after=after, accepted=accepted, reason=reason,
+                 in_use=in_use.id)
+        self.record["recheck"].append({"team": team, "before": before, "after": after, "accepted": accepted,
+                                       "reason": reason, "candidate": f"{team}-recheck", "test": test,
+                                       "in_use": in_use.id})
+        return in_use
 
     # ----- the record -----
 
     def reason_not_chosen(self, cand: Candidate, status: str, final: Candidate | None, verdict: dict | None) -> str:
         if not cand.valid:
             return "answer failed the format check: " + "; ".join(cand.problems)
-        latest = [x for x in self.candidates if x.team == cand.team and x.valid][-1]
+        if cand.not_used:
+            return cand.not_used
+        latest = [x for x in self.candidates if x.team == cand.team and x.usable][-1]
         if latest is not cand:
             return f"replaced by the same team's {latest.round} answer"
         if status in ("replicated", "converged"):
@@ -945,6 +1424,7 @@ class StudyRun:
             self.record["final"] = {"agent": final.agent, "team": final.team, "round": final.round,
                                     "path": str(final_dir / self.deliverable)}
         self.record["status"] = status
+        self.record["candidates"] = [c.record() for c in self.candidates]
         self.record["not_chosen"] = [{"agent": c.agent, "round": c.round,
                                       "reason": self.reason_not_chosen(c, status, final, verdict)}
                                      for c in self.candidates if c is not final]

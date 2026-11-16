@@ -11,7 +11,7 @@ You may not vote, average, or pick the answer that sounds better. Settle it with
 
 If the test supports one side, pick it. If it supports neither (for example both made the same mistake, or the task text allows both readings), say "neither" and explain. If you are sure of a better answer than both and your test supports it, give it as `own_answer` in the task's answer format.
 
-Record the test and its outcome with `python3 {tools}/memory.py write`, label "REFEREE TEST".
+Record the test and its outcome with `python3 {tools}/memory.py write`, label "REFEREE TEST".{evidence_note}
 
 ## Working limits
 

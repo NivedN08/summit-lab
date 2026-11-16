@@ -2,21 +2,26 @@
 
 `decide(events, study_id)` reapplies the decision rules of StudyRun.run (lab/protocol.py) to the
 events of the study's last attempt (from its last study.start): candidate, candidate.none,
-compare, relay.leak_check, research.delivered and referee.verdict, plus the switches in the
-lab.start event that started it. It never reads study.json, and it ignores study.final, so the
+compare, relay.leak_check, research.delivered, referee.verdict, recheck.verdict and guard.blocked,
+plus the switches in the lab.start event that started it. Events of a control arm (they carry an
+"arm" field: lab/arms.py) are not the lab's and are left out. It never reads study.json, and it ignores study.final, so the
 two are independent records of the same decision.
 
 The rules, in the order StudyRun.run applies them:
 
-  analysis    teams A and B answer. Only one valid: single-source (that answer). None: no-answer.
-  agree       challenge off: replicated (team A's first answer). Challenge on and no question and
-              no research finding delivered: replicated (team A's first answer). Otherwise both
-              teams revise (an invalid revision keeps the team's earlier answer), and agreeing
-              again is replicated (team A's current answer); disagreeing goes to the referee.
+  analysis    teams A and B answer. A team whose re-check was accepted (recheck.verdict) uses its
+              re-check answer from then on. Only one valid: single-source (that team's answer in
+              use). None: no-answer.
+  agree       challenge off: replicated (team A's answer in use). Challenge on and no question and
+              no research finding delivered: replicated (team A's answer in use). Otherwise both
+              teams revise (an invalid revision, or one the damage guard blocked, keeps the team's
+              earlier answer), and agreeing again is replicated (team A's current answer);
+              disagreeing goes to the referee.
   disagree    questions on: both teams revise; agreeing now is converged (team A's current answer).
   referee     on, and it picks X or Y: refereed (the picked team's current answer).
   team C      agrees with A or B: third-team (team C's answer). Otherwise unresolved: the referee's
-              own answer when valid, else team C's when valid, else no answer.
+              own answer when valid and not blocked by the damage guard, else team C's when valid,
+              else no answer.
 
 `timeline(run_dir, study_id)` lists what happened, one plain line per step.
 """
@@ -25,6 +30,8 @@ from __future__ import annotations
 
 import json
 import pathlib
+
+from lab.measures import ARM_ROLES
 
 STATUSES = ("replicated", "converged", "refereed", "third-team", "unresolved", "single-source", "no-answer")
 # Switches a lab.start config may lack in a run older than the step: a missing step did not run.
@@ -54,7 +61,7 @@ def study_events(events: list[dict], study_id: str) -> tuple[list[dict], dict]:
     labs = [e for e in events if e.get("kind") == "lab.start" and e["seq"] < begin
             and study_id in (e.get("studies") or [])]
     config = (labs[-1].get("config") if labs else None) or {}
-    return [e for e in events if e["seq"] >= begin and e.get("study") == study_id], config
+    return [e for e in events if e["seq"] >= begin and e.get("study") == study_id and not e.get("arm")], config
 
 
 def _final(study_id: str, team: str, round_: str) -> dict:
@@ -79,6 +86,8 @@ def decide(events: list[dict], study_id: str) -> dict:
     for e in evs:
         if e["kind"] == "compare":
             compares.setdefault(e.get("round"), []).append(bool(e.get("agree")))
+    blocked = {(e.get("team"), e.get("round")) for e in evs if e["kind"] == "guard.blocked"}
+    rechecked = {e.get("team") for e in evs if e["kind"] == "recheck.verdict" and e.get("accepted")}
 
     def incomplete(where: str) -> dict:
         return {"status": None, "final": None, "incomplete": where}
@@ -93,18 +102,20 @@ def decide(events: list[dict], study_id: str) -> dict:
     if ("team-a", "analysis") not in valid or ("team-b", "analysis") not in valid:
         return incomplete("the first answers")
     va, vb = valid[("team-a", "analysis")], valid[("team-b", "analysis")]
+    # the round of each team's answer in use: its re-check answer when the re-check was accepted
+    current = {t: "recheck" if t in rechecked and valid.get((t, "recheck")) else "analysis" for t in ("team-a", "team-b")}
     if not (va and vb):
         if va or vb:
-            return done("single-source", ("team-a" if va else "team-b", "analysis"))
+            team = "team-a" if va else "team-b"
+            return done("single-source", (team, current[team]))
         return done("no-answer", None)
-    current = {"team-a": "analysis", "team-b": "analysis"}   # the round of each team's answer in use
 
     def revise(round_: str) -> bool:
         """Both teams revised in this round: keep each valid revision. False if the round never ran."""
         if ("team-a", round_) not in valid and ("team-b", round_) not in valid:
             return False
         for team in ("team-a", "team-b"):
-            if valid.get((team, round_)):
+            if valid.get((team, round_)) and (team, round_) not in blocked:
                 current[team] = round_
         return True
 
@@ -113,7 +124,7 @@ def decide(events: list[dict], study_id: str) -> dict:
         return incomplete("the first comparison")
     if first:
         if not switch["challenge"]:
-            return done("replicated", ("team-a", "analysis"))
+            return done("replicated", ("team-a", current["team-a"]))
         if not any(e["kind"] == "agent.start" and e.get("phase") == "challenge" for e in evs):
             return incomplete("the challenge")
         asked = sum(1 for e in evs if e["kind"] == "relay.leak_check" and e.get("round") == "challenge"
@@ -121,7 +132,7 @@ def decide(events: list[dict], study_id: str) -> dict:
         findings = sum(int(e.get("deliveries") or 0) for e in evs
                        if e["kind"] == "research.delivered" and e.get("round") == "challenge")
         if not asked and not findings:
-            return done("replicated", ("team-a", "analysis"))
+            return done("replicated", ("team-a", current["team-a"]))
         if not revise("challenge") or agreed("challenge") is None:
             return incomplete("the revision after the challenge")
         if agreed("challenge"):
@@ -138,7 +149,7 @@ def decide(events: list[dict], study_id: str) -> dict:
         if not verdicts:
             return incomplete("the referee")
         verdict = verdicts[-1]
-        own_valid = bool(verdict.get("own_answer_valid"))
+        own_valid = bool(verdict.get("own_answer_valid")) and ("referee", "referee") not in blocked
         if verdict.get("pick") in ("X", "Y"):
             team = "team-a" if verdict.get("picked_agent") == f"{study_id}-team-a" else "team-b"
             return done("refereed", (team, current[team]))
@@ -172,7 +183,7 @@ def describe(e: dict) -> str | None:
     kind = e.get("kind")
     if kind == "study.start":
         return "study started"
-    if kind == "agent.finish" and e.get("role") != "baseline":   # single-agent attempts are another arm
+    if kind == "agent.finish" and e.get("role") not in ARM_ROLES:   # single agents and control arms are not the lab
         state = "ok" if e.get("ok") else f"failed ({e.get('error')})"
         return (f"{e.get('phase')}: {e.get('agent')} ran, attempt {e.get('attempt')}, {state}, "
                 f"{float(e.get('seconds') or 0):.0f} s, {_money(e.get('cost_usd'))}")
@@ -197,6 +208,17 @@ def describe(e: dict) -> str | None:
         return f"research question ({e.get('round')}): {outcome}"
     if kind == "research.delivered":
         return f"research ({e.get('round')}): {e.get('findings')} finding(s), {e.get('deliveries')} delivery(ies)"
+    if kind == "recheck.start":
+        return f"re-check {e.get('team')}: started from {e.get('before')!r}"
+    if kind == "recheck.skipped":
+        return f"re-check {e.get('team')}: skipped ({e.get('reason')})"
+    if kind == "recheck.verdict":
+        return (f"re-check {e.get('team')}: {e.get('before')!r} -> {e.get('after')!r}, "
+                f"{'accepted' if e.get('accepted') else 'not accepted'} ({e.get('reason')})")
+    if kind == "guard.blocked":
+        return f"damage guard blocked {e.get('team')} {e.get('round')}: {e.get('reason')}"
+    if kind == "guard.passed":
+        return f"damage guard passed {e.get('team')} {e.get('round')}"
     if kind == "referee.assign":
         return "referee: " + ", ".join(f"{k} = {v}" for k, v in (e.get("mapping") or {}).items())
     if kind == "referee.verdict":

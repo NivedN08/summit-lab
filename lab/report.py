@@ -132,7 +132,8 @@ def measures_section(m: dict) -> list[str]:
     if other:
         theirs = [v for _, v in headline_rows({"headline": other["headline"]})]
         lines += [f"| Measure | Passed ({m['run']}) | Passed ({other['run']}) |", "|---|---|---|"]
-        lines += [f"| {name} | {value} | {theirs[i]} |" for i, (name, value) in enumerate(headline_rows(m))]
+        lines += [f"| {name} | {value} | {theirs[i] if i < len(theirs) else '-'} |"
+                  for i, (name, value) in enumerate(headline_rows(m))]
     else:
         lines += ["| Measure | Passed |", "|---|---|"]
         lines += [f"| {name} | {value} |" for name, value in headline_rows(m)]
@@ -200,6 +201,7 @@ def measures_section(m: dict) -> list[str]:
               f"changed a method.",
               "",
               *research_paragraphs(m),
+              *v4_paragraphs(m),
               f"**Cost.** The lab used {lab['runs']} agent runs, {lab['minutes']:.1f} minutes and {dollars(lab)}"
               f"{per_study(lab)}. The single agents used {base['runs']} runs, {base['minutes']:.1f} minutes and "
               f"{dollars(base)}. "
@@ -208,6 +210,33 @@ def measures_section(m: dict) -> list[str]:
     if m.get("missing"):
         lines += ["", "Missing from this run: " + "; ".join(m["missing"]) + "."]
     return lines + [""]
+
+
+def v4_paragraphs(m: dict) -> list[str]:
+    """Paragraphs on the "Not verifiable" re-check, the damage guard and the control arms (only when present)."""
+    out = []
+    rc, st, g, arms = m.get("recheck"), (m.get("steps") or {}).get("recheck"), m.get("guard"), m.get("arms") or {}
+    if rc and (rc["rechecks"]["ran"] or rc["rechecks"]["skipped"]):
+        out += [f"**Re-check.** {rc['rechecks']['ran']} answers judged Not verifiable were re-checked "
+                f"({rc['rechecks']['skipped']} skipped for want of a local copy of the data); the code's verdict "
+                f"accepted {rc['rechecks']['accepted']} new labels. Against the first answers, the re-check turned "
+                f"{st['rescued']} team answers from failing to passing and {st['damaged']} from passing to failing. "
+                f"Settled claims judged Not verifiable: {rc['before']} of {rc['first_answers']} first answers before the "
+                f"re-check, {rc['after']} after; {rc['damaged_unverifiable']} truly unverifiable claims were judged "
+                f"settled.", ""]
+    if g and g["checked"]:
+        out += [f"**Damage guard.** The guard checked the evidence for {g['checked']} changed answers: {g['passed']} "
+                f"passed and {g['blocked']} were blocked. Had they been used, the blocked answers would have rescued "
+                f"{g['would_have_rescued']} and damaged {g['would_have_damaged']}; {g['no_effect']} would have made no "
+                f"difference.", ""]
+    names = {"lab": "The lab", "single": "Single attempts", "self": "The self-challenge arm",
+             "vote": "The same-cost vote arm"}
+    if set(arms) - {"lab", "single"}:
+        def money(x):
+            return "no dollar figure" if x is None else f"${x:.2f}"
+        out += ["**Arms.** " + " ".join(f"{names[k]} passed {_n(v['passed'])} for {money(v['dollars'])} "
+                                       f"({v['runs']} runs)." for k, v in arms.items()), ""]
+    return out
 
 
 def research_paragraphs(m: dict) -> list[str]:

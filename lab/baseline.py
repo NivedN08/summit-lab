@@ -24,6 +24,12 @@ def attempt_dir(run_dir: pathlib.Path, study_id: str, k: int) -> pathlib.Path:
     return pathlib.Path(run_dir) / "baseline" / study_id / f"attempt-{k}"
 
 
+def baseline_brief(study: Study, timeout_s: int = 1800) -> str:
+    """A single agent's brief (baseline.md): the task text and the data, nothing else."""
+    return make_brief("baseline", None, statement=study.statement, data_dir=str(study.data_dir),
+                      time_limit_minutes=timeout_s // 60, answer_file=answer_file(study))
+
+
 def run_baselines(adapter: Adapter, backend: Backend, log: EventLog, run_dir: pathlib.Path, studies: list[Study],
                   attempts: int, model: str, max_agents: int, timeout_s: int = 1800,
                   max_usd: float | None = None) -> dict:
@@ -39,8 +45,7 @@ def run_baselines(adapter: Adapter, backend: Backend, log: EventLog, run_dir: pa
 
     def one(study: Study, k: int) -> bool:
         agent = Agent(f"baseline-{study.id}-{k}", WORKER, "baseline", model)
-        brief = make_brief("baseline", None, statement=study.statement, data_dir=str(study.data_dir),
-                           time_limit_minutes=timeout_s // 60, answer_file=answer_file(study))
+        brief = baseline_brief(study, timeout_s)
         ws = attempt_dir(run_dir, study.id, k)
         result = runner.run(agent, brief, ws, readable=[study.data_dir], env=None, timeout_s=timeout_s,
                             study=study.id, phase=f"baseline-{k}", role="baseline",

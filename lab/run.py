@@ -8,14 +8,18 @@
   report    write <run_dir>/report.md in plain words
   prereg    freeze a batch's pre-registration (prereg/<batch>.json) or check it (lab/prereg.py)
   replay    rebuild each study's decision from events.jsonl and check it against study.json
+  arm       run a control arm: --arm self (self-challenge) or --arm vote (same-cost vote), lab/arms.py
 
-Guardrails: `lab` and `baseline` take --max-usd, a hard dollar cap for the run directory
+Version 4: `lab --preset v4` turns on the "Not verifiable" re-check and the damage guard
+(--recheck, --guard); `arm` takes the same two flags.
+
+Guardrails: `lab`, `baseline` and `arm` take --max-usd, a hard dollar cap for the run directory
 (lab/budget.py), required with the claude and modal backends; --prereg <spec> checks the run
 against a frozen pre-registration before anything starts; `grade --ledger` appends the grades
 to the research ledger (lab/ledger.py).
 
 Every command works on one run directory: `events.jsonl` (the event log), `memory.jsonl` (local
-memory), `run.json` (what was run), one folder per study, `baseline/`, `results.json`,
+memory), `run.json` (what was run), one folder per study, `baseline/`, `arms/`, `results.json`,
 `measures.json`, `report.md`.
 """
 
@@ -49,24 +53,62 @@ def _biodsa():
     return BioDSA()
 
 
-ADAPTERS = {"genebench": _genebench, "scbench": _scbench, "biodsa": _biodsa}   # benchmark name -> zero-argument factory
+def _planted(split: str):
+    """A factory for the planted-fault suite. It takes `mounted`: tables on the Modal Volume (the
+    default) or in the local public folder (load_adapter passes mounted=False off Modal)."""
+    def factory(mounted: bool = True):
+        from lab.adapters.planted import Planted
+        return Planted(split, mounted=mounted)
+    factory.local_option = True
+    return factory
 
 
-def load_adapter(name: str):
+# benchmark name -> factory, called with no argument (or, for one with local_option, `mounted`)
+ADAPTERS = {"genebench": _genebench, "scbench": _scbench, "biodsa": _biodsa,
+            "planted": _planted("all"), "planted-dev": _planted("dev"), "planted-heldout": _planted("heldout")}
+
+
+def load_adapter(name: str, backend: str | None = None):
+    """The benchmark's adapter. With a backend, a factory that can point agents at local tables
+    (local_option) mounts them only on Modal; the mock and claude backends read the local copy."""
     if name not in ADAPTERS:
         raise SystemExit(f"unknown benchmark {name!r}; known: {', '.join(sorted(ADAPTERS))}")
-    return ADAPTERS[name]()
+    factory = ADAPTERS[name]
+    if backend is not None and getattr(factory, "local_option", False):
+        return factory(mounted=backend == "modal")
+    return factory()
+
+
+MOCK_LABELS = {0.0: "Not verifiable", 1.0: "True", 2.0: "False"}   # mock numbers as BioDSA-style labels
+
+
+def mock_evidence(workspace: pathlib.Path) -> None:
+    """What a careful mock agent leaves for the damage guard: a script that computes its numbers, its
+    output, and evidence.json quoting the output's numbers."""
+    (workspace / "mock_check.py").write_text("print('p = %.4f' % (1 / 100))\nprint('n = %d' % (12 * 10))\n")
+    (workspace / "mock_check_output.txt").write_text("p = 0.0100\nn = 120\n")
+    (workspace / "evidence.json").write_text(json.dumps({"field": "label", "script": "mock_check.py",
+                                                         "output_file": "mock_check_output.txt",
+                                                         "result": "p = 0.01, n = 120"}, indent=2))
 
 
 def mock_script(adapter):
     """A scripted stand-in for every agent, for a free end-to-end check of the loop.
     Team B first disagrees with team A, then agrees after the question round ("converged").
     Answers go in the study's answer file, wrapped in {"answer": ...} unless the benchmark's format
-    check wants the bare object (scBench)."""
+    check wants the bare object (scBench).
+
+    For a benchmark with BioDSA's labels (lab.protocol.LABEL_ADAPTERS), team A and the self arm's
+    solver first answer "Not verifiable", team B "False" and everyone else "True"; the re-check
+    writes test_result.json and answers "True"; revising and re-checking agents leave evidence for
+    the damage guard. The self-challenge arm's director always asks one question."""
+    from lab.protocol import LABEL_ADAPTERS, TEST_FILE
+    labels = getattr(adapter, "name", None) in LABEL_ADAPTERS or callable(getattr(adapter, "abstains", None))
 
     def write_answer(study, path: pathlib.Path, number: float) -> None:
         schema = adapter.schema(study) if hasattr(adapter, "schema") else {}
-        mock = {"number": number, "string": "mock", "list": ["mock"], "mapping": {"mock": number}}
+        mock = {"number": number, "string": MOCK_LABELS[number] if labels else "mock", "list": ["mock"],
+                "mapping": {"mock": number}}
         values = {k: mock.get(kind) for k, kind in schema.items()}
         path.write_text(json.dumps({"answer": values, "reasoning": "mock agent"}, indent=2))
         if adapter.problems(study, path.name, path):
@@ -74,6 +116,20 @@ def mock_script(adapter):
 
     def script(agent, brief, workspace):
         study_id = workspace.parent.name
+        if "# Your job: director, challenging one analyst's answer" in brief:
+            return {"untested_assumptions": [], "unused_evidence": [], "unresolved_weak_points": [],
+                    "second_readings": [], "verdict": "mock: one question", "questions": [
+                        {"question": "QUESTION FROM THE DIRECTOR: check for repeated sample ids. "
+                                     "Does that change your method?"}]}
+        if "# Your job: re-check a Not verifiable answer" in brief:
+            study = next(s for s in adapter.studies() if s.id == study_id)
+            mock_evidence(workspace)
+            (workspace / TEST_FILE).write_text(json.dumps({"test": "mock t-test", "variables": ["mock: column"],
+                                                           "statistic": 2.6, "p_value": 0.01, "n": 120,
+                                                           "direction": "supports"}, indent=2))
+            write_answer(study, workspace / answer_file(study), 1.0)
+            return {"answer_file": answer_file(study), "variables_found": ["mock: column"], "test_file": TEST_FILE,
+                    "changed": True, "method": "mock re-check", "confidence": 0.0}
         if "# Your job: director, briefing the teams" in brief:
             return {"pass_down": [{"from": [], "text": "PITFALL (mock): check for repeated sample ids.",
                                    "reason": "mock briefing"}], "left_out": []}
@@ -92,8 +148,12 @@ def mock_script(adapter):
             return {"pick": "X", "reason": "mock referee", "test": "none", "own_answer": None}
         revising = "# Your job: analyst, answering the director's questions" in brief
         number = 2.0 if agent.id.endswith("team-b") and not revising else 1.0
+        if labels and not revising and (agent.id.endswith("team-a") or agent.id == f"self-{study_id}"):
+            number = 0.0
         study = next(s for s in adapter.studies() if s.id == study_id)
         write_answer(study, workspace / answer_file(study), number)
+        if labels and revising:
+            mock_evidence(workspace)
         return {"answer_file": answer_file(study), "method": "mock", "warning_signs": [], "confidence": 0.0}
 
     return script
@@ -117,8 +177,9 @@ def make_backend(kind: str, adapter=None, studies=()):
     On Modal, an adapter with `modal_spec` sets the sandbox for each of its studies."""
     if kind == "claude":
         from lab.backend_claude import ClaudeBackend
-        sealed = pathlib.Path(__file__).resolve().parents[1] / "data" / "genebench" / "sealed"
-        return ClaudeBackend(allowed_hosts=list(NETWORK_HOSTS), deny_read=[sealed])
+        data = pathlib.Path(__file__).resolve().parents[1] / "data"
+        return ClaudeBackend(allowed_hosts=list(NETWORK_HOSTS),
+                             deny_read=[data / "genebench" / "sealed", data / "planted" / "sealed"])
     if kind == "mock":
         from lab.backend_mock import MockBackend
         return MockBackend(mock_script(adapter))
@@ -198,12 +259,21 @@ def make_config(args) -> Config:
     """The lab's Config from the `lab` command's flags. --no-search turns off every web search:
     the library (and with it the briefing), team A's search and research on demand."""
     no_search = bool(getattr(args, "no_search", False))
-    return Config(max_agents=args.parallel, max_searches=args.max_searches,
+    return Config(**v4_switches(args), max_agents=args.parallel, max_searches=args.max_searches,
                   library=not (args.no_library or no_search), questions=not args.no_questions,
                   referee=not args.no_referee, challenge=not args.no_challenge,
                   team_search=not (args.no_team_search or no_search), research=not (args.no_research or no_search),
                   brief_teams=brief_teams(args.brief_teams), director_model=args.director_model,
                   worker_model=args.model, team_b_model=args.team_b_model, max_usd=getattr(args, "max_usd", None))
+
+
+PRESETS = {"v4": {"recheck": True, "guard": True}}   # --preset name -> the Config switches it turns on
+
+
+def v4_switches(args) -> dict:
+    """The re-check and guard switches from --recheck, --guard and --preset (each off by default)."""
+    preset = PRESETS.get(getattr(args, "preset", None) or "", {})
+    return {k: bool(getattr(args, k, False) or preset.get(k, False)) for k in ("recheck", "guard")}
 
 
 PAID_BACKENDS = ("claude", "modal")
@@ -247,7 +317,7 @@ def print_halt(runner) -> None:
 
 
 def cmd_lab(args) -> int:
-    adapter = load_adapter(args.benchmark)
+    adapter = load_adapter(args.benchmark, args.backend)
     studies = pick_studies(adapter, args.studies)
     check_can_run(adapter, args.backend, studies)
     if args.backend == "modal" and args.memory != "past":    # checked before anything is written
@@ -286,7 +356,7 @@ def cmd_lab(args) -> int:
 def cmd_baseline(args) -> int:
     from lab import baseline
     from lab.limits import UsageLimit
-    adapter = load_adapter(args.benchmark)
+    adapter = load_adapter(args.benchmark, args.backend)
     studies = pick_studies(adapter, args.studies)
     check_can_run(adapter, args.backend, studies)
     require_max_usd(args)
@@ -321,11 +391,16 @@ def candidate_id(team: str, round_: str) -> str:
     return "referee-own" if team == "referee" else f"{team}-{round_}"
 
 
+ARM_DIRS = {"attempt": "baseline", "self": "arms/self", "vote": "arms/vote"}   # row kind -> folder of the arm
+
+
 def grade_run(run_dir: pathlib.Path, adapter) -> dict:
     """Grade every candidate answer in a run directory: each team's answer in each round, the
     referee's own answer, team C's, the final answer, every baseline attempt, the vote over all
-    attempts and the vote over the first j attempts for each j. Refuses while any agent has
-    started and not finished. Writes results.json and returns it.
+    attempts and the vote over the first j attempts for each j, and the control arms in ARM_DIRS:
+    each answer of the self-challenge arm and its final answer (rows of kind "self"), and each
+    vote-arm attempt and the vote over them (rows of kind "vote"; the vote's id is "vote-arm").
+    Refuses while any agent has started and not finished. Writes results.json and returns it.
 
     Each study's `candidates` list in results.json has one row per graded answer, with who
     produced it, in which round, whether it passed, and the adapter's word for what sort of
@@ -378,7 +453,8 @@ def grade_run(run_dir: pathlib.Path, adapter) -> dict:
                 cid = candidate_id(c.get("team"), c.get("round"))
                 source = study_dir / "candidates" / pathlib.Path(c.get("path") or f"{cid}.json").name
                 rows.append(row({"id": cid, "kind": "lab", "who": c.get("agent"), "team": c.get("team"),
-                                 "round": c.get("round"), "valid": bool(c.get("valid"))},
+                                 "round": c.get("round"), "valid": bool(c.get("valid")),
+                                 **({"not_used": c["not_used"]} if c.get("not_used") else {})},
                                 graded_file(study, source, study_dir / "graded" / cid)))
             final = record.get("final")
             entry["lab"] = {"status": record.get("status"), "final": final,
@@ -387,7 +463,7 @@ def grade_run(run_dir: pathlib.Path, adapter) -> dict:
                              "team": final.get("team") if final else None, "round": "final",
                              "same_as": candidate_id(final.get("team"), final.get("round")) if final else None,
                              "status": record.get("status")}, entry["lab"]["grade"]))
-        base = run_dir / "baseline" / study.id
+        base = run_dir / ARM_DIRS["attempt"] / study.id
         attempts = sorted((p for p in base.glob("attempt-*") if p.is_dir()),
                           key=lambda p: int(p.name.split("-")[1])) if base.is_dir() else []
         if attempts:
@@ -403,6 +479,33 @@ def grade_run(run_dir: pathlib.Path, adapter) -> dict:
             v = entry["baseline"]["vote"]
             rows.append(row({"id": "vote", "kind": "vote", "who": "vote", "team": "single agent", "round": "vote"},
                             {key: val for key, val in v.items() if key != "answer"}))
+        arm_dir = run_dir / ARM_DIRS["self"] / study.id
+        arm_record = load_json(arm_dir / "arm.json")
+        if isinstance(arm_record, dict):
+            for c in arm_record.get("candidates") or []:
+                cid = f"self-{c.get('round')}"
+                rows.append(row({"id": cid, "kind": "self", "who": c.get("agent"), "team": "self-challenge arm",
+                                 "round": c.get("round"), "valid": bool(c.get("valid")),
+                                 **({"not_used": c["not_used"]} if c.get("not_used") else {})},
+                                graded_file(study, arm_dir / "candidates" / f"{cid}.json", arm_dir / "graded" / cid)))
+            final = arm_record.get("final")
+            entry["self"] = {"status": arm_record.get("status"), "final": graded(study, arm_dir / "final"),
+                             "final_round": final.get("round") if final else None}
+            rows.append(row({"id": "self-final", "kind": "self", "who": f"self-{study.id}", "team": "self-challenge arm",
+                             "round": "final", "same_as": final.get("id") if final else None,
+                             "status": arm_record.get("status")}, entry["self"]["final"]))
+        vote_base = run_dir / ARM_DIRS["vote"] / study.id
+        vote_attempts = sorted((p for p in vote_base.glob("attempt-*") if p.is_dir()),
+                               key=lambda p: int(p.name.split("-")[1])) if vote_base.is_dir() else []
+        if vote_attempts:
+            entry["vote_arm"] = {"attempts": {p.name: graded(study, p) for p in vote_attempts}}
+            entry["vote_arm"]["vote"] = vote(study, [p / answer_file(study) for p in vote_attempts], vote_base / "vote")
+            for p in vote_attempts:
+                rows.append(row({"id": f"vote-{p.name}", "kind": "vote", "who": f"vote-{study.id}-{p.name.split('-')[1]}",
+                                 "team": "same-cost vote arm", "round": p.name}, entry["vote_arm"]["attempts"][p.name]))
+            v = entry["vote_arm"]["vote"]
+            rows.append(row({"id": "vote-arm", "kind": "vote", "who": "vote", "team": "same-cost vote arm",
+                             "round": "vote"}, {key: val for key, val in v.items() if key != "answer"}))
         if entry:
             entry["candidates"] = rows
             results["studies"][study.id] = entry
@@ -415,9 +518,23 @@ def grade_run(run_dir: pathlib.Path, adapter) -> dict:
         "baseline_attempts_passed": sum(bool(g.get("passed")) for g in attempt_rows),
         "baseline_attempts": len(attempt_rows),
         "vote_passed": sum(bool(v.get("passed")) for v in vote_rows), "vote_studies": len(vote_rows)}
+    self_rows = [e["self"]["final"] for e in s if "self" in e]
+    arm_votes = [e["vote_arm"]["vote"] for e in s if "vote_arm" in e]
+    if self_rows:       # the arms' totals only when the run has them, so older results.json keep their shape
+        results["totals"].update(self_passed=sum(bool(g.get("passed")) for g in self_rows), self_studies=len(self_rows))
+    if arm_votes:
+        results["totals"].update(vote_arm_passed=sum(bool(g.get("passed")) for g in arm_votes),
+                                 vote_arm_studies=len(arm_votes))
     (run_dir / "results.json").write_text(json.dumps(results, indent=2, default=str) + "\n")
     log.append("grade.done", "lab", totals=results["totals"])
     return results
+
+
+def load_json(path: pathlib.Path):
+    try:
+        return json.loads(pathlib.Path(path).read_text())
+    except (OSError, ValueError):
+        return None
 
 
 def print_table(results: dict) -> None:
@@ -434,6 +551,13 @@ def print_table(results: dict) -> None:
     t = results["totals"]
     print(f"\nlab {t['lab_passed']}/{t['lab_studies']} studies; single agents {t['baseline_attempts_passed']}/"
           f"{t['baseline_attempts']} attempts; vote {t['vote_passed']}/{t['vote_studies']} studies")
+    if "self_studies" in t or "vote_arm_studies" in t:
+        arms = []
+        if "self_studies" in t:
+            arms.append(f"self-challenge arm {t['self_passed']}/{t['self_studies']} studies")
+        if "vote_arm_studies" in t:
+            arms.append(f"same-cost vote arm {t['vote_arm_passed']}/{t['vote_arm_studies']} studies")
+        print("arms: " + "; ".join(arms))
 
 
 def cmd_grade(args) -> int:
@@ -518,8 +642,69 @@ def cmd_replay(args) -> int:
     return 1 if mismatches else 0
 
 
+def cmd_arm(args) -> int:
+    """Run a control arm (lab/arms.py) into <run_dir>/arms/."""
+    from lab import arms
+    from lab.limits import UsageLimit
+    adapter = load_adapter(args.benchmark, args.backend)
+    studies = pick_studies(adapter, args.studies)
+    check_can_run(adapter, args.backend, studies)
+    require_max_usd(args)
+    if args.arm == "vote" and bool(args.attempts) == bool(args.match_cost):
+        raise SystemExit("--arm vote takes either --attempts K or --match-cost LAB_RUN_DIR")
+    if args.arm == "self" and (args.attempts or args.match_cost):
+        raise SystemExit("--attempts and --match-cost are for --arm vote")
+    config = Config(**v4_switches(args), max_agents=args.parallel, worker_model=args.model, max_usd=args.max_usd)
+    k, matched = args.attempts, None
+    if args.match_cost:
+        try:
+            k, matched = arms.match_cost_k(pathlib.Path(args.match_cost))
+        except ValueError as err:
+            raise SystemExit(f"--match-cost: {err}")
+        print(f"k = {k}: the lab cost ${matched['lab_per_study']:.2f} per study and one attempt "
+              f"${matched['per_attempt']:.2f} (ratio {matched['ratio']}, at least {arms.MIN_VOTE_K})")
+    prereg_sha = check_prereg(args, studies, config)
+    run_dir = pathlib.Path(args.run_dir)
+    run_dir.mkdir(parents=True, exist_ok=True)
+    log = JsonlEventLog(run_dir / "events.jsonl")
+    if args.arm == "vote":
+        note_run(run_dir, benchmark=args.benchmark, vote_arm_studies=[s.id for s in studies], vote_arm_attempts=k,
+                 vote_arm_model=args.model, **({"vote_arm_match_cost": {"from": str(args.match_cost), **matched}}
+                                               if matched else {}))
+    else:
+        note_run(run_dir, benchmark=args.benchmark, self_arm_studies=[s.id for s in studies], self_arm_model=args.model,
+                 self_arm_switches={"recheck": config.recheck, "guard": config.guard})
+    note_prereg(log, run_dir, args, prereg_sha, f"arm {args.arm}")
+    backend = make_backend(args.backend, adapter, studies)
+    if args.backend == "modal":
+        stop_modal_on_interrupt(backend)
+    try:
+        if args.arm == "vote":
+            out = arms.run_vote_arm(adapter, backend, log, run_dir, studies, k, args.model, args.parallel,
+                                    timeout_s=args.timeout, max_usd=args.max_usd)
+        else:
+            out = arms.run_self_arm(adapter, backend, log, run_dir, studies, args.model, args.parallel, config,
+                                    timeout_s=args.timeout, max_usd=args.max_usd)
+    except UsageLimit as err:     # the account's usage limit or the dollar cap: stop, resumable
+        print(f"halted: {err}\nRun the same command again (with a higher --max-usd if the cap stopped it) to "
+              "resume what is not done.", file=sys.stderr)
+        return 1
+    finally:
+        if hasattr(backend, "shutdown"):
+            backend.shutdown()
+    for sid, info in sorted(out.items()):
+        if args.arm == "vote":
+            print(f"{sid}: " + (", ".join(f"attempt-{n} {'ok' if ok else 'failed'}" for n, ok in sorted(info.items()))
+                                or "nothing to run"))
+        else:
+            final = (info.get("final") or {}).get("round")
+            print(f"{sid}: {info['status']}" + (" (already finished)" if info.get("skipped") else "")
+                  + (f", final answer from the {final} round" if final else ""))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
-    """The command line: lab, baseline, grade, measures, report, prereg and replay."""
+    """The command line: lab, baseline, grade, measures, report, prereg, replay and arm."""
     parser = argparse.ArgumentParser(prog="python3 -m lab.run", description="Run, grade and report the lab")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -545,6 +730,7 @@ def build_parser() -> argparse.ArgumentParser:
                    help="report agreeing first answers as replicated without the director's challenge")
     p.add_argument("--brief-teams", default="team-a",
                    help="teams that receive the director's briefing, comma-separated (default: team-a)")
+    add_v4(p)
     add_guardrails(p)
     p.set_defaults(fn=cmd_lab)
 
@@ -588,7 +774,33 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("run_dir")
     p.add_argument("--study", help="one study id (default: every study in the log)")
     p.set_defaults(fn=cmd_replay)
+
+    p = sub.add_parser("arm", help="run a control arm: the self-challenge arm or the same-cost vote arm")
+    p.add_argument("--arm", required=True, choices=["self", "vote"])
+    p.add_argument("--benchmark", required=True)
+    p.add_argument("--studies", help="comma-separated study ids (default: all)")
+    p.add_argument("--run-dir", required=True)
+    p.add_argument("--backend", choices=["claude", "mock", "modal"], default="claude")
+    p.add_argument("--parallel", type=int, default=4, help="agents running at once, across all studies")
+    p.add_argument("--model", default="fable", help="model for every agent of the arm")
+    p.add_argument("--timeout", type=int, default=1800, help="seconds per agent run (the same limit a lab analyst gets)")
+    p.add_argument("--attempts", type=int, default=None, help="--arm vote: attempts per study")
+    p.add_argument("--match-cost", metavar="LAB_RUN_DIR", default=None,
+                   help="--arm vote: k = that lab run's mean dollars per study / mean dollars per single attempt "
+                        "(at least 3)")
+    add_v4(p)
+    add_guardrails(p)
+    p.set_defaults(fn=cmd_arm)
     return parser
+
+
+def add_v4(p) -> None:
+    """The version 4 switches `lab` and `arm` share, each off by default."""
+    p.add_argument("--recheck", action="store_true",
+                   help="re-check an answer judged Not verifiable against an inventory of the data (Config.recheck)")
+    p.add_argument("--guard", action="store_true",
+                   help="the damage guard: a changed answer needs evidence that code checks (Config.guard)")
+    p.add_argument("--preset", choices=sorted(PRESETS), default=None, help="v4: --recheck and --guard")
 
 
 def add_guardrails(p) -> None:

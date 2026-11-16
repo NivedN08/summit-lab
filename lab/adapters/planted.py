@@ -748,6 +748,10 @@ class Planted:
     def _mapping(self) -> dict:
         return json.loads((self.root / "sealed" / "mapping.json").read_text())
 
+    def local_data_dir(self, study: Study) -> pathlib.Path:
+        """The study's public tables on this machine, for the lab's code-built data inventory."""
+        return self.public / study.id / "data"
+
     def studies(self) -> list[Study]:
         if not self.public.exists():
             raise RuntimeError("run `python3 -m lab.adapters.planted stage` first")

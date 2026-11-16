@@ -22,6 +22,15 @@ How rescues and damage (d) are counted, step by step:
   research        per team, in studies where research on demand delivered at least one finding:
                   the team's first answer against the answer it used after the revision round
                   that followed the findings (the revised one when valid, else the first).
+  re-check        per re-checked team (Config.recheck): its first answer against the answer it
+                  used after the re-check (the re-check's when its verdict accepted it).
+
+With the re-check on, a team's "first answer" in the question round, the challenge and research
+is the one it used after the re-check. A revision the damage guard blocked (Config.guard) is not
+the answer a team used; guard() counts what the blocked answers would have done.
+
+Cost: an agent run is the lab's when its role is in LAB_ROLES and a control arm's when it is in
+ARM_ROLES (single-agent attempts, the self-challenge arm, the same-cost vote arm, the proposer).
 """
 
 from __future__ import annotations
@@ -36,6 +45,12 @@ FIRST_TEAMS = ("team-a", "team-b")
 REVISING = ("revise", "challenge")     # rounds in which a team answers the director's questions
 SEARCH_ROLES = ("library", "team-a", "research")   # who made an Exa call: library first pass, team A, research
 REVISION_ROUND = {"questions": "revise", "challenge": "challenge"}   # director's round -> the teams' next round
+LAB_ROLES = frozenset({"library", "director", "analyst", "referee", "research", "recheck"})
+SELF_ROLES = frozenset({"self-solo", "self-challenge", "self-revise", "self-recheck"})
+VOTE_ROLES = frozenset({"vote-arm"})
+ARM_ROLES = frozenset({"baseline", "proposer"}) | SELF_ROLES | VOTE_ROLES
+NOT_VERIFIABLE_KIND = "judged a settled claim not verifiable"     # lab/adapters/biodsa.py outcome_kind
+SETTLED_WRONGLY_KIND = "judged an unverifiable claim settled"
 
 
 class NotGraded(RuntimeError):
@@ -86,6 +101,8 @@ class Run:
         self.entries: dict = results["studies"]
         self.lab_ids = [sid for sid, e in self.entries.items() if "lab" in e]
         self.base_ids = [sid for sid, e in self.entries.items() if e.get("baseline", {}).get("attempts")]
+        self.self_ids = [sid for sid, e in self.entries.items() if "self" in e]
+        self.vote_ids = [sid for sid, e in self.entries.items() if e.get("vote_arm", {}).get("attempts")]
         self.records = {}
         for sid in self.lab_ids:
             rec = _load(self.dir / sid / "study.json")
@@ -97,8 +114,14 @@ class Run:
             if "candidates" not in e:
                 self.missing.append(f"{sid}: results.json has no per-candidate grades (run grade again)")
             self.passed[sid] = {c["id"]: bool(c.get("passed")) for c in e.get("candidates") or [] if "id" in c}
+        self.kinds = {sid: {c["id"]: c.get("outcome_kind") for c in e.get("candidates") or [] if "id" in c}
+                      for sid, e in self.entries.items()}
         logged = _read_events(self.dir, ("agent.finish", "exa.call", "exa.refused", "memory.write"))
         self.events = logged["agent.finish"]
+        unknown = sorted({str(e.get("role")) for e in self.events if e.get("role") not in LAB_ROLES | ARM_ROLES})
+        if unknown:
+            self.missing.append(f"agent runs with roles that are neither the lab's nor an arm's, left out of "
+                                f"both costs: {', '.join(unknown)}")
         self.exa_calls, self.exa_refused, self.writes = logged["exa.call"], logged["exa.refused"], logged["memory.write"]
 
     def lab_passed(self, sid: str) -> bool:
@@ -120,9 +143,27 @@ class Run:
         return out
 
     def latest_valid(self, sid: str, team: str) -> str | None:
-        """The id of the team's answer the protocol used last (revised if valid, else first)."""
-        ids = [_cid(c["team"], c["round"]) for c in self.candidates(sid) if c.get("team") == team and c.get("valid")]
+        """The id of the team's answer the protocol used last (revised if valid, else first; never one
+        the damage guard blocked or the re-check's verdict set aside)."""
+        ids = [_cid(c["team"], c["round"]) for c in self.candidates(sid)
+               if c.get("team") == team and c.get("valid") and not c.get("not_used")]
         return ids[-1] if ids else None
+
+    def first_used(self, sid: str, team: str) -> str:
+        """The id of the answer a team used after its first round: its re-check answer when the
+        re-check's verdict accepted it, else its first answer."""
+        for r in self.records[sid].get("recheck") or []:
+            if r.get("team") == team and r.get("accepted"):
+                return f"{team}-recheck"
+        return f"{team}-analysis"
+
+    def used_after(self, sid: str, team: str, round_: str, before: bool) -> bool:
+        """Whether the answer a team used after a revising round passed: the revision when valid and
+        not blocked, else the answer it had (`before`, its grade)."""
+        cand = self.cand(sid, f"{team}-{round_}")
+        if cand and cand.get("valid") and not cand.get("not_used"):
+            return self.passed[sid].get(f"{team}-{round_}", False)
+        return before
 
 
 # ----- a. headline -----
@@ -144,7 +185,7 @@ def same_budget_vote(run: Run) -> dict:
     if not attempts or not run.lab_ids:
         notes.append("no single-agent attempts to vote over" if not attempts else "no lab studies to compare with")
         return out
-    lab_events = [e for e in run.events if e.get("role") != "baseline" and e.get("study") in run.lab_ids]
+    lab_events = [e for e in run.events if e.get("role") in LAB_ROLES and e.get("study") in run.lab_ids]
     base_events = [e for e in run.events if e.get("role") == "baseline" and e.get("study") in run.base_ids]
     both = lab_events + base_events
     no_cost = sum(1 for e in both if e.get("cost_usd") is None)
@@ -188,6 +229,23 @@ def headline(run: Run) -> dict:
     first = [run.entries[sid]["baseline"]["attempts"].get("attempt-1") for sid in run.base_ids]
     first = [g for g in first if g is not None]
     votes = [run.entries[sid]["baseline"].get("vote") or {} for sid in run.base_ids]
+    arms_present = {}       # only when the run has the control arm, so an older measures.json keeps its shape
+    if run.self_ids:
+        arms_present["self_challenge"] = count(sum(_arm_passed(run, sid, "self") for sid in run.self_ids),
+                                               len(run.self_ids))
+    if run.vote_ids:
+        arms_present["vote_arm"] = count(sum(_arm_passed(run, sid, "vote_arm") for sid in run.vote_ids),
+                                         len(run.vote_ids))
+    return {**_base_headline(run, attempt_rows, first, votes), **arms_present}
+
+
+def _arm_passed(run: Run, sid: str, arm: str) -> bool:
+    entry = run.entries[sid].get(arm) or {}
+    grade = entry.get("final") if arm == "self" else entry.get("vote")
+    return bool((grade or {}).get("passed"))
+
+
+def _base_headline(run: Run, attempt_rows: list, first: list, votes: list) -> dict:
     return {
         "lab": count(sum(run.lab_passed(sid) for sid in run.lab_ids), len(run.lab_ids)),
         "single_attempts": count(sum(bool(g.get("passed")) for g in attempt_rows), len(attempt_rows)),
@@ -238,19 +296,26 @@ def steps(run: Run) -> dict:
     r_changes, r_compared, r_ran, r_nothing = [], 0, 0, 0
     c_changes, c_ran, c_without_answer = [], 0, 0
     ch_changes, ch_compared = [], 0
+    rc_changes, rc_compared = [], 0
     for sid in run.lab_ids:
         grades, record = run.passed[sid], run.records[sid]
+        for r in record.get("recheck") or []:
+            team = r.get("team")
+            if r.get("skipped") or f"{team}-analysis" not in grades:
+                continue
+            rc_compared += 1
+            before = grades[f"{team}-analysis"]
+            _tally(rc_changes, sid, team, before, grades.get(f"{team}-recheck", False) if r.get("accepted") else before)
         if record.get("challenged"):
             ch_compared += 1
-            _tally(ch_changes, sid, "study", grades.get("team-a-analysis", False), run.lab_passed(sid))
+            _tally(ch_changes, sid, "study", grades.get(run.first_used(sid, "team-a"), False), run.lab_passed(sid))
         for team in FIRST_TEAMS:
             revised = run.cand(sid, f"{team}-revise")
             if revised is None or f"{team}-analysis" not in grades:
                 continue
             q_compared += 1
-            first = grades[f"{team}-analysis"]
-            after = grades.get(f"{team}-revise", False) if revised.get("valid") else first
-            _tally(q_changes, sid, team, first, after)
+            first = grades.get(run.first_used(sid, team), False)
+            _tally(q_changes, sid, team, first, run.used_after(sid, team, "revise", first))
         ref = record.get("referee")
         if isinstance(ref, dict):
             r_ran += 1
@@ -260,7 +325,7 @@ def steps(run: Run) -> dict:
                                and run.cand(sid, cid).get("agent") == ref.get("picked_agent")), None)
             else:
                 own = run.cand(sid, "referee-own")
-                result = "referee-own" if own and own.get("valid") else None
+                result = "referee-own" if own and own.get("valid") and not own.get("not_used") else None
             if result is None:
                 r_nothing += 1
             else:
@@ -271,12 +336,103 @@ def steps(run: Run) -> dict:
         if any(r.get("phase") == "third-team" for r in record.get("agent_runs") or []):
             c_ran += 1
             own = run.cand(sid, "referee-own")
-            before = grades.get("referee-own", False) if own and own.get("valid") else False
-            c_without_answer += not (own and own.get("valid"))
+            usable = bool(own and own.get("valid") and not own.get("not_used"))
+            before = grades.get("referee-own", False) if usable else False
+            c_without_answer += not usable
             _tally(c_changes, sid, "study", before, run.lab_passed(sid))
     return {"questions": _step(q_changes, q_compared), "challenge": _step(ch_changes, ch_compared),
             "referee": _step(r_changes, r_compared, ran=r_ran, settled_nothing=r_nothing),
-            "team_c": _step(c_changes, c_ran, ran=c_ran, no_answer_without_it=c_without_answer)}
+            "team_c": _step(c_changes, c_ran, ran=c_ran, no_answer_without_it=c_without_answer),
+            "recheck": _step(rc_changes, rc_compared)}
+
+
+# ----- the re-check, the damage guard and the control arms -----
+
+def guard(run: Run) -> dict:
+    """The damage guard's checks: how many changed answers it checked, passed and blocked, and what
+    each blocked answer would have done had it been used: rescued (it passes and the answer kept
+    fails), damaged (the reverse) or no effect. For a blocked referee answer the answer kept is the
+    lab's final answer."""
+    checked = passed = 0
+    blocked = []
+    for sid in run.lab_ids:
+        grades = run.passed[sid]
+        for g in run.records[sid].get("guard") or []:
+            checked += 1
+            if g.get("passed"):
+                passed += 1
+                continue
+            would = grades.get(g.get("candidate"), False)
+            kept = grades.get(g["kept"], False) if g.get("kept") else run.lab_passed(sid)
+            effect = "would have rescued" if would and not kept else "would have damaged" if kept and not would \
+                else "no effect"
+            blocked.append({"study": sid, "team": g.get("team"), "round": g.get("round"), "reason": g.get("reason"),
+                            "candidate": g.get("candidate"), "kept": g.get("kept") or "final", "effect": effect})
+    return {"checked": checked, "passed": passed, "blocked": len(blocked),
+            "would_have_rescued": sum(b["effect"] == "would have rescued" for b in blocked),
+            "would_have_damaged": sum(b["effect"] == "would have damaged" for b in blocked),
+            "no_effect": sum(b["effect"] == "no effect" for b in blocked), "changes": blocked}
+
+
+def abstain(run: Run) -> dict:
+    """Settled claims judged Not verifiable (the adapter's outcome kind), before and after the re-check:
+    among the teams' first answers, and among the answers the teams used after the re-check. Also the
+    re-checks run, skipped and accepted, the settled claims they rescued, and the truly unverifiable
+    claims they judged settled (the re-check's damage)."""
+    before = after = answers = 0
+    ran = skipped = accepted = rescued = damaged = 0
+    for sid in run.lab_ids:
+        kinds = run.kinds[sid]
+        for team in FIRST_TEAMS:
+            if f"{team}-analysis" not in kinds:
+                continue
+            answers += 1
+            before += kinds[f"{team}-analysis"] == NOT_VERIFIABLE_KIND
+            after += kinds.get(run.first_used(sid, team)) == NOT_VERIFIABLE_KIND
+        for r in run.records[sid].get("recheck") or []:
+            if r.get("skipped"):
+                skipped += 1
+                continue
+            ran += 1
+            if r.get("accepted"):
+                accepted += 1
+                new = f"{r.get('team')}-recheck"
+                rescued += bool(run.passed[sid].get(new))
+                damaged += kinds.get(new) == SETTLED_WRONGLY_KIND
+    finals = [row.get("outcome_kind") for sid in run.lab_ids for row in run.entries[sid].get("candidates") or []
+              if row.get("kind") == "final"]
+    return {"first_answers": answers, "before": before, "after": after,
+            "final_answers": count(sum(k == NOT_VERIFIABLE_KIND for k in finals), len(finals)),
+            "rechecks": {"ran": ran, "skipped": skipped, "accepted": accepted},
+            "rescued": rescued, "damaged_unverifiable": damaged}
+
+
+def arms(run: Run) -> dict:
+    """Passes and dollars per arm: the lab, single-agent attempts, the self-challenge arm and the
+    same-cost vote arm (each only when the run has it)."""
+    def money(roles, ids) -> dict:
+        row = _cost_row([e for e in run.events if e.get("role") in roles and e.get("study") in ids])
+        per = round(row["dollars"] / len(ids), 4) if row["dollars"] is not None and ids else None
+        return {**row, "dollars_per_study": per}
+
+    out = {}
+    if run.lab_ids:
+        out["lab"] = {"passed": count(sum(run.lab_passed(sid) for sid in run.lab_ids), len(run.lab_ids)),
+                      **money(LAB_ROLES, set(run.lab_ids))}
+    if run.base_ids:
+        rows = [g for sid in run.base_ids for g in run.entries[sid]["baseline"]["attempts"].values()]
+        out["single"] = {"passed": count(sum(bool(g.get("passed")) for g in rows), len(rows)),
+                         **money({"baseline"}, set(run.base_ids))}
+    if run.self_ids:
+        out["self"] = {"passed": count(sum(_arm_passed(run, sid, "self") for sid in run.self_ids), len(run.self_ids)),
+                       **money(SELF_ROLES, set(run.self_ids))}
+    if run.vote_ids:
+        rows = [g for sid in run.vote_ids for g in run.entries[sid]["vote_arm"]["attempts"].values()]
+        out["vote"] = {"passed": count(sum(_arm_passed(run, sid, "vote_arm") for sid in run.vote_ids),
+                                       len(run.vote_ids)),
+                       "attempts_passed": count(sum(bool(g.get("passed")) for g in rows), len(rows)),
+                       **money(VOTE_ROLES, set(run.vote_ids))}
+    return out
 
 
 # ----- e. selection -----
@@ -455,9 +611,8 @@ def research(run: Run) -> dict:
                 if cand is None or f"{team}-analysis" not in run.passed[sid]:
                     continue
                 compared += 1
-                first = run.passed[sid][f"{team}-analysis"]
-                after = run.passed[sid].get(f"{team}-{round_}", False) if cand.get("valid") else first
-                _tally(changes, sid, team, first, after)
+                first = run.passed[sid].get(run.first_used(sid, team), False)
+                _tally(changes, sid, team, first, run.used_after(sid, team, round_, first))
         if reached:
             studies.append(sid)
     return {"asked": asked, "blocked": blocked, "answered": answered, "findings": findings, "delivered": delivered,
@@ -489,7 +644,7 @@ def cost(run: Run, head: dict) -> dict:
     by_role = {}
     for role in sorted({str(e.get("role") or "unknown") for e in run.events}):
         by_role[role] = _cost_row([e for e in run.events if str(e.get("role") or "unknown") == role])
-    lab_ev = [e for e in run.events if e.get("role") != "baseline"]
+    lab_ev = [e for e in run.events if e.get("role") in LAB_ROLES]
     base_ev = [e for e in run.events if e.get("role") == "baseline"]
     per_study = {}
     for sid in sorted({e.get("study") for e in run.events if e.get("study")}):
@@ -522,7 +677,8 @@ def measure(run_dir: pathlib.Path) -> dict:
            "false_agreement": false_agreement(run), "steps": steps(run), "challenge": challenge(run),
            "briefing": briefing(run), "selection": selection(run),
            "noticing": noticing(run), "library": library(run), "search": search(run), "research": research(run),
-           "kinds": kinds(run), "cost": cost(run, head)}
+           "kinds": kinds(run), "cost": cost(run, head),
+           "recheck": abstain(run), "guard": guard(run), "arms": arms(run)}
     out["missing"] = run.missing
     return out
 
@@ -536,11 +692,16 @@ def headline_rows(m: dict) -> list[tuple[str, str]]:
     h = m["headline"]
     sb = h["same_budget_vote"]
     k = f"k = {sb['k']}, by {sb['basis']}" if sb["k"] else "k not set"
-    return [("Lab final answers (studies)", frac(h["lab"])),
+    rows = [("Lab final answers (studies)", frac(h["lab"])),
             ("Single-agent attempts (all attempts)", frac(h["single_attempts"])),
             ("Single-agent attempt 1 only (studies)", frac(h["single_attempt_1"])),
             (f"Same-budget vote ({k})", frac(sb)),
             ("Vote over all attempts (studies)", frac(h["vote_all_attempts"]))]
+    if "self_challenge" in h:
+        rows.append(("Self-challenge arm (studies)", frac(h["self_challenge"])))
+    if "vote_arm" in h:
+        rows.append(("Same-cost vote arm (studies)", frac(h["vote_arm"])))
+    return rows
 
 
 def _cost_text(row: dict) -> str:
@@ -580,6 +741,7 @@ def summary_lines(m: dict) -> list[str]:
               f"{lib['pitfall_checks']} checks, {lib['found_in_data']} found in the data, {lib['changed_method']} "
               "changed a method.",
               *search_lines(m),
+              *v4_lines(m),
               f"  Cost: lab {_cost_text(c['overall']['lab'])}; single agents {_cost_text(c['overall']['baseline'])}; "
               f"passes per dollar lab {c['passes_per_dollar']['lab']}, single {c['passes_per_dollar']['single_attempts']}."]
     if m["missing"]:
@@ -589,6 +751,30 @@ def summary_lines(m: dict) -> list[str]:
 
 def _tally_text(tally: dict) -> str:
     return ", ".join(f"{k} {v}" for k, v in sorted(tally.items(), key=lambda kv: (-kv[1], kv[0]))) or "none"
+
+
+def _money(x) -> str:
+    return "no dollar figure" if x is None else f"${x:.2f}"
+
+
+def v4_lines(m: dict) -> list[str]:
+    """The summary's lines on the re-check, the damage guard and the control arms (only when present)."""
+    lines = []
+    rc, st, g, a = m.get("recheck"), (m.get("steps") or {}).get("recheck"), m.get("guard"), m.get("arms") or {}
+    if rc and (rc["rechecks"]["ran"] or rc["rechecks"]["skipped"]):
+        lines.append(f"  Re-check: {rc['rechecks']['ran']} ran ({rc['rechecks']['skipped']} skipped), "
+                     f"{rc['rechecks']['accepted']} accepted; {st['rescued']} rescued, {st['damaged']} damaged. Settled "
+                     f"claims judged Not verifiable among first answers: {rc['before']} before, {rc['after']} after "
+                     f"(of {rc['first_answers']}); {rc['damaged_unverifiable']} unverifiable claims judged settled.")
+    if g and g["checked"]:
+        lines.append(f"  Damage guard: {g['checked']} changed answers checked, {g['passed']} passed, {g['blocked']} "
+                     f"blocked; the blocked ones would have rescued {g['would_have_rescued']} and damaged "
+                     f"{g['would_have_damaged']} ({g['no_effect']} no effect).")
+    names = {"lab": "lab", "single": "single attempts", "self": "self-challenge arm", "vote": "same-cost vote arm"}
+    if set(a) - {"lab", "single"}:
+        lines.append("  Arms: " + "; ".join(f"{names[k]} {frac(v['passed'])} passed, {_money(v['dollars'])}"
+                                            for k, v in a.items()) + ".")
+    return lines
 
 
 def search_lines(m: dict) -> list[str]:
