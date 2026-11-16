@@ -1,6 +1,6 @@
 {
   "batch": "dev-panel-noise",
-  "status": "draft",
+  "status": "final",
   "benchmark": "biodsa",
   "studies": [
     "bd14",
@@ -25,9 +25,9 @@
     "bd40"
   ],
   "arms": [
-    "lab v3, Opus in every role (director and workers), replicate 1",
-    "lab v3, Opus in every role (director and workers), replicate 2",
-    "Opus alone, 4 single attempts per task"
+    "lab v3, Opus in every role (director and workers), replicate 1: run dir runs/dev-panel-noise-lab1, --max-usd 57",
+    "lab v3, Opus in every role (director and workers), replicate 2: run dir runs/dev-panel-noise-lab2, --max-usd 57",
+    "Opus alone, 4 single attempts per task: run dir runs/dev-panel-noise-opus-single, --max-usd 11"
   ],
   "config": {
     "director_model": "opus",
@@ -41,8 +41,8 @@
     "pass_draw_rule": "random.Random(20261116).sample(sorted passing ids, 10)",
     "referee_order": null
   },
-  "max_usd": 130,
+  "max_usd": 125,
   "primary_endpoint": "The per-task flip rate between the two lab replicates (final answer passed or failed), and the noise threshold T: the 95th percentile of |rescued - damaged| between replicates from a bootstrap over the panel's tasks, and at least 2.",
   "stop_rules": "If more than 25% of the panel's tasks flip between the two lab replicates, grow the panel or score moves only in reuse mode (Config.reuse_first_round).",
-  "notes": "DRAFT, not frozen: the code is still changing. BioDSA tasks: the 10 that Fable alone failed among bd05-bd40 (bd14, bd16, bd18, bd26, bd28, bd30, bd33, bd34, bd36, bd37), from the attempt-1 rows of results/biodsa-test/results.json (attempt-1, every attempt and the vote over attempts agree on every task), plus 10 of its 26 passes drawn with random.Random(20261116) from the sorted passing ids (bd05, bd11, bd17, bd20, bd24, bd27, bd31, bd32, bd38, bd40). The scBench part of the panel is its own spec, dev-panel-noise-sc (a spec holds one benchmark). snapshot_first_round is on so the A/A runs can serve reuse mode."
+  "notes": "BioDSA tasks: the 10 that Fable alone failed among bd05-bd40 (bd14, bd16, bd18, bd26, bd28, bd30, bd33, bd34, bd36, bd37), from the attempt-1 rows of results/biodsa-test/results.json (attempt-1, every attempt and the vote over attempts agree on every task), plus 10 of its 26 passes drawn with random.Random(20261116) from the sorted passing ids (bd05, bd11, bd17, bd20, bd24, bd27, bd31, bd32, bd38, bd40). The scBench part of the panel is its own spec, dev-panel-noise-sc (a spec holds one benchmark). snapshot_first_round is on so the A/A runs can serve reuse mode. Caps per run folder: 57 + 57 + 11 = 125 dollars, set from the measured cost of committed runs (about $3 per lab study, $0.13 per single attempt). Lab runs use --memory past, --backend modal, --parallel 8, --snapshot-first-round, with the v3 switches (no --recheck, no --guard)."
 }
