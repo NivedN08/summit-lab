@@ -56,8 +56,10 @@ import time
 import uuid
 from typing import Any
 
+from lab.budget import Budget, BudgetExceeded, prior_spend
 from lab.contracts import DIRECTOR, WORKER, Adapter, Agent, AgentResult, Backend, EventLog, Memory, Org, Study
 from lab.gateway import Gateway
+from lab.limits import UsageLimit   # defined there so lab.budget can subclass it; still importable from here
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PROMPTS = ROOT / "lab" / "prompts"
@@ -105,6 +107,7 @@ class Config:
     challenge: bool = True       # challenge an agreed answer before reporting it as replicated
     brief_teams: tuple = ("team-a",)   # the first teams that receive the director's briefing
     seed: int | None = None      # for the referee's X/Y order; None means random
+    max_usd: float | None = None   # hard dollar cap for the run directory (lab.budget); None means no cap
 
     def timeout(self, role: str) -> int:
         return int(self.timeouts.get(role, 1800))
@@ -244,21 +247,23 @@ def scrub(obj: Any, names: list[str], keep: tuple = ()) -> Any:
 
 # ----- running agents -----
 
-class UsageLimit(RuntimeError):
-    """The Claude account behind the agents has run out of usage. The run must stop, not carry on."""
-
-
 class AgentRunner:
     """Runs agents through a backend: a shared limit on how many run at once, one retry, and logging.
     When any agent reports the account's usage limit, every later run is refused: a study must not
-    be recorded as "no answer" just because the account was out of usage."""
+    be recorded as "no answer" just because the account was out of usage.
+
+    With a Budget, each run reserves its estimated cost before it starts and settles to its actual
+    cost after agent.finish. A run the budget refuses halts the runner exactly like a usage limit
+    (BudgetExceeded is a UsageLimit), with a lab.halted event whose reason is "budget"."""
 
     halted: str | None = None
 
-    def __init__(self, backend: Backend, log: EventLog, max_agents: int):
+    def __init__(self, backend: Backend, log: EventLog, max_agents: int, budget: Budget | None = None):
         self.backend = backend
         self.log = log
         self.slots = threading.Semaphore(max(1, int(max_agents)))
+        self.budget = budget
+        self.halt_error: type[UsageLimit] = UsageLimit   # what every run after a halt raises
 
     def run(self, agent: Agent, brief: str, workspace: pathlib.Path, *, readable: list[pathlib.Path],
             env: dict | None, timeout_s: int, study: str, phase: str, role: str,
@@ -275,7 +280,8 @@ class AgentRunner:
                       "run_id": run_id}
             with self.slots:
                 if self.halted:
-                    raise UsageLimit(self.halted)
+                    raise self.halt_error(self.halted)
+                token = self.reserve(agent, role, study)
                 self.log.append("agent.start", agent.id, **common, model=agent.model, workspace=str(workspace),
                                 readable=[str(p) for p in readable], timeout_s=timeout_s)
                 t0 = time.time()
@@ -287,9 +293,13 @@ class AgentRunner:
                 except Exception as err:    # a backend crash is a failed run, not a crashed lab
                     result = AgentResult(ok=False, result={}, seconds=time.time() - t0,
                                          error=f"{type(err).__name__}: {err}"[:500])
-                self.log.append("agent.finish", agent.id, **common, ok=bool(result.ok),
-                                seconds=round(float(result.seconds or 0), 2), cost_usd=result.cost_usd,
-                                session_id=result.session_id, error=result.error)
+                try:
+                    self.log.append("agent.finish", agent.id, **common, ok=bool(result.ok),
+                                    seconds=round(float(result.seconds or 0), 2), cost_usd=result.cost_usd,
+                                    session_id=result.session_id, error=result.error)
+                finally:
+                    if token is not None:
+                        self.budget.settle(token, result.cost_usd)   # a missing cost keeps the estimate
             if "usage limit" in (result.error or ""):
                 self.halted = result.error
                 self.log.append("lab.halted", "lab", reason=result.error, agent=agent.id, study=study)
@@ -297,6 +307,19 @@ class AgentRunner:
             if result.ok or "timed out" in (result.error or ""):
                 break      # a timed-out run is not retried: it would only spend the same time again
         return result
+
+    def reserve(self, agent: Agent, role: str, study: str) -> int | None:
+        """Reserve one run's estimated cost. On BudgetExceeded, halt like a usage limit and re-raise."""
+        if self.budget is None:
+            return None
+        try:
+            return self.budget.reserve(role, agent.model)
+        except BudgetExceeded as err:
+            self.halted, self.halt_error = str(err), BudgetExceeded
+            self.log.append("lab.halted", "lab", reason="budget", detail=str(err), agent=agent.id, study=study,
+                            spent_usd=round(self.budget.spent(), 4), reserved_usd=round(self.budget.reserved(), 4),
+                            max_usd=self.budget.max_usd)
+            raise
 
 
 def unfinished_agents(log: EventLog) -> list[dict]:
@@ -346,7 +369,9 @@ class Lab:
         self.run_dir = pathlib.Path(run_dir).resolve()   # briefs carry paths; agents run in their own folder
         self.config = config or Config()
         self.exa_call = exa_call
-        self.runner = AgentRunner(backend, log, self.config.max_agents)
+        # A dollar cap counts what this run directory spent before (a resumed run) against the cap.
+        budget = Budget(self.config.max_usd, prior_spend(log)) if self.config.max_usd is not None else None
+        self.runner = AgentRunner(backend, log, self.config.max_agents, budget=budget)
         self.rng = random.Random(self.config.seed)
         self.org: Org | None = None
         self.gateway: Gateway | None = None

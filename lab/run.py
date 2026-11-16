@@ -6,6 +6,13 @@
             the final answer, every baseline attempt and the votes over attempts
   measures  compute the lab's measures (explanation.md, D-12) from results.json into measures.json
   report    write <run_dir>/report.md in plain words
+  prereg    freeze a batch's pre-registration (prereg/<batch>.json) or check it (lab/prereg.py)
+  replay    rebuild each study's decision from events.jsonl and check it against study.json
+
+Guardrails: `lab` and `baseline` take --max-usd, a hard dollar cap for the run directory
+(lab/budget.py), required with the claude and modal backends; --prereg <spec> checks the run
+against a frozen pre-registration before anything starts; `grade --ledger` appends the grades
+to the research ledger (lab/ledger.py).
 
 Every command works on one run directory: `events.jsonl` (the event log), `memory.jsonl` (local
 memory), `run.json` (what was run), one folder per study, `baseline/`, `results.json`,
@@ -196,24 +203,67 @@ def make_config(args) -> Config:
                   referee=not args.no_referee, challenge=not args.no_challenge,
                   team_search=not (args.no_team_search or no_search), research=not (args.no_research or no_search),
                   brief_teams=brief_teams(args.brief_teams), director_model=args.director_model,
-                  worker_model=args.model, team_b_model=args.team_b_model)
+                  worker_model=args.model, team_b_model=args.team_b_model, max_usd=getattr(args, "max_usd", None))
+
+
+PAID_BACKENDS = ("claude", "modal")
+
+
+def require_max_usd(args) -> None:
+    """A run that spends money must say how much it may spend: --max-usd is required with the
+    claude and modal backends, and optional with mock."""
+    if args.backend in PAID_BACKENDS and args.max_usd is None:
+        raise SystemExit(f"--backend {args.backend} needs --max-usd: a hard dollar cap for this run directory, "
+                         "counting what it has already spent. For example --max-usd 30")
+    if args.max_usd is not None and args.max_usd <= 0:
+        raise SystemExit("--max-usd must be more than 0")
+
+
+def check_prereg(args, studies, config) -> str | None:
+    """With --prereg, refuse to start unless the run matches the frozen spec. Returns the lock's hash."""
+    if not getattr(args, "prereg", None):
+        return None
+    from lab import prereg
+    try:
+        return prereg.check(args.prereg, benchmark=args.benchmark, studies=[s.id for s in studies], config=config)
+    except prereg.PreregError as err:
+        raise SystemExit(str(err))
+
+
+def note_prereg(log, run_dir: pathlib.Path, args, sha: str | None, command: str) -> None:
+    """Log the passed pre-registration check and record its hash in run.json."""
+    if sha is None:
+        return
+    log.append("prereg.checked", "lab", spec=str(args.prereg), sha256=sha, command=command)
+    note_run(run_dir, prereg={"spec": str(args.prereg), "sha256": sha})
+
+
+def print_halt(runner) -> None:
+    """Say why the run stopped when a usage limit or the dollar cap halted it, and how to go on."""
+    halted = getattr(runner, "halted", None)
+    if halted:
+        print(f"halted: {halted}\nUnfinished studies have no final answer; run the same command again "
+              "(with a higher --max-usd if the cap stopped it) to resume them.", file=sys.stderr)
 
 
 def cmd_lab(args) -> int:
     adapter = load_adapter(args.benchmark)
     studies = pick_studies(adapter, args.studies)
     check_can_run(adapter, args.backend, studies)
+    if args.backend == "modal" and args.memory != "past":    # checked before anything is written
+        raise SystemExit("--backend modal needs --memory past: the gateway runs on Modal, so a local "
+                         "memory file on this laptop would not see the agents' facts")
+    require_max_usd(args)
+    config = make_config(args)
+    prereg_sha = check_prereg(args, studies, config)
     run_dir = pathlib.Path(args.run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     log = JsonlEventLog(run_dir / "events.jsonl")
-    config = make_config(args)
     note_run(run_dir, benchmark=args.benchmark, lab_studies=[s.id for s in studies], memory=args.memory,
              backend=args.backend)
+    note_prereg(log, run_dir, args, prereg_sha, "lab")
     gateway_factory = None
     if args.backend == "modal":
-        if args.memory != "past":
-            raise SystemExit("--backend modal needs --memory past: the gateway runs on Modal, so a local "
-                             "memory file on this laptop would not see the agents' facts")
         from lab.modal_gateway import ModalGateway
         gateway_factory = ModalGateway
     backend = make_backend(args.backend, adapter, studies)
@@ -229,25 +279,34 @@ def cmd_lab(args) -> int:
     for sid, info in out.items():
         extra = " (already finished)" if info.get("skipped") else ""
         print(f"{sid}: {info['status']}{extra}")
+    print_halt(getattr(lab, "runner", None))
     return 1 if any(info["status"] == "error" for info in out.values()) else 0
 
 
 def cmd_baseline(args) -> int:
-    from lab.baseline import run_baselines
+    from lab import baseline
+    from lab.limits import UsageLimit
     adapter = load_adapter(args.benchmark)
     studies = pick_studies(adapter, args.studies)
     check_can_run(adapter, args.backend, studies)
+    require_max_usd(args)
+    prereg_sha = check_prereg(args, studies, None)    # a baseline has no lab Config to compare
     run_dir = pathlib.Path(args.run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     log = JsonlEventLog(run_dir / "events.jsonl")
     note_run(run_dir, benchmark=args.benchmark, baseline_studies=[s.id for s in studies],
              baseline_attempts=args.attempts, baseline_model=args.model)
+    note_prereg(log, run_dir, args, prereg_sha, "baseline")
     backend = make_backend(args.backend, adapter, studies)
     if args.backend == "modal":
         stop_modal_on_interrupt(backend)
     try:
-        out = run_baselines(adapter, backend, log, run_dir, studies, args.attempts, args.model, args.parallel,
-                            timeout_s=args.timeout)
+        out = baseline.run_baselines(adapter, backend, log, run_dir, studies, args.attempts, args.model,
+                                     args.parallel, timeout_s=args.timeout, max_usd=args.max_usd)
+    except UsageLimit as err:     # the account's usage limit or the dollar cap: stop, resumable
+        print(f"halted: {err}\nAttempts not marked done run again when the same command is repeated "
+              "(with a higher --max-usd if the cap stopped it).", file=sys.stderr)
+        return 1
     finally:
         if hasattr(backend, "shutdown"):
             backend.shutdown()
@@ -392,6 +451,11 @@ def cmd_grade(args) -> int:
         print(err, file=sys.stderr)
         return 2
     print_table(results)
+    if args.ledger:      # opt in: --ledger for ledger/ledger.jsonl ($LAB_LEDGER), --ledger PATH for another file
+        from lab import ledger
+        path = None if args.ledger is True else pathlib.Path(args.ledger)
+        written = ledger.record_grading(run_dir, results, path)
+        print(f"ledger: {len(written)} entries appended to {path or ledger.default_path()}")
     return 0
 
 
@@ -421,8 +485,41 @@ def cmd_report(args) -> int:
     return 0
 
 
+def cmd_prereg(args) -> int:
+    from lab import prereg
+    try:
+        if args.action == "freeze":
+            sha = prereg.freeze(args.spec)
+            spec = prereg.load_spec(args.spec)
+            print(f"frozen {spec['batch']}: {sha}\nwrote {prereg.lock_path(args.spec, spec)}")
+            if args.ledger:
+                from lab import ledger
+                path = None if args.ledger is True else pathlib.Path(args.ledger)
+                ledger.append("batch.registered", {"batch": spec["batch"], "spec": str(args.spec), "sha256": sha,
+                                                   "benchmark": spec["benchmark"], "studies": spec["studies"]}, path)
+                print(f"ledger: batch.registered appended to {path or ledger.default_path()}")
+        else:
+            sha = prereg.check(args.spec)
+            print(f"matches its lock: {sha}")
+    except prereg.PreregError as err:
+        print(err, file=sys.stderr)
+        return 1
+    return 0
+
+
+def cmd_replay(args) -> int:
+    from lab.replay import replay
+    run_dir = pathlib.Path(args.run_dir)
+    if not (run_dir / "events.jsonl").is_file():
+        print(f"no events.jsonl in {run_dir}", file=sys.stderr)
+        return 2
+    mismatches = replay(run_dir, args.study)
+    print(f"\n{mismatches} mismatch(es)" if mismatches else "\nevery rebuilt decision matches study.json")
+    return 1 if mismatches else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
-    """The command line: lab, baseline, grade, measures and report."""
+    """The command line: lab, baseline, grade, measures, report, prereg and replay."""
     parser = argparse.ArgumentParser(prog="python3 -m lab.run", description="Run, grade and report the lab")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -448,6 +545,7 @@ def build_parser() -> argparse.ArgumentParser:
                    help="report agreeing first answers as replicated without the director's challenge")
     p.add_argument("--brief-teams", default="team-a",
                    help="teams that receive the director's briefing, comma-separated (default: team-a)")
+    add_guardrails(p)
     p.set_defaults(fn=cmd_lab)
 
     p = sub.add_parser("baseline", help="run single-agent attempts")
@@ -459,11 +557,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--backend", choices=["claude", "mock", "modal"], default="claude")
     p.add_argument("--parallel", type=int, default=4)
     p.add_argument("--timeout", type=int, default=1800, help="seconds per attempt (the same limit a lab analyst gets)")
+    add_guardrails(p)
     p.set_defaults(fn=cmd_baseline)
 
     p = sub.add_parser("grade", help="grade a finished run")
     p.add_argument("--run-dir", required=True)
     p.add_argument("--benchmark", help="default: the one recorded in run.json")
+    p.add_argument("--ledger", nargs="?", const=True, default=False, metavar="PATH",
+                   help="append batch.graded and one failure entry per failed study to the research ledger "
+                        "(default ledger/ledger.jsonl)")
     p.set_defaults(fn=cmd_grade)
 
     p = sub.add_parser("measures", help="compute measures.json from a graded run")
@@ -474,7 +576,27 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("report", help="write report.md")
     p.add_argument("--run-dir", required=True)
     p.set_defaults(fn=cmd_report)
+
+    p = sub.add_parser("prereg", help="freeze or check a pre-registration spec (prereg/<batch>.json)")
+    p.add_argument("action", choices=["freeze", "check"])
+    p.add_argument("spec")
+    p.add_argument("--ledger", nargs="?", const=True, default=False, metavar="PATH",
+                   help="with freeze: append batch.registered to the research ledger")
+    p.set_defaults(fn=cmd_prereg)
+
+    p = sub.add_parser("replay", help="rebuild each study's decision from the event log and check study.json")
+    p.add_argument("run_dir")
+    p.add_argument("--study", help="one study id (default: every study in the log)")
+    p.set_defaults(fn=cmd_replay)
     return parser
+
+
+def add_guardrails(p) -> None:
+    """The flags `lab` and `baseline` share: the dollar cap and the pre-registration check."""
+    p.add_argument("--max-usd", type=float, default=None,
+                   help="hard dollar cap for the run directory, counting what it already spent; "
+                        "required with --backend claude or modal")
+    p.add_argument("--prereg", metavar="SPEC", help="refuse to start unless the run matches this frozen spec")
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -15,6 +15,7 @@ import json
 import pathlib
 import statistics
 
+from lab.budget import Budget, prior_spend
 from lab.contracts import WORKER, Adapter, Agent, Backend, EventLog, Study
 from lab.protocol import AgentRunner, answer_file, load_doc, make_brief
 
@@ -24,9 +25,13 @@ def attempt_dir(run_dir: pathlib.Path, study_id: str, k: int) -> pathlib.Path:
 
 
 def run_baselines(adapter: Adapter, backend: Backend, log: EventLog, run_dir: pathlib.Path, studies: list[Study],
-                  attempts: int, model: str, max_agents: int, timeout_s: int = 1800) -> dict:
-    """Run `attempts` single agents per study, skipping attempts already done. Returns {study: {k: ok}}."""
-    runner = AgentRunner(backend, log, max_agents)
+                  attempts: int, model: str, max_agents: int, timeout_s: int = 1800,
+                  max_usd: float | None = None) -> dict:
+    """Run `attempts` single agents per study, skipping attempts already done. Returns {study: {k: ok}}.
+    With max_usd, the run directory's spend (what its event log already records, plus these attempts)
+    is capped: an attempt that would pass it raises BudgetExceeded and is not marked done."""
+    budget = Budget(max_usd, prior_spend(log)) if max_usd is not None else None
+    runner = AgentRunner(backend, log, max_agents, budget=budget)
     run_dir = pathlib.Path(run_dir).resolve()
     done = {(e["study"], e["attempt_number"]) for e in log.events("baseline.done")}
     jobs = [(s, k) for s in studies for k in range(1, attempts + 1) if (s.id, k) not in done]
