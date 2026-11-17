@@ -627,7 +627,8 @@ def prompt_listing(incumbent: pathlib.Path) -> str:
 
 def proposer_brief(*, entries: list[dict], failures: dict[str, int], current: dict, incumbent: pathlib.Path,
                    moves_so_far: int, T: float, cost_ratio_max: float, max_damage: int, panel_size: int,
-                   lessons: list[str] | None = None, prompt_dir: str | None = None) -> str:
+                   lessons: list[str] | None = None, prompt_dir: str | None = None,
+                   prompts_path: str | None = None, overlay_path: str | None = None) -> str:
     from lab.protocol import make_brief
     summary = ledger_summary(entries)
     fails = "\n".join(f"- {k}: {n}" for k, n in sorted(failures.items(), key=lambda kv: (-kv[1], kv[0])))
@@ -639,7 +640,8 @@ def proposer_brief(*, entries: list[dict], failures: dict[str, int], current: di
         moves_so_far=moves_so_far, ledger_summary="\n".join(summary) or "- none yet",
         lessons="\n".join(f"- {x}" for x in lessons or []) or "- none yet",
         move_schema=schema_text(), prompt_sections=prompt_listing(incumbent),
-        prompts_dir=str(PROMPTS), overlay_dir=str(pathlib.Path(incumbent) / "prompts"))
+        prompts_dir=prompts_path or str(PROMPTS),
+        overlay_dir=overlay_path or str(pathlib.Path(incumbent) / "prompts"))
 
 
 # ----- the loop -----
@@ -678,9 +680,10 @@ class Loop:
     """One run of the improvement loop. evaluate_fn and propose_fn may be replaced in tests."""
 
     def __init__(self, s: LoopSettings, *, evaluate_fn: Callable | None = None, propose_fn: Callable | None = None,
-                 backend=None, adapter=None):
+                 backend=None, adapter=None, resume: str | None = None):
         self.s = s
-        self.id = f"loop-{time.strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:4]}"
+        self.resume = resume
+        self.id = resume or f"loop-{time.strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:4]}"
         self.evaluate_fn = evaluate_fn or evaluate
         self.propose_fn = propose_fn or propose
         self._backend, self._adapter = backend, adapter
@@ -726,17 +729,38 @@ class Loop:
         inc_run = s.incumbent_run
         if s.lessons:
             self.lesson_store = Lessons(s.lessons, s.root, s.proposer_model)
+        moves, in_a_row, history, pending = 0, 0, [], None
+        if self.resume:
+            state = self.restore()
+            incumbent, inc_run = state["incumbent"] or incumbent, state["incumbent_run"] or inc_run
+            moves, in_a_row, history, pending = state["moves"], state["in_a_row"], state["history"], state["pending"]
+            self.spent_usd = state["spent_usd"]
         ensure_graded(inc_run, self.adapter())
         inc_out = run_outcomes(inc_run, s.panel)
-        self.note("note", {"event": "loop.start", "benchmark": s.benchmark, "panel": s.panel,
-                           "incumbent": incumbent.name, "incumbent_run": str(inc_run), "backend": s.backend,
-                           "noise_threshold": s.noise_threshold, "noise_threshold_source": s.noise_source,
-                           "cost_ratio_max": s.cost_ratio_max, "max_damage": s.max_damage, "max_moves": s.max_moves,
-                           "max_usd": s.max_usd, "move_max_usd": s.move_max_usd,
-                           "incumbent_passed": sum(t["passed"] for t in inc_out["tasks"].values())})
-        moves, in_a_row, history = 0, 0, []
+        if self.resume:
+            self.note("note", {"event": "loop.resume", "moves": moves, "in_a_row": in_a_row,
+                               "incumbent": incumbent.name, "incumbent_run": str(inc_run),
+                               "pending_move": pending.id if pending else None,
+                               "spent_usd": round(self.spent_usd, 4), "max_usd": s.max_usd})
+        else:
+            self.note("note", {"event": "loop.start", "benchmark": s.benchmark, "panel": s.panel,
+                               "incumbent": incumbent.name, "incumbent_run": str(inc_run), "backend": s.backend,
+                               "noise_threshold": s.noise_threshold, "noise_threshold_source": s.noise_source,
+                               "cost_ratio_max": s.cost_ratio_max, "max_damage": s.max_damage,
+                               "max_moves": s.max_moves, "max_usd": s.max_usd, "move_max_usd": s.move_max_usd,
+                               "incumbent_passed": sum(t["passed"] for t in inc_out["tasks"].values())})
         reason = None
         while reason is None:
+            if pending is not None:                 # a resumed loop first finishes the move it was judging
+                proposed, variant, extra, path = pending, s.variants_dir / pending.id, {}, "resumed"
+                pending = None
+                reason = self.decide(proposed, variant, inc_run, inc_out, path, extra, history)
+                if reason == "accepted":
+                    incumbent, inc_run, in_a_row, reason = variant, self._accepted_run, 0, None
+                    inc_out = self._accepted_out
+                elif reason == "rejected":
+                    in_a_row, reason = in_a_row + 1, None
+                continue
             if moves >= s.max_moves:
                 reason = f"{s.max_moves} moves made (--max-moves)"
                 break
@@ -769,24 +793,86 @@ class Loop:
                                         "proposer_problems": problems if path == "rules" else [],
                                         "proposer_lesson": extra.get("lesson"), "incumbent": incumbent.name,
                                         "variant": str(variant), "failures_seen": failures})
-            decision = self.judge(proposed, variant, inc_run, inc_out)
-            history.append({"move": proposed.id, "path": path, "decision": decision["decision"]})
-            if self.lesson_store:
-                self.lesson_store.write(f"{proposed.describe()}: {decision['decision']}"
-                                        + (f" ({'; '.join(decision['reasons'])})" if decision["reasons"] else "")
-                                        + (f". Proposer's lesson: {extra['lesson']}" if extra.get("lesson") else ""))
-            if decision["decision"] == "accepted":
-                incumbent, inc_run, inc_out, in_a_row = variant, decision["run_dir"], decision["outcomes"], 0
-            elif decision["decision"] == "rejected":
-                in_a_row += 1
-            else:                                   # incomplete: the cap or a usage limit stopped a run
-                reason = decision["reasons"][0]
+            reason = self.decide(proposed, variant, inc_run, inc_out, path, extra, history)
+            if reason == "accepted":
+                incumbent, inc_run, in_a_row, reason = variant, self._accepted_run, 0, None
+                inc_out = self._accepted_out
+            elif reason == "rejected":
+                in_a_row, reason = in_a_row + 1, None
         final = write_incumbent(s.variants_dir, incumbent, inc_run, self.id)
         summary = {"event": "loop.stop", "reason": reason, "moves": moves, "history": history,
                    "incumbent": incumbent.name, "incumbent_run": str(inc_run), "incumbent_copy": str(final),
                    "spent_usd": round(self.spent_usd, 4)}
         self.note("note", summary)
         return summary
+
+    def decide(self, proposed: Move, variant: pathlib.Path, inc_run: pathlib.Path, inc_out: dict, path: str,
+               extra: dict, history: list) -> str:
+        """Judge one move and record it. Returns "accepted" (the new incumbent's run and outcomes are
+        left in _accepted_run / _accepted_out), "rejected", or the reason an incomplete evaluation stops the loop."""
+        decision = self.judge(proposed, variant, inc_run, inc_out)
+        history.append({"move": proposed.id, "path": path, "decision": decision["decision"]})
+        if self.lesson_store:
+            self.lesson_store.write(f"{proposed.describe()}: {decision['decision']}"
+                                    + (f" ({'; '.join(decision['reasons'])})" if decision["reasons"] else "")
+                                    + (f". Proposer's lesson: {extra['lesson']}" if extra.get("lesson") else ""))
+        if decision["decision"] == "accepted":
+            self._accepted_run, self._accepted_out = decision["run_dir"], decision["outcomes"]
+            return "accepted"
+        if decision["decision"] == "rejected":
+            return "rejected"
+        return decision["reasons"][0]        # incomplete: the cap or a usage limit stopped a run
+
+    def restore(self) -> dict:
+        """Rebuild a stopped or crashed loop's state from its ledger entries: moves made, rejections in
+        a row, the incumbent, the move it was judging when it stopped (judged again, its run folders
+        resumed by the lab command), and what it spent (read back from the event logs of the proposer
+        and of every evaluation run, so the total cap still holds). A loop that stopped for any reason
+        but an incomplete evaluation cannot be resumed. Assumes the run root belongs to this loop only."""
+        from lab.budget import prior_spend
+        from lab.eventlog import JsonlEventLog
+        mine = [e for e in self.entries() if (e.get("data") or {}).get("loop") == self.id]
+        if not any(e["kind"] == "note" and e["data"].get("event") == "loop.start" for e in mine):
+            raise ValueError(f"no loop {self.id} in {self.s.ledger_path}")
+        moves, in_a_row, history = 0, 0, []
+        incumbent = inc_run = pending = None
+        stopped = None
+        for e in mine:
+            kind, d = e["kind"], e["data"]
+            if kind == "move.proposed":
+                moves += 1
+                rec = d["move"]
+                pending = Move(rec["id"], rec["kind"], rec["target"], rec["value"], rec.get("rationale", ""),
+                               bool(rec.get("affects_first_round")))
+                pending_path = d.get("path")
+            elif kind == "move.accepted":
+                incumbent = self.s.variants_dir / d["new_incumbent"]
+                inc_run = pathlib.Path(d["incumbent_run"])
+                in_a_row = 0
+                history.append({"move": d["move_id"], "path": pending_path, "decision": "accepted"})
+                pending = None
+            elif kind == "move.rejected":
+                if any(str(r).startswith("evaluation incomplete") for r in d.get("reasons") or []):
+                    continue                  # judged again on resume
+                in_a_row += 1
+                history.append({"move": d["move_id"], "path": pending_path, "decision": "rejected"})
+                pending = None
+            elif kind == "note" and d.get("event") == "loop.stop":
+                stopped = d.get("reason")
+            elif kind == "note" and d.get("event") == "loop.resume":
+                stopped = None
+        if stopped is not None and pending is None:
+            raise ValueError(f"loop {self.id} stopped ({stopped}); only a loop stopped mid-evaluation can resume")
+        pending_dirs = {str(self.s.root / f"{pending.id}-r{r}") for r in (1, 2)} if pending else set()
+        runs = {str(self.s.root / f"{e['data']['move_id']}-r{e['data']['replicate']}")
+                for e in mine if e["kind"] == "move.evaluated"} - pending_dirs
+        spent_usd = prior_spend(JsonlEventLog(self.s.root / "proposer" / "events.jsonl")) \
+            if (self.s.root / "proposer" / "events.jsonl").is_file() else 0.0
+        for run_dir in sorted(runs):
+            if (pathlib.Path(run_dir) / "events.jsonl").is_file():
+                spent_usd += prior_spend(JsonlEventLog(pathlib.Path(run_dir) / "events.jsonl"))
+        return {"moves": moves, "in_a_row": in_a_row, "history": history, "incumbent": incumbent,
+                "incumbent_run": inc_run, "pending": pending, "spent_usd": spent_usd}
 
     def judge(self, move: Move, variant: pathlib.Path, inc_run: pathlib.Path, inc_out: dict) -> dict:
         """Evaluate a variant (and a second replicate if the first is accepted) and log every step."""
@@ -889,15 +975,17 @@ def propose(loop: Loop, *, move_id: str, incumbent: pathlib.Path, current: dict,
     ws = folder / move_id
     log = JsonlEventLog(folder / "events.jsonl")
     before = prior_spend(log)
+    stage_prompt_copies(ws, incumbent)
     brief = proposer_brief(entries=loop.entries(), failures=failures, current=current, incumbent=incumbent,
                            moves_so_far=moves_so_far, T=s.noise_threshold, cost_ratio_max=s.cost_ratio_max,
-                           max_damage=s.max_damage, panel_size=len(s.panel), lessons=loop.lessons())
+                           max_damage=s.max_damage, panel_size=len(s.panel), lessons=loop.lessons(),
+                           prompts_path=PROPOSER_PROMPTS + "/", overlay_path=PROPOSER_OVERLAY + "/")
     cap = loop.remaining()
     runner = AgentRunner(proposer_backend(loop), log, 1,
                          budget=Budget(before + cap, before) if cap is not None else None)
     agent = Agent("proposer", WORKER, "proposer", s.proposer_model)
     try:
-        result = runner.run(agent, brief, ws, readable=[PROMPTS, pathlib.Path(incumbent) / "prompts"], env=None,
+        result = runner.run(agent, brief, ws, readable=[], env=None,
                             timeout_s=s.proposer_timeout, study="loop", phase=f"propose-{move_id}", role="proposer",
                             brief_file=folder / "briefs" / f"{move_id}.md")
     except UsageLimit as err:
@@ -911,6 +999,27 @@ def propose(loop: Loop, *, move_id: str, incumbent: pathlib.Path, current: dict,
         return None, ["the proposer wrote no move.json"], extra
     move, problems = move_from(read_json(path), move_id)
     return move, problems, extra
+
+
+# Where the proposer finds the prompt files: copies in its own workspace, since a remote sandbox
+# (Modal) holds only the workspace and the agent image, not this checkout's lab/prompts.
+PROPOSER_PROMPTS = "prompts"
+PROPOSER_OVERLAY = "incumbent-prompts"
+
+
+def stage_prompt_copies(ws: pathlib.Path, incumbent: pathlib.Path) -> None:
+    """Copy the editable prompts (lab/prompts) and the incumbent's overrides into the proposer's
+    workspace, replacing any copies left by an earlier attempt."""
+    ws.mkdir(parents=True, exist_ok=True)
+    for name, src in ((PROPOSER_PROMPTS, PROMPTS), (PROPOSER_OVERLAY, pathlib.Path(incumbent) / "prompts")):
+        dest = ws / name
+        if dest.exists():
+            shutil.rmtree(dest)
+        dest.mkdir()
+        for f in sorted(src.glob("*.md")) if src.is_dir() else []:
+            if src == PROMPTS and f.name not in EDITABLE_PROMPTS:
+                continue
+            shutil.copyfile(f, dest / f.name)
 
 
 def proposer_backend(loop: Loop):

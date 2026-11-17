@@ -35,7 +35,7 @@ from lab.eventlog import utc_now
 
 BASE = "https://api.past.dev/api/v1"
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-MAX_TRIES = 5
+MAX_TRIES = 8          # backoff 1, 2, 4, 8, 16, 32, 60 s: rides out a network drop of about two minutes
 SLUG = re.compile(r"^[a-z0-9][a-z0-9-]{0,38}[a-z0-9]$")
 NAMESPACE = re.compile(r"^[a-z0-9][a-z0-9-]{0,30}$")
 
@@ -135,9 +135,9 @@ class PastMemory:
             if attempt < MAX_TRIES:
                 retry_after = (headers or {}).get("Retry-After")
                 try:
-                    delay = min(float(retry_after), 30) if retry_after else min(2 ** (attempt - 1), 16)
+                    delay = min(float(retry_after), 60) if retry_after else min(2 ** (attempt - 1), 60)
                 except ValueError:
-                    delay = min(2 ** (attempt - 1), 16)
+                    delay = min(2 ** (attempt - 1), 60)
                 time.sleep(delay)
         if status is None:
             raise PastError(f"past.dev {method} {path}: network error after {MAX_TRIES} tries")

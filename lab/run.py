@@ -920,6 +920,9 @@ def build_parser() -> argparse.ArgumentParser:
                         "<run-root>/ledger.jsonl)")
     p.add_argument("--lessons", choices=["local", "past"], default=None,
                    help="also keep the proposer's lessons in memory (optional; the ledger is the main memory)")
+    p.add_argument("--resume-loop", default=None, metavar="LOOP_ID",
+                   help="continue a loop that crashed or halted mid-evaluation, from its ledger entries "
+                        "(the same --run-root and settings; spend so far counts against --max-usd)")
     p.set_defaults(fn=cmd_loop)
     return parser
 
@@ -969,7 +972,7 @@ def cmd_loop(args) -> int:
                                                      else autoloop.DEFAULT_T_SOURCE),
         cost_ratio_max=args.cost_ratio_max, max_damage=args.max_damage, ledger_path=ledger_path,
         variants_dir=variants, incumbent=incumbent, proposer_model=args.proposer_model, lessons=args.lessons)
-    loop = autoloop.Loop(settings, adapter=adapter)
+    loop = autoloop.Loop(settings, adapter=adapter, resume=args.resume_loop)
     summary = loop.run()
     entries = [e for e in ledger_mod.entries(ledger_path) if (e.get("data") or {}).get("loop") == loop.id]
     print(f"\nloop {loop.id}: stopped ({summary['reason']}); {summary['moves']} move(s); "

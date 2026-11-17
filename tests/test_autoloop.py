@@ -719,3 +719,97 @@ def test_a_threshold_or_prompt_whose_switch_is_off_is_refused():
     assert not autoloop.validate(m, {**off, "recheck": True})
     e = autoloop.Move(id="y", kind="edit_section", target="analyst_recheck.md#Anything", value="new", rationale="r")
     assert any("change nothing" in p for p in autoloop.validate(e, off))
+
+
+# ----- the proposer's prompt copies, and resuming a loop -----
+
+def test_the_proposer_reads_prompt_copies_in_its_workspace(tmp_path):
+    from lab.backend_modal import ModalBackend
+    from lab.contracts import AgentResult
+    inc = base_variant(tmp_path)
+    (inc / "prompts").mkdir(exist_ok=True)
+    (inc / "prompts" / "analyst_revise.md").write_text("# Override\n")
+    seen = {}
+
+    class Fake:
+        def run(self, agent, brief, workspace, *, readable, env, timeout_s):
+            seen["readable"] = ModalBackend.check_readable(readable, workspace)   # what Modal refuses
+            seen["brief"] = brief
+            seen["files"] = sorted(p.relative_to(workspace).as_posix() for p in workspace.rglob("*.md"))
+            (workspace / "move.json").write_text(json.dumps({"kind": "threshold", "target": "recheck_p",
+                                                             "value": 0.1, "rationale": "r"}))
+            return AgentResult(ok=True, result={"lesson": "l"}, seconds=1.0, cost_usd=0.5)
+
+    loop, _ = scripted(tmp_path, [])
+    loop._backend = Fake()
+    move, problems, extra = autoloop.propose(loop, move_id="m01", incumbent=inc, current=autoloop.settings(inc),
+                                             failures={NOT_VERIFIABLE_KIND: 3}, moves_so_far=0)
+    assert problems == [] and move.target == "recheck_p" and extra["spent_usd"] == 0.5
+    assert seen["readable"] == []
+    assert "incumbent-prompts/analyst_revise.md" in seen["files"]
+    assert {f"prompts/{n}" for n in autoloop.EDITABLE_PROMPTS} <= set(seen["files"])
+    assert not any(f.startswith("prompts/") and f[8:] not in autoloop.EDITABLE_PROMPTS for f in seen["files"])
+    assert "`prompts/`" in seen["brief"] and "`incumbent-prompts/`" in seen["brief"]
+    assert str(autoloop.PROMPTS) not in seen["brief"]
+
+
+class Crash(RuntimeError):
+    pass
+
+
+def test_a_crashed_loop_resumes_where_it_stopped(tmp_path):
+    moves = [("threshold", "recheck_p", 0.1), ("threshold", "recheck_min_n", 40), ("threshold", "recheck_p", 0.02)]
+    loop, calls = scripted(tmp_path, [SAME], moves=list(moves), max_usd=100.0)
+    real = loop.evaluate_fn
+
+    def crash_on_second(variant, *a, **k):
+        if variant.name == "m02":
+            raise Crash("past.dev network error")
+        return real(variant, *a, **k)
+    loop.evaluate_fn = crash_on_second
+    with pytest.raises(Crash):
+        loop.run()
+    # what m01's evaluation and the proposer spent, as their event logs show it
+    for folder, cost in (("m01-r1", 7.0), ("proposer", 1.0)):
+        (loop.s.root / folder).mkdir(parents=True, exist_ok=True)
+        (loop.s.root / folder / "events.jsonl").write_text(
+            json.dumps({"kind": "agent.start", "run_id": "x", "role": "analyst", "model": "opus"}) + "\n"
+            + json.dumps({"kind": "agent.finish", "run_id": "x", "cost_usd": cost}) + "\n")
+
+    again, calls2 = scripted(tmp_path / "second", [(SAME, 3.0), (SAME, 3.0)], moves=[moves[2]], max_usd=100.0)
+    again.s = loop.s
+    again.id, again.resume = loop.id, loop.id
+    summary = again.run()
+    assert summary["reason"] == "3 rejections in a row"
+    assert [c[0] for c in calls2["evaluate"]] == ["m02", "m03"]      # m02 judged again, then a new move
+    assert calls2["propose"] == 1 and summary["moves"] == 3
+    assert summary["spent_usd"] == 7.0 + 1.0 + 3.0 + 3.0
+    mine = [e for e in again.entries() if e["data"].get("loop") == loop.id]
+    resumed = next(e["data"] for e in mine if e["data"].get("event") == "loop.resume")
+    assert resumed["pending_move"] == "m02" and resumed["moves"] == 2 and resumed["in_a_row"] == 1
+    assert [e["kind"] for e in mine].count("move.proposed") == 3      # m02 is not proposed twice
+    assert ledger.verify_chain(loop.s.ledger_path) == []
+
+
+def test_a_loop_that_stopped_cannot_resume_but_one_halted_mid_move_can(tmp_path):
+    loop, _ = scripted(tmp_path, [SAME], moves=[("threshold", "recheck_p", 0.1)], max_moves=1)
+    loop.run()
+    again, _ = scripted(tmp_path / "b", [], max_moves=1)
+    again.s, again.id, again.resume = loop.s, loop.id, loop.id
+    with pytest.raises(ValueError, match="stopped"):
+        again.run()
+    with pytest.raises(ValueError, match="no loop"):
+        third, _ = scripted(tmp_path / "c", [])
+        third.id = third.resume = "loop-none"
+        third.run()
+
+    halted, _ = scripted(tmp_path / "d", [], moves=[("threshold", "recheck_p", 0.1)], max_moves=1)
+    halted.evaluate_fn = lambda variant, inc, panel, rep, *, loop: {
+        "run_dir": "x", "reused_from": None, "spent": None, "spent_usd": 0.0, "outcomes": None,
+        "incomplete": "the run halted: cap"}
+    assert halted.run()["reason"].startswith("evaluation incomplete")
+    resumed, calls = scripted(tmp_path / "e", [SAME], max_moves=1)
+    resumed.s, resumed.id, resumed.resume = halted.s, halted.id, halted.id
+    summary = resumed.run()
+    assert [c[0] for c in calls["evaluate"]] == ["m01"] and calls["propose"] == 0
+    assert summary["reason"] == "1 moves made (--max-moves)"
