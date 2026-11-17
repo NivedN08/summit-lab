@@ -1,0 +1,465 @@
+{
+  "study": "bd31",
+  "status": "replicated",
+  "final": {
+    "agent": "bd31-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd31/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd31-library": "opus",
+    "bd31-team-a": "opus",
+    "bd31-team-b": "opus",
+    "bd31-team-c": "opus",
+    "bd31-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd31-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd31/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd31-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd31/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd31-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd31/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd31-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd31/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd31-team-a",
+        "bd31-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd31-team-a",
+        "bd31-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "MSI-high colorectal tumours are mostly right-sided and carry BRAF V600E and RNF43 frameshifts (e.g. G659fs), so including them can make BRAF/RNF43 look right-enriched through MSI confounding alone. Tabulate MSI_STATUS (MSS/MSI/Inconclusive/NA) by PRIMARY_TUMOR_LOCATION in data_clinical_sample.txt and analyse MSS only. Many samples (about 327) have MSI_STATUS=NA but an MSI_SCORE; decide explicitly how to handle them (e.g. MSIsensor cut-offs: <3 MSS, 3-10 indeterminate, >=10 MSI-H) and report results both for strict MSI_STATUS==MSS and for score-derived MSS.",
+      "from": [
+        "sl-dev-panel-noise-lab1-1676066553a7"
+      ],
+      "reason": "The hypothesis is restricted to MSS; the MSS definition and NA handling directly change the analysed cohort and can create spurious enrichment.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-b8be7e1e2e41"
+      }
+    },
+    {
+      "text": "The hypothesis concerns metastatic CRC, but the cohort includes MCRC_TYPE='Early Stage Primary' samples (about 123) and about 14 samples with PRIMARY_TUMOR_LOCATION=NA. Tabulate MCRC_TYPE and PRIMARY_TUMOR_LOCATION; run the main analysis on mCRC samples (mCRC Primary + mCRC Metastasis) with known Left/Right side, and include early-stage samples only as a sensitivity analysis. Standard convention: right = caecum to transverse colon (proximal to splenic flexure), left = splenic flexure to rectum. Check PRIMARY_SITE against the provided Right/Left label; transverse colon handling varies and rectum may behave differently from left colon.",
+      "from": [
+        "sl-dev-panel-noise-lab1-4b01bf883655"
+      ],
+      "reason": "Defines the correct population (metastatic) and the exposure variable (sidedness); both are easy to get wrong.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-9d2966b670e8"
+      }
+    },
+    {
+      "text": "About 31 patients have more than one sequenced sample (e.g. primary and metastasis). Count SAMPLE_ID per PATIENT_ID among MSS samples with known side and collapse to one row per patient before testing (either altered-if-any-sample-altered, or one prespecified sample such as the primary). Primary-metastasis concordance is high for KRAS/BRAF but lower for PIK3CA, so state the rule used.",
+      "from": [
+        "sl-dev-panel-noise-lab1-3f131cbb5e3f"
+      ],
+      "reason": "Duplicate patients double-count and break independence in Fisher tests.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-577f45848db8"
+      }
+    },
+    {
+      "text": "Samples were sequenced on different MSK-IMPACT panels (IMPACT341/410/468). Genes added in later panels (RNF43 may be absent from IMPACT341 - verify in data_gene_panel_matrix.txt / panel gene lists, and check whether any RNF43 mutation occurs in IMPACT341 samples) would be wrongly counted as wild-type in samples whose panel did not cover them. Cross-tabulate panel by side, and compute each gene's frequency with a denominator restricted to samples whose panel covers that gene; also exclude samples with mutations=NA in the panel matrix.",
+      "from": [
+        "sl-dev-panel-noise-lab1-f4bda4fbac3f"
+      ],
+      "reason": "If panel mix differs by side, uncovered genes counted as wild-type bias the side comparison.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-a2e6222d0124"
+      }
+    },
+    {
+      "text": "The hypothesis is about ONCOGENIC alterations, and the mutation file has no OncoKB/oncogenic annotation column. List Variant_Classification and protein changes for KRAS, BRAF, PIK3CA, AKT1, RNF43, SMAD4, and define 'oncogenic' a priori before testing, e.g. KRAS G12/G13/Q61/K117/A146; BRAF V600 and class 2/3 kinase-domain variants; PIK3CA hotspots (E542/E545/H1047 etc.); AKT1 E17K; truncating mutations in RNF43 and SMAD4, plus SMAD4 deep deletions (value -2) from data_cna.txt. Report results under both an 'any non-synonymous' and a 'hotspot/truncating' definition and check whether the conclusion holds under both. Exclude silent/intronic rows.",
+      "from": [
+        "sl-dev-panel-noise-lab1-d7fc2f693e3e"
+      ],
+      "reason": "The alteration definition determines the counts; counting VUS/passengers inflates frequencies, and CNA data are needed for SMAD4.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-428d22344d9c"
+      }
+    },
+    {
+      "text": "Hypermutated MSS tumours (e.g. POLE exonuclease-domain mutants, aa 268-471; TMB often >50 mut/Mb) carry many incidental mutations in KRAS/BRAF/PIK3CA etc. and can inflate frequencies on whichever side they fall. Inspect TMB_NONSYNONYMOUS among MSS samples, POLE exonuclease mutations, and MSI_SCORE values in the 3-10 range, and run a sensitivity analysis excluding hypermutated MSS samples (e.g. TMB>20).",
+      "from": [
+        "sl-dev-panel-noise-lab1-c2aae2ea5e76"
+      ],
+      "reason": "A few hypermutators can drive apparent side differences within the MSS group.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-e8ad9690f011"
+      }
+    },
+    {
+      "text": "The hypothesis names six genes. Do not judge it on a single pooled 'any of six altered' test or on one gene alone. Run per-gene 2x2 Fisher tests (right vs left, MSS, one row per patient, panel-aware denominators), report odds ratios with 95% CI, direction of each effect, and Benjamini-Hochberg adjusted q-values. Decide in advance how the per-gene results map to a label: consider how many genes show right-side enrichment, whether the main ones are significant after FDR correction, and whether any gene is significantly enriched in the opposite direction. Rare genes (e.g. AKT1) may be underpowered; an underpowered non-significant result is not by itself a contradiction.",
+      "from": [
+        "sl-dev-panel-noise-lab1-cbd360bb9780"
+      ],
+      "reason": "Gives a prespecified multi-gene decision rule and multiple-testing control, so the label is not driven by one gene or by uncorrected p-values.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-56fc11f7449e"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams took the provided PRIMARY_TUMOR_LOCATION Left/Right label as the definition of sidedness, even though Transverse Colon is split (19 Left / 35 Right) and rectum is grouped with left colon. Neither tested whether the result depends on how transverse or rectal primaries are assigned.",
+      "Both teams pooled primary and metastatic specimens (and chemo-exposed and chemo-naive specimens) as if they were the same, so the tested quantity is 'any profiled specimen of the patient'. Neither checked whether specimen type or prior chemotherapy differs between sides and drives the per-gene frequencies (for example, PIK3CA and SMAD4 discordance between primary and metastasis).",
+      "Both teams treated each gene as covered on every panel once at least one mutation turned up in IMPACT341 samples. That shows some calls exist. It does not show that the panel covers the whole gene or the specific hotspots, and neither team cross-tabulated panel version by side.",
+      "Both used hand-built 'oncogenic' rules in place of a curated annotation, and both read 'enrichment of the six genes' as 'each gene's frequency is higher on the right'."
+    ],
+    "unused_evidence": [
+      "data_sv.txt (115 somatic SVs, a few involving the target genes): neither team said it used structural variants, e.g. BRAF fusions or RNF43/SMAD4 disruptive rearrangements, as oncogenic alterations.",
+      "CHEMO_EXP_SEQ_SPECIMEN (541 Yes / 593 No) and SPECIMEN_TYPE (Resection/Biopsy): not used. Either could confound side if specimen mix differs between right and left.",
+      "MOLECULAR_SUBTYPE disagrees with MSI_STATUS in a few samples (2 samples labelled MSS have subtype MSI, 2 NA samples have subtype MSI, 1 MSI-status sample has subtype POLE). Team B excluded MSI/POLE subtypes; Team A described only a TMB>20 filter.",
+      "data_cna_hg19.seg and non-deep-deletion CNA levels (e.g. KRAS amplification, SMAD4 shallow loss): neither team used them beyond SMAD4 deep deletion. Copy number is a possible 'oncogenic alteration' channel for KRAS.",
+      "MCRC_TYPE: Team A restricted to mCRC Primary + mCRC Metastasis. Team B's method note does not say it excluded the 123 Early Stage Primary samples."
+    ],
+    "unresolved_weak_points": [
+      "SMAD4 is non-significant in strict MSS for both teams (p~0.17 in B, q 0.07-0.12 in A). It becomes significant only when NA-MSI samples with low MSI score are added. Both reported this but did not resolve which MSS definition should decide the result.",
+      "AKT1 is extremely rare (about 2 vs 0 patients). Both reported it as directionally consistent, but this is not evidence of enrichment.",
+      "Team B named the hand-made oncogenic definition as its weakest point. Neither team tested whether OncoKB-style rules (e.g. which RNF43 variants count, given the G659fs MSI-type hotspot, or BRAF class 2/3) change the RNF43 and BRAF results.",
+      "Team A did no explicit POLE exonuclease check beyond the TMB filter."
+    ],
+    "second_readings": [
+      "'Enrichment of oncogenic alterations in KRAS, BRAF, PIK3CA, AKT1, RNF43, and SMAD4' can mean either that each of the six genes is enriched, or that the set as a whole is enriched. Under the per-gene reading, a non-significant SMAD4 (strict MSS) and an untestable AKT1 make the claim only partly supported.",
+      "'mCRC' can mean patients with metastatic disease (stage IV / mCRC types) rather than every sample in the cohort. 'Primary site' can mean the anatomical PRIMARY_SITE rather than the derived Left/Right label, which changes how transverse colon is handled.",
+      "Unit of analysis: patient-level 'altered in any sample' (Team A) vs one primary-preferred sample (Team B). These are different quantities when primary and metastasis disagree."
+    ],
+    "verdict": "I moderately trust the agreed 'True'. KRAS, BRAF, PIK3CA and RNF43 right-sided enrichment is robust across both teams' sensitivity checks. The weak parts are SMAD4 (significant only under the looser MSS definition) and AKT1 (too rare to test), and neither team checked sidedness convention or specimen and chemo confounding. These could change a strict per-gene reading but are unlikely to reverse the direction for the main genes.",
+    "questions": [
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Re-run the per-gene tests twice: once with all transverse-colon primaries assigned to one side (or dropped), and once with rectum excluded from the left group. Does the per-gene direction or significance, especially for SMAD4 and PIK3CA, change? Does that change your method?",
+        "from": [
+          "sl-dev-panel-noise-lab1-b3ab2e45a3bf"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-a05660f07a5d"
+      },
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate side by SAMPLE_TYPE (primary/metastasis), CHEMO_EXP_SEQ_SPECIMEN and GENE_PANEL among your MSS patients. Then repeat the per-gene tests stratified by (or restricted to) chemo-naive primary specimens. Do any genes lose or gain right-sided enrichment? Does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-366ee01b7248"
+      },
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Compare MOLECULAR_SUBTYPE with MSI_STATUS, and check data_sv.txt for SVs in the six genes. Are any MSI- or POLE-subtype samples, or any SV-altered patients, inside your MSS set, and does removing or adding them change any gene's result? Does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-174ba15b3af8"
+      },
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your label depends on SMAD4 under one MSS definition only. Before choosing between strict and score-derived MSS, compare the side split, panel mix and MCRC_TYPE of the NA-MSI samples you add. Is there a reason in the data to prefer one definition, and does the answer to the per-gene reading of the hypothesis change with it?",
+        "from": [
+          "sl-dev-panel-noise-lab1-4d4981a80e58"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-7947ab6e8187"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate MCRC_TYPE in your analysed MSS set. Were Early Stage Primary samples included, and do the per-gene results change if you restrict to mCRC Primary + mCRC Metastasis? Does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-0920523e7791"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Re-run with transverse colon assigned consistently (or dropped) and with rectum separated from left colon. Does SMAD4 or PIK3CA enrichment move? Does that change your method?",
+        "from": [
+          "sl-dev-panel-noise-lab1-a3634ce5d05d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-6c6ba0850b39"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate side by SAMPLE_TYPE, CHEMO_EXP_SEQ_SPECIMEN and GENE_PANEL for your one-sample-per-patient set. Repeat the tests with an 'altered in any sample of the patient' rule, and also within chemo-naive primaries only. Do any genes' results change? Does that change your method?",
+        "from": [
+          "sl-dev-panel-noise-lab1-8a4e5ed8d863"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-eba0b42e417a"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check data_sv.txt and non-deep CNA levels (e.g. KRAS amplification) for the six genes, and list which RNF43 and BRAF variants your rules count as oncogenic on each side. Does counting SVs/amplifications, or excluding MSI-type RNF43 hotspots, change any gene's direction or significance? Does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-11f4408a3cdf"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In cancer-genomics practice, when a hypothesis states that a set of several genes is 'enriched' in one group, is it conventionally judged gene by gene (each must be significant) or as directionally consistent enrichment with significance in most genes? How are rare genes with too few events to test usually handled?",
+          "why": "The label depends on whether non-significant SMAD4 and untestable AKT1 count against the claim. Neither team showed it knew a convention for this.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In colorectal cancer sidedness studies, how is transverse colon conventionally classified (right, left, or split at a point), and is rectum usually analysed together with left colon or separately?",
+          "why": "Both teams used a provided label that splits transverse colon. They need to know whether that matches the convention before deciding whether a sensitivity analysis is required.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Which RNF43, SMAD4 and BRAF variant classes does OncoKB annotate as oncogenic or likely oncogenic (e.g. RNF43 G659fs, SMAD4 missense, BRAF non-V600 classes)?",
+          "why": "Both teams used hand-made 'oncogenic' rules. Whether these match standard annotation could change the RNF43 and SMAD4 counts.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In cancer-genomics practice, when a hypothesis states that a set of several genes is 'enriched' in one group, is it conventionally judged gene by gene (each must be significant) or as directionally consistent enrichment with significance in most genes? How are rare genes with too few events to test usually handled?",
+          "answer": "The web does not settle this. The sidedness genomics papers I read (Caris 10,570-tumour study; Oncotarget 2017 comprehensive genomic sequencing study) test and report each gene on its own with Fisher's exact test at p<0.05 and simply note which genes reach significance. None states that every listed gene must be significant, or how rare genes with too few events are handled. The practical reading: report per-gene results with direction and an FDR adjustment, and judge the overall claim on consistent direction with significance in the main genes. Underpowered genes (e.g. AKT1) should be reported as untestable or not significant, not as contradicting the claim, unless they are significant in the opposite direction. This is an interpretive judgement, not a documented convention.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5689690/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5706819/"
+          ],
+          "confidence": "low",
+          "deliveries": {
+            "bd31-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-89f8919d6d42"
+            },
+            "bd31-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-cd9aad65fecb"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cancer-genomics practice, when a hypothesis states that a set of several genes is 'enriched' in one group, is it conventionally judged gene by gene (each must be significant) or as directionally consistent enrichment with significance in most genes? How are rare genes with too few events to test usually handled? ANSWER: The web does not settle this. The sidedness genomics papers I read (Caris 10,570-tumour study; Oncotarget 2017 comprehensive genomic sequencing study) test and report each gene on its own with Fisher's exact test at p<0.05 and simply note which genes reach significance. None states that every listed gene must be significant, or how rare genes with too few events are handled. The practical reading: report per-gene results with direction and an FDR adjustment, and judge the overall claim on consistent direction with significance in the main genes. Underpowered genes (e.g. AKT1) should be reported as untestable or not significant, not as contradicting the claim, unless they are significant in the opposite direction. This is an interpretive judgement, not a documented convention. HOW SURE: low. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC5689690/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5706819/."
+        },
+        {
+          "question": "In colorectal cancer sidedness studies, how is transverse colon conventionally classified (right, left, or split at a point), and is rectum usually analysed together with left colon or separately?",
+          "answer": "Most common convention: the whole transverse colon counts as right (cecum through transverse colon = right; splenic flexure through rectum = left; the split is at the splenic flexure). The embryology-based alternative splits the transverse colon: the proximal two-thirds (midgut) is right and the distal third (hindgut) is left. Some large analyses (ARCAD, GISCAD) exclude transverse colon or treat it as its own group, and Loree et al. found transverse tumours cluster more like left-sided ones. A label that splits the transverse colon is therefore a recognised but less common choice, and a sensitivity analysis (transverse all right, and/or transverse excluded) is advisable. Rectum is usually grouped with left in mCRC sidedness analyses, but many studies analyse it separately (e.g. Caris: left colon vs right colon vs rectum), and the sigmoid-rectal region differs molecularly (more TP53, less PIK3CA/BRAF), so rectum-excluded sensitivity is also reasonable.",
+          "sources": [
+            "https://jgo.amegroups.org/article/view/89938/html",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5844818/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5689690/"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd31-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-50db8a4269ce"
+            },
+            "bd31-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-6a5585ffcf7c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In colorectal cancer sidedness studies, how is transverse colon conventionally classified (right, left, or split at a point), and is rectum usually analysed together with left colon or separately? ANSWER: Most common convention: the whole transverse colon counts as right (cecum through transverse colon = right; splenic flexure through rectum = left; the split is at the splenic flexure). The embryology-based alternative splits the transverse colon: the proximal two-thirds (midgut) is right and the distal third (hindgut) is left. Some large analyses (ARCAD, GISCAD) exclude transverse colon or treat it as its own group, and Loree et al. found transverse tumours cluster more like left-sided ones. A label that splits the transverse colon is therefore a recognised but less common choice, and a sensitivity analysis (transverse all right, and/or transverse excluded) is advisable. Rectum is usually grouped with left in mCRC sidedness analyses, but many studies analyse it separately (e.g. Caris: left colon vs right colon vs rectum), and the sigmoid-rectal region differs molecularly (more TP53, less PIK3CA/BRAF), so rectum-excluded sensitivity is also reasonable. HOW SURE: high. SOURCES: https://jgo.amegroups.org/article/view/89938/html, https://pmc.ncbi.nlm.nih.gov/articles/PMC5844818/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5689690/."
+        },
+        {
+          "question": "Which RNF43, SMAD4 and BRAF variant classes does OncoKB annotate as oncogenic or likely oncogenic (e.g. RNF43 G659fs, SMAD4 missense, BRAF non-V600 classes)?",
+          "answer": "RNF43: Truncating Mutations (nonsense, frameshift, splice) are Likely Oncogenic, but G659fs*41 has its own Inconclusive call because the functional data conflict. Strict OncoKB annotation therefore excludes G659fs, while a generic 'truncating' rule includes it. SMAD4: Deletion and Truncating Mutations are Likely Oncogenic. About 55 oncogenic or likely oncogenic SMAD4 alterations are listed, mostly specific MH1/MH2 missense changes (e.g. R361C/G/H, D351H/N, D537 variants, R496H, R497H, G386D, C324Y). There are also 1 neutral and 4 inconclusive variants, so only curated SMAD4 missense changes count, not all of them. BRAF: 137 oncogenic alterations, including V600 and many non-V600 class 2/3 variants (G464, G466, G469, N581, D594, L597, K601) and fusions. 44 neutral and 21 inconclusive BRAF variants are also listed, so not every BRAF missense is oncogenic. The page text did not show the per-variant label next to every SMAD4/BRAF entry.",
+          "sources": [
+            "https://www.oncokb.org/gene/RNF43",
+            "https://www.oncokb.org/gene/RNF43/G659fs*41",
+            "https://www.oncokb.org/gene/RNF43/Truncating%20Mutations",
+            "https://www.oncokb.org/gene/SMAD4",
+            "https://www.oncokb.org/gene/BRAF"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd31-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-8ec2755631f7"
+            },
+            "bd31-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-6d51e42ee3fc"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Which RNF43, SMAD4 and BRAF variant classes does OncoKB annotate as oncogenic or likely oncogenic (e.g. RNF43 G659fs, SMAD4 missense, BRAF non-V600 classes)? ANSWER: RNF43: Truncating Mutations (nonsense, frameshift, splice) are Likely Oncogenic, but G659fs*41 has its own Inconclusive call because the functional data conflict. Strict OncoKB annotation therefore excludes G659fs, while a generic 'truncating' rule includes it. SMAD4: Deletion and Truncating Mutations are Likely Oncogenic. About 55 oncogenic or likely oncogenic SMAD4 alterations are listed, mostly specific MH1/MH2 missense changes (e.g. R361C/G/H, D351H/N, D537 variants, R496H, R497H, G386D, C324Y). There are also 1 neutral and 4 inconclusive variants, so only curated SMAD4 missense changes count, not all of them. BRAF: 137 oncogenic alterations, including V600 and many non-V600 class 2/3 variants (G464, G466, G469, N581, D594, L597, K601) and fusions. 44 neutral and 21 inconclusive BRAF variants are also listed, so not every BRAF missense is oncogenic. The page text did not show the per-variant label next to every SMAD4/BRAF entry. HOW SURE: high. SOURCES: https://www.oncokb.org/gene/RNF43, https://www.oncokb.org/gene/RNF43/G659fs*41, https://www.oncokb.org/gene/RNF43/Truncating%20Mutations, https://www.oncokb.org/gene/SMAD4, https://www.oncokb.org/gene/BRAF."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd31-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd31-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd31-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd31-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd31-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 117.24290729104541,
+      "cost_usd": 0.4740288,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 66.08068849996198,
+      "cost_usd": 0.2572426,
+      "error": null
+    },
+    {
+      "agent": "bd31-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 93.94391462497879,
+      "cost_usd": 0.2531008,
+      "error": null
+    },
+    {
+      "agent": "bd31-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 102.97752341697924,
+      "cost_usd": 0.262552,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 89.96046741702594,
+      "cost_usd": 0.3886398,
+      "error": null
+    },
+    {
+      "agent": "bd31-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 102.83809274993837,
+      "cost_usd": 0.41834579999999993,
+      "error": null
+    },
+    {
+      "agent": "bd31-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 101.17799887503497,
+      "cost_usd": 0.4236028,
+      "error": null
+    },
+    {
+      "agent": "bd31-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 132.5550440410152,
+      "cost_usd": 0.6317256,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

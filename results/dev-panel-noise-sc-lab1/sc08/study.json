@@ -1,0 +1,360 @@
+{
+  "study": "sc08",
+  "status": "replicated",
+  "final": {
+    "agent": "sc08-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab1/sc08/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "sc08-library": "opus",
+    "sc08-team-a": "opus",
+    "sc08-team-b": "opus",
+    "sc08-team-c": "opus",
+    "sc08-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "sc08-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab1/sc08/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc08-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab1/sc08/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc08-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab1/sc08/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc08-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab1/sc08/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc08-team-a",
+        "sc08-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc08-team-a",
+        "sc08-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Compute the per-cell-type Edn1 means from log1p(CP10K) of the raw counts (X, after the n_genes>1000 filter). Do not use integrated, batch-corrected, scaled or regressed values. Integration should only feed PCA, kNN and clustering.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab1-238507a0e996"
+      ],
+      "reason": "Expression summaries taken from corrected or scaled values are distorted and can change the ranking.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab1-1cee5377404c"
+      }
+    },
+    {
+      "text": "Rank cell types by the prescribed metric: the mean of log1p(CP10K) Edn1 over all nuclei of each type, zeros included. Never average only over expressing nuclei. Neurons have much larger library sizes than non-neuronal nuclei, so you may also report the fraction of Edn1>0 nuclei and pseudobulk CP10K per type as a sensitivity check. If those disagree, flag it but do not switch metric.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab1-ac922f091c3a"
+      ],
+      "reason": "Edn1 is sparse, and depth and detection differences can tempt teams into a different summary metric, which could change which type comes out on top.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab1-3fe8e2fcd7b2"
+      }
+    },
+    {
+      "text": "Several markers are shared between types: Flt1 is not specific to endothelial cells; Col1a1 and Pdgfra also appear in some mural cells and cells next to Schwann cells; L1cam is also neuronal; Fabp7 is also in Schwann cells. Annotate each cluster by scoring every marker panel (for example, the mean z-scored log1p CP10K across clusters) and inspect the margin between the top two panels. For low-margin clusters, rely on the more specific markers (Pecam1 for endothelial, Rgs5/Notch3 for mural, Kcnj10 for SGC versus Mag/Ncmap for Schwann). Check that each answer-option type gets at least one cluster. Mapping: Endothelial=A, Fibroblast=B, Mural=C, SGC=D, Neuron=E, Macrophage=F.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab1-132434ff92bc"
+      ],
+      "reason": "If one marker drives annotation, clusters get mislabeled, and that directly changes which label holds the highest Edn1.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab1-0691ac590023"
+      }
+    },
+    {
+      "text": "Endothelial-mural and endothelial-fibroblast doublets or contaminated nuclei can form small clusters that co-express Pecam1/Flt1 with Rgs5/Notch3 or Col1a1/Pdgfra. At resolution 0.6, endothelial and mural nuclei may even share one cluster. For the Endothelial, Mural and Fibroblast clusters, compare the panel means and co-expression fractions. If one vascular cluster mixes endothelial and mural nuclei, sub-cluster it before labeling. Check that the ranking holds when mixed clusters are excluded.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab1-a4e94ff61adc"
+      ],
+      "reason": "The top candidates are probably vascular and stromal types, so leakage between endothelial, mural and fibroblast labels could flip the answer.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab1-44a66c2c6a9c"
+      }
+    },
+    {
+      "text": "In DRG snRNA-seq, ambient RNA from high-UMI neurons contaminates glial and other non-neuronal nuclei. A cluster with low Isl1/Prph but strong glial or vascular markers is contaminated glia or vascular cells, not neurons. Label such clusters by the dominant specific panel. Also check whether Edn1 is concentrated in one cluster or present at a low level everywhere, which would suggest ambient signal.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab1-4abcee5ee83e"
+      ],
+      "reason": "This prevents misassigning clusters to Neuron, which would change the per-type means.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab1-bafaff7411b7"
+      }
+    },
+    {
+      "text": "Scanpy has no native Seurat RPCA. Use the most RPCA-faithful option available (Seurat RPCA via R, or the omicverse RPCA port) and record which method you used. batch = sample (3M = Adult; 21M1 and 21M2 = Aged), so batch is fully confounded with age. Cross-tabulate cluster x sample and label sample-specific clusters by their markers rather than dropping them. Check that the top cell type is the same with a second integration method (or none) and when means are computed per sample.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab1-e40baa790bf6",
+        "sl-dev-panel-noise-sc-lab1-73592f457854"
+      ],
+      "reason": "The integration substitute and the confounding can move the boundaries of small endothelial, mural and immune clusters and so the top-ranked type.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab1-bb73d1fed0a3"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 4,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed X holds the true raw counts because its values are integers. Neither confirmed that X row sums equal obs total_counts, or that recomputed n_genes equals obs n_genes / n_genes_raw. A subset of genes or a pre-filtered matrix would change the CP10K denominators.",
+      "Both used cluster-level argmax labels from marker z-scores. Both accepted that a neuron-like cluster (Prph ~2.2, Isl1 0.73) got the Mural label. So the Mural group the task scores is partly neurons, and the endothelial cluster contains Rgs5/Notch3-high mural nuclei.",
+      "Both treated the nuclei of the three samples as exchangeable and pooled them for the per-type mean. Sample 3M (all Adult) supplies 60% of nuclei, so the pooled mean is weighted toward the adult animal.",
+      "Both took an approximate RPCA (custom MNN / per-batch centring) as good enough, and checked it only against no integration."
+    ],
+    "unused_evidence": [
+      "obs total_counts, n_genes and n_genes_raw. These are provided QC fields. Neither team said it compared them with its own recomputed values. A mismatch would mean X is not the unfiltered raw matrix, and the CP10K scaling would be off.",
+      "obs age_group (Adult vs Aged). Neither team reported the per-type Edn1 ranking within each age group. Team A gave per-sample means only in summary form.",
+      "The Schwann, T_cell and B_cell panels are in the labelling but are not answer options. The B_cell cluster has Pecam1 0.9, so endothelial-like nuclei may have been taken out of the endothelial group. That would affect the endothelial mean, but probably not its rank."
+    ],
+    "unresolved_weak_points": [
+      "Approximate RPCA: both teams checked only against no integration, not against a second RPCA-like method or a second seed. Given a 25-30x gap this is unlikely to matter.",
+      "Low-margin labels (Mural = neuron cluster; endothelial/mural mixing). Team A resolved the endothelial/mural question by sub-clustering. Team B only reported it. Neither relabelled the neuron-like Mural cluster."
+    ],
+    "second_readings": [
+      "'Major cell type' could mean only the six answer options rather than all nine marker panels. Endothelial is an option either way, so this reading does not change the answer.",
+      "The question could be read per age group ('in Adult vs Aged'). The task asks for one answer over the whole dataset, so the pooled reading is the primary one."
+    ],
+    "verdict": "I trust answer A highly. Both teams find Edn1 concentrated almost entirely in the Pecam1/Flt1 cluster, more than 25x above every other type, and stable with and without integration. Team A's sub-clustering places the Edn1 in endothelial rather than mural nuclei. The remaining checks are confirmations that would not plausibly flip the answer.",
+    "questions": [
+      {
+        "to": "sc08-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Check that X row sums equal obs total_counts and that your recomputed n_genes equals obs n_genes_raw for every nucleus. If they differ, is X really the raw count matrix, and does that change your CP10K normalisation?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab1-10513d28c2a9"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-5394951dce69"
+      },
+      {
+        "to": "sc08-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Recompute the per-type mean Edn1 separately for Adult and Aged nuclei, and rerun Leiden with one other seed. Does the top type, or its margin over the second type, change in either case?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab1-832da197747f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-907e59d3b7ff"
+      },
+      {
+        "to": "sc08-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your endothelial cluster may also hold mural nuclei, as team A found. Split it into Pecam1/Flt1-high and Rgs5/Notch3-high nuclei and compute mean Edn1 in each part. Does Edn1 follow the endothelial or the mural part, and does that change your label?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab1-ee05afd6632f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-ba6a9a165ca9"
+      },
+      {
+        "to": "sc08-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Compare X row sums with obs total_counts and your n_genes with obs n_genes_raw. Then report mean Edn1 per type within each sample (3M, 21M1, 21M2). Does any sample give a different top type?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab1-6d4991c03e32"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-bb890d14e41c"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In Seurat's RPCA integration (FindIntegrationAnchors with reduction='rpca' followed by IntegrateData), what are the default k.anchor, k.weight and dims, and how do anchor weights correct the expression matrix?",
+          "why": "Neither team could run true RPCA. Knowing the defaults would show how far their approximations are from the specified method for small populations such as endothelial and mural cells.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In Seurat's RPCA integration (FindIntegrationAnchors with reduction='rpca' followed by IntegrateData), what are the default k.anchor, k.weight and dims, and how do anchor weights correct the expression matrix?",
+          "answer": "Defaults: FindIntegrationAnchors uses dims=1:30, k.anchor=5, k.filter=200, k.score=30, anchor.features=2000, l2.norm=TRUE and max.features=200. IntegrateData uses dims=1:30, k.weight=100 and sd.weight=1, and weight.reduction=NULL, so a new PCA is computed to get the weights. Before anchoring, RPCA needs a PCA run on each batch separately, using scaled shared features. It projects each dataset into the other's PCA space and keeps mutual nearest neighbours as anchors. Anchors are filtered with k.filter in the max.features space, then scored by shared-neighbour overlap with k.score; scores are clipped at the 0.01 and 0.90 quantiles and rescaled to 0-1. Correction: for each query cell, the weight of each of its k.weight nearest anchors is (1 - distance to the anchor / distance to the k.weight-th anchor) x anchor score. A Gaussian kernel with bandwidth sd.weight is applied and the weights are normalised over the k.weight anchors. The integration matrix holds the expression difference between the two cells of each anchor pair. Multiplying the weights by this matrix gives a transformation matrix, which is subtracted from the query's expression matrix. With several batches this is done pairwise in an order set by a guide tree; the distance between two datasets is the cell count of the smaller one divided by the number of anchors between them. With LogNormalize, the result is a corrected 'integrated' data assay over the anchor features. The vignette calls RPCA more conservative than CCA and says raising k.anchor (e.g. to 20) strengthens alignment. My own reading, not stated in the docs: because every cell uses its 100 nearest anchors, small populations such as endothelial and mural cells with few anchors of their own may borrow correction vectors from anchors of other cell types.",
+          "sources": [
+            "https://satijalab.org/seurat/reference/findintegrationanchors",
+            "https://satijalab.org/seurat/reference/integratedata",
+            "https://satijalab.org/seurat/archive/v4.3/integration_rpca"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc08-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab1-dde68e8ed607"
+            },
+            "sc08-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab1-faab379d951b"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In Seurat's RPCA integration (FindIntegrationAnchors with reduction='rpca' followed by IntegrateData), what are the default k.anchor, k.weight and dims, and how do anchor weights correct the expression matrix? ANSWER: Defaults: FindIntegrationAnchors uses dims=1:30, k.anchor=5, k.filter=200, k.score=30, anchor.features=2000, l2.norm=TRUE and max.features=200. IntegrateData uses dims=1:30, k.weight=100 and sd.weight=1, and weight.reduction=NULL, so a new PCA is computed to get the weights. Before anchoring, RPCA needs a PCA run on each batch separately, using scaled shared features. It projects each dataset into the other's PCA space and keeps mutual nearest neighbours as anchors. Anchors are filtered with k.filter in the max.features space, then scored by shared-neighbour overlap with k.score; scores are clipped at the 0.01 and 0.90 quantiles and rescaled to 0-1. Correction: for each query cell, the weight of each of its k.weight nearest anchors is (1 - distance to the anchor / distance to the k.weight-th anchor) x anchor score. A Gaussian kernel with bandwidth sd.weight is applied and the weights are normalised over the k.weight anchors. The integration matrix holds the expression difference between the two cells of each anchor pair. Multiplying the weights by this matrix gives a transformation matrix, which is subtracted from the query's expression matrix. With several batches this is done pairwise in an order set by a guide tree; the distance between two datasets is the cell count of the smaller one divided by the number of anchors between them. With LogNormalize, the result is a corrected 'integrated' data assay over the anchor features. The vignette calls RPCA more conservative than CCA and says raising k.anchor (e.g. to 20) strengthens alignment. My own reading, not stated in the docs: because every cell uses its 100 nearest anchors, small populations such as endothelial and mural cells with few anchors of their own may borrow correction vectors from anchors of other cell types. HOW SURE: high. SOURCES: https://satijalab.org/seurat/reference/findintegrationanchors, https://satijalab.org/seurat/reference/integratedata, https://satijalab.org/seurat/archive/v4.3/integration_rpca."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc08-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc08-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc08-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc08-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc08-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 100.76312879100442,
+      "cost_usd": 0.3914188,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 52.083137042005546,
+      "cost_usd": 0.177289,
+      "error": null
+    },
+    {
+      "agent": "sc08-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 295.2232178749982,
+      "cost_usd": 0.3545008,
+      "error": null
+    },
+    {
+      "agent": "sc08-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 378.97447212506086,
+      "cost_usd": 0.21766860000000005,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 45.11636266601272,
+      "cost_usd": 0.21059239999999999,
+      "error": null
+    },
+    {
+      "agent": "sc08-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 36.43078958301339,
+      "cost_usd": 0.20670920000000004,
+      "error": null
+    },
+    {
+      "agent": "sc08-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 197.03448600007687,
+      "cost_usd": 0.2034278,
+      "error": null
+    },
+    {
+      "agent": "sc08-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 391.789292249945,
+      "cost_usd": 0.2554438,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

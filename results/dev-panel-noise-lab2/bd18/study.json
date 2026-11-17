@@ -1,0 +1,185 @@
+{
+  "study": "bd18",
+  "status": "replicated",
+  "final": {
+    "agent": "bd18-team-a",
+    "team": "team-a",
+    "round": "analysis",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd18/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd18-library": "opus",
+    "bd18-team-a": "opus",
+    "bd18-team-b": "opus",
+    "bd18-team-c": "opus",
+    "bd18-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd18-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd18/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd18-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd18/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd18-team-a",
+        "bd18-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Testing whether targeted-panel TMB correlates with whole-exome (WES) TMB needs both measurements on the same tumours. Before any analysis, search every clinical column header and description line, the gene panel matrix, and the mutation file (e.g. sequencing-assay or centre fields) for any WES/WXS/exome assay or a second TMB value from another platform, and count how many samples have both. Use only values present in the given tables; do not bring in published or literature TMB values as data.",
+      "from": [
+        "sl-dev-panel-noise-lab2-3440c486ad04"
+      ],
+      "reason": "Whether a paired WES reference exists decides whether the hypothesis can be tested at all, so the teams must establish data provenance before picking a label.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-cf9bd1643faf"
+      }
+    },
+    {
+      "text": "Columns such as TMB_NONSYNONYMOUS and MUTATION_RATE in the sample table, and mutation counts recomputed from data_mutations.txt, can all come from the same targeted-panel calls. Correlating them with each other is circular and says nothing about agreement with WES. Confirm where each TMB-like column comes from (using its description line and the panel matrix) before treating any of them as an exome reference.",
+      "from": [
+        "sl-dev-panel-noise-lab2-c00c3993acde"
+      ],
+      "reason": "This prevents a false 'correlation' result produced by comparing a panel-derived quantity with itself.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-da469d2a130c"
+      }
+    },
+    {
+      "text": "If paired panel and WES TMB values exist, make rank or log-scale correlation the primary test: Spearman on raw values and Pearson on log(TMB+1). A raw Pearson r can be driven by a few ultra-high-TMB outliers, so rerun the test without the top outliers. Report agreement (Bland-Altman bias and limits, slope against the identity line) separately, because the hypothesis is about correlation, not agreement.",
+      "from": [
+        "sl-dev-panel-noise-lab2-2ca2e1fa9c60"
+      ],
+      "reason": "The choice of statistic can flip the conclusion when the data are skewed. This sets how a correlation hypothesis should be tested.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-33c2130387c6"
+      }
+    },
+    {
+      "text": "Samples may have been sequenced on different MSK-IMPACT panel versions with different territories (about 0.897, 1.016 and 1.139 Mb for IMPACT341, 410 and 468). Raw mutation counts are not comparable across versions. Tabulate the panel per sample, normalise counts per Mb using the panel-specific size or adjust for panel version, and only then compare with anything else.",
+      "from": [
+        "sl-dev-panel-noise-lab2-5287b06867b7"
+      ],
+      "reason": "Mixing panel versions without normalising adds artificial noise or bias to any TMB comparison.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-4f83569d16f1"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 0,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed that because a panel TMB variable exists but no exome-based TMB does, the data hold no 'relevant variables' for the hypothesis. I checked this independently: every sample ID ends in IM3, IM5 or IM6 (56, 164 and 20 samples), all 240 samples are 'Matched' panel samples, and no file contains 'exome', 'WES' or 'WXS'. The assumption holds."
+    ],
+    "unused_evidence": [
+      "The patient-level columns (PFS, DURABLE_CLINICAL_BENEFIT, treatment) and the PDL1_SCORE, FGA, CNA, segment and SV files were not used. None of them is an exome measurement or a second TMB estimate, so leaving them out cannot change whether panel TMB can be compared with WES TMB. They exist for a different question (immunotherapy response)."
+    ],
+    "unresolved_weak_points": [
+      "Each team's stated weak point is only that a grader might expect the published answer. That is not an analytic weakness in the data, and a director question cannot resolve it. Both teams did resolve the real risk: they did not treat MUTATION_RATE and TMB_NONSYNONYMOUS as an independent reference (Team A found their ratio is about 1.03 to 1.08 within each panel)."
+    ],
+    "second_readings": [
+      "The hypothesis could be read as a general claim about panel versus exome TMB, not a claim about this cohort. Even so, the data can test it only if exome TMB is present, and it is not. Comparing TMB across IMPACT panel versions is not the same as comparing a panel with WES, so this reading does not lead to a testable quantity."
+    ],
+    "verdict": "I trust the agreed 'Not verifiable' answer highly. My own checks of sample-ID suffixes, SOMATIC_STATUS and a search of every file confirm there is only targeted-panel data and no exome reference. The only other TMB-like column is derived from the same panel calls, so no check I could ask for would change the label.",
+    "questions": []
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd18-team-b",
+      "round": "analysis",
+      "reason": "agreed with bd18-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd18-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 53.9294635419501,
+      "cost_usd": 0.23332920000000004,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 38.71107579197269,
+      "cost_usd": 0.1576428,
+      "error": null
+    },
+    {
+      "agent": "bd18-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 31.626787708955817,
+      "cost_usd": 0.1112172,
+      "error": null
+    },
+    {
+      "agent": "bd18-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 36.46264237491414,
+      "cost_usd": 0.150303,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 46.39341291598976,
+      "cost_usd": 0.205063,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

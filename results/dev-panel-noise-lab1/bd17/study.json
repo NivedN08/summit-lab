@@ -1,0 +1,441 @@
+{
+  "study": "bd17",
+  "status": "replicated",
+  "final": {
+    "agent": "bd17-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd17/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd17-library": "opus",
+    "bd17-team-a": "opus",
+    "bd17-team-b": "opus",
+    "bd17-team-c": "opus",
+    "bd17-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd17-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd17/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd17-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd17/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd17-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd17/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd17-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd17/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd17-team-a",
+        "bd17-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd17-team-a",
+        "bd17-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Judge ERBB2 loss from within-patient pairs, not from unpaired groups. A post-trastuzumab sample without ERBB2 amplification shows acquired loss only if the same patient has a matched pre-treatment sample that is ERBB2-amplified. Pair samples by PATIENT_ID, using IMPACT_PRE_POST (PRE-TX / POST-TX) and sample-name suffixes (e.g. -P1/-P2/-M1a, -T01/-T02). Count the patients who are amplified pre-treatment and have a post-progression sample, then report how many of those pairs go from amplified to non-amplified.",
+      "from": [
+        "sl-dev-panel-noise-lab1-7b92b4238a1d"
+      ],
+      "reason": "Comparing unpaired pre and post frequencies mixes up acquired loss with tumours that were never amplified. Pairing defines what a selection event is.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-c66e54e4d1ee"
+      }
+    },
+    {
+      "text": "Acquired trastuzumab resistance means the patient first benefited and then progressed on trastuzumab, with the post sample taken after progression. Restrict the analysis to patients whose treatment fields (e.g. TREATMENT, DETAILS_FIRST_LINE_COMMENTS) mention trastuzumab, who had HER2_RESPONSE CR/PR/SD, and who have a POST-TX sample. Confirm progression with HER2_TTP_ON_1ST_LINE_MONTHS and HER2_TX_STATUS. Exclude primary-refractory cases (best response POD) or analyse them separately, and state how many were excluded and why.",
+      "from": [
+        "sl-dev-panel-noise-lab1-4e0abfeffcf8"
+      ],
+      "reason": "This sets the population that the hypothesis is actually about. Including primary non-responders or samples taken before progression would dilute or distort any association.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-30f74973e9ff"
+      }
+    },
+    {
+      "text": "In data_cna.txt only the value 2 means high-level ERBB2 amplification. A value of 1 is a shallow, often broad gain and should be treated as not amplified. Fix one definition in advance (data_cna == 2, cross-checked against HER2_IMPACT = AMP and HER2_IMPACT_LR in the sample table), list the samples where the sources disagree, and run a sensitivity analysis on the continuous log ratio.",
+      "from": [
+        "sl-dev-panel-noise-lab1-fda0fefdc2e2"
+      ],
+      "reason": "Counting gains as amplifications would misclassify HER2 status and therefore the loss events.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-680d58493329"
+      }
+    },
+    {
+      "text": "Low tumour purity or heterogeneous amplification can make a post-progression panel sample look ERBB2-negative when it is not. For each candidate loss, check the continuous ERBB2 log2 ratio in data_cna_hg19.seg (chr17 about 39.68-39.73 Mb in hg19) and HER2_IMPACT_LR. Use FGA and mutation VAFs (t_alt_count/(t_alt_count+t_ref_count)) as a purity proxy, and compare with IHC_HER2/HER2_FISH where these are available. Flag losses in low-purity or flat-genome samples as indeterminate, and give results with and without them.",
+      "from": [
+        "sl-dev-panel-noise-lab1-e438e6e0e87e"
+      ],
+      "reason": "False-negative calls would inflate the apparent loss rate. Checking them separates real losses from artefacts.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-ea2b76aeefc2"
+      }
+    },
+    {
+      "text": "Samples were profiled on different panels (IMPACT341/410/468 and non-IMPACT YJ-her research samples). Use data_gene_panel_matrix.txt to confirm ERBB2 was profiled in both samples of each pair, and check that YJ-her samples have non-NA ERBB2 values in data_cna.txt. Drop pairs where ERBB2 is not profiled in both samples, and note any platform difference within a pair as a possible source of discordance.",
+      "from": [
+        "sl-dev-panel-noise-lab1-46201402e50f"
+      ],
+      "reason": "A gene that was not covered, or a difference between platforms, can look like a loss of amplification.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-5c25ef230161"
+      }
+    },
+    {
+      "text": "An ERBB2 change between two single biopsies may reflect spatial heterogeneity (a different region or metastatic site was sampled) rather than treatment-driven selection. For patients with several regions, check whether pre-treatment regions already disagree on ERBB2 amplification, and compare SITE_OF_TISSUE_BIOPSY and SAMPLE_TYPE between paired samples. An ERBB2-negative region present before treatment, followed by a non-amplified tumour after progression, is the pattern of a pre-existing subclone being selected. Treat amplified-to-non-amplified shifts across different sites with caution.",
+      "from": [
+        "sl-dev-panel-noise-lab1-f74d782223d2"
+      ],
+      "reason": "This determines whether an observed loss can be read as subclonal selection, which is the specific claim in the hypothesis.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-87851629250a"
+      }
+    },
+    {
+      "text": "A non-significant test in a handful of pairs is absence of evidence. It does not support 'no association'. Report the counts (k of n eligible pairs that go from amplified to non-amplified) with an exact binomial confidence interval. Where possible, compare with pairs not treated with trastuzumab, or use McNemar's test on paired pre/post status. Recurrent loss in trastuzumab-resistant pairs that does not appear in controls would be evidence against a 'not associated' claim.",
+      "from": [
+        "sl-dev-panel-noise-lab1-39ce616cd5bd"
+      ],
+      "reason": "The hypothesis is a negative claim, so reasoning that turns a small-n p-value into support for it would decide the label wrongly.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-0dcc6cda4efb"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat a few amp->non-amp transitions (2 of about 20-22 pairs) as evidence that the hypothesis is false. Without a comparator, nothing shows that this is more often than sampling noise, site heterogeneity or panel discordance would give.",
+      "Both assume the PRE-TX/POST-TX flag is timed relative to trastuzumab and that every POST-TX sample was taken after progression on trastuzumab. Neither confirmed timing from treatment-status, TTP or line-of-therapy fields.",
+      "Both assume the post-treatment sample stands for the dominant resistant tumour. One loss event is cross-site (liver met -> GEJ primary), so spatial sampling, not selection over time, could explain it.",
+      "Both assume that a single binary ERBB2 call (HER2_IMPACT/data_cna==2) is enough to show 'selection for a subclone', and that a subclone is the same as loss in a bulk sample."
+    ],
+    "unused_evidence": [
+      "Trastuzumab-treated patients with POST-TX samples whose pre-TX sample is ERBB2-non-amplified, and non-trastuzumab POST-TX pairs: these are a possible comparator for how often ERBB2 status flips without trastuzumab pressure. Team A said no control pairs had pre-TX amp, but did not use them to estimate a general discordance rate between paired samples.",
+      "Patients with more than one pre-treatment region (multi-region suffixes P1/P2/P3, M1/M2): these could show pre-existing ERBB2-negative subclones, which is what 'selection for a subclone' needs. Neither team reported them.",
+      "Alternative resistance alterations in data_cna, data_mutations and data_sv (MET/EGFR/KRAS/CCNE1/PIK3CA amplification or mutation, ERBB2 SVs/mutations). Neither team tabulated these, so the share of resistance tied to ERBB2-negative selection against other mechanisms is unknown.",
+      "HER2_TTP_ON_1ST_LINE_MONTHS / HER2_TX_STATUS (5 still ON TREATMENT) / Somatic Status (Matched vs Unmatched) / Retrospective vs Prospective cohort. These could change who counts as 'acquired resistance' and how reliable the calls are."
+    ],
+    "unresolved_weak_points": [
+      "Team A: its weakest point is that the label rests on 2 loss events with no control group. It reported a CI but did not resolve this. One of its 2 events is cross-site, which it flagged but kept.",
+      "Team B: its paired Wilcoxon on log ratios is non-significant (p=0.20) and it has no control. It still read the result as evidence of association. It lowered confidence but did not test against a null rate.",
+      "Neither team settled whether 2/20 counts as an 'association' or as a rare event consistent with no association. That is the step the label depends on."
+    ],
+    "second_readings": [
+      "'Associated with acquired resistance' could mean comparing resistant against non-resistant (or treated against untreated) patients. Under that reading, a single-arm count of losses without a comparator may leave the hypothesis unsettled rather than contradicted.",
+      "'Selection for a subclone lacking ERBB2 amplification' could mean a pre-existing heterogeneous subclone that expands. That needs evidence of pre-treatment heterogeneity, not only bulk loss.",
+      "The quantity could be the share of resistant cases with ERBB2 loss (a mechanism frequency) or whether loss predicts time to progression/response. These two readings could lead to different labels."
+    ],
+    "verdict": "I trust the agreed answer moderately at most. Both teams call the hypothesis contradicted on 2 loss events, one of them cross-site, with no comparator or background discordance rate. Both named this weakness and neither resolved it, so the choice between 'False' and 'cannot settle' has not been tested.",
+    "questions": [
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Estimate a background discordance rate for ERBB2 status between paired samples from any within-patient pairs available, e.g. multi-region pre-TX pairs or same-time pairs from different sites, including non-trastuzumab and pre-TX-non-amplified patients. Is 2/20 clearly above that rate, and does the answer change how you justify the label?",
+        "from": [
+          "sl-dev-panel-noise-lab1-442c662cf373"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-a9b4ae0b4694"
+      },
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For every patient with two or more pre-treatment regions, check whether ERBB2 amplification was already discordant before trastuzumab. Without that, does a single same-site loss (YJ-her-010) separate 'selection of a pre-existing subclone' from other explanations, and does your method need to say so?",
+        "from": [
+          "sl-dev-panel-noise-lab1-442c662cf373"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-88f701da7009"
+      },
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Confirm for each of your 20 pairs that the POST-TX sample came after progression on trastuzumab: use HER2_TX_STATUS (5 samples are ON TREATMENT), HER2_TTP_ON_1ST_LINE_MONTHS and the first-line treatment text. Does excluding pairs whose timing cannot be confirmed change k/n?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-c13e11a514c8"
+      },
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate newly acquired MET/EGFR/KRAS/CCNE1/PIK3CA alterations (data_cna, data_mutations, data_sv) in post-progression samples, for pairs with and without ERBB2 loss. Does it change whether ERBB2-negative selection is one of the resistance mechanisms or the main one, and does that affect your label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-873f1ac09792"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your paired test is non-significant and you have no control. Compute the rate of ERBB2 status discordance in any within-patient pairs not exposed to trastuzumab, or between same-time multi-region samples, and compare it with 2/22. Does the result change whether your data contradict 'not associated' or cannot settle it?",
+        "from": [
+          "sl-dev-panel-noise-lab1-638ee1d8e650"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-cb691ff8d810"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Did you restrict to acquired resistance (HER2_RESPONSE CR/PR/SD, POST-TX taken after progression)? Rerun the pair count after excluding POD best responders and ON TREATMENT cases, and report whether k/n or the label changes.",
+        "from": [
+          "sl-dev-panel-noise-lab1-638ee1d8e650"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-927709577da1"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: For P-0000444 and YJ-her-010, compare SITE_OF_TISSUE_BIOPSY, SAMPLE_TYPE, FGA and gene panel between the pre and post samples. If one loss is cross-site, does the evidence for selection over time still rest on more than one case, and does your method change?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-eef15238f75e"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your 3 IHC/FISH-negative conversions and 2 genomic losses: are they the same patients? Check concordance between HER2_IHC_OR_FISH and HER2_IMPACT in post samples. Does choosing which HER2 measure defines 'lacking amplification' change your count?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-52578db8efea"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In paired pre/post-treatment tumour genomics studies, how do analysts decide that a change in a biomarker (e.g. loss of a gene amplification) is 'associated with' acquired drug resistance rather than explained by spatial heterogeneity or assay discordance? What comparators or background discordance rates are usually used?",
+          "why": "Both teams' label depends on whether a few loss events without a control count as association. Neither showed knowledge of a standard comparator.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "What is the reported rate of discordance in ERBB2/HER2 amplification status between synchronous primary and metastatic samples, or between multiple regions of the same untreated gastroesophageal tumour?",
+          "why": "A background discordance rate would show whether the observed post-treatment loss rate is above what sampling alone produces.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How do targeted-panel NGS copy-number pipelines (e.g. ones that report a fold-change or log ratio per gene) set the threshold for calling a focal gene amplification, and how does tumour purity affect false-negative amplification calls?",
+          "why": "Losses are defined by a binary panel call. Whether a near-threshold or low-purity sample could be a false loss affects whether the few events are real.",
+          "passed": false,
+          "reasons": [
+            "contains another team's value for \"label\""
+          ]
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In paired pre/post-treatment tumour genomics studies, how do analysts decide that a change in a biomarker (e.g. loss of a gene amplification) is 'associated with' acquired drug resistance rather than explained by spatial heterogeneity or assay discordance? What comparators or background discordance rates are usually used?",
+          "answer": "The key paired studies in HER2-positive gastroesophageal cancer do not use a concurrent untreated control arm. Pietrantonio et al. 2016 (22 pairs, 32% loss of HER2 positivity) and GASTHER3 2018 (48 pairs, 29.1% loss) instead (1) apply strict clinical criteria for acquired resistance (initial benefit, then progression on trastuzumab, with the biopsy taken after progression); (2) use a strict, prespecified definition of HER2 status (IHC3+ or IHC2+/ISH+) at both time points; (3) compare the loss rate implicitly with the known background primary-vs-metastasis discordance in untreated disease, which is about 0.4-7% overall and lower for negative conversion; and (4) look for heterogeneity directly. GASTHER3 found ISH-defined HER2 genetic heterogeneity in 2.9% of baseline vs 21.9% of post-progression samples, and loss predicted no response to second-line T-DM1. They read a pre-existing heterogeneous or focal amplification followed by a HER2-negative post-progression tumour as selection of an ERBB2-non-amplified subclone. A loss rate several times above background is taken as treatment-associated. Formal tests such as McNemar's test or a control cohort are recommended but rarely used. The web does not show a single formal standard comparator.",
+          "sources": [
+            "https://doi.org/10.1002/ijc.30408",
+            "https://pubmed.ncbi.nlm.nih.gov/30386954/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5466678/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd17-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-32e354551ca7"
+            },
+            "bd17-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-edbef9b67131"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In paired pre/post-treatment tumour genomics studies, how do analysts decide that a change in a biomarker (e.g. loss of a gene amplification) is 'associated with' acquired drug resistance rather than explained by spatial heterogeneity or assay discordance? What comparators or background discordance rates are usually used? ANSWER: The key paired studies in HER2-positive gastroesophageal cancer do not use a concurrent untreated control arm. Pietrantonio et al. 2016 (22 pairs, 32% loss of HER2 positivity) and GASTHER3 2018 (48 pairs, 29.1% loss) instead (1) apply strict clinical criteria for acquired resistance (initial benefit, then progression on trastuzumab, with the biopsy taken after progression); (2) use a strict, prespecified definition of HER2 status (IHC3+ or IHC2+/ISH+) at both time points; (3) compare the loss rate implicitly with the known background primary-vs-metastasis discordance in untreated disease, which is about 0.4-7% overall and lower for negative conversion; and (4) look for heterogeneity directly. GASTHER3 found ISH-defined HER2 genetic heterogeneity in 2.9% of baseline vs 21.9% of post-progression samples, and loss predicted no response to second-line T-DM1. They read a pre-existing heterogeneous or focal amplification followed by a HER2-negative post-progression tumour as selection of an ERBB2-non-amplified subclone. A loss rate several times above background is taken as treatment-associated. Formal tests such as McNemar's test or a control cohort are recommended but rarely used. The web does not show a single formal standard comparator. HOW SURE: medium. SOURCES: https://doi.org/10.1002/ijc.30408, https://pubmed.ncbi.nlm.nih.gov/30386954/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5466678/."
+        },
+        {
+          "question": "What is the reported rate of discordance in ERBB2/HER2 amplification status between synchronous primary and metastatic samples, or between multiple regions of the same untreated gastroesophageal tumour?",
+          "answer": "Background discordance is low. A 2017 meta-analysis gives pooled primary-vs-metastasis discordance of 7% (95% CI 5-10%) with the strict definition (6.2% vs 12.2% for strict vs broad definitions). Kim et al. (FISH, 250 paired primary/metastasis cases, synchronous and metachronous) found 2.8% discordant. Only 0.4% (1/250) were negative conversions (amplified primary, non-amplified metastasis) and 2.4% were positive conversions; 6 of the 7 discordant cases had heterogeneous amplification in the primary. Across three regions of 325 untreated primaries, 2.5% showed heterogeneous amplification against 8.3% homogeneous, so roughly a quarter of amplified tumours were regionally heterogeneous. Reviews quote a 1-14% range. Post-trastuzumab loss rates (29-69%) are far above this sampling background.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5466678/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3267049/",
+            "https://pubmed.ncbi.nlm.nih.gov/30386954/"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd17-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-f84ab9fc4782"
+            },
+            "bd17-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-752c0cce633c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What is the reported rate of discordance in ERBB2/HER2 amplification status between synchronous primary and metastatic samples, or between multiple regions of the same untreated gastroesophageal tumour? ANSWER: Background discordance is low. A 2017 meta-analysis gives pooled primary-vs-metastasis discordance of 7% (95% CI 5-10%) with the strict definition (6.2% vs 12.2% for strict vs broad definitions). Kim et al. (FISH, 250 paired primary/metastasis cases, synchronous and metachronous) found 2.8% discordant. Only 0.4% (1/250) were negative conversions (amplified primary, non-amplified metastasis) and 2.4% were positive conversions; 6 of the 7 discordant cases had heterogeneous amplification in the primary. Across three regions of 325 untreated primaries, 2.5% showed heterogeneous amplification against 8.3% homogeneous, so roughly a quarter of amplified tumours were regionally heterogeneous. Reviews quote a 1-14% range. Post-trastuzumab loss rates (29-69%) are far above this sampling background. HOW SURE: high. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC5466678/, https://pmc.ncbi.nlm.nih.gov/articles/PMC3267049/, https://pubmed.ncbi.nlm.nih.gov/30386954/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd17-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd17-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd17-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd17-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd17-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 117.44960549997631,
+      "cost_usd": 0.4770637999999999,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 100.15763737505767,
+      "cost_usd": 0.17571820000000002,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 78.16256150009576,
+      "cost_usd": 0.24691240000000003,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 105.1740220830543,
+      "cost_usd": 0.3948226,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 105.64775725000072,
+      "cost_usd": 0.4033362,
+      "error": null
+    },
+    {
+      "agent": "bd17-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 76.74760562495794,
+      "cost_usd": 0.4052984,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 101.63103020796552,
+      "cost_usd": 0.3197964,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 121.71599054092076,
+      "cost_usd": 0.6396432000000001,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,190 @@
+{
+  "study": "bd11",
+  "status": "replicated",
+  "final": {
+    "agent": "bd11-team-a",
+    "team": "team-a",
+    "round": "analysis",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd11/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd11-library": "opus",
+    "bd11-team-a": "opus",
+    "bd11-team-b": "opus",
+    "bd11-team-c": "opus",
+    "bd11-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd11-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd11/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd11-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd11/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd11-team-a",
+        "bd11-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Before any heterogeneity analysis, confirm which cancers the cohort actually contains: tabulate CANCER_TYPE, CANCER_TYPE_DETAILED and ONCOTREE_CODE in data_clinical_sample.txt, and grep every file for 'renal', 'kidney', 'CCRCC' and 'RCC'. The library's inspection found only colorectal, small bowel and unknown-primary cancers (an IBD/colitis-associated cohort, with no CCRCC code). Check this yourself. Heterogeneity seen in tumours of other types says nothing direct about clear cell renal cell carcinoma, and the hypothesis is about ccRCC only.",
+      "from": [
+        "sl-dev-panel-noise-lab1-5e8a8c9f102b"
+      ],
+      "reason": "Whether the target population is present at all decides whether any ITH analysis is relevant to the claim. Teams have to check it first.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-f40e520b2484"
+      }
+    },
+    {
+      "text": "Spatial intratumor heterogeneity is measured by sequencing several regions of the same tumour. With a single biopsy, subclones are missed and mutations look clonal. Count samples per PATIENT_ID (the library saw 171 patients with 1 sample, 3 with 2 and 1 with 3), and use SAMPLE_TYPE to check whether repeat samples come from the same primary tumour or are primary/metastasis pairs. Primary-versus-metastasis differences reflect metastatic/temporal heterogeneity, not intratumor heterogeneity. Because the claim is universal ('all tumours'), refuting it would require a tumour shown to be homogeneous after adequate multi-region sampling. Not detecting subclones in one or a few samples is not evidence of homogeneity.",
+      "from": [
+        "sl-dev-panel-noise-lab1-32f920aeef6b",
+        "sl-dev-panel-noise-lab1-e26fe300b32f"
+      ],
+      "reason": "This defines what kind of evidence could support or refute a universal ITH claim. It also stops teams from reading single-sample or primary-vs-met data as proof of homogeneity or heterogeneity.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-b71f1b5bf2d5"
+      }
+    },
+    {
+      "text": "The samples come from targeted panels (e.g. FoundationOne; see data_gene_panel_matrix.txt and GENE_PANEL), which give too few mutations per sample for reliable subclonal clustering, and different panels cover different genes. If you try to infer subclonality from VAF within a sample, correct for purity and local copy number (TUMOR_PURITY, coverage, t_alt_count/t_ref_count, CNA at the locus) to get cancer cell fractions. If purity or depth is missing or inadequate, treat ITH as not estimable rather than calling mutations subclonal from raw VAF.",
+      "from": [
+        "sl-dev-panel-noise-lab1-6122e9901114",
+        "sl-dev-panel-noise-lab1-ce265ad0e06c"
+      ],
+      "reason": "This stops teams from reading raw panel VAFs as evidence of subclonal structure.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-bbc5f20b5664"
+      }
+    },
+    {
+      "text": "Clean the mutation calls before using them for any clonal/private comparison. Tabulate the status/filter columns and Center in data_mutations.txt and exclude FAILED or filtered rows. Also check SOMATIC_STATUS and Matched_Norm_Sample_Barcode for tumour-only or pooled-normal calling. Those let germline variants (VAF ~0.5/1.0, often with dbSNP IDs) pass as somatic, so filter them out using population frequencies.",
+      "from": [
+        "sl-dev-panel-noise-lab1-56669f4b2717",
+        "sl-dev-panel-noise-lab1-881f45936596"
+      ],
+      "reason": "Failed calls and germline variants inflate private mutations and distort clonality, which would bias any ITH comparison.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-275901518267"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 0,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed that a cohort with no ccRCC samples gives no evidence either way, so the label is Not verifiable and not False. That follows the task's own definition and is reasonable.",
+      "Both treated the CANCER_TYPE/ONCOTREE_CODE fields as reliable for deciding scope. They did not check free-text histology or site fields in the patient table for a second primary."
+    ],
+    "unused_evidence": [
+      "The SPECIAL_HISTOLOGY, PRIMARY_HISTOLOGY, TISSUE_SEQUENCED and METASTATIC_SITE free-text fields. My look at them shows only mucinous, signet-ring and differentiation terms and gut, liver, lung or gynaecological sites, so they cannot change the answer.",
+      "The seg/CNA, SV and timeline files. They describe colitis-associated colorectal and small-bowel tumours and cannot inform ccRCC ITH."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named one weak point: whether 'False' could be meant. Both settled it by the task's definition of Not verifiable, because no relevant variable for the hypothesis population exists. My grep hits for renal terms are all gene names (ERCC*, XRCC2) or the oncotree code SRCCR, which supports what the teams found."
+    ],
+    "second_readings": [
+      "Someone could read the hypothesis as being about ITH in general rather than about ccRCC. But the claim is explicitly limited to ccRCC, and there is no multi-region sampling here either (only 4 patients have more than one sample, and those are primary/met pairs). Neither reading gives a testable variable."
+    ],
+    "verdict": "I trust the agreed answer, Not verifiable, highly. I checked the cohort myself: 180 samples of colorectal, small-bowel or unknown-primary tumours, with no renal sample anywhere; every renal-term match is a gene name or SRCCR. There is also no multi-region design, so no check I could set would change the label, and I ask no questions.",
+    "questions": []
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd11-team-b",
+      "round": "analysis",
+      "reason": "agreed with bd11-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd11-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 72.06658874999266,
+      "cost_usd": 0.271608,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 55.13821812509559,
+      "cost_usd": 0.13823000000000002,
+      "error": null
+    },
+    {
+      "agent": "bd11-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 35.87020124995615,
+      "cost_usd": 0.1229632,
+      "error": null
+    },
+    {
+      "agent": "bd11-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 50.655612458940595,
+      "cost_usd": 0.1841754,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 82.22367304202635,
+      "cost_usd": 0.18777280000000002,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

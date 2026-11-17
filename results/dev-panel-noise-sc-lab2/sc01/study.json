@@ -1,0 +1,461 @@
+{
+  "study": "sc01",
+  "status": "replicated",
+  "final": {
+    "agent": "sc01-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab2/sc01/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "sc01-library": "opus",
+    "sc01-team-a": "opus",
+    "sc01-team-b": "opus",
+    "sc01-team-c": "opus",
+    "sc01-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "sc01-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab2/sc01/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "mural_nuclei": 0,
+        "interpretation": 3
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc01-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab2/sc01/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "mural_nuclei": 0,
+        "interpretation": 3
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc01-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab2/sc01/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "mural_nuclei": 0,
+        "interpretation": 5
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc01-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab2/sc01/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "mural_nuclei": 0,
+        "interpretation": 5
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc01-team-a",
+        "sc01-team-b"
+      ],
+      "fields": {
+        "mural_nuclei": true,
+        "interpretation": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc01-team-a",
+        "sc01-team-b"
+      ],
+      "fields": {
+        "mural_nuclei": true,
+        "interpretation": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Compute panel scores on the full log1p-normalized matrix (keep it in adata.raw or a layer before HVG subsetting/scaling), not on adata.X after subsetting to 3,000 HVGs or after scaling. Confirm every panel gene (e.g. Ncmap) is present in var_names and report any that are missing; average only over genes present.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-a50cbc293c49"
+      ],
+      "reason": "Scoring on HVG-subset or z-scaled data silently drops marker genes or produces negative means, changing which lineage wins per cluster and therefore the nuclei count.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-d4bc9bf41bca"
+      }
+    },
+    {
+      "text": "Leiden output depends on neighbor graph, implementation flavor and random seed. Use scanpy defaults for neighbors (n_neighbors=15), record scanpy version, Leiden flavor and random_state=0, and re-run with 2-3 seeds to check whether the per-lineage nuclei count is stable. Keep resolution at 0.8 as specified.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-aaa3c28bf872"
+      ],
+      "reason": "Small-population cluster boundaries shift between runs, so the reported count needs a documented, reproducible configuration and a stability check.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-abe6753a7437"
+      }
+    },
+    {
+      "text": "An unscaled mean of log-normalized expression over a 4-5 gene panel is dominated by highly or broadly expressed genes, so a single strongly specific gene can be outvoted by low-expressed panel-mates. Print the full cluster x gene mean table, not only panel averages; for each cluster list the winning and runner-up lineage and the margin; as a sensitivity check, re-assign using per-gene z-scores across clusters or fraction-expressing and see whether labels change. Report the task-specified unscaled result as the answer.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-da54e1403d14"
+      ],
+      "reason": "Needed to tell whether the reported lineage assignment reflects cell identity or the arithmetic of panel averaging, which is central to choosing the interpretation.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-f7b7f059cba1"
+      }
+    },
+    {
+      "text": "snRNA-seq captures nuclear RNA; short or mainly cytoplasmic transcripts (often cytoskeletal/contractile genes such as Acta2) are detected at much lower levels in nuclei, while long intron-rich genes are favoured. For every panel gene compute the fraction of nuclei with >0 counts and its maximum cluster mean, and flag genes near zero in every cluster; examine the mural genes Rgs5, Notch3, Pdgfrb and Acta2 individually.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-1bb59e70c4d6"
+      ],
+      "reason": "Gene-level nuclear detection differences can bias a whole panel's score low, which bears directly on how to interpret the lineage count.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-1272ed5591bc"
+      }
+    },
+    {
+      "text": "Before attributing a missing or small lineage to rarity, tissue dissociation/nuclear-isolation loss, or insufficient clustering resolution, check whether nuclei expressing that lineage's markers actually exist: count nuclei high in Rgs5 (and Notch3, Kcnj8, Higd1b) and see whether they form a coherent cluster and how large it is. DRG snRNA atlases routinely recover vascular SMC/pericytes, and snRNA-seq generally reduces rather than increases dissociation bias against perivascular cells.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-0eda6b1e0895"
+      ],
+      "reason": "Distinguishes biological/technical-loss explanations from method explanations using evidence in the data rather than assumption.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-9ccf339f20d3"
+      }
+    },
+    {
+      "text": "Pdgfrb, Acta2 and Cspg4 are also expressed in fibroblasts, so mural and fibroblast panels overlap. In the cluster(s) where Rgs5/Notch3 are highest, check which lineage that cluster was assigned to and whether fibroblast genes (Col1a1, Col1a2, Dcn, Pdgfra) are high or low there; also inspect discriminating pericyte/SMC genes (Kcnj8, Vtn, Higd1b, Abcc9, Ndufa4l2, Myh11). Fibroblast absorption is only supported if mural-marker-high nuclei sit inside a fibroblast-assigned cluster with high fibroblast genes.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-a05f51363042"
+      ],
+      "reason": "Gives a concrete test for the fibroblast-overlap explanation instead of accepting or rejecting it by default.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-1f4ed50bbcf3"
+      }
+    },
+    {
+      "text": "Ambient RNA in droplet snRNA-seq of nervous tissue (mostly neuronal/glial transcripts such as Apoe, Mbp, Snap25, Tubb3) adds a baseline to every nucleus, uniformly inflating panels built from those genes. Check mean expression of neuronal/glial panel genes in clearly non-neuronal clusters; if consistently nonzero, note that those panels get a uniform boost and use relative (z-scored) or fraction-expressing scores as a sensitivity check.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-ad0dd1328e4f"
+      ],
+      "reason": "Ambient contamination can shift argmax away from small lineages and should be considered when explaining assignments.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-85b96c28499b"
+      }
+    },
+    {
+      "text": "First-pass filtered PIP-seq data can still contain doublets and low-quality barcodes; heterotypic doublet clusters show mixed panels and can win an argmax spuriously. Inspect per-cluster median counts/genes and co-expression of mutually exclusive panels (e.g. neuron + macrophage); optionally run scrublet. Flag such clusters in the interpretation but keep the task-specified workflow for the reported count.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-c8c547e11cd6"
+      ],
+      "reason": "Prevents mislabelled doublet clusters from being mistaken for a real lineage signal, without altering the prescribed workflow.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-452439f8754f"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": true,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat Leiden seed 0 at resolution 0.8 as 'the' result, and take the 0 count as stable. But Team A reports 0 at seeds 0-2, while Team B reports a separate 91-nucleus mural cluster at seed 2. The teams' pipelines differ: Team B scaled before PCA and Team A apparently did not. Their endothelial clusters also differ (A: cluster 16, n=459; B: cluster 12, n=616). So the count depends on pipeline details the task does not fix, and neither team has reconciled this.",
+      "Both teams assume that the per-gene detection fractions they computed over all nuclei (e.g. Acta2 0.8%, Notch3 4.1%) show poor nuclear detection. For a rare population, a low whole-dataset fraction is expected whatever the detection efficiency. Detection inside the mural-like nuclei was not the measure used. Team B's seed-2 cluster has Notch3 2.68 and Pdgfrb 2.09, which contradicts the claim that Notch3 is poorly detected in nuclei.",
+      "Both teams assume the high-Rgs5 neuron-assigned clusters (A: cluster 22, n=211; B: cluster 27, n=23, and cluster 8) are mural cells outvoted by the panel. Neither tested whether Rgs5 there is neuronal expression (Team A raises this as its weakest point) or whether these are doublets.",
+      "Both teams ran the pipeline on all three samples pooled, with no batch handling. They assume the vascular/mural structure does not depend on sample."
+    ],
+    "unused_evidence": [
+      "obs sample_id / age / replicate (3M, 21M1, 21M2). Neither team checked how the mural-like nuclei (Rgs5+Notch3+Pdgfrb+) are spread across samples, or whether a sample effect decides whether they split from endothelium.",
+      "uns['filtering'] says no doublet, mitochondrial or UMI-outlier filtering was done. Mixed endothelial+mural clusters and Rgs5-high neuron clusters could be doublet- or ambient-driven, and that bears on choosing between interpretations 3, 4 and 5.",
+      "27 duplicate gene symbols were made unique (Team B). Neither team said whether any panel gene, or a mural gene in particular, was duplicated and split by the '-1' suffix.",
+      "Neither team ran resolution 2.0, which is the specific test that answer option 5 names. Team B's seed-2 result (a distinct mural cluster appears) is direct evidence on option 5, and it was not weighed against option 3."
+    ],
+    "unresolved_weak_points": [
+      "Team B: the seed sensitivity (91 vs 0) was reported and flagged but not resolved. Both teams picked interpretation 3, yet Team B's own evidence shows that once mural nuclei form their own cluster, the panel average does assign them to Mural. That points to clustering granularity, not panel deflation, and it was not reconciled with choosing 3.",
+      "Team A: whether cluster 22 (high Rgs5, assigned Neuron) is really mural is left open. True pericyte genes peak in the endothelial cluster instead. So the 'one mural marker high but outvoted' mechanism of option 3 is not shown on a real mural cluster.",
+      "Neither team explained why their seed-2 results differ (Team A: 0, Team B: 91). Until that is explained, the robustness claims of both teams conflict."
+    ],
+    "second_readings": [
+      "Clustering pipeline: the task lists normalize, log1p, HVG, PCA, neighbors, Leiden with no scale step. Team B added scaling. Whether to scale, and whether to subset to HVGs before PCA, are reasonable alternative readings, and they change cluster boundaries for a small population.",
+      "Mean log-normalized expression: this could mean the mean of log1p values (what both teams did) or log of the mean normalized expression (as Seurat AverageExpression does). A tie-break near the margin between endothelial and mural could depend on which one is used.",
+      "'Assess why this result occurs' could ask why the specific clusters carrying mural markers lost the vote (a mechanism tied to the panel) or why mural nuclei did not form their own cluster (a mechanism tied to resolution or granularity). These two readings point to different answer options."
+    ],
+    "verdict": "I trust the count of 0 only moderately: it is the default-seed result, but it depends on the pipeline (scaling) and on the seed, and the teams' seed checks contradict each other. I trust interpretation 3 less. Team B's seed-2 run shows the panel labels mural nuclei correctly once they form their own cluster, which points to a clustering-granularity explanation that neither team tested at resolution 2.0.",
+    "questions": [
+      {
+        "to": "sc01-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Team B reports that Leiden seed 2 at res 0.8 gives a distinct 91-nucleus cluster assigned Mural, but you report 0 at seed 2. Rerun your exact pipeline with and without sc.pp.scale before PCA, at seeds 0-4. Report the mural count for each run, and the size of the endothelial cluster. Does the count depend on the scaling step, and does that change how you report the result?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab2-b969e4d406bb",
+          "sl-dev-panel-noise-sc-lab2-5f7084eb4ba6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-158b40010068"
+      },
+      {
+        "to": "sc01-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: In your endothelial cluster 16, select the nuclei with Rgs5>0 and Notch3>0 and Pecam1==0. Report their number and their mean for each gene of the mural and endothelial panels (including Acta2 detection within this subset). If these nuclei have a mural panel score above their endothelial score, does that show the panel works and the failure comes from cluster merging? And does that change your choice between interpretations 3 and 5?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab2-8967a40bd1e2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-c8ef67600e4f"
+      },
+      {
+        "to": "sc01-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Rerun Leiden at resolution 2.0 (same graph, seeds 0-2) and apply the same panel argmax. Does a Mural-assigned cluster appear, and how many nuclei does it have? Does the result support or rule out interpretation 5?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab2-d1f1725b27b4"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-5fe404ea4460"
+      },
+      {
+        "to": "sc01-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For cluster 22 (Rgs5 2.50, assigned Neuron), report its per-sample composition, its median counts versus other neuron clusters, and the fraction of its nuclei that co-express Rgs5 with Snap25/Rbfox3. If Rgs5 is neuronal or doublet-driven there, does cluster 22 still support the 'one mural marker high but outvoted' mechanism?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab2-b969e4d406bb"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-c4db694ff30a"
+      },
+      {
+        "to": "sc01-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your seed-2 run gives a separate cluster with Notch3 2.68 and Pdgfrb 2.09 that the panel argmax assigns to Mural. Rerun Leiden at resolution 2.0 (seeds 0-2) without changing anything else. Does a Mural-assigned cluster appear consistently? Given that the panel labels isolated mural nuclei correctly, does this evidence favour interpretation 3 or interpretation 5?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab2-5f7084eb4ba6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-179f94d508fc"
+      },
+      {
+        "to": "sc01-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: The task's pipeline does not list a scaling step, and you scaled before PCA. Team A (no scaling, as far as reported) gets 0 at seed 2. Rerun seeds 0-4 without sc.pp.scale and report the mural count per seed. Does dropping scaling change the count or its stability?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab2-5f7084eb4ba6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-e04dec22557a"
+      },
+      {
+        "to": "sc01-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Compute the detection fraction (count>0) of Rgs5, Notch3, Pdgfrb and Acta2 within the 91 nuclei of the seed-2 mural cluster, and compare with dataset-wide fractions. If only Acta2 is poorly detected in true mural nuclei, is a single near-zero gene enough to make the mural panel lose in seed-0 cluster 12? Or does cluster 12 lose because endothelial nuclei outnumber mural nuclei?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab2-dedcf92995ea"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-bfb8356765f9"
+      },
+      {
+        "to": "sc01-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate the seed-2 mural nuclei and seed-0 cluster 12 by sample_id (3M, 21M1, 21M2), and check whether any panel gene was among the 27 duplicated symbols you made unique. Does either result change the count or the interpretation?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab2-dedcf92995ea"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-095c5e4c0a8c"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In scanpy's standard clustering tutorial workflow, is sc.pp.scale applied before PCA by default? And how does scaling versus not scaling log-normalized HVG data usually affect whether small populations (around 0.5% of cells) separate in Leiden clustering?",
+          "why": "The teams differ on scaling, and that may explain their conflicting seed-sensitivity results for a small population.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In single-nucleus RNA-seq of peripheral tissues, which classic pericyte/vascular smooth muscle markers (Rgs5, Notch3, Pdgfrb, Acta2) are known to be well or poorly detected in nuclei relative to whole cells? Is Rgs5 expressed in sensory neurons?",
+          "why": "Interpretation 3 rests on poor nuclear detection of mural panel genes, and on high Rgs5 in neuron-assigned clusters being a mural signal. Neither team established either point beyond its own data.",
+          "passed": false,
+          "reasons": [
+            "a number within 1 percent of another team's value for \"interpretation\""
+          ]
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In scanpy's standard clustering tutorial workflow, is sc.pp.scale applied before PCA by default?",
+          "answer": "No, not in the current tutorial. The current scanpy/scverse 'Preprocessing and clustering' tutorial goes normalize_total -> log1p -> highly_variable_genes -> PCA without sc.pp.scale, and a scanpy maintainer confirmed in issue #185 (Apr 2025) that it no longer scales. The older legacy PBMC3k tutorial (clustering-2017) does run regress_out and then sc.pp.scale(max_value=10) before PCA. sc.tl.pca zero-centres genes either way, so the only difference is unit-variance scaling. sc.pp.scale is a separate step, not a default inside PCA.",
+          "sources": [
+            "https://scverse-tutorials.readthedocs.io/en/latest/notebooks/basic-scrna-tutorial.html",
+            "https://scanpy.readthedocs.io/en/1.10.x/tutorials/basics/clustering-2017.html",
+            "https://github.com/scverse/scanpy/issues/2164",
+            "https://github.com/theislab/single-cell-best-practices/issues/185"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc01-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab2-60b24688390a"
+            },
+            "sc01-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab2-4327a0b389df"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In scanpy's standard clustering tutorial workflow, is sc.pp.scale applied before PCA by default? ANSWER: No, not in the current tutorial. The current scanpy/scverse 'Preprocessing and clustering' tutorial goes normalize_total -> log1p -> highly_variable_genes -> PCA without sc.pp.scale, and a scanpy maintainer confirmed in issue #185 (Apr 2025) that it no longer scales. The older legacy PBMC3k tutorial (clustering-2017) does run regress_out and then sc.pp.scale(max_value=10) before PCA. sc.tl.pca zero-centres genes either way, so the only difference is unit-variance scaling. sc.pp.scale is a separate step, not a default inside PCA. HOW SURE: high. SOURCES: https://scverse-tutorials.readthedocs.io/en/latest/notebooks/basic-scrna-tutorial.html, https://scanpy.readthedocs.io/en/1.10.x/tutorials/basics/clustering-2017.html, https://github.com/scverse/scanpy/issues/2164, https://github.com/theislab/single-cell-best-practices/issues/185."
+        },
+        {
+          "question": "How does scaling versus not scaling log-normalized HVG data usually affect whether small populations (around 0.5% of cells) separate in Leiden clustering?",
+          "answer": "Not settled by the pages I could read. The sources say there is no consensus on scaling. Scaling weights all genes equally; without it, PCA is driven by each gene's variance and so by its mean expression. Seurat tutorials scale, while sc-best-practices and the current scanpy tutorial do not. My inference, which no source states directly: scaling boosts sparse, low-mean markers specific to a rare population, which can help it separate but also amplifies noise; without scaling, PCs are dominated by high-variance genes of large populations. Either way, a ~0.5% cluster can be seed-sensitive. The teams should test both settings with several seeds in the data instead of assuming a direction. A Nature Methods 2023 transformation benchmark (PMC10172138) reportedly found no improvement in k-NN recovery from z-scoring after shifted-log, but I saw that only in a search snippet; the full text did not load, so I did not rely on it.",
+          "sources": [
+            "https://github.com/scverse/scanpy/issues/2164",
+            "https://github.com/theislab/single-cell-best-practices/issues/185",
+            "https://raw.githubusercontent.com/NBISweden/workshop-scRNAseq/master/compiled/labs/seurat/seurat_02_dimred.qmd"
+          ],
+          "confidence": "low",
+          "deliveries": {
+            "sc01-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab2-be50866619ac"
+            },
+            "sc01-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab2-1bbbf22300e7"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How does scaling versus not scaling log-normalized HVG data usually affect whether small populations (around 0.5% of cells) separate in Leiden clustering? ANSWER: Not settled by the pages I could read. The sources say there is no consensus on scaling. Scaling weights all genes equally; without it, PCA is driven by each gene's variance and so by its mean expression. Seurat tutorials scale, while sc-best-practices and the current scanpy tutorial do not. My inference, which no source states directly: scaling boosts sparse, low-mean markers specific to a rare population, which can help it separate but also amplifies noise; without scaling, PCs are dominated by high-variance genes of large populations. Either way, a ~0.5% cluster can be seed-sensitive. The teams should test both settings with several seeds in the data instead of assuming a direction. A Nature Methods 2023 transformation benchmark (PMC10172138) reportedly found no improvement in k-NN recovery from z-scoring after shifted-log, but I saw that only in a search snippet; the full text did not load, so I did not rely on it. HOW SURE: low. SOURCES: https://github.com/scverse/scanpy/issues/2164, https://github.com/theislab/single-cell-best-practices/issues/185, https://raw.githubusercontent.com/NBISweden/workshop-scRNAseq/master/compiled/labs/seurat/seurat_02_dimred.qmd."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc01-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc01-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc01-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc01-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc01-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 121.10490866599139,
+      "cost_usd": 0.4612894,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 41.001836415962316,
+      "cost_usd": 0.142476,
+      "error": null
+    },
+    {
+      "agent": "sc01-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 387.7490514169913,
+      "cost_usd": 0.32637120000000003,
+      "error": null
+    },
+    {
+      "agent": "sc01-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 539.332781041041,
+      "cost_usd": 0.26418220000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 71.60807112499606,
+      "cost_usd": 0.3391638,
+      "error": null
+    },
+    {
+      "agent": "sc01-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 84.2855920830043,
+      "cost_usd": 0.4696962,
+      "error": null
+    },
+    {
+      "agent": "sc01-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 364.9772152090445,
+      "cost_usd": 0.3567006,
+      "error": null
+    },
+    {
+      "agent": "sc01-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 385.08638641703874,
+      "cost_usd": 0.4215104,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

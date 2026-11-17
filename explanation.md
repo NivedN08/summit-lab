@@ -339,6 +339,11 @@ At 5:23pm, twenty minutes into the BioDSA-1K and scBench test runs (26 agents at
 **I-14 · Nov 14, 20:18 · Open · The Fable allowance ran out again and stopped the search-off run after 26 agents.**
 The run started at 20:02 and halted at 20:17, with no task finished. This time the limit is the account's seven-day window, not the five-hour one; the agents' own rate-limit events give the reset as Sunday Nov 15, 10:00 Pacific. The lab stopped cleanly as designed (I-13): no task was recorded as failed, and the run resumes from the same command. Running this arm on Opus instead would not answer its question, because the arm with search used Fable analysts. Also noted when it started: with search off the library does not run at all, so team A gets no briefing; this run measures the whole research side of the lab, not web search alone.
 
+**I-15 · Nov 16, 21:22 · Open · Three interruptions during the Phase 1 noise runs (M-15); none changed a result.**
+1. Lab replicate 1 crashed before its first agent: past.dev answered 404 when looking up an identity the lab had just created (`bd14-referee`), most likely the delay noted in I-3, with four labs setting up memory at once. It had spent nothing; the same command was re-run and finished.
+2. The laptop slept for about five hours with the runs going (on battery, despite the keep-awake request). The Modal connection dropped: the single-agent run stopped with "Connection lost", and in lab replicate 2, 12 agent runs report no dollar figure, so its $40.34 is slightly low. Both were resumed with the same commands. Before a long run: plug in, lid open.
+3. The new spending cap stopped both single-agent runs early, cleanly, without overspending. It counts a reservation for every agent already running, at the 90th-percentile cost of a run of that role and model ($0.95 for an Opus single attempt), while an Opus attempt here cost about $0.11; eight at once reserved $7.60 of the $11 cap with $3.43 spent. They were resumed with the same caps and fewer agents at once (4, then 1); a deviation from nothing pre-registered, since the spec fixes the caps, not the parallelism. Still open: reserve closer to the measured mean for cheap roles.
+
 ## 8. Research behind decisions
 
 All sources below were read on Nov 14. This section is what documentation and papers say. What we measured ourselves is in section 9.
@@ -589,3 +594,23 @@ Commands: `python3 -m lab.run lab --benchmark biodsa --studies bd05,...,bd40 --r
 What this shows. This is the first test where the lab scored above the single model, by one task, and the way it did so is the point: Fable alone gives the same answer every time on this benchmark, so repeats and votes cannot fix anything. The lab fixed one shared mistake by challenging an agreed answer with evidence both teams had passed over. The steps did no net harm here: no final answer went from passing to failing.
 
 What it does not show. One task in 36 is not a difference we can call real. Eight of the nine remaining failures are the same mistake as bd36 (a settled claim judged "Not verifiable"), and the challenge did not catch them. The lab cost about 30 single attempts per task. Whether web search helped is the next run: the same 36 tasks with all search off (D-20).
+
+**M-15 · Nov 16, 21:22 · Measured · Phase 1 noise: two identical Opus labs differ on 1 task in 20; the challenge damaged more answers than it rescued.**
+Pre-registered in `prereg/dev-panel-noise.json` and `prereg/dev-panel-noise-sc.json` (frozen in commit 2471c78, before any run). Panel: 20 BioDSA-1K dev tasks (the 10 that Fable alone failed in M-14 and 10 of its passes drawn with a fixed seed) and the scBench dev tasks sc01, sc07, sc08. Arms: the v3 lab twice with Opus in every role, and Opus alone with 4 attempts. Commands: `python3 -m lab.run lab --benchmark biodsa --studies <panel> --run-dir runs/dev-panel-noise-lab1 --memory past --backend modal --parallel 8 --model opus --director-model opus --snapshot-first-round --max-usd 57 --prereg prereg/dev-panel-noise.json`, the same into `-lab2`, `baseline ... --attempts 4 --model opus --max-usd 11`, the scBench equivalents (caps 11, 11, 3), then `grade --ledger` and `measures` after every agent had exited, and `python3 scripts/noise.py` to pair the replicates. Interruptions: I-15. Records: `results/dev-panel-noise-*`.
+
+| | BioDSA-1K, 20 tasks | scBench, 3 tasks |
+|---|---|---|
+| Lab replicate 1 | 10 of 20 | 2 of 3 |
+| Lab replicate 2 | 9 of 20 | 2 of 3 |
+| Opus alone | 43 of 80 attempts; vote 11 of 20 | 12 of 12 attempts; vote 3 of 3 |
+| Tasks whose final result differs between replicates | 1 (bd36: passed in 1, failed in 2) | 0 |
+| Teams' first answers that differ between replicates | team A 1 (bd38), team B 0 | 0 |
+| Noise threshold T (95th percentile of the net difference over a bootstrap of tasks, at least 2) | 3 | 2 (the minimum) |
+| Opus alone, attempt to attempt | 18 of 20 tasks 4 of 4 or 0 of 4; bd28 3 of 4 | every attempt passed |
+| Challenge of agreed answers | rescued 1 (bd36, replicate 1), damaged 1 (bd38, replicate 2) | damaged sc01 in both replicates: both teams had passed |
+| How the lab failed | 8 and 9 settled claims judged "Not verifiable", 1 and 1 unverifiable claim judged settled, 1 and 1 false claim accepted | sc01 as above |
+| Cost | $40.76 and $40.34 a replicate ($2.03 a task; replicate 2 slightly low, I-15); Opus alone $8.98 for 80 attempts | $6.82 and $7.08; Opus alone $1.27 |
+
+What this shows. The lab is close to deterministic on these tasks, and so is Opus alone: the run-to-run noise is small, one task in twenty, well under the pre-registered stop rule (more than 25% flips). So a later change that rescues three or more tasks net on this panel is unlikely to be luck, which is the threshold the improvement loop will use (T = 3). Two findings point the loop: the challenge of agreed answers did net harm on Opus (1 rescue, 3 damages over the four lab runs, sc01 twice), which is what the damage guard is for; and the lab's dominant failure is again a settled claim judged "Not verifiable" (8 to 9 of 10 to 11 failures; 33 of Opus alone's 37 failed attempts), which is what the re-check is for.
+
+What it does not show. Two replicates on 23 tasks bound the noise only roughly; T is set by the pre-registered rule, not estimated precisely. The panel is half tasks Fable alone failed, so its pass rates are not benchmark scores. Here the all-Opus lab scored below a vote over four Opus attempts (10 and 9 against 11 of 20; 2 against 3 of 3) at about four and a half times the cost: on this panel the lab's extra steps have not yet paid for themselves.

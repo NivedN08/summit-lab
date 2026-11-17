@@ -1,0 +1,410 @@
+{
+  "study": "bd17",
+  "status": "replicated",
+  "final": {
+    "agent": "bd17-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd17/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd17-library": "opus",
+    "bd17-team-a": "opus",
+    "bd17-team-b": "opus",
+    "bd17-team-c": "opus",
+    "bd17-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd17-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd17/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd17-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd17/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd17-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd17/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd17-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd17/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd17-team-a",
+        "bd17-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd17-team-a",
+        "bd17-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Loss of ERBB2 amplification under trastuzumab is a within-patient event. Comparing ERBB2 amplification rates between all pre-treatment and all post-treatment samples from different patients mixes treatment effect with case mix. Count the patients with more than one sample in data_clinical_sample.txt. Among HER2-positive, trastuzumab-treated patients, find those with both a pre- and a post-treatment sample (see columns such as IMPACT_PRE_POST). Base the main analysis on within-patient pre-to-post ERBB2 transitions (AMP to non-AMP) and report them per patient. Treat unpaired cohort rates as secondary.",
+      "from": [
+        "sl-dev-panel-noise-lab2-7601b722cfae"
+      ],
+      "reason": "This sets the unit of analysis. An unpaired cohort comparison could give a misleading answer.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-2efff4d741e1"
+      }
+    },
+    {
+      "text": "Some sample IDs, for example research samples named like YJ-her-005-P1/P2/M1a, may appear in data_cna.txt and data_cna_hg19.seg but not in the clinical tables. Samples were also run on different MSK-IMPACT panel versions. Cross-check sample IDs across the CNA file, seg file, gene panel matrix and clinical sample table. Map extra IDs to patients by their naming pattern so they are not silently dropped from paired or multi-region analysis. Treat genes not covered by a sample's panel as missing, not as wild type.",
+      "from": [
+        "sl-dev-panel-noise-lab2-b409e0f4a47a"
+      ],
+      "reason": "Dropping these samples silently could remove the paired or multi-region cases that are most informative.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-0d134f8fa1f8"
+      }
+    },
+    {
+      "text": "Acquired trastuzumab resistance means progression after initial benefit. Restrict to trastuzumab-treated patients, using the patient treatment fields and HER2_RESPONSE. Separate initial responders or stable disease (CR/PR/SD) that later progressed from primary non-responders (POD, short HER2_TTP_ON_1ST_LINE_MONTHS). State which group each ERBB2-loss case falls into.",
+      "from": [
+        "sl-dev-panel-noise-lab2-c8bfffdec4fb"
+      ],
+      "reason": "The hypothesis is about acquired resistance specifically. Mixing in primary resistance or untreated patients changes what the test measures.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-733b9c6f1e37"
+      }
+    },
+    {
+      "text": "A non-amplified ERBB2 call can be a false negative caused by low tumour purity. Also, in discrete CNA, 2 means high-level amplification and 1 means low-level gain. For each case that goes from AMP before treatment to non-AMP after, check the continuous ERBB2 log ratio: seg.mean near chr17:39.69-39.73 Mb (hg19) and HER2_IMPACT_LR. Check whether other truncal alterations, such as TP53 mutation VAF or other amplicons, keep their signal in the post-treatment sample. Use the continuous measure as primary and the 2 vs not-2 call as a sensitivity analysis. Flag low-purity cases as indeterminate.",
+      "from": [
+        "sl-dev-panel-noise-lab2-3255c3c9318f",
+        "sl-dev-panel-noise-lab2-ffbdd2961410"
+      ],
+      "reason": "This separates true biological loss of the amplicon from technical dropout. It directly affects how many loss cases are counted.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-d31e560c37b2"
+      }
+    },
+    {
+      "text": "Calling a case 'selection of a non-amplified subclone' requires two things: evidence that the pre and post samples share ancestry (shared truncal mutations), and loss of the amplicon. Where possible, look for a non-amplified population detectable before treatment, for example ERBB2-discordant regions in multi-region samples. HER2 status can also differ between primary and metastasis or between regions without any treatment. So compare SAMPLE_TYPE and biopsy site within each pair, and compare loss in treated pairs with baseline discordance in untreated or pre-treatment multi-sample data where available.",
+      "from": [
+        "sl-dev-panel-noise-lab2-3a0f76d8c0c8",
+        "sl-dev-panel-noise-lab2-6692e083ebf4"
+      ],
+      "reason": "These checks decide whether an observed ERBB2 loss can be read as clonal selection linked to treatment rather than site heterogeneity.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-b0d4229c0ac0"
+      }
+    },
+    {
+      "text": "Paired trastuzumab-progression cases are likely few. A non-significant p-value does not show that there is no association. Report the number of informative pairs and discordant transitions in each direction (AMP to non-AMP vs non-AMP to AMP), with exact confidence intervals. Use exact or mid-p McNemar for paired binary status, and compare with a reference group where one exists. Judge the evidence from the counts and their context, not only from p < 0.05.",
+      "from": [
+        "sl-dev-panel-noise-lab2-4f5d8706efa5"
+      ],
+      "reason": "The hypothesis is a claim of no association. Small-sample inference therefore decides whether a null result can support it.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-a49b04e30aae"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams restricted 'trastuzumab-treated' to patients with non-null HER2_RESPONSE (which is filled only on PRE-TX samples) and to patients with a within-patient PRE-TX/POST-TX pair; neither tested whether patients whose patient-level TREATMENT / DETAILS_FIRST_LINE_COMMENTS mention trastuzumab but who have only a POST-TX sample (90 POST-TX samples vs ~34 multi-sample patients) belong in scope.",
+      "Both assumed that a POST-TX IMPACT sample was taken at acquired resistance (progression after benefit). HER2_TX_STATUS has ON TREATMENT and OFF TREATMENT values and HER2_TTP_ON_1ST_LINE_MONTHS exists, but neither team showed the post sample was collected after progression on trastuzumab rather than during ongoing response or after later lines.",
+      "Both treated 2 loss events among ~22-23 pairs, with no comparison group of adequate size, as sufficient to call an 'association' (label False), without defining what association means here (loss vs. no-loss frequency against a reference, or loss linked to shorter TTP / worse response).",
+      "Both took the IMPACT ERBB2 call (HER2_IMPACT / discrete CNA, from mostly 'Unmatched' normal samples) as the truth on amplification status, with IHC/FISH used only for concordance in the loss cases."
+    ],
+    "unused_evidence": [
+      "HER2_TTP_ON_1ST_LINE_MONTHS and HER2_VITAL_STATUS: neither team compared time to progression between patients who lost vs kept ERBB2 amplification, which is the direct test of an association with resistance.",
+      "HER2_TX_STATUS (ON/OFF TREATMENT) and patient-level TREATMENT / DETAILS_FIRST_LINE_COMMENTS / NUMBER_OF_LINES: unused to confirm timing of the post sample and trastuzumab exposure.",
+      "Baseline (PRE-TX) samples that are HER2_IHC_OR_FISH POS but HER2_IMPACT DIPLOID, or with low HER2_IMPACT_LR: evidence of a pre-existing non-amplified subclone and possibly linked to primary resistance (POD) or shorter TTP; unused by team B, only partly by team A.",
+      "data_sv.txt (one ERBB2 record) and ERBB2 entries in data_mutations.txt: alternative ERBB2-pathway resistance mechanisms in post samples that neither team tabulated against amplification loss.",
+      "SOMATIC_STATUS (Matched vs Unmatched) and GENE_PANEL version: may affect CN-call sensitivity between pre and post samples."
+    ],
+    "unresolved_weak_points": [
+      "Team A: P-0000444 compares a liver metastasis (pre) with the GEJ primary (post); the team kept it as a loss but only flagged spatial heterogeneity rather than resolving it, leaving possibly one true selection event.",
+      "Team A: no adequately sized untreated AMP reference group (1 patient); the 0/7 untreated reference mostly lacks amplification and cannot show loss.",
+      "Team B: reported different biopsy sites and small n as its weakest point but ran no purity or site check (pitfalls_checked is empty).",
+      "Both: McNemar p=0.5 / 'no formal test possible' \u2014 the decision between False and Not verifiable/True rests on interpretation, not on a test; neither team resolved this."
+    ],
+    "second_readings": [
+      "'Associated with acquired trastuzumab resistance' could mean a statistical association across patients (e.g., ERBB2-loss patients have shorter TTP or more POD than those retaining amplification, or loss is more frequent after trastuzumab than without it), rather than the existence of a few loss cases at progression.",
+      "'Selection for a tumor subclone lacking ERBB2 amplification' could be read as baseline heterogeneity (a pre-existing non-amplified subclone, e.g. IHC/FISH POS but IMPACT non-AMP or low LR) being associated with resistance, not only pre-to-post loss.",
+      "'Acquired' resistance requires initial benefit then progression; whether the post samples are at progression on trastuzumab (scope at which time) is a separate reading from 'any sample after treatment'."
+    ],
+    "verdict": "Moderate trust: both teams independently found the same two well-documented ERBB2-loss cases, but neither tested association against outcome (TTP/response) or confirmed post samples were taken at acquired resistance, so the False label rests on interpreting a few cases as 'association'.",
+    "questions": [
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For each of your ~23 pairs, tabulate HER2_TX_STATUS, HER2_TTP_ON_1ST_LINE_MONTHS and whether the POST-TX sample date/sequence falls after progression on trastuzumab; are both loss cases (and the retained cases) truly sampled at acquired resistance, and does restricting to confirmed post-progression samples change your counts or label?",
+        "from": [
+          "sl-dev-panel-noise-lab2-fe47af8c6920"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-58e0fb0ddfe6"
+      },
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Compare HER2_TTP_ON_1ST_LINE_MONTHS (and HER2_RESPONSE) between patients who lost ERBB2 amplification and those who retained it; does the presence or absence of a difference change whether you can claim an 'association' rather than only the existence of loss cases?",
+        "from": [
+          "sl-dev-panel-noise-lab2-fe47af8c6920"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-e1d373a53d0e"
+      },
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Count patients whose TREATMENT or DETAILS_FIRST_LINE_COMMENTS mention trastuzumab but who were excluded because they lack HER2_RESPONSE or a PRE-TX sample, and among their POST-TX samples check HER2_IHC_OR_FISH against HER2_IMPACT/HER2_IMPACT_LR; does including them, or excluding the site-discordant P-0000444 pair, change your label?",
+        "from": [
+          "sl-dev-panel-noise-lab2-194921c2b0ec"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-e0779541a06e"
+      },
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Check PRE-TX samples of HER2_IHC_OR_FISH POS patients that are HER2_IMPACT DIPLOID or have low HER2_IMPACT_LR, and cross them with HER2_RESPONSE/TTP; does evidence of a pre-existing non-amplified subclone at baseline bear on the hypothesis and change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-8072e43cb305"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: For both loss cases, check purity proxies (VAFs of shared truncal mutations such as TP53, FGA, other amplicons) in pre and post samples; is each loss a true copy-number change rather than a low-purity false negative, and does the answer change your count of 2?",
+        "from": [
+          "sl-dev-panel-noise-lab2-71681f61ec8a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-c9230a515c88"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your plan named relating loss to progression and TTP; run it: compare HER2_TTP_ON_1ST_LINE_MONTHS and HER2_RESPONSE between pairs with and without ERBB2 loss, and check HER2_TX_STATUS for when the post sample was taken. Does this support calling it an association with acquired resistance, or change your label?",
+        "from": [
+          "sl-dev-panel-noise-lab2-8e8d6a309541"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-e3b4e9eeeb40"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate SITE_OF_TISSUE_BIOPSY and SAMPLE_TYPE for pre and post samples of every pair, and recount losses using only same-site pairs; does the result of this check change your method or label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-9eff13f33f44"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your scope used patients with paired samples; count trastuzumab-treated patients (per TREATMENT / DETAILS_FIRST_LINE_COMMENTS) with only a POST-TX sample whose HER2_IHC_OR_FISH is POS but HER2_IMPACT is not AMP, and check ERBB2 entries in data_mutations.txt and data_sv.txt in post samples; does adding these change your conclusion?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-7f3103d3ff75"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In paired pre/post-treatment tumor sequencing studies, what statistical framework is conventionally used to claim that loss of a targeted gene amplification is 'associated with' acquired resistance (e.g., frequency vs an untreated reference, link to time to progression), and how are a handful of loss events typically interpreted?",
+          "why": "The label hinges on whether a few loss events count as an association; neither team defined or tested this.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How does tumor purity and use of an unmatched (pooled) normal affect sensitivity of focal amplification calls and log-ratio values in targeted hybrid-capture panels, and what log-ratio or purity thresholds are used to call amplification loss versus false negative?",
+          "why": "Loss calls could be purity or normal-reference artefacts; team B did no purity check.",
+          "passed": false,
+          "reasons": [
+            "contains another team's value for \"label\""
+          ]
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In paired pre/post-treatment tumor sequencing studies, what statistical framework is conventionally used to claim that loss of a targeted gene amplification is 'associated with' acquired resistance (e.g., frequency vs an untreated reference, link to time to progression), and how are a handful of loss events typically interpreted?",
+          "answer": "The usual approach is descriptive and within-patient. The baseline (pre-treatment) sample is the patient's own control. Loss is called a putative acquired-resistance mechanism when the amplification or positivity is present at baseline and absent at progression, after strictly defined acquired resistance, and it is reported as n/N. Examples: 32% of 22 gastric pairs (Pietrantonio 2016), 14/48 = 29% (GASTHER3), 8/25 residual breast tumours (Mittendorf 2009), and loss of EGFR T790M in 14/36 cases listed alongside other mechanisms (Lee 2020). The mechanism claim itself is not given a significance test. Formal tests are secondary: (a) Fisher/chi-square tests against baseline clinicopathological variables; (b) comparison with a cohort not given anti-HER2 therapy, where Guarneri 2013 found loss MORE often without anti-HER2 therapy (40% vs 14.7%, p=0.019), showing that loss is not specific to trastuzumab and that such a comparison can cut against a selection claim; (c) Kaplan-Meier/log-rank or hazard-ratio links to outcome (Mittendorf: RFS 87.5% vs 50%, p=0.04; Guarneri: HR 2.41, p=0.063, a non-significant 'trend'; GASTHER3: three patients with HER2 loss did not respond to second-line T-DM1). A handful of loss events is typically interpreted as 'one of the mechanisms that may explain' resistance (hypothesis-generating), not as a statistically established association. No source gives a formal threshold for how many events count as an association.",
+          "sources": [
+            "https://doi.org/10.1002/ijc.30408",
+            "https://www.springermedicine.com/loss-of-her2-positivity-after-anti-her2-chemotherapy-in-her2-pos/21403700",
+            "https://aacrjournals.org/clincancerres/article/15/23/7381/75060/Loss-of-HER2-Amplification-Following-Trastuzumab",
+            "https://www.annalsofoncology.org/article/S0923-7534(19)36724-9/fulltext",
+            "https://acsjournals.onlinelibrary.wiley.com/doi/10.1002/cncr.32809"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd17-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-026c8895f8af"
+            },
+            "bd17-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-be0636def649"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In paired pre/post-treatment tumor sequencing studies, what statistical framework is conventionally used to claim that loss of a targeted gene amplification is 'associated with' acquired resistance (e.g., frequency vs an untreated reference, link to time to progression), and how are a handful of loss events typically interpreted? ANSWER: The usual approach is descriptive and within-patient. The baseline (pre-treatment) sample is the patient's own control. Loss is called a putative acquired-resistance mechanism when the amplification or positivity is present at baseline and absent at progression, after strictly defined acquired resistance, and it is reported as n/N. Examples: 32% of 22 gastric pairs (Pietrantonio 2016), 14/48 = 29% (GASTHER3), 8/25 residual breast tumours (Mittendorf 2009), and loss of EGFR T790M in 14/36 cases listed alongside other mechanisms (Lee 2020). The mechanism claim itself is not given a significance test. Formal tests are secondary: (a) Fisher/chi-square tests against baseline clinicopathological variables; (b) comparison with a cohort not given anti-HER2 therapy, where Guarneri 2013 found loss MORE often without anti-HER2 therapy (40% vs 14.7%, p=0.019), showing that loss is not specific to trastuzumab and that such a comparison can cut against a selection claim; (c) Kaplan-Meier/log-rank or hazard-ratio links to outcome (Mittendorf: RFS 87.5% vs 50%, p=0.04; Guarneri: HR 2.41, p=0.063, a non-significant 'trend'; GASTHER3: three patients with HER2 loss did not respond to second-line T-DM1). A handful of loss events is typically interpreted as 'one of the mechanisms that may explain' resistance (hypothesis-generating), not as a statistically established association. No source gives a formal threshold for how many events count as an association. HOW SURE: medium. SOURCES: https://doi.org/10.1002/ijc.30408, https://www.springermedicine.com/loss-of-her2-positivity-after-anti-her2-chemotherapy-in-her2-pos/21403700, https://aacrjournals.org/clincancerres/article/15/23/7381/75060/Loss-of-HER2-Amplification-Following-Trastuzumab, https://www.annalsofoncology.org/article/S0923-7534(19)36724-9/fulltext, https://acsjournals.onlinelibrary.wiley.com/doi/10.1002/cncr.32809."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd17-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd17-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd17-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd17-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd17-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 99.5307759999996,
+      "cost_usd": 0.5030976,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 41.82638266694266,
+      "cost_usd": 0.21065260000000002,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 55.49062158295419,
+      "cost_usd": 0.24518020000000001,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 88.53775004204363,
+      "cost_usd": 0.4322248000000001,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 80.7596858330071,
+      "cost_usd": 0.335959,
+      "error": null
+    },
+    {
+      "agent": "bd17-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 92.6690964999143,
+      "cost_usd": 0.3982668,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 95.5141792499926,
+      "cost_usd": 0.4196422,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 120.1090901659336,
+      "cost_usd": 0.5147028000000001,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

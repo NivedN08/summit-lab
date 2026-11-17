@@ -1,0 +1,381 @@
+{
+  "study": "bd05",
+  "status": "replicated",
+  "final": {
+    "agent": "bd05-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd05/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd05-library": "opus",
+    "bd05-team-a": "opus",
+    "bd05-team-b": "opus",
+    "bd05-team-c": "opus",
+    "bd05-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd05-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd05/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd05-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd05/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd05-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd05/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd05-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd05/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd05-team-a",
+        "bd05-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd05-team-a",
+        "bd05-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "CALR driver mutations in MPN are exon 9 insertions/deletions that shift the reading frame (type 1 = 52-bp deletion, p.L367fs; type 2 = 5-bp TTGTC insertion, p.K385fs; plus many other +1 frameshift indels). They are not SNVs. If you filter for missense changes or one HGVS string, you will miss them. Select every Hugo_Symbol == CALR row and tabulate Variant_Classification (Frame_Shift_Del/Ins, In_Frame_Del, ...), Start_Position (GRCh37 chr19 around 13,054,5xx) and HGVSp_Short.",
+      "from": [
+        "sl-dev-panel-noise-lab2-4dfb8903e622"
+      ],
+      "reason": "A naive search for CALR mutations can return zero and wrongly support the hypothesis.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-4fe2d96483cb"
+      }
+    },
+    {
+      "text": "Not every CALR variant is a driver. Only somatic +1 frameshift indels in exon 9 that change the C-terminus are pathogenic. In-frame exon 9 deletions and point mutations may be non-functional or germline polymorphisms. Classify each CALR row: frameshift or in-frame, and check somatic status (Mutation_Status, normal alt counts) if those columns exist. Base the conclusion on somatic frameshift CALR mutations, and report other CALR variants separately.",
+      "from": [
+        "sl-dev-panel-noise-lab2-d879ce8c5e63"
+      ],
+      "reason": "This decides which CALR calls count as the 'somatic CALR mutations' the hypothesis is about.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-194f9aab5c4f"
+      }
+    },
+    {
+      "text": "'JAK2 nonmutated' does not mean 'no JAK2 V617F'. JAK2 exon 12 mutations (e.g. N542-E543del, K539L) and other JAK2 drivers also make a patient JAK2-mutated. List every JAK2 row by HGVSp_Short and Variant_Classification. Use 'no JAK2 driver' as the main definition and report the stricter 'no JAK2 mutation of any kind' too.",
+      "from": [
+        "sl-dev-panel-noise-lab2-cb343bbfc6cc"
+      ],
+      "reason": "The definition of the JAK2-nonmutated group changes who counts toward the hypothesis.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-2692ea1646aa"
+      }
+    },
+    {
+      "text": "JAK2 and CALR mutations are mostly mutually exclusive, but a few percent of MPN patients carry both, often with a low-VAF JAK2 V617F subclone. A patient with both mutations is JAK2-mutated and is not evidence about the JAK2-nonmutated group. Cross-tabulate JAK2 against CALR. For patients with both, check JAK2 VAF = t_alt_count/(t_ref_count+t_alt_count). Check that the conclusion holds both with and without low-VAF JAK2 calls.",
+      "from": [
+        "sl-dev-panel-noise-lab2-34710173028e"
+      ],
+      "reason": "Patients with both mutations must not be counted as JAK2-nonmutated, and low-VAF JAK2 calls should be tested for their effect on the result.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-8411740f76d9"
+      }
+    },
+    {
+      "text": "Samples with no mutation calls do not appear in data_mutations.txt. Build the cohort and the JAK2-nonmutated group from data_clinical_sample.txt: all clinical samples minus samples with a JAK2 mutation. Compare the clinical SAMPLE_IDs with the unique Tumor_Sample_Barcode values in the mutation file.",
+      "from": [
+        "sl-dev-panel-noise-lab2-b44b07b01f0b"
+      ],
+      "reason": "Without this, the JAK2-nonmutated group and its denominator are built wrongly.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-c63cde5c4b6a"
+      }
+    },
+    {
+      "text": "Check that Tumor_Sample_Barcode in the mutation file matches SAMPLE_ID in the clinical table, and check whether any patient has more than one sample. The hypothesis is about patients, so set mutation status per patient: a patient is JAK2-mutated if any of their samples is.",
+      "from": [
+        "sl-dev-panel-noise-lab2-b9129dc7d82c"
+      ],
+      "reason": "Joining on the wrong ID, or splitting one patient across several samples, can make JAK2-nonmutated assignments wrong.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-5728073977d7"
+      }
+    },
+    {
+      "text": "The hypothesis is a universal negative ('not present in any patient'). One somatic CALR driver mutation in one JAK2-nonmutated patient contradicts it. A mutual-exclusivity test or a low frequency is the wrong evidence. The quantity to report is the number of patients who have a CALR driver mutation and no JAK2 mutation. The claim can only be supported if that count is zero and CALR was actually covered by the sequencing.",
+      "from": [
+        "sl-dev-panel-noise-lab2-76b54723810e"
+      ],
+      "reason": "This sets the decision logic. Without it, a team might run significance tests that do not answer an 'any' claim.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-0cd85ebf2f17"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "JAK2 status is taken as 'no JAK2 row in the MAF'. Neither team tested whether a sample with no calls (team A found one) or a sample sequenced on a limited panel really counts as JAK2-nonmutated rather than unknown.",
+      "Every CALR row is treated as somatic because SOMATIC_STATUS is 'Matched'. Neither team tied that to the per-row germline read counts or allele percentages.",
+      "The cohort is taken to be all MPN samples, with no split by subtype or by MPL status, even though some samples are flagged as MPL-mutated."
+    ],
+    "unused_evidence": [
+      "Team B did not use the study's 'JAK2/MPL mutation' column (values JAK2 / MPL / unmutated), which records the study's own per-sample driver status. Team A used it.",
+      "Team B did not use the 'Germline allele percentage (%)' and 'Germline reads' columns. Team A found that 7 of 25 CALR rows had nonzero germline percentages but did not check whether those rows have enough germline depth to call them somatic.",
+      "MPL rows (7) and the MPL flag were not used to define a 'JAK2-nonmutated' group that excludes or includes MPL-mutated cases.",
+      "TMB_NONSYNONYMOUS was not used. It probably does not matter here."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named possible undetected low-VAF JAK2 as their weakest point. Neither resolved it. Team A could not compute VAF from t_ref/t_alt but did not use the 'Tumor allele burden (%)' column that is present.",
+      "Team A noted that 7 CALR calls have germline allele % up to 33% and only argued them away. It did not run a depth-based check."
+    ],
+    "second_readings": [
+      "'Nonmutated JAK2' could mean JAK2-unmutated only, or 'neither JAK2 nor MPL mutated' (triple-negative framing). The answer should hold under both readings.",
+      "'Patients' versus samples: if a patient had several samples, the count unit would matter. Team A reports one sample per patient."
+    ],
+    "verdict": "High trust. The hypothesis is a universal negative, and both teams report many CALR exon 9 frameshifts in samples with no JAK2 call. Plausible problems (germline CALR calls, missed low-burden JAK2, MPL scope) would have to remove every such case to flip the answer. That is unlikely, but it has not been fully checked.",
+    "questions": [
+      {
+        "to": "bd05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For the 7 CALR rows with nonzero germline allele %, tabulate Germline reads and germline allele % against Tumor allele burden (%). Do any rows look more consistent with a germline variant than with tumour contamination, and does dropping them change your count or label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-e6a7647ce66e"
+      },
+      {
+        "to": "bd05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You said JAK2 VAF could not be computed, but a 'Tumor allele burden (%)' column exists. Does the JAK2 allele-burden distribution show any very-low-burden JAK2 calls, and does it change your view that there is no JAK2/CALR overlap?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-cddf8be6c692"
+      },
+      {
+        "to": "bd05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Does the CALR-positive, JAK2-nonmutated count change if you also exclude MPL-mutated samples (using MPL rows and the JAK2/MPL column)? Does the label hold under both readings of 'nonmutated JAK2'?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-f1803cec17d2"
+      },
+      {
+        "to": "bd05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate your MAF-derived JAK2 status against the study's 'JAK2/MPL mutation' column for every CALR-positive sample. Do the two agree, and does any disagreement change the method?",
+        "from": [
+          "sl-dev-panel-noise-lab2-56388136a85c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-f5f86dce9289"
+      },
+      {
+        "to": "bd05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: SOMATIC_STATUS 'Matched' is a per-sample label. Check the per-row 'Germline reads' and 'Germline allele percentage (%)' for every CALR call. Are any CALR calls plausibly germline, and does excluding them change your conclusion?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-5cb13a6d7618"
+      },
+      {
+        "to": "bd05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: How did you treat clinical-table samples with no mutation calls at all, which leaves their JAK2 status unknown rather than nonmutated? Also, does the CALR-positive count change when MPL-mutated samples are excluded from the JAK2-nonmutated group?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-31fa30ecac04"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In matched tumour-normal myeloid sequencing, what germline allele fraction and germline depth thresholds are conventionally used to tell tumour-in-normal contamination from a true germline variant?",
+          "why": "This would settle whether CALR calls with nonzero germline reads can still be counted as somatic.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In matched tumour-normal myeloid sequencing, what germline allele fraction and germline depth thresholds are conventionally used to tell tumour-in-normal contamination from a true germline variant?",
+          "answer": "No single myeloid-specific convention exists; the web gives tool defaults and a guiding principle. Principle (Barnell et al. 2018 SOP, Genet Med): a germline variant shows normal-sample VAF near 50% or 100%, with read support in the normal beyond what tumour contamination can explain. Tumour-in-normal contamination instead gives a low normal VAF, well below the tumour VAF. Genomics England (Nat Commun 2024) reports contamination is common in MPN sorted CD3+ T cells and in saliva, which causes true driver hotspots to be wrongly subtracted. Caller thresholds: MuTect1 rejects a call if the normal has >=2 alt reads or >=3% alt fraction (with base-quality sum >20). MuTect2 (GATK 3.7) defaults to at most 1 alt read and a 0.03 fraction in the normal; for deep panels these are commonly relaxed to a 0.10 normal fraction, plus a rule that tumour AF must exceed 4x normal AF (S_AF>0.75). DRAGEN's alt_allele_in_normal filter fires above 0.2 normal VAF plus a contamination tolerance of 0.15 in liquid-tumour mode (0 in solid mode), so the cutoff is 0.35 for haematological samples. DRAGEN also ignores normal artifacts when normal AF < 0.1x tumour AF. Practical reading: a CALR call with a few normal reads at low normal VAF (roughly <10%, and tumour VAF >=4-10x normal VAF) is conventionally treated as contamination and still counted as somatic. A normal VAF of about 40-60% (or about 100%) indicates germline. The pages read give no conventional germline-depth threshold beyond caller minimum-read rules.",
+          "sources": [
+            "https://ncbi.nlm.nih.gov/pmc/articles/PMC3833702/table/T1/",
+            "https://best-practices-for-processing-hts-data.readthedocs.io/en/latest/mutect2_pitfalls.html",
+            "https://support-docs.illumina.com/SW/DRAGEN_v38/Content/SW/DRAGEN/GPipelinePostSomMat_fDG.htm",
+            "https://doi.org/10.1038/s41436-018-0278-z",
+            "https://www.nature.com/articles/s41467-023-44158-2"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd05-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-b9fc589a1021"
+            },
+            "bd05-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-f8b02f53c4ff"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In matched tumour-normal myeloid sequencing, what germline allele fraction and germline depth thresholds are conventionally used to tell tumour-in-normal contamination from a true germline variant? ANSWER: No single myeloid-specific convention exists; the web gives tool defaults and a guiding principle. Principle (Barnell et al. 2018 SOP, Genet Med): a germline variant shows normal-sample VAF near 50% or 100%, with read support in the normal beyond what tumour contamination can explain. Tumour-in-normal contamination instead gives a low normal VAF, well below the tumour VAF. Genomics England (Nat Commun 2024) reports contamination is common in MPN sorted CD3+ T cells and in saliva, which causes true driver hotspots to be wrongly subtracted. Caller thresholds: MuTect1 rejects a call if the normal has >=2 alt reads or >=3% alt fraction (with base-quality sum >20). MuTect2 (GATK 3.7) defaults to at most 1 alt read and a 0.03 fraction in the normal; for deep panels these are commonly relaxed to a 0.10 normal fraction, plus a rule that tumour AF must exceed 4x normal AF (S_AF>0.75). DRAGEN's alt_allele_in_normal filter fires above 0.2 normal VAF plus a contamination tolerance of 0.15 in liquid-tumour mode (0 in solid mode), so the cutoff is 0.35 for haematological samples. DRAGEN also ignores normal artifacts when normal AF < 0.1x tumour AF. Practical reading: a CALR call with a few normal reads at low normal VAF (roughly <10%, and tumour VAF >=4-10x normal VAF) is conventionally treated as contamination and still counted as somatic. A normal VAF of about 40-60% (or about 100%) indicates germline. The pages read give no conventional germline-depth threshold beyond caller minimum-read rules. HOW SURE: medium. SOURCES: https://ncbi.nlm.nih.gov/pmc/articles/PMC3833702/table/T1/, https://best-practices-for-processing-hts-data.readthedocs.io/en/latest/mutect2_pitfalls.html, https://support-docs.illumina.com/SW/DRAGEN_v38/Content/SW/DRAGEN/GPipelinePostSomMat_fDG.htm, https://doi.org/10.1038/s41436-018-0278-z, https://www.nature.com/articles/s41467-023-44158-2."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd05-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd05-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd05-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd05-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd05-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 61.7721194580663,
+      "cost_usd": 0.2768868,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 33.80376812489703,
+      "cost_usd": 0.1458768,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 29.031778207980096,
+      "cost_usd": 0.111837,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 42.91215349989943,
+      "cost_usd": 0.19260100000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 48.20547754201107,
+      "cost_usd": 0.1700818,
+      "error": null
+    },
+    {
+      "agent": "bd05-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 79.65848062501755,
+      "cost_usd": 0.3471636,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 65.96354866703041,
+      "cost_usd": 0.2488996,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 62.704742667032406,
+      "cost_usd": 0.25389839999999997,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

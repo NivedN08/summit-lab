@@ -1,0 +1,466 @@
+{
+  "study": "bd37",
+  "status": "refereed",
+  "final": {
+    "agent": "bd37-team-a",
+    "team": "team-a",
+    "round": "revise",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd37/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd37-library": "opus",
+    "bd37-team-a": "opus",
+    "bd37-team-b": "opus",
+    "bd37-team-c": "opus",
+    "bd37-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "bd37-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd37/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd37-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd37/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd37-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd37/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd37-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd37/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd37-team-a",
+        "bd37-team-b"
+      ],
+      "fields": {
+        "label": false
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "bd37-team-a",
+        "bd37-team-b"
+      ],
+      "fields": {
+        "label": false
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The established comparator is in the data. data_clinical_sample.txt has PROGNOSTIC_MODEL ('Genomic Risk Model Classification': Low/Medium/High), filled for roughly three quarters of samples. data_clinical_patient.txt has IPI (0-5), its five factor columns (IPI_AGE, IPI_LDH, IPI_ECOG, IPI_ANNARBOR_STAGE, IPI_EXTRANODAL_SITES) and OS_MONTHS/OS_STATUS. Count the patients who have PROGNOSTIC_MODEL, IPI and OS all present, and compare the genomic model with IPI head to head on them. Testing single genes against survival does not answer the question.",
+      "from": [
+        "sl-dev-panel-noise-lab1-f4680360f8a5"
+      ],
+      "reason": "Without this the comparator is easy to miss, which leads to a wrong 'Not verifiable' or to an analysis that never compares against established methods.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-dfad458272dd"
+      }
+    },
+    {
+      "text": "To show 'outperforms', it is not enough for both predictors to be significant on log-rank, or for one to have a smaller p-value. Fit Cox models OS~IPI, OS~genomic model and OS~IPI+genomic model on the same patients. Compare discrimination (Harrell's C) and AIC, and run likelihood-ratio tests of the combined model against each single model. Outperformance means a clearly higher C for the genomic model, with a paired CI for the difference that excludes 0. Adding information beyond IPI (significant LRT) is a weaker claim and should be reported as such.",
+      "from": [
+        "sl-dev-panel-noise-lab1-36bcfebcb127"
+      ],
+      "reason": "This sets the criterion that decides the label. P-value comparisons are the most likely error.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-ff55aaf80768"
+      }
+    },
+    {
+      "text": "IPI and PROGNOSTIC_MODEL are missing for different patients. Compute every comparison on the intersection of patients with both predictors and valid OS. Get a paired CI for the difference in C by bootstrap, or with survival::concordance on both fits together. A C-index or p-value from different patient sets cannot be compared.",
+      "from": [
+        "sl-dev-panel-noise-lab1-5364b41e657a"
+      ],
+      "reason": "Unpaired comparisons on different subsets give results that cannot be interpreted.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-86db74b08ea6"
+      }
+    },
+    {
+      "text": "The genomic risk model was probably derived from this same cohort, so its performance here is in-sample and optimistic. IPI was defined externally. Check the column descriptions for training/validation information or a cohort split column. Treat a small in-sample advantage for the genomic model (C difference under about 0.03) as weak evidence. If you build your own gene-based model, use bootstrap optimism correction (at least 100 resamples, redoing selection each time) or cross-validation.",
+      "from": [
+        "sl-dev-panel-noise-lab1-6fa7b1b9962a"
+      ],
+      "reason": "Overfitting bias can make the genomic model look better than it is.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-02f824964b69"
+      }
+    },
+    {
+      "text": "The IPI column can be missing or inconsistent even when its factor columns exist. Recompute IPI as the sum of the five 0/1 factors and check it against the IPI column. Never treat a missing factor as 0. Tabulate IPI missingness by genomic-risk group. As a sensitivity analysis, also try the grouped IPI (0-1/2/3/4-5).",
+      "from": [
+        "sl-dev-panel-noise-lab1-9d2ecd1c3a5f"
+      ],
+      "reason": "Mishandling the comparator variable biases the head-to-head comparison.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-543c5e3c0d08"
+      }
+    },
+    {
+      "text": "OS_STATUS is coded like '0:LIVING'/'1:DECEASED'; parse the leading digit to get the event indicator. The sample table has a CENSORED column that may disagree with OS_STATUS, so cross-tabulate the two. Use OS_STATUS with OS_MONTHS. Drop rows with missing or non-positive OS_MONTHS and report how many were excluded.",
+      "from": [
+        "sl-dev-panel-noise-lab1-e60f4042faca"
+      ],
+      "reason": "If the event coding is wrong, every survival result is wrong.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-5a9f5a926a51"
+      }
+    },
+    {
+      "text": "Both predictors are coarse ordinal scores (3 genomic groups against 6 IPI levels), so many risk scores are tied. Score ties as 0.5 in Harrell's C, which is the survival::concordance default. Also compute Uno's IPCW C with a truncation time (for example 60 months). If the conclusion changes with the choice, report both and give little weight to small differences.",
+      "from": [
+        "sl-dev-panel-noise-lab1-f0e87f7c7072"
+      ],
+      "reason": "Tie handling and censoring can shift C enough to flip a close comparison.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-68518062bdc9"
+      }
+    },
+    {
+      "text": "Check proportional hazards with cox.zph for the IPI and genomic-model fits, and plot KM curves for both. If the curves cross or PH fails, compare time-dependent C/AUC at fixed horizons (for example 2 and 5 years) instead of relying on a single HR.",
+      "from": [
+        "sl-dev-panel-noise-lab1-4d08b338a983"
+      ],
+      "reason": "When PH is violated, which model looks better can depend on follow-up length.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-ff41521fcbe8"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "bd37-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team noted that the genomic score has only three levels while IPI has six, so tied scores can affect Harrell C, and they ran a like-for-like comparison against IPI grouped into three risk categories. You list grouped IPI as a sensitivity check. What did that comparison show on both C and AIC, and does a tie-matched comparison change how you weigh the evidence or your method?",
+      "from": [
+        "sl-dev-panel-noise-lab1-8decf06db185"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-dev-panel-noise-lab1-abb5672dc8f5"
+    },
+    {
+      "to": "bd37-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team tested whether the predictive value can be reproduced from the mutation data itself with a cross-validated model, since the supplied risk labels were derived on this cohort. You did not build a model from the mutation or copy-number tables. Does the hypothesis refer to the supplied labels or to the genetic alterations themselves, and does checking an out-of-sample model built from the alterations change your method?",
+      "from": [
+        "sl-dev-panel-noise-lab1-fdf63d984fae"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-dev-panel-noise-lab1-a2fbb6023a66"
+    },
+    {
+      "to": "bd37-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: both teams saw that discrimination and likelihood-based fit disagree. Please state explicitly why you chose paired C as the deciding criterion over AIC, and whether a time-dependent or horizon-specific comparison (given the PH violations you found) supports that choice. Does it change your method?",
+      "from": [
+        "sl-dev-panel-noise-lab1-fa37dc67b069"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-dev-panel-noise-lab1-3bfc016e6fa0"
+    },
+    {
+      "to": "bd37-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team ran Schoenfeld residual tests and found proportional-hazards violations for both the genomic model and IPI in the shared cohort. Your notes do not record a PH check. Check whether this holds in your data. Since your AIC and Cox-based comparisons assume PH, does it change your method or which metrics you rely on?",
+      "from": [
+        "sl-dev-panel-noise-lab1-fa37dc67b069"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-dev-panel-noise-lab1-a551c0393feb"
+    },
+    {
+      "to": "bd37-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that IPI missingness differs strongly depending on whether a patient has a genomic risk label, and recomputed IPI from its five factor columns to check consistency. You checked event rates by label availability but not IPI missingness by genomic group. Check whether this holds in your data. Does it change your method?",
+      "from": [
+        "sl-dev-panel-noise-lab1-b3fd91c072da"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-dev-panel-noise-lab1-88b5c6ff7403"
+    },
+    {
+      "to": "bd37-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team judged the likelihood/AIC advantage as in-sample (the labels were fitted on this cohort) and read the LRT result as 'adds information beyond IPI' rather than 'outperforms IPI'. Your own cross-validated mutation model and your note on in-sample fitting point at the same issue. How does an in-sample AIC gain bear on 'outperforms established methods', and does separating 'adds to' from 'outperforms' change your method or verdict?",
+      "from": [
+        "sl-dev-panel-noise-lab1-fa37dc67b069",
+        "sl-dev-panel-noise-lab1-fdf63d984fae"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-dev-panel-noise-lab1-8682029dae48"
+    }
+  ],
+  "warning_signs_to_team_c": [],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": {
+    "difference": "Both teams use the same 618 patients and get the same numbers (C 0.673 genomic label vs 0.682 IPI; AIC 2082 vs 2124). They differ in how they read 'outperform'. X relies on discrimination (C-index, time-dependent AUC) and out-of-sample models built from the alterations, and calls it False. Y relies on in-sample likelihood (AIC, LR chi2) of the supplied PROGNOSTIC_MODEL labels, and calls it True.",
+    "test": "test.py, three parts. (A) Paired bootstrap (300 resamples) of the AIC difference and the C difference, supplied label vs IPI. (B) Optimism check: derive a 3-group label from the mutation and CNA alterations (top 20 by log-rank, ridge Cox, group sizes matched to the supplied label), scored both in-sample and with 5-fold CV, and compare it with IPI.",
+    "expected_if_x": "C difference CI includes 0 or favours IPI. AIC advantage not robust. An alteration-derived label cannot match IPI even in-sample, so the label's AIC edge is not evidence that the genetic alterations outperform IPI.",
+    "expected_if_y": "Label beats IPI robustly: AIC difference CI above 0 and C not worse. An alteration-derived label reproduces performance at least equal to IPI.",
+    "outcome": "(A) C difference -0.008 (CI -0.056 to 0.037; label ahead in 38% of resamples). AIC difference mean 38.9 (CI -5.5 to 88.7; label better in 95.0% of resamples), so borderline. (B) Alteration-derived label: in-sample C 0.607 (AIC 2148, worse than IPI's 2124); cross-validated C 0.494; IPI C 0.682.",
+    "pick": "X",
+    "reason": "Discrimination is tied or favours IPI. The likelihood edge Y relies on is borderline under bootstrap and comes from labels fitted on this same cohort. The genetic alterations in the data, even with in-sample optimism, fall well short of IPI. The evidence contradicts 'outperforms established methods', which matches X's False.",
+    "own_answer": null,
+    "picked_agent": "bd37-team-a",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "bd37-team-a",
+      "Y": "bd37-team-b"
+    }
+  },
+  "research": [
+    {
+      "round": "questions",
+      "questions": [
+        {
+          "question": "When comparing a 3-level categorical risk score against a 6-level ordinal clinical index for survival prediction, what is the accepted way to handle tied predictions in Harrell's C, and is comparing against a collapsed version of the index considered a fair like-for-like comparison?",
+          "why": "One team's verdict relies on grouping the comparator to match tie structure; whether that is standard practice could settle which comparison is valid.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In prognostic model validation, when Harrell's C and AIC/likelihood ratio disagree about which of two non-nested models is better, which is conventionally used to claim one model 'outperforms' another, and how should in-sample derivation of one model affect AIC comparisons?",
+          "why": "The teams weigh discrimination and likelihood fit differently; the convention for 'outperformance' decides the label.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "What methods are recommended for comparing the discrimination of two survival predictors when the proportional hazards assumption is violated (e.g. Uno's IPCW C, time-dependent AUC at fixed horizons), and what are their defaults in common R packages?",
+          "why": "One team found PH violations; the other did not check. Knowing the appropriate PH-robust comparison lets both teams apply the same test.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When comparing a 3-level categorical risk score against a 6-level ordinal clinical index for survival prediction, what is the accepted way to handle tied predictions in Harrell's C, and is comparing against a collapsed version of the index considered a fair like-for-like comparison?",
+          "answer": "Standard Harrell's C counts pairs tied on the predictor as 1/2. This is the survival::concordance default, where ranks run from 0 to 1 and ties get the midrank. Ties limit the attainable range: with n discrete levels, C runs from about 1/(2n) to 1-1/(2n), so a 3-level score is mechanically capped below a 6-level index. Yan & Greene (Stat Med 2008) recommend that, when ties are substantial, both C with ties included and C with ties excluded be reported as lower and upper bounds. They also say that, when feasible, the models being compared should be scored on partitions at the same percentiles. Collapsing IPI into 3 groups that match the genomic groups' sizes is therefore a recognised way to make the comparison like-for-like. It is best treated as a sensitivity analysis next to the comparison against the full IPI as used in the clinic, not as a replacement for it. If the verdict flips between the two, the evidence for 'outperforms' is weak. Uno's IPCW C with discrete risk groups is another option (Heller & Mo 2016).",
+          "sources": [
+            "https://onlinelibrary.wiley.com/doi/10.1002/sim.3257",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6041741/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4886856/",
+            "https://search.r-project.org/CRAN/refmans/survival/html/concordance.html",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC10219847/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-a186740b46ae"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-fe3f27234e32"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When comparing a 3-level categorical risk score against a 6-level ordinal clinical index for survival prediction, what is the accepted way to handle tied predictions in Harrell's C, and is comparing against a collapsed version of the index considered a fair like-for-like comparison? ANSWER: Standard Harrell's C counts pairs tied on the predictor as 1/2. This is the survival::concordance default, where ranks run from 0 to 1 and ties get the midrank. Ties limit the attainable range: with n discrete levels, C runs from about 1/(2n) to 1-1/(2n), so a 3-level score is mechanically capped below a 6-level index. Yan & Greene (Stat Med 2008) recommend that, when ties are substantial, both C with ties included and C with ties excluded be reported as lower and upper bounds. They also say that, when feasible, the models being compared should be scored on partitions at the same percentiles. Collapsing IPI into 3 groups that match the genomic groups' sizes is therefore a recognised way to make the comparison like-for-like. It is best treated as a sensitivity analysis next to the comparison against the full IPI as used in the clinic, not as a replacement for it. If the verdict flips between the two, the evidence for 'outperforms' is weak. Uno's IPCW C with discrete risk groups is another option (Heller & Mo 2016). HOW SURE: medium. SOURCES: https://onlinelibrary.wiley.com/doi/10.1002/sim.3257, https://pmc.ncbi.nlm.nih.gov/articles/PMC6041741/, https://pmc.ncbi.nlm.nih.gov/articles/PMC4886856/, https://search.r-project.org/CRAN/refmans/survival/html/concordance.html, https://pmc.ncbi.nlm.nih.gov/articles/PMC10219847/."
+        },
+        {
+          "question": "In prognostic model validation, when Harrell's C and AIC/likelihood ratio disagree about which of two non-nested models is better, which is conventionally used to claim one model 'outperforms' another, and how should in-sample derivation of one model affect AIC comparisons?",
+          "answer": "The two sources point different ways. The methodological view (Harrell) is that likelihood-based measures (LR chi-square, AIC) are the gold standard and that comparing two c-indexes is a low-power method. For non-nested models he recommends fitting the combined model and running LR tests of the combined model against each single model (the adequacy index), or a head-to-head paired concordance comparison such as Hmisc rcorrp.cens. Applied prognostic papers, though, usually claim 'outperforms' on discrimination: a higher C with a paired test or CI. If C and AIC disagree, neither convention clearly supports 'outperforms', and the claim should be called unsettled or weak, not proven. AIC penalises only the number of estimated parameters. It does not correct for choosing variables or cut-points from the same data, so a genomic model derived on this cohort has optimistic apparent AIC and C, while IPI was fixed externally. Steyerberg recommends bootstrap internal validation that repeats every modelling step. An in-sample advantage for the derived model is therefore weaker evidence, and an in-sample advantage for the external index is stronger evidence.",
+          "sources": [
+            "https://www.fharrell.com/post/addvalue/",
+            "https://stats.stackexchange.com/questions/561464/anova-model-comparison-versus-concordance-index-comparison-in-deciding-best-mode",
+            "https://arxiv.org/pdf/1712.02379",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5578404/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-73a2d8e03b68"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-65edeff323da"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In prognostic model validation, when Harrell's C and AIC/likelihood ratio disagree about which of two non-nested models is better, which is conventionally used to claim one model 'outperforms' another, and how should in-sample derivation of one model affect AIC comparisons? ANSWER: The two sources point different ways. The methodological view (Harrell) is that likelihood-based measures (LR chi-square, AIC) are the gold standard and that comparing two c-indexes is a low-power method. For non-nested models he recommends fitting the combined model and running LR tests of the combined model against each single model (the adequacy index), or a head-to-head paired concordance comparison such as Hmisc rcorrp.cens. Applied prognostic papers, though, usually claim 'outperforms' on discrimination: a higher C with a paired test or CI. If C and AIC disagree, neither convention clearly supports 'outperforms', and the claim should be called unsettled or weak, not proven. AIC penalises only the number of estimated parameters. It does not correct for choosing variables or cut-points from the same data, so a genomic model derived on this cohort has optimistic apparent AIC and C, while IPI was fixed externally. Steyerberg recommends bootstrap internal validation that repeats every modelling step. An in-sample advantage for the derived model is therefore weaker evidence, and an in-sample advantage for the external index is stronger evidence. HOW SURE: medium. SOURCES: https://www.fharrell.com/post/addvalue/, https://stats.stackexchange.com/questions/561464/anova-model-comparison-versus-concordance-index-comparison-in-deciding-best-mode, https://arxiv.org/pdf/1712.02379, https://pmc.ncbi.nlm.nih.gov/articles/PMC5578404/."
+        },
+        {
+          "question": "What methods are recommended for comparing the discrimination of two survival predictors when the proportional hazards assumption is violated (e.g. Uno's IPCW C, time-dependent AUC at fixed horizons), and what are their defaults in common R packages?",
+          "answer": "Under non-PH, use truncated Uno IPCW C and/or IPCW cumulative/dynamic time-dependent AUC at fixed horizons (for example 2 and 5 years). These are rank measures and do not depend on a single hazard ratio. Defaults in the R docs I read:\n\n- **survival::concordance** gives Harrell's C by default (timewt='n'). timewt='n/G2' gives Uno's C, and ymax= restricts the time range to tau. Passing several fits, as in concordance(fit1, fit2), gives an infinitesimal-jackknife covariance that is valid even for non-nested models, but the rows must line up exactly (watch for missing values).\n- **survC1::Est.Cval(mydata, tau, nofit=FALSE)** has no default tau; the user must set it, and the censoring survival must be positive at tau. Inf.Cval.Delta(mydata, covs0, covs1, tau, itr=1000) tests the Uno C difference by resampling.\n- **timeROC::timeROC(T, delta, marker, cause, weighting='marginal', times, ROC=TRUE, iid=FALSE)** uses Kaplan-Meier censoring weights by default. iid=TRUE is needed for confidence intervals and for testing two markers measured on the same subjects; the companion compare() function was not on the page I read.",
+          "sources": [
+            "https://search.r-project.org/CRAN/refmans/survival/html/concordance.html",
+            "https://search.r-project.org/CRAN/refmans/survC1/html/Est.Cval.html",
+            "https://search.r-project.org/CRAN/refmans/survC1/html/Inf.Cval.Delta.html",
+            "https://search.r-project.org/CRAN/refmans/timeROC/html/timeROC.html"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": false,
+              "reasons": [
+                "contains another team's value for \"label\""
+              ],
+              "fact_id": null
+            },
+            "bd37-team-b": {
+              "delivered": false,
+              "reasons": [
+                "contains another team's value for \"label\""
+              ],
+              "fact_id": null
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What methods are recommended for comparing the discrimination of two survival predictors when the proportional hazards assumption is violated (e.g. Uno's IPCW C, time-dependent AUC at fixed horizons), and what are their defaults in common R packages? ANSWER: Under non-PH, use truncated Uno IPCW C and/or IPCW cumulative/dynamic time-dependent AUC at fixed horizons (for example 2 and 5 years). These are rank measures and do not depend on a single hazard ratio. Defaults in the R docs I read:\n\n- **survival::concordance** gives Harrell's C by default (timewt='n'). timewt='n/G2' gives Uno's C, and ymax= restricts the time range to tau. Passing several fits, as in concordance(fit1, fit2), gives an infinitesimal-jackknife covariance that is valid even for non-nested models, but the rows must line up exactly (watch for missing values).\n- **survC1::Est.Cval(mydata, tau, nofit=FALSE)** has no default tau; the user must set it, and the censoring survival must be positive at tau. Inf.Cval.Delta(mydata, covs0, covs1, tau, itr=1000) tests the Uno C difference by resampling.\n- **timeROC::timeROC(T, delta, marker, cause, weighting='marginal', times, ROC=TRUE, iid=FALSE)** uses Kaplan-Meier censoring weights by default. iid=TRUE is needed for confidence intervals and for testing two markers measured on the same subjects; the companion compare() function was not on the page I read. HOW SURE: high. SOURCES: https://search.r-project.org/CRAN/refmans/survival/html/concordance.html, https://search.r-project.org/CRAN/refmans/survC1/html/Est.Cval.html, https://search.r-project.org/CRAN/refmans/survC1/html/Inf.Cval.Delta.html, https://search.r-project.org/CRAN/refmans/timeROC/html/timeROC.html."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd37-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "bd37-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "bd37-team-b",
+      "round": "revise",
+      "reason": "the referee's test supported the other answer: Discrimination is tied or favours IPI. The likelihood edge Y relies on is borderline under bootstrap and comes from labels fitted on this same cohort. The genetic alterations in the data, even with in-sample optimism, fall well short of IPI. The evidence contradicts 'outperforms established methods', which matches X's False."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd37-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 111.63535441691056,
+      "cost_usd": 0.4507524,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 90.59509062499274,
+      "cost_usd": 0.1733308,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 74.30531874997541,
+      "cost_usd": 0.2166034,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 113.39227045793086,
+      "cost_usd": 0.2736446,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 65.6074595421087,
+      "cost_usd": 0.21361999999999998,
+      "error": null
+    },
+    {
+      "agent": "bd37-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 137.63175449997652,
+      "cost_usd": 0.5478066,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 73.99412333394866,
+      "cost_usd": 0.2503124,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 151.34824179206043,
+      "cost_usd": 0.35325439999999997,
+      "error": null
+    },
+    {
+      "agent": "bd37-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 133.1763333750423,
+      "cost_usd": 0.2599332,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

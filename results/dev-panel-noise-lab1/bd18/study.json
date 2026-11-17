@@ -1,0 +1,182 @@
+{
+  "study": "bd18",
+  "status": "replicated",
+  "final": {
+    "agent": "bd18-team-a",
+    "team": "team-a",
+    "round": "analysis",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd18/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd18-library": "opus",
+    "bd18-team-a": "opus",
+    "bd18-team-b": "opus",
+    "bd18-team-c": "opus",
+    "bd18-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd18-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd18/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd18-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd18/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd18-team-a",
+        "bd18-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "To test panel-vs-WES TMB correlation you need a WES-derived TMB (or WES mutation calls) for the same samples as the targeted-panel TMB. Before analysing, check whether such a variable exists: grep all clinical-table headers and '#' description lines for 'WES', 'exome', 'whole', and inspect data_gene_panel_matrix.txt and the mutation table's Center/Sequencer-type columns for any assay other than the MSK-IMPACT panels (IMPACT341/410/468). Do not construct a WES proxy from panel data; whether a genuine second assay is present decides whether the claim can be tested at all.",
+      "from": [
+        "sl-dev-panel-noise-lab1-974d84b435b5"
+      ],
+      "reason": "The key question is whether the comparison variable exists. Without this check a team could build a spurious comparison.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-e0cd3199340d"
+      }
+    },
+    {
+      "text": "MUTATION_RATE and TMB_NONSYNONYMOUS in data_clinical_sample.txt, and mutation counts recomputed from data_mutations.txt, all come from the same panel mutation calls (counts per panel Mb, with different filters or denominators). Correlating any of them with each other is circular and says nothing about panel-vs-WES concordance. To confirm, compute TMB_NONSYNONYMOUS/MUTATION_RATE per GENE_PANEL: a near-constant ratio shows they are rescalings of each other.",
+      "from": [
+        "sl-dev-panel-noise-lab1-bcbf45453a6c"
+      ],
+      "reason": "This is the most likely trap: a high correlation between two panel-derived TMB columns could be mistaken for evidence about WES.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-2aa720644ea7"
+      }
+    },
+    {
+      "text": "If genuinely paired panel and WES TMB values exist: use Spearman, or Pearson on log(TMB+1), because TMB is right-skewed and hypermutators dominate raw Pearson. Keep one sample per patient. Normalise per panel-specific Mb or stratify by IMPACT panel version. Keep correlation separate from agreement: panels can show systematic bias (for example higher TMB) and still correlate highly, and the hypothesis is about correlation only.",
+      "from": [
+        "sl-dev-panel-noise-lab1-f2da36bb1859",
+        "sl-dev-panel-noise-lab1-78ea14b907b2",
+        "sl-dev-panel-noise-lab1-8268f0689d1d",
+        "sl-dev-panel-noise-lab1-21b09980f9bc"
+      ],
+      "reason": "These choices decide whether a real correlation test is valid and read correctly, if such a test is possible.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-364932604eb5"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 0,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams take 'Not verifiable' to mean there is no WES-derived variable in the data. They looked for one through keyword searches ('WES', 'exome', 'whole') and assay labels. Neither team checked for a second assay that is labelled indirectly, for example a duplicate sample ID per patient or a non-IM sample-ID suffix.",
+      "Both teams take the hypothesis to need a second, independent TMB measurement for the same samples. Neither team considered whether part of it could be tested within the panel, for example by restricting calls to a shared gene subset across panel versions. Both rejected such proxies as circular, which is probably right."
+    ],
+    "unused_evidence": [
+      "Patient-level columns (IRB, Treatment Type, Durable Clinical Benefit, PFS) and PD-L1 Score are not relevant to panel-vs-WES concordance. Leaving them out should not change the label.",
+      "Sample-ID suffixes (for example T03 vs T01) could show multiple or re-sequenced specimens. Team A says there are 240 samples for 240 patients, so there is no paired second assay."
+    ],
+    "unresolved_weak_points": [
+      "Team B said WES might exist in the original study but not in these files. That is a statement about scope, not about this data, and it supports Not verifiable rather than weakening it.",
+      "Team A's weakest point, a WES value stored under a column name that is not obvious, was resolved: they reviewed every clinical column. My own look at the sample headers matches this. The columns are Mutation Rate, FGA, PD-L1, TMB (nonsynonymous) and Somatic Status (all Matched)."
+    ],
+    "second_readings": [
+      "The hypothesis could be read as a claim the source study made using external WES data. Under the task's definition, a claim whose comparison variable is absent from the data is Not verifiable, so this second reading does not change the label.",
+      "'Do not correlate' could be read as asking about agreement (bias) rather than correlation. Either way, a WES measurement is needed and none is present."
+    ],
+    "verdict": "I trust the agreed Not verifiable label highly. I checked the data structure myself: every sample has only MSK-IMPACT panel data for mutations, CNA and SV, 240 samples map one-to-one to patients, and the clinical tables hold only panel-derived TMB and mutation-rate columns. So no WES comparison variable exists, and I found no concrete check that could change the label, which is why there are no questions.",
+    "questions": []
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd18-team-b",
+      "round": "analysis",
+      "reason": "agreed with bd18-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd18-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 76.08170154097024,
+      "cost_usd": 0.24221959999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 41.56074437499046,
+      "cost_usd": 0.17620419999999998,
+      "error": null
+    },
+    {
+      "agent": "bd18-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 46.42681012500543,
+      "cost_usd": 0.1286436,
+      "error": null
+    },
+    {
+      "agent": "bd18-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 62.75627166603226,
+      "cost_usd": 0.164983,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 47.2884274169337,
+      "cost_usd": 0.1520222,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

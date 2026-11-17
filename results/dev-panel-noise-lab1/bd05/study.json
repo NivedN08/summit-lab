@@ -1,0 +1,310 @@
+{
+  "study": "bd05",
+  "status": "replicated",
+  "final": {
+    "agent": "bd05-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd05/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd05-library": "opus",
+    "bd05-team-a": "opus",
+    "bd05-team-b": "opus",
+    "bd05-team-c": "opus",
+    "bd05-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd05-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd05/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd05-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd05/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd05-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd05/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd05-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd05/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd05-team-a",
+        "bd05-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd05-team-a",
+        "bd05-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The hypothesis is a universal negative: it claims no JAK2-nonmutated MPN patient carries a somatic CALR mutation. It is not a question about frequency, and the known near-mutual-exclusivity of CALR and JAK2 says nothing about whether it holds. Per sample, build JAK2 status and CALR status from data_mutations.txt (Tumor_Sample_Barcode joined to SAMPLE_ID), keep only MPN samples, and count samples that have a CALR mutation and no JAK2 mutation. One credible somatic CALR call in a JAK2-wild-type MPN sample is enough to refute the claim. A count of zero supports it only if those samples were actually profiled for CALR.",
+      "from": [
+        "sl-dev-panel-noise-lab1-d3fd2c56a374"
+      ],
+      "reason": "This sets the logic of the decision. Teams often treat it as a frequency or exclusivity question and pick the wrong label.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-609158de4218"
+      }
+    },
+    {
+      "text": "CALR driver mutations are frameshift indels in exon 9. Type 1 is a 52-bp deletion (p.L367fs*46) and type 2 is a 5-bp TTGTC insertion (p.K385fs*47), and there are many rarer +1 frameshift variants. Exon 9 lies at about chr19:13054500-13055000 on GRCh37. For all Hugo_Symbol==CALR rows, tabulate Variant_Classification, Variant_Type and HGVSp. Do not filter to SNVs or missense calls, or to one protein change, because that misses these mutations. Count every exon 9 frameshift.",
+      "from": [
+        "sl-dev-panel-noise-lab1-9ce3663a0548"
+      ],
+      "reason": "A filter that keeps only SNVs or missense calls makes CALR mutations look absent, which biases the result toward the hypothesis.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-887ad93eae53"
+      }
+    },
+    {
+      "text": "Define 'JAK2 mutated' as any JAK2 driver mutation, not just V617F. This includes exon 12 indels around codons 536-547, such as N542-E543del and F537-K539delinsL. Tabulate every JAK2 HGVSp value. Report the result under both definitions (V617F only, and any JAK2 driver), and note whether the conclusion changes.",
+      "from": [
+        "sl-dev-panel-noise-lab1-8c99729d4593"
+      ],
+      "reason": "The JAK2 definition decides which samples fall in the 'nonmutated' group, so it can move a sample in or out of the counterexample set.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-00bdc3b05aa0"
+      }
+    },
+    {
+      "text": "In a minority of MPN patients, CALR mutations occur together with JAK2 V617F, often at low JAK2 burden. A CALR-mutant sample that also has any JAK2 call is not JAK2-nonmutated, so it is not a counterexample. For each CALR-mutant sample, list its JAK2 calls and their VAF (t_alt_count/(t_ref_count+t_alt_count)). Judge the hypothesis only on CALR-mutant samples with no JAK2 call.",
+      "from": [
+        "sl-dev-panel-noise-lab1-23e30ff40460"
+      ],
+      "reason": "This keeps co-mutated samples from being wrongly counted as counterexamples.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-9221e5a970d6"
+      }
+    },
+    {
+      "text": "Not every CALR variant is a somatic driver. In-frame exon 9 deletions, silent or intronic variants and changes outside exon 9 may be germline polymorphisms or passengers. For each CALR row, check Variant_Classification, position/exon, Mutation_Status and the somatic or matched-normal fields, including n_alt_count in the normal sample. Base the verdict on somatic exon 9 frameshift calls. Report other CALR variants separately and say whether the conclusion depends on them.",
+      "from": [
+        "sl-dev-panel-noise-lab1-cf2d1958e4be"
+      ],
+      "reason": "Counting non-driver or germline CALR variants can create counterexamples that do not exist.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-bcb0c728feaa"
+      }
+    },
+    {
+      "text": "In a cBioPortal MAF, samples with no mutation calls do not appear at all. Take the list of samples from data_clinical_sample.txt and mark a sample JAK2-mutated if it has any JAK2 row in the MAF. Compare how many samples are in the clinical file and how many are in the MAF, and use any profiling or TMB columns to confirm that samples were sequenced.",
+      "from": [
+        "sl-dev-panel-noise-lab1-14f044f998c5"
+      ],
+      "reason": "Using the clinical file gives the correct denominator and shows whether the sample set was profiled for CALR, which a zero-count conclusion depends on.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-4b07fe55fd4a"
+      }
+    },
+    {
+      "text": "Check that Tumor_Sample_Barcode values match SAMPLE_ID, and do not join on PATIENT_ID by mistake. Check for patients with more than one sample: the hypothesis is about patients, so combine each patient's samples before judging. Tabulate CANCER_TYPE_DETAILED/ONCOTREE_CODE and keep only MPN subtypes (PV, ET, PMF, MPN NOS). Non-MPN samples have no bearing on the hypothesis.",
+      "from": [
+        "sl-dev-panel-noise-lab1-f2cab7affca4"
+      ],
+      "reason": "A wrong join, unmerged multi-sample patients or non-MPN samples can assign the wrong JAK2/CALR status and distort the count.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-6d60eb4e4fc2"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 4,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "JAK2 'nonmutated' status was taken only from whether a sample has a JAK2 row in the MAF. Neither team checked the per-row 'JAK2/MPL mutation' annotation column as an independent label.",
+      "Every CALR call was taken as somatic because the sample-level SOMATIC_STATUS is 'Matched'. Neither team checked the per-row germline allele percentage or germline read columns.",
+      "Each sample was treated as one patient (patient ID = sample ID) and the cohort was treated as the full MPN population in scope, with no thought about how it was selected."
+    ],
+    "unused_evidence": [
+      "MAF columns 'JAK2/MPL mutation', 'Tumor allele burden (%)', 'Germline allele percentage (%)', 'Germline reads' and 'Validation_Method' (values include Sanger/targeted resequencing). These could confirm that the CALR calls are somatic and validated and that the JAK2 label is right. Ignoring them is unlikely to flip the label, but it is the direct evidence on the weakest point that team A named."
+    ],
+    "unresolved_weak_points": [
+      "Team A said somatic status had to be inferred because per-row status fields are empty. It reported this but did not test it with the germline allele percentage, germline reads or validation columns.",
+      "Team B said JAK2 wildtype status assumes no JAK2 mutation went undetected. It did not cross-check this against the 'JAK2/MPL mutation' column."
+    ],
+    "second_readings": [
+      "'Nonmutated JAK2' could mean JAK2-unmutated only, or JAK2- and MPL-unmutated. Either way a CALR-positive case counts as a counterexample, so the label is unlikely to change. 'Somatic' is the qualifier that matters, and it should be confirmed per row."
+    ],
+    "verdict": "I trust the agreed answer highly. The hypothesis is a universal negative, and both teams found many canonical CALR exon 9 frameshifts in JAK2-wildtype MPN samples with matched normals. The remaining checks (per-row germline and validation fields, the JAK2/MPL annotation) confirm robustness and are unlikely to flip the label.",
+    "questions": [
+      {
+        "to": "bd05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For each CALR-mutant sample you counted as JAK2-nonmutated, what do the MAF columns 'Germline allele percentage (%)' and 'Germline reads' show? Does any CALR call look germline, and does that change your counterexample count?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-edd17adb812b"
+      },
+      {
+        "to": "bd05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Does the per-row 'JAK2/MPL mutation' column agree with your JAK2 status derived from JAK2 rows for every CALR-mutant sample? If not, which definition do you use and why?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-4c38da10abcd"
+      },
+      {
+        "to": "bd05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate 'Validation_Method' and 'Tumor allele burden (%)' for the CALR calls in JAK2-wildtype samples. Are any calls unvalidated or at very low allele burden, and would leaving them out change your conclusion?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-4ead18117aad"
+      },
+      {
+        "to": "bd05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate the MAF 'JAK2/MPL mutation' annotation against your JAK2-row-based status and against CALR status. Do any discordant samples exist, and do they change which samples count as JAK2-nonmutated?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-7780cdc36f2e"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd05-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd05-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd05-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd05-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd05-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 76.64500350004528,
+      "cost_usd": 0.2714972,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 43.30714312498458,
+      "cost_usd": 0.1386784,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 39.09699270792771,
+      "cost_usd": 0.1129118,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 51.63303350005299,
+      "cost_usd": 0.15189500000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 71.61597749998327,
+      "cost_usd": 0.23461020000000002,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 53.66545187495649,
+      "cost_usd": 0.1959344,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 56.72155225009192,
+      "cost_usd": 0.1439856,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

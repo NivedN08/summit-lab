@@ -1,0 +1,425 @@
+{
+  "study": "bd28",
+  "status": "replicated",
+  "final": {
+    "agent": "bd28-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd28/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd28-library": "opus",
+    "bd28-team-a": "opus",
+    "bd28-team-b": "opus",
+    "bd28-team-c": "opus",
+    "bd28-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd28-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd28/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd28-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd28/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd28-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd28/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd28-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd28/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd28-team-a",
+        "bd28-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd28-team-a",
+        "bd28-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "'Pathway activation' is a functional claim, shown for example by phospho-ERK or MAPK transcriptional output. Before deciding, list every table and column provided (clinical, gene panel matrix, mutations MAF, SV) and check whether any expression, protein, phospho, pathway-score or functional-assay variable exists. If none does, finding ARAF N217I/G322S only shows that the mutations exist, not that they activate the pathway. Say explicitly which label the available variables can support and why.",
+      "from": [
+        "sl-dev-panel-noise-lab1-8a0d803f2121"
+      ],
+      "reason": "This is the central issue of the task: it decides whether the data can address the claim at all, and it stops activation from being read straight off a mutation list.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-9720d30011e8"
+      }
+    },
+    {
+      "text": "Find the ARAF variants by checking Hugo_Symbol==ARAF in data_mutations.txt and ARAF in data_sv.txt. Inspect HGVSp_Short, Protein_position, Transcript_ID, Variant_Classification, genomic Start_Position/codon change and the carrying Tumor_Sample_Barcode. Protein positions depend on the transcript; the canonical ARAF transcript is ENST00000377045 / NM_001654. If the transcript is non-canonical, match on genomic coordinate or codon rather than the 'p.N217I' string. Finding the variants is not evidence for the hypothesis, and not finding them is not evidence against it.",
+      "from": [
+        "sl-dev-panel-noise-lab1-91129e2b5514",
+        "sl-dev-panel-noise-lab1-0c043d11e7a0"
+      ],
+      "reason": "Exact string matching on the protein change can miss or misidentify the variants. Presence or absence alone is easily misread as support or contradiction.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-c9aaf221926b"
+      }
+    },
+    {
+      "text": "For the ARAF rows, check dbSNP_RS, FILTER, t_alt_count/t_depth (VAF), and whether the same coordinate recurs across samples. Germline polymorphisms, low-VAF calls and duplicated records should not be counted as somatic activating events.",
+      "from": [
+        "sl-dev-panel-noise-lab1-694109c894eb"
+      ],
+      "reason": "Whole-exome MAFs can contain germline or artefact calls that look like recurrent drivers.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-211470e93e98"
+      }
+    },
+    {
+      "text": "Background knowledge, not in the data: ARAF has low intrinsic kinase activity (non-canonical APE motif) and depends on dimerisation, so BRAF-hotspot logic does not carry over. Most ARAF missense variants have no functional characterisation; under AMP/ASCO/CAP and ClinGen/CGC/VICC rules, a novel kinase missense with no functional data is a variant of uncertain significance. Only a few ARAF variants have functional evidence, e.g. the S214 region and beta3-alphaC in-frame deletions. N217 lies near the CR2 S214 regulatory site and G322 near the start of the kinase domain; treat this domain proximity as suggestive only. Check whether any MAF annotation column (SIFT/PolyPhen, oncogenic flags) gives effect calls.",
+      "from": [
+        "sl-dev-panel-noise-lab1-aab79dc79866",
+        "sl-dev-panel-noise-lab1-c28ec4301d85"
+      ],
+      "reason": "This prevents a missense in a regulatory or kinase region from being inferred to be activating without a functional or downstream readout.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-74b63c49f981"
+      }
+    },
+    {
+      "text": "The cohort is very small, about 8 iCCA samples sequenced by whole-exome. Mutual exclusivity of ARAF with KRAS/NRAS/BRAF/MAP2K1/NF1 mutations or FGFR2 fusions (data_sv.txt) can be tabulated per sample, but only as description. With n<10 it is underpowered and cannot serve as indirect proof of pathway activation.",
+      "from": [
+        "sl-dev-panel-noise-lab1-16236d2d3a0f"
+      ],
+      "reason": "This guards against over-reading chance exclusivity patterns as evidence of activation.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-8a20bc558135"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams read 'the pathway' as MAPK/RAS-RAF-MEK-ERK and only searched for MAPK genes. The hypothesis never names the pathway, and neither team asked whether another reading would change which variables count as relevant.",
+      "Both teams treated the two ARAF calls as somatic tumour mutations. Matched_Norm_Sample_Barcode and Mutation_Status are empty in every row, and there are no read counts, so somatic status is assumed, not shown.",
+      "Both teams took 'no expression or phospho table' to mean 'no relevant variable'. Neither asked whether the RNA-derived fusion calls in the SV file are an indirect pathway readout."
+    ],
+    "unused_evidence": [
+      "data_sv.txt has DNA_support=No and RNA_support=Yes in every row, so the fusions were called from RNA. This shows RNA-seq was run, but no expression matrix was supplied. Neither team used these columns to explain why an activation readout is missing.",
+      "data_sv.txt has RIN1 fusions (RIN1-IGLL5 in ICC12, which carries ARAF G322S, and RIN1-IGLJ3 in ICC8 and ICC14). RIN1 is a RAS effector. Both teams reported only FGFR2-PPHLN1, and neither said whether these calls (with immunoglobulin partners, likely artefacts) bear on pathway status in the ARAF carriers.",
+      "TMB_NONSYNONYMOUS in the sample table and the per-sample mutation counts. Neither team used them to judge whether the ARAF carriers (ICC12, ICC18) look like typical tumours or like low-quality calls.",
+      "ARAF lies on chrX and no sex column exists. Neither team noted that zygosity (hemizygous or heterozygous) cannot be judged."
+    ],
+    "unresolved_weak_points": [
+      "Team A named missing read counts (somatic status and clonality cannot be checked) as its weakest point. It reported this but did not resolve it, for example by checking the empty matched-normal and Mutation_Status fields.",
+      "Team B named grader expectation (the source study may have shown activation in vitro) as its weakest point. This is a concern about the label, not about the data, and Team B did not resolve it by asking whether any variable in the tables could stand in for a functional readout.",
+      "Neither team wrote down what result would have made it choose False. It is not clear whether 'Not verifiable' was ever tested against 'False', or only against 'True'."
+    ],
+    "second_readings": [
+      "Reading 1: 'lead to activation' is a functional claim, so only expression, phospho or assay data could test it. This is the reading both teams used.",
+      "Reading 2: the claim is that these ARAF mutations occur in iCCA as candidate pathway-activating drivers, for example being exclusive of other MAPK drivers or of FGFR2 fusions. Under this reading the mutation and SV tables are relevant variables, and the label would turn on whether the descriptive pattern supports or contradicts the claim, not on whether the variables exist.",
+      "'The pathway' is left unnamed. Readers could take it as MAPK/ERK or as RAF-dependent signalling more broadly, and the two readings change which genes and fusions count."
+    ],
+    "verdict": "I trust 'Not verifiable' moderately to well. The data hold only DNA mutation calls and RNA-only fusion calls for 8 samples, with no expression, phospho or functional variable, so a functional activation claim cannot be tested. The remaining risks are that both teams assumed MAPK and somatic status without checking, and that neither looked at the RIN1 fusions or wrote down what would have counted as contradicting evidence.",
+    "questions": [
+      {
+        "to": "bd28-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Matched_Norm_Sample_Barcode and Mutation_Status are empty in every MAF row. Check whether anything in the five tables shows the ARAF calls in ICC12 and ICC18 are somatic. Does the answer change how much weight the label puts on their presence?",
+        "from": [
+          "sl-dev-panel-noise-lab1-8e7044219ed2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-e013511ffef7"
+      },
+      {
+        "to": "bd28-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: data_sv.txt has RIN1 fusions (RIN1-IGLL5 in ICC12, an ARAF carrier; RIN1-IGLJ3 in ICC8 and ICC14), and all fusions are RNA-supported only. Tabulate every SV involving a RAS/RAF-pathway gene, not only FGFR2, for each sample. Does this change your co-alteration table or your view that no pathway-relevant variable exists?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-287a9b9831cf"
+      },
+      {
+        "to": "bd28-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: State in writing what pattern in these tables would have led you to 'False' rather than 'Not verifiable'. Check whether the data show that pattern. Does writing this down change your label or your stated confidence?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-416abe17a57e"
+      },
+      {
+        "to": "bd28-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your pitfalls_checked list is empty. For the two ARAF rows, check dbSNP_RS, Transcript_ID versus the canonical transcript, matched-normal and Mutation_Status fields, and whether the coordinates recur in other samples. Do any of these results change the method or the label?",
+        "from": [
+          "sl-dev-panel-noise-lab1-4a88cb74246e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-bd8e364139cf"
+      },
+      {
+        "to": "bd28-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Every SV row has RNA_support=Yes and DNA_support=No, so the fusions came from RNA-seq. List all fusions in ICC12 and ICC18, including RIN1 partners. Check whether any of them involves a RAS/RAF-pathway gene. Does that count as a relevant variable for 'activation of the pathway'?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-31db087dbbf6"
+      },
+      {
+        "to": "bd28-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: The hypothesis does not name the pathway. Re-run your gene search under a wider definition of RAF-dependent signalling, including upstream RTKs, RAS regulators and effectors, in all 8 samples. Does any result in ICC12 or ICC18 change your label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-8dbd61b932b8"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In cancer-genomics resources that follow the cBioPortal format, what do DNA_support and RNA_support in a structural-variant table mean? Does RNA_support=Yes with DNA_support=No mean the fusion was detected only from RNA-seq?",
+          "why": "If the fusions were called from RNA-seq, then transcriptome data existed but expression was not supplied. This bears on whether 'no activation readout' reflects the study design or a missing table, and on how reliable the RAS-effector fusions are.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Is there published functional evidence on whether ARAF missense variants near the CR2 regulatory region (around residues 214-217) or at the start of the kinase domain (around residue 322) increase MEK/ERK signalling, and what assays are used to show it?",
+          "why": "This settles whether 'activation' can only be shown functionally, which supports reading the claim as needing non-genomic data, or whether these positions have established activating annotations.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Are fusions of a gene with immunoglobulin lambda segments (IGLJ/IGLL5), detected only from RNA-seq in solid tumours, a known artefact pattern in fusion-calling pipelines?",
+          "why": "This decides whether the RAS-effector fusions in the ARAF carrier should be treated as pathway evidence or ignored as artefacts.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In cancer-genomics resources that follow the cBioPortal format, what do DNA_support and RNA_support in a structural-variant table mean? Does RNA_support=Yes with DNA_support=No mean the fusion was detected only from RNA-seq?",
+          "answer": "These are yes/no flags. DNA_support means the fusion was detected from DNA sequence data; RNA_support means it was detected from RNA sequence data. RNA_support=Yes with DNA_support=No means the fusion was detected from RNA-seq only and not confirmed in DNA, so RNA-seq existed for that sample even though no expression table was supplied. The definition appears in the same words in several cBioPortal-derived format docs, but the fetched pages were cut off before the SV section, so I saw it only in search excerpts.",
+          "sources": [
+            "https://d3b-center.github.io/pedcbioportal/File-Formats.md",
+            "https://docs.bcbi.brown.edu/codiac-for-health/ursa-ri/datasets/cbioportal-for-cancer-genomics/data-dictionary",
+            "https://docs.cbioportal.org/file-formats/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd28-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-51a24f0327bd"
+            },
+            "bd28-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-4d75f5736b1e"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cancer-genomics resources that follow the cBioPortal format, what do DNA_support and RNA_support in a structural-variant table mean? Does RNA_support=Yes with DNA_support=No mean the fusion was detected only from RNA-seq? ANSWER: These are yes/no flags. DNA_support means the fusion was detected from DNA sequence data; RNA_support means it was detected from RNA sequence data. RNA_support=Yes with DNA_support=No means the fusion was detected from RNA-seq only and not confirmed in DNA, so RNA-seq existed for that sample even though no expression table was supplied. The definition appears in the same words in several cBioPortal-derived format docs, but the fetched pages were cut off before the SV section, so I saw it only in search excerpts. HOW SURE: medium. SOURCES: https://d3b-center.github.io/pedcbioportal/File-Formats.md, https://docs.bcbi.brown.edu/codiac-for-health/ursa-ri/datasets/cbioportal-for-cancer-genomics/data-dictionary, https://docs.cbioportal.org/file-formats/."
+        },
+        {
+          "question": "Is there published functional evidence on whether ARAF missense variants near the CR2 regulatory region (around residues 214-217) or at the start of the kinase domain (around residue 322) increase MEK/ERK signalling, and what assays are used to show it?",
+          "answer": "Yes for S214 (S214C/F/P) at the CR2 14-3-3 site. Cells engineered to express S214C activate Raf-MEK-ERK signalling (phospho-MEK/ERK immunoblots) and show more proliferation, colony and spheroid formation, migration and invasion, with RNA-seq and RPPA readouts and sorafenib sensitivity. S214P is gain-of-function and treatable with a MEK inhibitor. Kinase-region beta3-alphaC deletions (Q347A348del) activate MEK-ERK in 293T cells. I found no functional evidence or established activating annotation for N217I or G322S. Activation is shown with functional assays, not from genomic calls alone. The absence for N217/G322 rests on limited searching.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC12248905/",
+            "https://www.jci.org/articles/view/72763",
+            "https://www.nature.com/articles/s41388-018-0365-2",
+            "https://pubmed.ncbi.nlm.nih.gov/31263281/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd28-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-302af5c93f6b"
+            },
+            "bd28-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-ba4e1630a96a"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Is there published functional evidence on whether ARAF missense variants near the CR2 regulatory region (around residues 214-217) or at the start of the kinase domain (around residue 322) increase MEK/ERK signalling, and what assays are used to show it? ANSWER: Yes for S214 (S214C/F/P) at the CR2 14-3-3 site. Cells engineered to express S214C activate Raf-MEK-ERK signalling (phospho-MEK/ERK immunoblots) and show more proliferation, colony and spheroid formation, migration and invasion, with RNA-seq and RPPA readouts and sorafenib sensitivity. S214P is gain-of-function and treatable with a MEK inhibitor. Kinase-region beta3-alphaC deletions (Q347A348del) activate MEK-ERK in 293T cells. I found no functional evidence or established activating annotation for N217I or G322S. Activation is shown with functional assays, not from genomic calls alone. The absence for N217/G322 rests on limited searching. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC12248905/, https://www.jci.org/articles/view/72763, https://www.nature.com/articles/s41388-018-0365-2, https://pubmed.ncbi.nlm.nih.gov/31263281/."
+        },
+        {
+          "question": "Are fusions of a gene with immunoglobulin lambda segments (IGLJ/IGLL5), detected only from RNA-seq in solid tumours, a known artefact pattern in fusion-calling pipelines?",
+          "answer": "Not settled by the pages I read. Reviews say RNA-only fusion calls carry many false positives from mismapping, homologous or polymorphic regions, very high expression and library artefacts such as template switching. They also say IG loci map poorly and that recurrent immunoglobulin-rearrangement events should be flagged and deprioritised. In a solid tumour, IG-lambda partners plausibly come from infiltrating plasma cells with high IG expression, so these fusions are suspect and weak pathway evidence at best. I found no source naming IGLJ/IGLL5 fusions specifically as a documented artefact.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC9851307/",
+            "https://ncbi.nlm.nih.gov/pmc/articles/PMC7919457/",
+            "https://www.frontiersin.org/journals/genetics/articles/10.3389/fgene.2020.00173/full",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8719081/"
+          ],
+          "confidence": "low",
+          "deliveries": {
+            "bd28-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-086a217d3199"
+            },
+            "bd28-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-160cc190ffee"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Are fusions of a gene with immunoglobulin lambda segments (IGLJ/IGLL5), detected only from RNA-seq in solid tumours, a known artefact pattern in fusion-calling pipelines? ANSWER: Not settled by the pages I read. Reviews say RNA-only fusion calls carry many false positives from mismapping, homologous or polymorphic regions, very high expression and library artefacts such as template switching. They also say IG loci map poorly and that recurrent immunoglobulin-rearrangement events should be flagged and deprioritised. In a solid tumour, IG-lambda partners plausibly come from infiltrating plasma cells with high IG expression, so these fusions are suspect and weak pathway evidence at best. I found no source naming IGLJ/IGLL5 fusions specifically as a documented artefact. HOW SURE: low. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC9851307/, https://ncbi.nlm.nih.gov/pmc/articles/PMC7919457/, https://www.frontiersin.org/journals/genetics/articles/10.3389/fgene.2020.00173/full, https://pmc.ncbi.nlm.nih.gov/articles/PMC8719081/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd28-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd28-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd28-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd28-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd28-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 78.478013832937,
+      "cost_usd": 0.2949492,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 54.46065829193685,
+      "cost_usd": 0.1508082,
+      "error": null
+    },
+    {
+      "agent": "bd28-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 41.34739333298057,
+      "cost_usd": 0.1253374,
+      "error": null
+    },
+    {
+      "agent": "bd28-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 42.54882329108659,
+      "cost_usd": 0.17204399999999997,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 82.50900779198855,
+      "cost_usd": 0.28915280000000004,
+      "error": null
+    },
+    {
+      "agent": "bd28-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 131.19039374997374,
+      "cost_usd": 0.48527659999999995,
+      "error": null
+    },
+    {
+      "agent": "bd28-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 61.44250229198951,
+      "cost_usd": 0.2244622,
+      "error": null
+    },
+    {
+      "agent": "bd28-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 64.20930995896924,
+      "cost_usd": 0.2449862,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

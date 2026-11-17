@@ -1,0 +1,386 @@
+{
+  "study": "sc08",
+  "status": "replicated",
+  "final": {
+    "agent": "sc08-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab2/sc08/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "sc08-library": "opus",
+    "sc08-team-a": "opus",
+    "sc08-team-b": "opus",
+    "sc08-team-c": "opus",
+    "sc08-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc08-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab2/sc08/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc08-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab2/sc08/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc08-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab2/sc08/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc08-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab2/sc08/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc08-team-a",
+        "sc08-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc08-team-a",
+        "sc08-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The dataset 159007346.node has no counts layer, so the task's Step 1 falls back to X. Before any processing, confirm X really is raw: values should be non-negative integers, row sums should match obs total_counts, and obs n_genes_raw (if present) should equal the per-row count of genes >0. If X turns out to be already log-normalized, flag it and do not normalize twice.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-3217e4bb5881"
+      ],
+      "reason": "Every later step (the n_genes>1000 filter, CP10K, the Edn1 means) is wrong if X is not raw counts.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-d81f167451d8"
+      }
+    },
+    {
+      "text": "Compute the Step 5 Edn1 means on unintegrated log1p(counts/total_counts*1e4) from raw counts. Values must be >=0 and unscaled, and Edn1 must be 0 wherever its raw count is 0. Use integrated, scaled or batch-corrected values only for PCA, the kNN graph and clustering, never for the per-type means.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-06c2e24190cb"
+      ],
+      "reason": "Taking the means from the integrated or scaled matrix can reorder the cell types and change the answer.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-c71cf7e68be6"
+      }
+    },
+    {
+      "text": "Scanpy has no built-in RPCA. Use a real RPCA implementation (Seurat RPCAIntegration, or a Python port such as omicverse rpca). If you substitute harmony, BBKNN or something else, say so explicitly. Batch should be obs 'sample' if it exists (reportedly 3 levels, with age group confounded with sample). Over-integration can absorb rare types such as mural or immune cells into neighbouring clusters, so check that every major type still forms its own cluster after integration.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-8e0f210f87ff"
+      ],
+      "reason": "The integration method and its strength decide whether small populations (mural, macrophage) survive as separate clusters that can be labeled.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-734c2cc8f8c3"
+      }
+    },
+    {
+      "text": "In DRG, endothelial and mural cells are closely related, and markers such as Rgs5, Notch3 and Flt1 can be shared at low levels. At resolution 0.6 they may merge into one vascular cluster. Check whether Pecam1/Flt1-high and Rgs5/Notch3-high nuclei fall into separate clusters. If the Edn1-high cluster is vascular, compare Edn1 in its Pecam1+ and Rgs5+ nuclei and confirm with extra markers (endothelial: Cldn5, Ly6c1; mural: Vtn, Kcnj8, Acta2). If the two are merged, subcluster or label per cell, and report Edn1 for each subtype.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-da1122c76a0a"
+      ],
+      "reason": "How a merged vascular cluster is labeled can decide between option A (endothelial) and option C (mural).",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-2a6c2a72d3d2"
+      }
+    },
+    {
+      "text": "Some clusters may be mixtures or doublets, for example neuron+SGC (physically attached in DRG) or endothelial+mural. Print the mean and percent-expressing of every marker panel for each cluster, and flag clusters where two panels are both high. Label clusters by the dominant z-scored panel score. Confirm the Edn1-high cluster has an unambiguous label, and test whether the answer changes with how any mixed cluster is labeled.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-1e0c56af5cbe"
+      ],
+      "reason": "Mislabeling a mixed cluster can move the Edn1 signal to the wrong major type and change the selected option.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-d466be823cbe"
+      }
+    },
+    {
+      "text": "Map labels to answer options explicitly: Endothelial->A, Fibroblast->B, Mural->C, SGC->D, Neuron->E, Macrophage->F. Schwann, T_cell and B_cell are not options. Rank all labeled types by mean Edn1. If a non-option type comes out on top, record that and pick the highest among the option types. Check that every option type received at least one cluster.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-81b087c17df7"
+      ],
+      "reason": "Mapping mistakes (for example SGC vs Schwann) or a non-option type ranking first can lead directly to the wrong letter.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-e927414aaf64"
+      }
+    },
+    {
+      "text": "Leiden/Louvain output depends on implementation (leidenalg vs igraph flavor, graph weighting, Seurat SNN vs scanpy kNN), so seed=0 does not guarantee identical clusters across tools. Rerun clustering with 2-3 other seeds or flavors and check whether the label of the Edn1-high cluster and the top-ranked type stay the same. If they change, report the instability or fall back to per-cell marker-score labels.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-c0733083fdaf"
+      ],
+      "reason": "Small populations' cluster boundaries can shift between runs, which could flip the top type.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-29940aa2c411"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams labelled whole clusters by the top z-scored marker panel. The task does not say how to turn marker evidence into a label. Neither team showed that the label of the Edn1-high vascular cluster holds under an unscaled panel mean or under fraction-expressing scoring.",
+      "Both used a home-made stand-in for RPCA: team A wrote a numpy MNN anchor correction and team B used per-sample scaled PCA. Both then argued that the 45x Edn1 gap makes clustering details irrelevant. That holds only if the endothelial nuclei always end up under a label that maps to option A. It does not hold if the vascular cluster absorbs mural nuclei and gets labelled Mural.",
+      "Both assumed that sample-level batch correction is harmless even though sample is fully confounded with age_group (3M=Adult; 21M1 and 21M2=Aged)."
+    ],
+    "unused_evidence": [
+      "The obs columns total_counts, n_genes and n_genes_raw were used only to check that X holds raw counts. Neither team checked whether the Edn1-high cluster has unusual depth or doublet-like n_genes, for example vascular cells mixed with neurons or mural cells.",
+      "About 43 of the 119 Edn1+ nuclei lie outside team A's endothelial cluster. Neither team reported which clusters or labels hold them, or whether a small cluster outside the vascular one has a high per-nucleus Edn1 mean."
+    ],
+    "unresolved_weak_points": [
+      "Team B's vascular cluster 12 (578 nuclei) mixes Pecam1/Flt1 with Rgs5/Notch3. Team B checked Edn1 per cell but did not report the cluster-level margin between the Endothelial and Mural label scores, and that margin decides between options A and C. Team B also has neuron cluster 8 labelled Mural, which means its Mural label is noisy.",
+      "Both teams reported the RPCA approximation as their weakest point. They tested stability across seeds and integration variants but not across Louvain vs Leiden, even though the task allows either."
+    ],
+    "second_readings": [
+      "'Major cell type' could mean the per-cluster label from the task's panel, or a per-nucleus label. Under per-cluster labelling, a mixed vascular cluster labelled Mural would move the answer to C. Both teams' evidence points to endothelial under either reading, but only team A showed a clean split.",
+      "'Highest Edn1 expression' could mean the mean of log1p(CP10K), as the task specifies, or the fraction of nuclei detecting Edn1. The task fixes the mean, so this reading is weak."
+    ],
+    "verdict": "I trust the agreed answer highly. Edn1 is concentrated in Pecam1/Cldn5-positive nuclei at about 45x the next type, in all 3 samples and under both teams' integration variants. The main risk left is labelling: a mixed vascular cluster, which team B has, could be labelled Mural under another scoring rule or clustering algorithm.",
+    "questions": [
+      {
+        "to": "sc08-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: For vascular cluster 12, print the Endothelial and Mural panel scores under z-scored means, unscaled mean log1p, and fraction-expressing, along with the margin between them. Does cluster 12 keep the Endothelial label under all three? If it does not, does the per-type Edn1 ranking change?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab2-4fbe3055a009"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-2fc93008a33f"
+      },
+      {
+        "to": "sc08-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Rerun the clustering with Louvain at resolution 0.6 and seed 0, which the task also allows, and with Leiden seeds 1 and 2. Does the cluster holding most Edn1+ nuclei keep the Endothelial label every time? Does the method change if it does not?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab2-9c59b6a98292"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-c7a31a3923d9"
+      },
+      {
+        "to": "sc08-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate the Edn1+ nuclei (raw count > 0) that fall outside the vascular cluster by cluster and assigned label, and give Edn1 mean and detection fraction per cluster, not only per type. Does any small non-endothelial cluster come close to the endothelial mean?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-cbc67c33870f"
+      },
+      {
+        "to": "sc08-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Of the 119 Edn1+ nuclei, 43 are outside endothelial cluster 12. List their clusters and labels, and give per-cluster Edn1 mean and detection fraction. Does any cluster labelled with another option type have a per-nucleus mean comparable to 0.274?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab2-21139f75d926"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-d6d1697cbfdc"
+      },
+      {
+        "to": "sc08-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cluster 15 is labelled B_cell but has Pecam1 in 50% of nuclei. Re-score clusters 12, 15 and 20 with unscaled panel means and with fraction-expressing instead of z-scores. Do any of their labels change, and does that move the Edn1 ranking?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab2-41519eda1642"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-99109a079bec"
+      },
+      {
+        "to": "sc08-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Rerun with Louvain at resolution 0.6 and seed 0, and with no integration (plain PCA on log1p CP10K). Do endothelial and mural nuclei still fall into separate clusters, and does the Edn1-high cluster keep the Endothelial label?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab2-bb2a6453edc6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-0417266ce5bf"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In Seurat's marker-based cluster annotation workflows, and in scanpy score_genes, is a marker panel usually scored from unscaled log-normalised means, from scaled (z-scored) data, or from detection fraction? How do these choices behave when a cluster co-expresses two lineages' markers?",
+          "why": "Both teams labelled clusters with z-scored panels. The task only says 'marker evidence', and a mixed vascular cluster's label could depend on this convention.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In Seurat's marker-based cluster annotation workflows, and in scanpy score_genes, is a marker panel usually scored from unscaled log-normalised means, from scaled (z-scored) data, or from detection fraction? How do these choices behave when a cluster co-expresses two lineages' markers?",
+          "answer": "By default, both tools score panels on unscaled log-normalised expression. Seurat AddModuleScore uses slot='data' by default (documented as 'log-normalized counts'). scanpy score_genes scores adata.X, or .raw when present, which by convention holds log-normalised values; it does not scale. Both compute the average expression of the panel minus the average of control genes drawn from matching expression bins (Tirosh et al. 2016). Seurat AverageExpression on the 'data' layer exponentiates values before averaging. Z-scoring shows up only in visualisation: DotPlot colours by average expression scaled across groups (scale=TRUE, clipped to -2.5..2.5) and sizes dots by the percent of cells expressing. So z-score plus detection fraction is a way to inspect markers, not the default scoring method. The documentation says nothing about clusters that co-express two lineages. My inference: a mixed endothelial+mural cluster scores above background on both panels under any convention. Unscaled means favour whichever panel has the more highly expressed markers. Z-scoring across clusters gives each gene equal weight, and the result depends on which other clusters are present, so the label of a mixed vascular cluster can differ between conventions. Teams should compare the label under unscaled log-normalised means and under z-scored scores, and report whether the answer changes.",
+          "sources": [
+            "https://satijalab.org/seurat/reference/addmodulescore",
+            "https://scanpy.readthedocs.io/en/latest/api/generated/scanpy.tl.score_genes.html",
+            "https://satijalab.org/seurat/reference/dotplot",
+            "https://satijalab.org/seurat/reference/averageexpression"
+          ],
+          "confidence": "high for the defaults (unscaled log-normalised data); low for the co-expression behaviour, which is inference and not documented",
+          "deliveries": {
+            "sc08-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab2-322a722bc130"
+            },
+            "sc08-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab2-0372563aa49e"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In Seurat's marker-based cluster annotation workflows, and in scanpy score_genes, is a marker panel usually scored from unscaled log-normalised means, from scaled (z-scored) data, or from detection fraction? How do these choices behave when a cluster co-expresses two lineages' markers? ANSWER: By default, both tools score panels on unscaled log-normalised expression. Seurat AddModuleScore uses slot='data' by default (documented as 'log-normalized counts'). scanpy score_genes scores adata.X, or .raw when present, which by convention holds log-normalised values; it does not scale. Both compute the average expression of the panel minus the average of control genes drawn from matching expression bins (Tirosh et al. 2016). Seurat AverageExpression on the 'data' layer exponentiates values before averaging. Z-scoring shows up only in visualisation: DotPlot colours by average expression scaled across groups (scale=TRUE, clipped to -2.5..2.5) and sizes dots by the percent of cells expressing. So z-score plus detection fraction is a way to inspect markers, not the default scoring method. The documentation says nothing about clusters that co-express two lineages. My inference: a mixed endothelial+mural cluster scores above background on both panels under any convention. Unscaled means favour whichever panel has the more highly expressed markers. Z-scoring across clusters gives each gene equal weight, and the result depends on which other clusters are present, so the label of a mixed vascular cluster can differ between conventions. Teams should compare the label under unscaled log-normalised means and under z-scored scores, and report whether the answer changes. HOW SURE: high for the defaults (unscaled log-normalised data); low for the co-expression behaviour, which is inference and not documented. SOURCES: https://satijalab.org/seurat/reference/addmodulescore, https://scanpy.readthedocs.io/en/latest/api/generated/scanpy.tl.score_genes.html, https://satijalab.org/seurat/reference/dotplot, https://satijalab.org/seurat/reference/averageexpression."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc08-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc08-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc08-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc08-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc08-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 92.74846004100982,
+      "cost_usd": 0.40136619999999995,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 47.07828324998263,
+      "cost_usd": 0.1523694,
+      "error": null
+    },
+    {
+      "agent": "sc08-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 215.50803991698194,
+      "cost_usd": 0.23922020000000002,
+      "error": null
+    },
+    {
+      "agent": "sc08-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 305.7565838750452,
+      "cost_usd": 0.34080340000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 52.13087054202333,
+      "cost_usd": 0.2704274,
+      "error": null
+    },
+    {
+      "agent": "sc08-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 51.508997500059195,
+      "cost_usd": 0.24538539999999998,
+      "error": null
+    },
+    {
+      "agent": "sc08-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 74.61083854094613,
+      "cost_usd": 0.2788978,
+      "error": null
+    },
+    {
+      "agent": "sc08-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 416.96077904105186,
+      "cost_usd": 0.4384302,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

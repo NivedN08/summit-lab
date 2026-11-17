@@ -1,0 +1,437 @@
+{
+  "study": "bd40",
+  "status": "replicated",
+  "final": {
+    "agent": "bd40-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd40/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd40-library": "opus",
+    "bd40-team-a": "opus",
+    "bd40-team-b": "opus",
+    "bd40-team-c": "opus",
+    "bd40-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd40-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd40/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd40-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd40/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd40-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd40/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd40-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd40/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd40-team-a",
+        "bd40-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd40-team-a",
+        "bd40-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "'Acquiring new alterations' is a within-patient, over-time claim. Find patients with two or more samples (repeated PATIENT_ID in data_clinical_sample.txt; use SAMPLE_TYPE such as Primary vs Recurrence/Metastasis, or sample suffixes T01/T02, to put them in order). For each patient, count alterations present in a later sample but absent from the earliest one. Then compare these per-patient acquired counts between fusion-negative (FN) and fusion-positive (FP) patients. Pooled per-sample alteration counts or TMB do not measure acquisition.",
+      "from": [
+        "sl-dev-panel-noise-lab1-fff74731cebd"
+      ],
+      "reason": "This defines the right unit of analysis. A pooled per-sample comparison answers a different question and could give the wrong label.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-5a7940acd441"
+      }
+    },
+    {
+      "text": "Define FP vs FN-RMS by whether a PAX3-FOXO1 or PAX7-FOXO1 fusion is detected in data_sv.txt (Site1/Site2_Hugo_Symbol), in any sample of the patient, or by an explicit fusion-status clinical column if one exists. Do not define it by histology (ONCOTREE_CODE ARMS vs ERMS): about 20-25% of alveolar RMS are fusion-negative. Cross-tabulate fusion status against histology and report it.",
+      "from": [
+        "sl-dev-panel-noise-lab1-4ce61f196a95"
+      ],
+      "reason": "Grouping by histology would put some patients in the wrong group, and that would change the FN vs FP comparison.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-1258efea0cb9"
+      }
+    },
+    {
+      "text": "'Alterations' includes more than SNVs/indels. Tally acquired events separately for mutations (data_mutations.txt), discrete CNAs (data_cna.txt values of +2/-2) and SVs (data_sv.txt). You can also compare fraction genome altered from data_cna_hg19.seg. State whether any FN vs FP difference holds for each alteration type.",
+      "from": [
+        "sl-dev-panel-noise-lab1-82154fe34c19"
+      ],
+      "reason": "Tumours mainly gain copy-number changes during progression, so counting mutations alone could reverse the conclusion.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-a55de4cee1d0"
+      }
+    },
+    {
+      "text": "Samples from the same patient may have been sequenced on different MSK-IMPACT panel versions (IMPACT341/410/468/505; see data_gene_panel_matrix.txt). A gene 'gained' in the later sample may simply not have been on the earlier sample's panel. Count acquired or lost alterations only in genes covered by both panels of the pair. For TMB, compare per-Mb values.",
+      "from": [
+        "sl-dev-panel-noise-lab1-345d7a95e569"
+      ],
+      "reason": "Differences in panel coverage can create false 'new' alterations and inflate one group's acquired count.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-75ec2834876f"
+      }
+    },
+    {
+      "text": "Low tumour purity in one sample of a pair causes missed mutation and CNA calls, so alterations look acquired or lost when they were just undetected. Compare TUMOR_PURITY and SAMPLE_COVERAGE within each pair, and check the VAF of private mutations. Report results with and without pairs that include a sample of purity <=30%.",
+      "from": [
+        "sl-dev-panel-noise-lab1-cdbfb8166ee5"
+      ],
+      "reason": "This artefact directly inflates or deflates per-patient acquired counts.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-c4f21008253b"
+      }
+    },
+    {
+      "text": "Keep only somatic calls: check Mutation_Status and Variant_Classification in data_mutations.txt and SV_Status in data_sv.txt. Apply the same rule to both groups on whether silent or non-coding variants are counted.",
+      "from": [
+        "sl-dev-panel-noise-lab1-aff9cf383fc3"
+      ],
+      "reason": "Germline or filtered calls, or rules applied inconsistently between groups, distort the alteration counts.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-e04f82a38a59"
+      }
+    },
+    {
+      "text": "Judge 'no common mutations' at the patient level. For acquired alterations in FN-RMS, count the distinct PATIENTS per gene, not samples, and note whether any gene is acquired in two or more FN patients. Also note whether recurrent genes are known drivers (e.g. RAS, TP53, CDKN2A) or likely passengers.",
+      "from": [
+        "sl-dev-panel-noise-lab1-2f3ecc91915b"
+      ],
+      "reason": "Counting several samples of one patient as recurrence would wrongly contradict the second part of the hypothesis.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-5b36405e86a0"
+      }
+    },
+    {
+      "text": "The cohort is small and samples from one patient are not independent. Use one value per patient or per pair, and use exact or nonparametric tests or a descriptive comparison. When groups have fewer than about 10 patients, judge by the direction and consistency of the difference, not by p-values alone.",
+      "from": [
+        "sl-dev-panel-noise-lab1-c40b91dd5b6e"
+      ],
+      "reason": "Per-sample tests on a tiny cohort would overstate how strong the evidence is.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-acd3621e8064"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams pooled mutations, discrete +/-2 CNAs and SVs into one 'new alteration' count per patient. Neither showed that the direction holds for each alteration type alone, and the hypothesis may be about mutations only.",
+      "Both summed new alterations per patient. Patients with 3 samples (2 of 20) get more chances to acquire, and time between samples is unknown. Neither normalised per later sample or per comparison.",
+      "Both took the earliest sample as the baseline: Primary first for team A, T-number for team B. Neither tested whether a Metastasis or Unknown sample coming first changes the counts.",
+      "Both treated an alteration missing from the earlier sample as truly absent. Low purity (team B did not check) and a narrower earlier panel (IMPACT410/468 before 505) can both make an alteration look new."
+    ],
+    "unused_evidence": [
+      "data_cna_hg19.seg: continuous segment log2 ratios. These could show low-level or arm-level copy-number change between samples, which the gene-level +/-2 calls miss, and could test whether an apparently 'new' CNA was already present below threshold.",
+      "TMB_NONSYNONYMOUS and SAMPLE_COVERAGE in the sample table: these could check whether the 'new' mutations follow differences in depth or TMB between paired samples, not real acquisition.",
+      "Team B did not use TUMOR_PURITY. Team A used it only as an exclusion cut at 30%.",
+      "OS and patient clinical data were not used. They are probably not needed for this hypothesis."
+    ],
+    "unresolved_weak_points": [
+      "Team A: panel coverage could not be rebuilt gene by gene. The same-panel subset was checked, but its size per group (FN vs FP) and its Mann-Whitney p were not reported.",
+      "Team B: named mixed panels and T-number ordering as weak points but resolved neither. It relied on p=0.008 instead of running a same-panel or purity sensitivity check.",
+      "Neither team reported directly on the 'no common mutations' clause, that is, whether any gene is newly mutated in 2 or more FN patients, as a test separate from the counts."
+    ],
+    "second_readings": [
+      "'New alterations' could mean newly acquired somatic mutations only, not CNAs or SVs. The result for mutations alone may differ from the pooled count.",
+      "'Acquire fewer' could be per patient, per sample pair, or per unit of time, and the answer may depend on which.",
+      "'No common mutations' could mean no recurrent acquired mutation within FN, or no mutations shared between the serial samples of an FN patient. These are different checks."
+    ],
+    "verdict": "Moderate trust. Both teams agree on direction and the effect seems large, but both pooled alteration types and per-patient sums, and both left panel, purity and order artefacts mostly unresolved (team B left all three). The 'no common mutations' clause was not tested directly.",
+    "questions": [
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Recount newly acquired alterations for each type separately (somatic non-silent mutations only, CNAs only, SVs only), FN vs FP. Does the direction hold for mutations alone, and does that change your method or label?",
+        "from": [
+          "sl-dev-panel-noise-lab1-5cd469151a86"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-2ec97e74fd86"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: In the same-panel-pair subset, how many FN and FP patients remain, and what is the Mann-Whitney p? If you also drop the 3-sample patients or divide by the number of later samples, does the conclusion still hold?",
+        "from": [
+          "sl-dev-panel-noise-lab1-5cd469151a86"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-0d9efbff52ac"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For each CNA you call newly acquired, check the earlier sample's segment log2 ratio over that gene in data_cna_hg19.seg. Was the change already present below the +/-2 threshold? Does removing those cases change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-493b49e0a34a"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: List every gene newly mutated in 2 or more FN patients, and separately every mutation shared between serial samples of FN patients. Which reading of 'no common mutations' did you test, and does the other reading change your label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-283a5f83c029"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Repeat your FN vs FP comparison using only pairs sequenced on the same panel, and separately excluding pairs where either sample has TUMOR_PURITY <=30. Report n per group and p. Does either check change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-071b51fe906c"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Count newly acquired somatic non-silent mutations alone, without CNAs and SVs, FN vs FP. Does the direction hold, and does that change your method or label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-c00887179556"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Re-order samples with Primary first, then T-number, and divide new-alteration counts by the number of later samples per patient. Do the FN vs FP counts change materially?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-46822c605fa3"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: For CNAs you count as new, check the earlier sample's segment log2 ratio in data_cna_hg19.seg over that gene. Was the change already present sub-threshold? Does excluding such cases change your counts or method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-9c230e7c4eee"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "When comparing serial targeted-panel sequencing samples from the same patient that were run on different panel versions, what is the standard practice for deciding whether an alteration is newly acquired versus outside the earlier panel's coverage?",
+          "why": "Both teams count gains across panel versions without restricting to shared genes. The convention decides which 'new' alterations count.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In clonal-evolution studies of paired tumour samples, is 'acquired alterations' usually counted per patient, per sample pair, or per unit time? How are patients with different numbers of samples handled?",
+          "why": "The per-patient sum used by both teams favours patients with more samples.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When comparing serial targeted-panel sequencing samples from the same patient that were run on different panel versions, what is the standard practice for deciding whether an alteration is newly acquired versus outside the earlier panel's coverage?",
+          "answer": "The web did not settle this. None of the pages I opened (fetches cut off after about 6 kB, before the methods) gives the rule in so many words. The convention I'd expect follows from how cBioPortal and GENIE gene-panel matrices work and from panel-TMB practice, which limits comparisons to the genes each panel covers. A gene missing from a sample's panel counts as not assayed, not as wild-type. So an alteration only counts as newly acquired if its gene was also on the earlier sample's panel. In practice that means comparing each pair only on the genes both panels cover (use data_gene_panel_matrix.txt plus the panel gene lists). Gains in genes covered only by the later panel should be left out or reported separately.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7174078/",
+            "https://www.aacr.org/wp-content/uploads/2025/02/17.0-data_guide.pdf"
+          ],
+          "confidence": "low",
+          "deliveries": {
+            "bd40-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-0d2e7edf761b"
+            },
+            "bd40-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-ebbde786b405"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When comparing serial targeted-panel sequencing samples from the same patient that were run on different panel versions, what is the standard practice for deciding whether an alteration is newly acquired versus outside the earlier panel's coverage? ANSWER: The web did not settle this. None of the pages I opened (fetches cut off after about 6 kB, before the methods) gives the rule in so many words. The convention I'd expect follows from how cBioPortal and GENIE gene-panel matrices work and from panel-TMB practice, which limits comparisons to the genes each panel covers. A gene missing from a sample's panel counts as not assayed, not as wild-type. So an alteration only counts as newly acquired if its gene was also on the earlier sample's panel. In practice that means comparing each pair only on the genes both panels cover (use data_gene_panel_matrix.txt plus the panel gene lists). Gains in genes covered only by the later panel should be left out or reported separately. HOW SURE: low. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC7174078/, https://www.aacr.org/wp-content/uploads/2025/02/17.0-data_guide.pdf."
+        },
+        {
+          "question": "In clonal-evolution studies of paired tumour samples, is 'acquired alterations' usually counted per patient, per sample pair, or per unit time? How are patients with different numbers of samples handled?",
+          "answer": "There is no single standard. A common choice is one comparison per patient, earliest sample against latest. A Foundation Medicine paired-biopsy analysis (Genome Med 2021) kept only the first and last sample for patients with more than two, and grouped results by the time between biopsies. That way each patient adds one value, and patients with more samples don't count for more. Adding up gains over every pair in a patient inflates counts for patients with more samples. If the time between samples differs a lot, report it or divide by the interval. Caveat: this comes from a search snippet; I could not open the full text.",
+          "sources": [
+            "https://doi.org/10.1186/s13073-021-00979-8",
+            "https://www.nature.com/articles/s41588-025-02204-3"
+          ],
+          "confidence": "low",
+          "deliveries": {
+            "bd40-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-b30c6a3fecf7"
+            },
+            "bd40-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-8ade4b36394f"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In clonal-evolution studies of paired tumour samples, is 'acquired alterations' usually counted per patient, per sample pair, or per unit time? How are patients with different numbers of samples handled? ANSWER: There is no single standard. A common choice is one comparison per patient, earliest sample against latest. A Foundation Medicine paired-biopsy analysis (Genome Med 2021) kept only the first and last sample for patients with more than two, and grouped results by the time between biopsies. That way each patient adds one value, and patients with more samples don't count for more. Adding up gains over every pair in a patient inflates counts for patients with more samples. If the time between samples differs a lot, report it or divide by the interval. Caveat: this comes from a search snippet; I could not open the full text. HOW SURE: low. SOURCES: https://doi.org/10.1186/s13073-021-00979-8, https://www.nature.com/articles/s41588-025-02204-3."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd40-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd40-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd40-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd40-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd40-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 84.8535148750525,
+      "cost_usd": 0.35789800000000005,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 90.80017299996689,
+      "cost_usd": 0.16205920000000001,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 67.20370054093655,
+      "cost_usd": 0.21724619999999997,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 81.02047595800832,
+      "cost_usd": 0.3485152,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 80.56769204197917,
+      "cost_usd": 0.29919660000000003,
+      "error": null
+    },
+    {
+      "agent": "bd40-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 116.80627191602252,
+      "cost_usd": 0.45102239999999993,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 132.69551720900927,
+      "cost_usd": 0.4613734,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 110.20541483408306,
+      "cost_usd": 0.4643786,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

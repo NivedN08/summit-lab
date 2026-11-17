@@ -1,0 +1,460 @@
+{
+  "study": "bd31",
+  "status": "replicated",
+  "final": {
+    "agent": "bd31-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd31/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd31-library": "opus",
+    "bd31-team-a": "opus",
+    "bd31-team-b": "opus",
+    "bd31-team-c": "opus",
+    "bd31-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd31-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd31/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd31-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd31/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd31-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd31/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd31-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd31/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd31-team-a",
+        "bd31-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd31-team-a",
+        "bd31-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "MSI_STATUS in data_clinical_sample.txt is missing (NA) for roughly 327 of 1134 samples. Filtering on MSI_STATUS=='MSS' alone drops many MSS tumours, and keeping the NA rows lets MSI-H tumours in. MSI-H tumours are hypermutated and more common in right-sided primaries, so they can inflate right-sided mutation rates. Tabulate MSI_STATUS against MSI_SCORE and TMB_NONSYNONYMOUS. Define MSS as MSI_STATUS=='MSS', or as MSI_SCORE<3 when status is NA (MSIsensor: >=10 is MSI-H, 3-10 is indeterminate). Exclude MSI-H and Inconclusive samples. Run a sensitivity analysis with and without the indeterminate scores, and confirm that no hypermutated (very high TMB) samples remain.",
+      "from": [
+        "sl-dev-panel-noise-lab2-685187e41554"
+      ],
+      "reason": "The hypothesis is restricted to MSS tumours. How the MSS cohort is defined can create or remove a right-sided enrichment artefact.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-489fcbef97e3"
+      }
+    },
+    {
+      "text": "Definitions of sidedness vary. Right is usually cecum, ascending colon, hepatic flexure and transverse colon. Left is splenic flexure, descending colon, sigmoid and rectum. Transverse colon is ambiguous, and including rectum changes the frequencies. Cross-tabulate PRIMARY_SITE against PRIMARY_TUMOR_LOCATION. Use the provided PRIMARY_TUMOR_LOCATION (Left/Right) as the primary analysis and exclude NA. Run a sensitivity analysis that drops transverse colon, and optionally one that treats rectum separately.",
+      "from": [
+        "sl-dev-panel-noise-lab2-ed81301742cb"
+      ],
+      "reason": "The grouping variable has to be defined consistently, and it should be checked for robustness.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-d8fe4a09d637"
+      }
+    },
+    {
+      "text": "Samples were sequenced on three MSK-IMPACT panel versions (IMPACT341 ~214, IMPACT410 ~911, IMPACT468 ~9). If a gene is not on a sample's panel, that sample has zero calls for it by construction. Using data_gene_panel_matrix.txt and the panel definitions, check that each of KRAS, BRAF, PIK3CA, AKT1, RNF43 and SMAD4 is covered by every panel used. Cross-tabulate panel against side. Restrict each gene's denominator to samples whose panel covers the gene, or adjust for panel.",
+      "from": [
+        "sl-dev-panel-noise-lab2-ce45ca86f56e"
+      ],
+      "reason": "Wrong denominators, or a panel mix that differs by side, can bias the per-gene frequencies and the side comparison.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-eb500c50cc1b"
+      }
+    },
+    {
+      "text": "The mutation file has no OncoKB/oncogenic annotation column, so counting every non-silent variant as 'oncogenic' adds VUS and passenger mutations. This matters most for RNF43, SMAD4 and PIK3CA non-hotspots. Approximate a driver definition. KRAS: codons 12, 13, 59, 61, 117 and 146. BRAF: V600E plus class 2/3 hotspots. PIK3CA: known hotspots such as E542, E545 and H1047. AKT1: E17K. RNF43 and SMAD4: truncating variants (nonsense, frameshift, splice) plus known hotspots such as SMAD4 R361. Compare 'all non-silent' against 'putative driver' as a sensitivity analysis.",
+      "from": [
+        "sl-dev-panel-noise-lab2-5f1da87b1b3f"
+      ],
+      "reason": "The hypothesis concerns oncogenic alterations specifically, and the data do not label them.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-7c26c7353670"
+      }
+    },
+    {
+      "text": "Oncogenic alterations can also be copy-number or structural events. Check data_cna.txt and data_sv.txt for the six genes. Count only deep deletions (-2) for tumour suppressors (SMAD4, RNF43) and high-level amplifications (+2) for oncogenes (KRAS, PIK3CA, AKT1, BRAF). Ignore shallow -1/+1 calls. Report results both for mutation-only and for mutation+CNA/SV.",
+      "from": [
+        "sl-dev-panel-noise-lab2-5918ea1a3ad3"
+      ],
+      "reason": "Leaving out CNA/SV can understate carriers, especially SMAD4 deletions.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-47d72907598c"
+      }
+    },
+    {
+      "text": "RNF43 frameshifts at mononucleotide repeats (p.G659fs, p.R117fs) are typical of MSI tumours. After the MSS filter, list RNF43 variants by HGVSp and check the MSI_SCORE and TMB of the carriers. Drop indeterminate-MSI or high-TMB samples, and report RNF43 with and without G659fs. RNF43 status is also correlated with BRAF status, so it is not an independent signal.",
+      "from": [
+        "sl-dev-panel-noise-lab2-c661c993d3d1"
+      ],
+      "reason": "Residual MSI contamination can produce a spurious side difference for RNF43.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-254f4e1dd44c"
+      }
+    },
+    {
+      "text": "About 31 patient IDs have more than one sample in data_clinical_sample.txt. Within the analysed set, count unique PATIENT_ID against SAMPLE_ID. Keep one sample per patient (e.g. prefer the primary) or collapse to patient level, so that Fisher/chi-square tests are not run on non-independent observations.",
+      "from": [
+        "sl-dev-panel-noise-lab2-9b216530d674"
+      ],
+      "reason": "Double-counting patients breaks the independence assumption of the tests.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-38ef1a3694bb"
+      }
+    },
+    {
+      "text": "The hypothesis names six genes together. For each gene, run a right-vs-left test (Fisher exact, with odds ratio, 95% CI and BH-FDR across the six genes) and report its direction. Also report a pooled any-of-six comparison, but note that a pooled test can be driven by one or two common genes. Weigh the verdict on direction consistency and significance across the genes. Do not reject because one rare, underpowered gene is non-significant but points the same way. Do not accept on the pooled test alone.",
+      "from": [
+        "sl-dev-panel-noise-lab2-f6901ac78595"
+      ],
+      "reason": "This sets a sound decision rule for a hypothesis that covers several genes jointly.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-e50fc0114afb"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treated every colorectal sample as mCRC; MCRC_TYPE labels 123 primaries as 'Early Stage Primary' (mostly stage I-III), and neither method says it removed them, though the hypothesis is about metastatic CRC.",
+      "Both teams approximated 'oncogenic' with hand-built hotspot/truncating lists instead of a published oncogenicity annotation, and assumed the approximation does not bias the right-vs-left comparison (for example, RNF43 frameshifts at repeat tracts in near-hypermutated cases).",
+      "Both teams assumed that one sample per patient, chosen as the primary when available, can be pooled across primary and metastatic samples and across panels (IMPACT341/410/468) without adjustment."
+    ],
+    "unused_evidence": [
+      "MCRC_TYPE (Early Stage Primary / mCRC Primary / mCRC Metastasis) and STAGE_AT_DIAGNOSIS: these define the metastatic population the hypothesis names, and neither team used them.",
+      "MOLECULAR_SUBTYPE: 4 samples are subtyped MSI while MSI_STATUS is MSS or NA, and 7 POLE samples are MSI_STATUS MSS. Team A excluded hypermutators only through TMB>20 and did not use this column.",
+      "data_sv.txt: there are 8 SV records involving the six genes (for example, BRAF fusions are oncogenic), and neither team counted them.",
+      "data_gene_panel_matrix.txt: Team B says gene coverage across panels was not an issue, but this was not shown per gene."
+    ],
+    "unresolved_weak_points": [
+      "Team A: SMAD4 is not significant under the driver definition, and the hotspot lists are hand-built. The team reported this and fell back on direction consistency, but did not resolve it.",
+      "Team B: PIK3CA, AKT1 and SMAD4 significance depends on strict vs broad MSS, and SMAD4 enrichment appears only in metastases. The team reported this but did not decide which cohort the hypothesis refers to.",
+      "Neither team set in advance how many of the six genes must be enriched, or what pooled result is required, for the hypothesis to count as supported."
+    ],
+    "second_readings": [
+      "'mCRC' may mean metastatic patients only (mCRC Primary + mCRC Metastasis, or stage IV), not every CRC sample.",
+      "'Enrichment of oncogenic alterations in KRAS, BRAF, PIK3CA, AKT1, RNF43, and SMAD4' can be read gene by gene (every gene enriched) or as a pooled pathway-level alteration rate. These two readings could give different labels."
+    ],
+    "verdict": "The agreed direction (right-sided enrichment of KRAS/BRAF/RNF43) looks robust, but both teams appear to have included non-metastatic early-stage samples and ignored MOLECULAR_SUBTYPE. The weaker genes (PIK3CA, AKT1, SMAD4) are fragile, so the label depends on an untested cohort definition and on an unstated criterion for 'all six genes'. My trust is moderate.",
+    "questions": [
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your MSS cohort appears to include the 123 samples with MCRC_TYPE 'Early Stage Primary'. If you rerun the per-gene and pooled tests restricted to MCRC_TYPE in {mCRC Primary, mCRC Metastasis}, does the per-gene significance or direction (especially SMAD4, PIK3CA, AKT1) change, and does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-291ff8d88f59"
+      },
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: MOLECULAR_SUBTYPE flags POLE and MSI samples, some of which have MSI_STATUS MSS or NA. If you exclude MOLECULAR_SUBTYPE in {POLE, MSI} instead of using TMB>20, does the cohort or any gene's result change?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-ab2767988f31"
+      },
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Before looking at results again, what criterion (all six genes, a majority, or the pooled test) did you use to call the hypothesis supported? Under that criterion, does the SMAD4 driver-definition result fail it?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-c56e827682a1"
+      },
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: data_sv.txt has a few rearrangements involving the six genes (for example BRAF). If you add oncogenic SVs to the alteration calls, does any gene-level count or test change?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-366bcb71eb36"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Does your cohort include the 123 MCRC_TYPE 'Early Stage Primary' samples? If you restrict to MCRC_TYPE mCRC Primary/mCRC Metastasis in both strict and broad MSS, do PIK3CA, AKT1 and SMAD4 results change?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-003f71866de0"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your broad MSS cohort adds samples with missing MSI_STATUS. How were they classified (MSI_SCORE threshold, MOLECULAR_SUBTYPE)? Check whether any added sample has MOLECULAR_SUBTYPE MSI or a high MSI_SCORE/TMB, and say whether that changes which cohort you treat as primary.",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-fe64cd6eaf82"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You marked 'gene not on all panels' as not found. Can you show, from data_gene_panel_matrix and the panel gene content, that RNF43, AKT1 and SMAD4 were assayed in every included sample, and that panel mix does not differ by side? If not, does a panel-restricted rerun change the per-gene results?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-b8be8d9f93b7"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You did not count SMAD4 enrichment in metastases only, or the small AKT1 difference, as contradictions. What pre-set criterion for 'enrichment in all six genes' did you apply, and does it hold for each gene in the metastatic-only cohort?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-08a029c0f0b0"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In MSK-IMPACT clinical sequencing, what MSIsensor score thresholds define MSS, indeterminate and MSI-H, and is the convention the same across panel versions?",
+          "why": "Both teams classified samples with missing MSI status from the score. The broad/strict cohort split drives the significance of the minor genes.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Which genes were added between the MSK-IMPACT 341-, 410- and 468-gene panels? Specifically, are RNF43 and AKT1 on the 341-gene panel?",
+          "why": "If a gene was not assayed on one panel, those samples are false negatives. That could bias side comparisons if panel use differs by side.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How does OncoKB classify RNF43 G659fs and other frameshifts at mononucleotide repeats, and SMAD4 missense variants outside hotspots, as oncogenic or not?",
+          "why": "Both teams built their own oncogenicity rules, and the SMAD4 and RNF43 results depend on which variants count as oncogenic.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In MSK-IMPACT clinical sequencing, what MSIsensor score thresholds define MSS, indeterminate and MSI-H, and is the convention the same across panel versions?",
+          "answer": "MSS: score < 3; indeterminate: >= 3 and < 10; MSI-H: >= 10. The cutoff was validated against MSI PCR/MMR IHC in 12,288 tumours sequenced on IMPACT 341 (v1), 410 (v2) and 468 (v3) together, and no version-specific thresholds were given, so one convention applies across panels. Most indeterminate scores were MSS by PCR (96.6% in non-CRC/UEC tumours), so treating indeterminate as a sensitivity group is reasonable. The page I read held only the abstract and methods summary, so I could not rule out per-version tuning in the full text, though nothing suggests any.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6130812/"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd31-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-348a8f792207"
+            },
+            "bd31-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-cb7f2515537f"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In MSK-IMPACT clinical sequencing, what MSIsensor score thresholds define MSS, indeterminate and MSI-H, and is the convention the same across panel versions? ANSWER: MSS: score < 3; indeterminate: >= 3 and < 10; MSI-H: >= 10. The cutoff was validated against MSI PCR/MMR IHC in 12,288 tumours sequenced on IMPACT 341 (v1), 410 (v2) and 468 (v3) together, and no version-specific thresholds were given, so one convention applies across panels. Most indeterminate scores were MSS by PCR (96.6% in non-CRC/UEC tumours), so treating indeterminate as a sensitivity group is reasonable. The page I read held only the abstract and methods summary, so I could not rule out per-version tuning in the full text, though nothing suggests any. HOW SURE: high. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC6130812/."
+        },
+        {
+          "question": "Which genes were added between the MSK-IMPACT 341-, 410- and 468-gene panels? Specifically, are RNF43 and AKT1 on the 341-gene panel?",
+          "answer": "Yes. RNF43 and AKT1, along with KRAS, BRAF, PIK3CA and SMAD4, are in the core gene set shared by IMPACT-341, -410 and -468, so panel version cannot cause false negatives for these six genes. IMPACT-410 added 69 genes, including ACVR1, ANKRD11, BCL10, CALR, CXCR4, ERRFI1, FOXO1, HLA-A, HOXB13, MGA, POLD1, PPM1D, RAD21, RHEB, STAT3, TCF7L2, VEGFA, XRCC2, ZFHX3 and ZRSR2. IMPACT-468 then added about 58 more, including AGO2, BABAM1, CARM1, CYSLTR2, DROSHA, DUSP4, NTHL1, PDCD1LG2, PREX2, RRAS2, SHOC2 and SPRED1.",
+          "sources": [
+            "https://www.thelancet.com/cms/10.1016/S2589-7500(21)00104-7/attachment/93631f3d-043d-42b8-b9b4-c0df6cc9a5cb/mmc1.pdf",
+            "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41523-017-0042-6/MediaObjects/41523_2017_42_MOESM6_ESM.pdf"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd31-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-90cb4573330a"
+            },
+            "bd31-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-d6dd9224850a"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Which genes were added between the MSK-IMPACT 341-, 410- and 468-gene panels? Specifically, are RNF43 and AKT1 on the 341-gene panel? ANSWER: Yes. RNF43 and AKT1, along with KRAS, BRAF, PIK3CA and SMAD4, are in the core gene set shared by IMPACT-341, -410 and -468, so panel version cannot cause false negatives for these six genes. IMPACT-410 added 69 genes, including ACVR1, ANKRD11, BCL10, CALR, CXCR4, ERRFI1, FOXO1, HLA-A, HOXB13, MGA, POLD1, PPM1D, RAD21, RHEB, STAT3, TCF7L2, VEGFA, XRCC2, ZFHX3 and ZRSR2. IMPACT-468 then added about 58 more, including AGO2, BABAM1, CARM1, CYSLTR2, DROSHA, DUSP4, NTHL1, PDCD1LG2, PREX2, RRAS2, SHOC2 and SPRED1. HOW SURE: high. SOURCES: https://www.thelancet.com/cms/10.1016/S2589-7500(21)00104-7/attachment/93631f3d-043d-42b8-b9b4-c0df6cc9a5cb/mmc1.pdf, https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41523-017-0042-6/MediaObjects/41523_2017_42_MOESM6_ESM.pdf."
+        },
+        {
+          "question": "How does OncoKB classify RNF43 G659fs and other frameshifts at mononucleotide repeats, and SMAD4 missense variants outside hotspots, as oncogenic or not?",
+          "answer": "RNF43 G659fs*41 (G659Vfs*41) is curated as Inconclusive for both oncogenicity and biological effect, because the functional data conflict. It is therefore NOT counted as oncogenic, as an explicit exception to the tumour-suppressor truncation rule. Other RNF43 truncating mutations, including R117fs, are not curated individually and fall under 'RNF43 Truncating Mutations', which is Likely Oncogenic; I found no separate rule for repeat-tract frameshifts. SMAD4 is a tumour suppressor: Truncating Mutations (nonsense, frameshift, splice) and Deletion are Likely Oncogenic. SMAD4 missense variants are oncogenic only if individually curated, about 55 alterations in all: e.g. R361C/G/H, D351H/N, G352E, Y353L/S, C324Y, E330A/G/K, R496H, R497H, D537A/E/G/H/V/Y, P130A/S, H132Y, G386D, R420H, D493A/G/H/N, W509R, G510R and R515A/G/I. SMAD4 missense variants that are not curated are unknown/VUS, not oncogenic, because OncoKB assumes oncogenicity only for truncating variants in tumour suppressors. These are current website annotations, and older OncoKB versions may differ.",
+          "sources": [
+            "https://www.oncokb.org/gene/RNF43/G659fs*41",
+            "https://www.oncokb.org/gene/RNF43",
+            "https://www.oncokb.org/gene/SMAD4",
+            "https://faq.oncokb.org/technical"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd31-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-b429ddecd39f"
+            },
+            "bd31-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-ece94fe375c2"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How does OncoKB classify RNF43 G659fs and other frameshifts at mononucleotide repeats, and SMAD4 missense variants outside hotspots, as oncogenic or not? ANSWER: RNF43 G659fs*41 (G659Vfs*41) is curated as Inconclusive for both oncogenicity and biological effect, because the functional data conflict. It is therefore NOT counted as oncogenic, as an explicit exception to the tumour-suppressor truncation rule. Other RNF43 truncating mutations, including R117fs, are not curated individually and fall under 'RNF43 Truncating Mutations', which is Likely Oncogenic; I found no separate rule for repeat-tract frameshifts. SMAD4 is a tumour suppressor: Truncating Mutations (nonsense, frameshift, splice) and Deletion are Likely Oncogenic. SMAD4 missense variants are oncogenic only if individually curated, about 55 alterations in all: e.g. R361C/G/H, D351H/N, G352E, Y353L/S, C324Y, E330A/G/K, R496H, R497H, D537A/E/G/H/V/Y, P130A/S, H132Y, G386D, R420H, D493A/G/H/N, W509R, G510R and R515A/G/I. SMAD4 missense variants that are not curated are unknown/VUS, not oncogenic, because OncoKB assumes oncogenicity only for truncating variants in tumour suppressors. These are current website annotations, and older OncoKB versions may differ. HOW SURE: high. SOURCES: https://www.oncokb.org/gene/RNF43/G659fs*41, https://www.oncokb.org/gene/RNF43, https://www.oncokb.org/gene/SMAD4, https://faq.oncokb.org/technical."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd31-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd31-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd31-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd31-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd31-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 116.75318795791827,
+      "cost_usd": 0.4456592,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 49.37538008298725,
+      "cost_usd": 0.16338199999999997,
+      "error": null
+    },
+    {
+      "agent": "bd31-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 63.45193849992938,
+      "cost_usd": 0.26097800000000004,
+      "error": null
+    },
+    {
+      "agent": "bd31-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 112.3210808330914,
+      "cost_usd": 0.4548816,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 72.70212958310731,
+      "cost_usd": 0.29298480000000005,
+      "error": null
+    },
+    {
+      "agent": "bd31-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 104.81600470794365,
+      "cost_usd": 0.470123,
+      "error": null
+    },
+    {
+      "agent": "bd31-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 99.40908479201607,
+      "cost_usd": 0.38982,
+      "error": null
+    },
+    {
+      "agent": "bd31-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 101.61405133304652,
+      "cost_usd": 0.29014700000000004,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

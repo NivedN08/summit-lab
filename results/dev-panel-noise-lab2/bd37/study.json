@@ -1,0 +1,416 @@
+{
+  "study": "bd37",
+  "status": "converged",
+  "final": {
+    "agent": "bd37-team-a",
+    "team": "team-a",
+    "round": "revise",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd37/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd37-library": "opus",
+    "bd37-team-a": "opus",
+    "bd37-team-b": "opus",
+    "bd37-team-c": "opus",
+    "bd37-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd37-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd37/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd37-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd37/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd37-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd37/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd37-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd37/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd37-team-a",
+        "bd37-team-b"
+      ],
+      "fields": {
+        "label": false
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "bd37-team-a",
+        "bd37-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "A genomic risk score derived from this same cohort (e.g. the PROGNOSTIC_MODEL column, or any mutation/CNA signature you fit yourself) will look better in-sample than it really is, whereas IPI is a fixed external score with no such optimism. Check the clinical column descriptions to see whether PROGNOSTIC_MODEL was built on this cohort. For any model you build, estimate performance with cross-validation or bootstrap optimism correction, and compare that corrected performance with IPI. A small apparent advantage is weak evidence.",
+      "from": [
+        "sl-dev-panel-noise-lab2-8aec3b8162b0"
+      ],
+      "reason": "Without this, an in-sample win over IPI may be mistaken for real superiority.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-80f86bd79ce3"
+      }
+    },
+    {
+      "text": "'Outperforms established methods' is not the same as 'is significantly prognostic'. A genomic group can have a significant log-rank p-value and still add nothing beyond IPI. On the same patients, fit nested Cox models (OS ~ IPI vs OS ~ IPI + genomic model) with a likelihood-ratio test, and compare C-index and AIC of IPI alone against the genomic model alone. Base the conclusion on the head-to-head comparison and on added value over IPI, not on univariate p-values.",
+      "from": [
+        "sl-dev-panel-noise-lab2-eb21e3a29767"
+      ],
+      "reason": "This defines which test actually addresses the hypothesis.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-af30a2c523f1"
+      }
+    },
+    {
+      "text": "Two Harrell C-indices computed on the same patients are correlated, so a naive z-test or treating them as independent gives the wrong p-value. Compare them with a paired bootstrap over patients (recompute both C-indices in each resample and take the CI of the difference) or with the compareC method. Also report Uno's C truncated at a fixed horizon such as 5 years, because Harrell's C depends on the censoring pattern. If the CI of the difference includes 0, superiority is not shown.",
+      "from": [
+        "sl-dev-panel-noise-lab2-5f15adc1427c"
+      ],
+      "reason": "This gives the correct inference for the main head-to-head comparison.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-f43d6c39e3a3"
+      }
+    },
+    {
+      "text": "IPI and PROGNOSTIC_MODEL are both missing for many patients. Comparing models on each one's own non-missing rows makes C-index/HR differences meaningless. Count the patients who have OS_MONTHS, OS_STATUS, IPI and the genomic model all present, run every head-to-head comparison on that single complete-case set, and report its n and number of events. Compare complete and incomplete cases. As a sensitivity check, use multiple imputation that includes survival time and the event indicator.",
+      "from": [
+        "sl-dev-panel-noise-lab2-f89c3595c8d8"
+      ],
+      "reason": "Comparing on mismatched subsets is a likely source of a spurious difference.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-5bb97bfa2c30"
+      }
+    },
+    {
+      "text": "Discrimination depends on how many levels a score has. Comparing a 3-group genomic model (Low/Medium/High) with a collapsed or differently coded IPI biases the result. Tabulate IPI (0-5) and the genomic groups. Run the comparison with IPI both as an ordinal 0-5 score and as standard risk groups (0-1 low, 2 low-intermediate, 3 high-intermediate, 4-5 high), and report both. Do not choose cutpoints for IPI or for genomic scores by optimising log-rank on these data.",
+      "from": [
+        "sl-dev-panel-noise-lab2-93aa0a2cc0a3"
+      ],
+      "reason": "How the comparator is coded can on its own change which score appears better.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-39522910c622"
+      }
+    },
+    {
+      "text": "Established DLBCL prognostic methods include IPI, and also cell-of-origin (ABC/GCB) and MYC/BCL2 (double-hit) status. The data contain FISH columns (BCL2_FISH_STATUS, MYC_FISH, BCL6_FISH_STATUS), but they are reportedly sparse. Check how complete these and any COO-like variables are. If usable, include them as comparators. If not, state explicitly that the comparison is against IPI only, which is the standard benchmark.",
+      "from": [
+        "sl-dev-panel-noise-lab2-e6ca9a72b2d6"
+      ],
+      "reason": "This defines the scope of 'established methods' the teams must compare against.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-4c62e1db0863"
+      }
+    },
+    {
+      "text": "If you screen many genes (mutations or CNAs) one by one for survival association, you will get false positives, and rare mutations give unstable Cox hazard ratios. Require a minimum frequency (e.g. 5% or more of patients), apply Benjamini-Hochberg FDR correction, and adjust for IPI. Treat only FDR-significant, IPI-adjusted genes as evidence, and prefer a pre-specified score over a signature built from these data.",
+      "from": [
+        "sl-dev-panel-noise-lab2-158d26bd0231"
+      ],
+      "reason": "This prevents claims of genomic prognostic value that rest on multiple testing.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-7365e6ac7b83"
+      }
+    },
+    {
+      "text": "OS_STATUS is coded as strings like '0:LIVING'/'1:DECEASED'. Parse the event as the integer before the colon and cross-check it against the sample-level CENSORED column. Many patients lack OS_MONTHS: count missing or zero values before dropping them, and report the number of events. With fewer than about 10 events per model parameter, use simpler models, expect wide CIs and be cautious about any superiority claim.",
+      "from": [
+        "sl-dev-panel-noise-lab2-7e87bb8a46df"
+      ],
+      "reason": "Parsing errors here silently flip events or drop patients, which corrupts every survival comparison.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-37c7a72e2855"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "bd37-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team also computed a 5-year time-dependent AUC for each predictor on the same complete-case set, and fitted a joint Cox model with both predictors. Did you compute these, and if so, do they change how you weigh discrimination against other evidence when deciding whether one predictor 'outperforms' the other?",
+      "from": [
+        "sl-dev-panel-noise-lab2-4aa747386a0e"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-dev-panel-noise-lab2-89e2dd5f9bbe"
+    },
+    {
+      "to": "bd37-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team compared model fit (AIC) using several IPI codings, including a 3-group grouping, as well as continuous and categorical. Which IPI coding do you consider the 'current established method' reference, and does your conclusion hold under each coding of IPI?",
+      "from": [
+        "sl-dev-panel-noise-lab2-4aa747386a0e"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-dev-panel-noise-lab2-3b6a647ffe86"
+    },
+    {
+      "to": "bd37-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: you chose the paired C-index difference as the deciding metric. Before seeing results, what criterion did the hypothesis wording ('outperform current established methods') imply, and is a non-significant C difference evidence against superiority, or absence of evidence? Does that distinction change your label?",
+      "from": [
+        "sl-dev-panel-noise-lab2-4aa747386a0e"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-dev-panel-noise-lab2-48f543e9af71"
+    },
+    {
+      "to": "bd37-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team treated in-sample optimism of the cohort-derived genetic model as a reason to change its method, and noted that likelihood/AIC comparisons on the derivation cohort cannot be corrected for optimism because the model's inputs are not reconstructable. You also flagged the model as probably trained on this cohort. How does that affect the weight you place on AIC and AUC versus the paired C-index comparison?",
+      "from": [
+        "sl-dev-panel-noise-lab2-38dab7305af7",
+        "sl-dev-panel-noise-lab2-b6db1d292408"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-dev-panel-noise-lab2-bc8ad5831609"
+    },
+    {
+      "to": "bd37-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team also computed a 60-month truncated C-index, nested likelihood-ratio tests of adding each predictor to the other, and KM 5-year OS by risk group. Did you check these? Does a predictor being independently prognostic (joint Cox) amount to it outperforming the established method, as the hypothesis requires?",
+      "from": [
+        "sl-dev-panel-noise-lab2-38dab7305af7"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-dev-panel-noise-lab2-f44217648d84"
+    },
+    {
+      "to": "bd37-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team recorded that cell of origin is absent and FISH (MYC/BCL2) is missing for most patients, so only IPI could serve as the established comparator. Did you check the completeness of these other established markers, and does their absence change what your analysis can claim about 'current established methods'?",
+      "from": [
+        "sl-dev-panel-noise-lab2-b6db1d292408"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-dev-panel-noise-lab2-ae263323df2d"
+    }
+  ],
+  "warning_signs_to_team_c": [],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": null,
+  "research": [
+    {
+      "round": "questions",
+      "questions": [
+        {
+          "question": "In survival prognostic-model validation, what are the accepted criteria for claiming a new model 'outperforms' an established index: difference in C-index with confidence interval, likelihood-based measures (AIC, LRT), time-dependent AUC, net reclassification, or decision-curve analysis? How do methodological guidelines (e.g., TRIPOD) treat disagreement between these?",
+          "why": "The teams agree on the numbers but disagree on which metric settles superiority; a standard criterion would resolve the label.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How large is typical in-sample optimism in C-index and AIC for a risk model evaluated on its own derivation cohort, and is an apparent AIC or AUC advantage on the derivation data considered valid evidence of superiority over an externally established index?",
+          "why": "Both teams suspect the genetic model was derived on the same cohort; whether in-sample fit metrics count as evidence is central to the split.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Is a non-significant paired C-index difference between two survival predictors interpreted as evidence that the new predictor does not outperform the other, or only as inconclusive? What do statistical references recommend for testing superiority versus non-inferiority of correlated C-indices?",
+          "why": "Whether a tie in discrimination contradicts or merely fails to support a superiority claim determines False versus another label.",
+          "passed": false,
+          "reasons": [
+            "contains another team's value for \"label\""
+          ]
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In survival prognostic-model validation, what are the accepted criteria for claiming a new model 'outperforms' an established index: difference in C-index with confidence interval, likelihood-based measures (AIC, LRT), time-dependent AUC, net reclassification, or decision-curve analysis? How do methodological guidelines (e.g., TRIPOD) treat disagreement between these?",
+          "answer": "There is no single accepted criterion. Methodological guidance (Steyerberg, Vickers, Cook, Gerds, Gonen, Pencina, Kattan 2010; Steyerberg et al. 2011) says to always report discrimination (C-index, or time-dependent AUC for survival) and calibration. Decision-analytic net benefit (decision curves) should be added when the model is meant to guide clinical decisions, and NRI is only supplementary. The guidance acknowledges that the measures can disagree. In its worked example, AUC and R2 favoured LDH and AFP, net benefit favoured only HCG, and NRI fell in between. It does not settle such disagreement by ranking metrics. It ties the choice to purpose: for decision support, net benefit at a clinically relevant threshold is preferred over overall AUC. For nested models (IPI vs IPI + genomic), the likelihood-ratio/Wald test of the added predictor is the recommended significance test (Pepe et al. 2013). A separate test of the AUC/C difference between nested models fitted on the same data is redundant and statistically invalid (Demler/Pencina 2013: 'recommend strongly against'). For a non-nested head-to-head comparison (genomic model alone vs IPI alone), compare discrimination on the same patients and give a CI for the paired difference. Ideally this should be done in data independent of model development. The TRIPOD Explanation & Elaboration pages I opened were truncated, so I could not confirm any TRIPOD-specific rule for settling disagreement between metrics. As far as I could see, TRIPOD is a reporting guideline and requires transparent reporting of performance measures rather than setting a superiority criterion.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3575184/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3587963/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3625503/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3800241/",
+            "https://www.acpjournals.org/doi/10.7326/M14-0698"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-276e0d4cdf66"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-38c8ecc4298b"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In survival prognostic-model validation, what are the accepted criteria for claiming a new model 'outperforms' an established index: difference in C-index with confidence interval, likelihood-based measures (AIC, LRT), time-dependent AUC, net reclassification, or decision-curve analysis? How do methodological guidelines (e.g., TRIPOD) treat disagreement between these? ANSWER: There is no single accepted criterion. Methodological guidance (Steyerberg, Vickers, Cook, Gerds, Gonen, Pencina, Kattan 2010; Steyerberg et al. 2011) says to always report discrimination (C-index, or time-dependent AUC for survival) and calibration. Decision-analytic net benefit (decision curves) should be added when the model is meant to guide clinical decisions, and NRI is only supplementary. The guidance acknowledges that the measures can disagree. In its worked example, AUC and R2 favoured LDH and AFP, net benefit favoured only HCG, and NRI fell in between. It does not settle such disagreement by ranking metrics. It ties the choice to purpose: for decision support, net benefit at a clinically relevant threshold is preferred over overall AUC. For nested models (IPI vs IPI + genomic), the likelihood-ratio/Wald test of the added predictor is the recommended significance test (Pepe et al. 2013). A separate test of the AUC/C difference between nested models fitted on the same data is redundant and statistically invalid (Demler/Pencina 2013: 'recommend strongly against'). For a non-nested head-to-head comparison (genomic model alone vs IPI alone), compare discrimination on the same patients and give a CI for the paired difference. Ideally this should be done in data independent of model development. The TRIPOD Explanation & Elaboration pages I opened were truncated, so I could not confirm any TRIPOD-specific rule for settling disagreement between metrics. As far as I could see, TRIPOD is a reporting guideline and requires transparent reporting of performance measures rather than setting a superiority criterion. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC3575184/, https://pmc.ncbi.nlm.nih.gov/articles/PMC3587963/, https://pmc.ncbi.nlm.nih.gov/articles/PMC3625503/, https://pmc.ncbi.nlm.nih.gov/articles/PMC3800241/, https://www.acpjournals.org/doi/10.7326/M14-0698."
+        },
+        {
+          "question": "How large is typical in-sample optimism in C-index and AIC for a risk model evaluated on its own derivation cohort, and is an apparent AIC or AUC advantage on the derivation data considered valid evidence of superiority over an externally established index?",
+          "answer": "Performance measured on the derivation data is overestimated, and the amount depends on sample size, events per variable and any data-driven selection. No single 'typical' figure applies. A worked example: apparent AUC 0.83 (n=376), 0.76 after bootstrap optimism correction, and 0.57 on external validation (Bleeker et al. 2003). Steyerberg & Harrell (2015) call apparent estimates in small samples 'severely optimistic'. They require bootstrap internal validation that repeats every modelling step, including variable selection, and recommend internal-external or external validation for any claim about generalisability. Steyerberg et al. (2001) found bootstrapping gives the least biased internal estimate. My inference, not stated in the sources I read: an apparent in-sample AIC, C or AUC advantage of a model derived on the same cohort is not valid evidence that it outperforms an externally fixed index such as IPI, which has no such optimism; at best it is weak, hypothesis-generating evidence unless optimism-corrected or externally validated. On AIC specifically, also my reasoning rather than sourced: it penalises only the number of fitted parameters, not prior selection of genes, groupings or cut-offs on the same data, so it does not remove this optimism.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5578404/",
+            "https://www.jclinepi.com/article/S0895-4356(03)00207-5/abstract",
+            "https://pubmed.ncbi.nlm.nih.gov/11470385/"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-c35e3f7aca85"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-09b31fc38ae3"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How large is typical in-sample optimism in C-index and AIC for a risk model evaluated on its own derivation cohort, and is an apparent AIC or AUC advantage on the derivation data considered valid evidence of superiority over an externally established index? ANSWER: Performance measured on the derivation data is overestimated, and the amount depends on sample size, events per variable and any data-driven selection. No single 'typical' figure applies. A worked example: apparent AUC 0.83 (n=376), 0.76 after bootstrap optimism correction, and 0.57 on external validation (Bleeker et al. 2003). Steyerberg & Harrell (2015) call apparent estimates in small samples 'severely optimistic'. They require bootstrap internal validation that repeats every modelling step, including variable selection, and recommend internal-external or external validation for any claim about generalisability. Steyerberg et al. (2001) found bootstrapping gives the least biased internal estimate. My inference, not stated in the sources I read: an apparent in-sample AIC, C or AUC advantage of a model derived on the same cohort is not valid evidence that it outperforms an externally fixed index such as IPI, which has no such optimism; at best it is weak, hypothesis-generating evidence unless optimism-corrected or externally validated. On AIC specifically, also my reasoning rather than sourced: it penalises only the number of fitted parameters, not prior selection of genes, groupings or cut-offs on the same data, so it does not remove this optimism. HOW SURE: high. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC5578404/, https://www.jclinepi.com/article/S0895-4356(03)00207-5/abstract, https://pubmed.ncbi.nlm.nih.gov/11470385/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd37-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "bd37-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "bd37-team-b",
+      "round": "revise",
+      "reason": "agreed with bd37-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd37-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 79.18768058298156,
+      "cost_usd": 0.3809072,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 42.3395912500564,
+      "cost_usd": 0.153372,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 60.73368499998469,
+      "cost_usd": 0.19602340000000001,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 82.76667062507477,
+      "cost_usd": 0.2605276,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 47.05255883303471,
+      "cost_usd": 0.1723496,
+      "error": null
+    },
+    {
+      "agent": "bd37-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 123.39792437490541,
+      "cost_usd": 0.5450596000000001,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 94.23521237494424,
+      "cost_usd": 0.3457544,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 103.82398954092059,
+      "cost_usd": 0.3062302,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}
