@@ -279,7 +279,8 @@ def test_rules_follow_the_top_failure_kind_and_skip_what_was_tried(tmp_path):
     assert (first.kind, first.target, first.value) == ("toggle", "recheck", True)
     tried = [{"kind": "move.proposed", "data": {"move": first.record()}}]
     second = autoloop.rules_move(tried, failures, current, v3)
-    assert (second.kind, second.target, second.value) == ("threshold", "recheck_p", 0.1)
+    # the re-check is still off on v3, so its thresholds would change nothing and are skipped
+    assert (second.kind, second.target, second.value) == ("add_check", "recheck_on_agreed_nv", True)
     # on the v4 base the re-check is on already, so the queue starts at the threshold sweep
     inc = base_variant(tmp_path)
     nxt = autoloop.rules_move([], failures, autoloop.settings(inc), inc)
@@ -706,3 +707,15 @@ def test_the_loop_refuses_an_incumbent_run_that_does_not_match(tmp_path, monkeyp
         run.main(["loop", *common, "--incumbent-run", str(inc), "--run-root", str(tmp_path / "loop")])
     text = str(err.value)
     assert "recheck" in text and "guard" in text and "no first-round snapshot" in text
+
+
+# ----- moves that cannot change anything are refused -----
+
+def test_a_threshold_or_prompt_whose_switch_is_off_is_refused():
+    from lab import autoloop
+    off = {"recheck": False, "recheck_p": 0.05, "recheck_min_n": 20, "challenge": True}
+    m = autoloop.Move(id="x", kind="threshold", target="recheck_p", value=0.1, rationale="r")
+    assert any("change nothing" in p for p in autoloop.validate(m, off))
+    assert not autoloop.validate(m, {**off, "recheck": True})
+    e = autoloop.Move(id="y", kind="edit_section", target="analyst_recheck.md#Anything", value="new", rationale="r")
+    assert any("change nothing" in p for p in autoloop.validate(e, off))

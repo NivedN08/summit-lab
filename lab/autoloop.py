@@ -71,6 +71,12 @@ TOGGLES = ("recheck", "guard", "challenge", "research", "questions", "referee", 
 # Knobs a threshold may set: (lowest, highest, type).
 THRESHOLDS = {"recheck_p": (0.001, 0.2, float), "recheck_min_n": (5, 200, int), "max_searches": (0, 30, int),
               "team_searches": (0, 20, int), "research_searches": (0, 20, int)}
+# The switch each threshold (and prompt) acts through: a move on it while that switch is off changes nothing.
+THRESHOLD_NEEDS = {"recheck_p": "recheck", "recheck_min_n": "recheck", "max_searches": "library",
+                   "team_searches": "team_search", "research_searches": "research"}
+PROMPT_NEEDS = {"analyst_recheck.md": "recheck", "team_search.md": "team_search", "library.md": "library",
+                "library_research.md": "research", "director_research.md": "research",
+                "director_challenge.md": "challenge", "director_crossexam.md": "questions", "referee.md": "referee"}
 # The lab's prompts a move may edit (not the control arms' prompts, nor the proposer's own).
 EDITABLE_PROMPTS = ("analyst.md", "analyst_recheck.md", "analyst_revise.md", "common.md", "director_challenge.md",
                     "director_crossexam.md", "director_relay.md", "director_research.md", "library.md",
@@ -299,6 +305,9 @@ def validate(move: Move, current: dict, incumbent: pathlib.Path | None = None) -
             return [f"{move.target} must be within [{low}, {high}]"]
         if current.get(move.target) is not None and float(current[move.target]) == float(value):
             return [f"{move.target} is already {current[move.target]}"]
+        needs = THRESHOLD_NEEDS.get(move.target)
+        if needs and not current.get(needs):
+            return [f"{move.target} would change nothing: it acts only with {needs} on, and {needs} is off"]
         return []
     if move.kind == "add_check":
         if move.target not in check_registry.CHECKS:
@@ -312,6 +321,10 @@ def validate(move: Move, current: dict, incumbent: pathlib.Path | None = None) -
             return [f"the check {move.target} would change nothing: it acts only with {check.config} "
                     f"{'on' if check.needs_config_on else 'off'}"]
         return []
+    needs = PROMPT_NEEDS.get(str(move.target).split("#", 1)[0])
+    if needs and not current.get(needs):
+        return [f"editing {str(move.target).split('#', 1)[0]} would change nothing: it is read only with {needs} on, "
+                f"and {needs} is off"]
     return validate_edit(move, incumbent)
 
 
