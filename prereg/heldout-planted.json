@@ -1,0 +1,49 @@
+{
+  "batch": "heldout-planted",
+  "status": "final",
+  "benchmark": "planted-heldout",
+  "studies": [
+    "pf01",
+    "pf02",
+    "pf05",
+    "pf06",
+    "pf07",
+    "pf08",
+    "pf09",
+    "pf11",
+    "pf13",
+    "pf14",
+    "pf15",
+    "pf16",
+    "pf19",
+    "pf20",
+    "pf21",
+    "pf23"
+  ],
+  "arms": [
+    "lab: python3 -m lab.run lab --benchmark planted-heldout --run-dir runs/heldout/planted/lab --backend modal --memory past --parallel 8 --config-file runs/loop2/variants/v3-opus/config.json --prompt-dir runs/loop2/variants/v3-opus/prompts --max-usd 28 --prereg prereg/heldout-planted.json",
+    "same-cost vote (primary control): python3 -m lab.run arm --arm vote --benchmark planted-heldout --run-dir runs/heldout/planted/vote --backend modal --model opus --attempts 13 --parallel 8 --max-usd 27 --prereg prereg/heldout-planted.json",
+    "Opus alone: python3 -m lab.run baseline --benchmark planted-heldout --run-dir runs/heldout/planted/opus --backend modal --model opus --attempts 4 --parallel 8 --max-usd 9 --prereg prereg/heldout-planted.json",
+    "self-challenge: python3 -m lab.run arm --arm self --benchmark planted-heldout --run-dir runs/heldout/planted/self --backend modal --model opus --parallel 8 --max-usd 10 --prereg prereg/heldout-planted.json",
+    "Fable alone: python3 -m lab.run baseline --benchmark planted-heldout --run-dir runs/heldout/planted/fable --backend modal --model fable --attempts 2 --parallel 8 --max-usd 5 --prereg prereg/heldout-planted.json"
+  ],
+  "config": {
+    "director_model": "opus",
+    "worker_model": "opus",
+    "recheck": false,
+    "guard": false
+  },
+  "seeds": {
+    "heldout_draw_seed": 20261118,
+    "seed_record": "prereg/heldout-seed.json",
+    "sealed_sha256": {
+      "mapping": "aef2798caf1fb9d8075e044a6ae3ca2dfaf8d429b638203657bf8b1208858bb5",
+      "sample_record": "d34d722ec1fa8a6cbb60d573e0f71c4eea34c51a717e4391bb08bdfeb296c995"
+    },
+    "referee_order": null
+  },
+  "max_usd": 79,
+  "primary_endpoint": "The lab against the same-cost vote on every held-out task, the 80 BioDSA tasks (prereg/heldout-biodsa.json) and the 16 planted tasks (prereg/heldout-planted.json) pooled: an exact one-sided sign test on the discordant tasks at alpha 0.05, computed by lab/heldout.py (python3 -m lab.heldout runs/heldout). A task with no graded answer counts as failed for that arm. Reported with it, whatever the result: the lab's share of discordant wins with its exact 95% interval, the discordant task ids, every arm's passes and dollars. Secondary, description only: the lab against every other arm, pooled and per benchmark; the planted tasks by faulted or clean twin and by fault family; the convention note's effect (Opus alone with it against Opus alone without it, prereg/heldout-biodsa-plain.json).",
+  "stop_rules": "Each arm runs once. A halt by a usage limit (including Fable's weekly limit), a spending cap or a crash is resumed with the same command; nothing is re-planned and no arm is re-run because of its result. A run that stops without an error of its own is not restarted without the owner's go-ahead. Grading runs once, after every agent of every arm in all three specs has exited: grade, then measures, then python3 -m lab.heldout. If an arm is broken (not merely unlucky), the batch is stopped and reported, not fixed in place.",
+  "notes": "The 16 held-out planted tasks (8 faulted, 8 clean twins), generated and self-checked by lab/adapters/planted.py (24 of 24 reference matches); every arm reads each task's own task.md. research/heldout-plan.md, decisions of 2026-11-18. Opus in every lab role, exactly the loop-2 incumbent (M-17); re-check and guard off. Vote k from dev (M-18, ledger entry 70): lab dollars a task over Opus dollars an attempt, rounded half up: 15 on BioDSA ($1.564 / $0.1076), 13 on the planted suite ($1.462 / $0.1091). A vote attempt cost $0.13 on BioDSA in the smoke test against $0.11 for a plain attempt, so the vote may cost somewhat more than the lab; that favours the control. The lab keeps its literature search with every staged task's source identifiers blocked (BioDSA.blocked_terms covers both splits); the single-model arms have no search. The lab's memory (--memory past) carries what it wrote on dev tasks, including the planted dev pilot; that is part of the lab's design and the single-model arms have none. Resuming the self-challenge arm restarts a stopped task from its first step (M-18). Expected spend about $460 in all three specs; caps below."
+}
