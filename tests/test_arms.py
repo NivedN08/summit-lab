@@ -387,6 +387,15 @@ def test_the_self_arm_command_with_the_v4_preset(tmp_path, arm_cli, capsys):
     assert note["self_arm_switches"] == {"recheck": True, "guard": True}
 
 
+@pytest.mark.parametrize("arm, extra", [("vote", ["--attempts", "3"]), ("self", [])])
+def test_an_arm_records_its_model_as_director_too_so_a_lab_spec_accepts_it(tmp_path, arm_cli, monkeypatch, arm, extra):
+    seen = {}
+    monkeypatch.setattr(run, "check_prereg", lambda args, studies, config: seen.update(config=config))   # returns None
+    assert run.main(["arm", "--arm", arm, "--benchmark", "fake-labels", "--backend", "mock", "--model", "opus",
+                     "--run-dir", str(tmp_path / "r"), *extra]) == 0
+    assert seen["config"].director_model == "opus" and seen["config"].worker_model == "opus"
+
+
 # ----- the golden briefs -----
 
 FAKE = Study(id="s1", title="s1", statement=STATEMENT, data_dir=pathlib.Path("<DATA>"), deliverables=["answer.json"])

@@ -747,8 +747,9 @@ def cmd_arm(args) -> int:
         raise SystemExit("--arm vote takes either --attempts K or --match-cost LAB_RUN_DIR")
     if args.arm == "self" and (args.attempts or args.match_cost):
         raise SystemExit("--attempts and --match-cost are for --arm vote")
-    config = Config(**v4_switches(args), max_agents=args.parallel, worker_model=args.model, max_usd=args.max_usd,
-                    prompt_dir=prompt_dir(args))
+    # an arm has no director: every agent uses --model, so the config records it in both model fields
+    config = Config(**v4_switches(args), max_agents=args.parallel, worker_model=args.model, director_model=args.model,
+                    max_usd=args.max_usd, prompt_dir=prompt_dir(args))
     k, matched = args.attempts, None
     if args.match_cost:
         try:
