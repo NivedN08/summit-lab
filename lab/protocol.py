@@ -79,7 +79,7 @@ import uuid
 from typing import Any
 
 from lab import check_registry
-from lab.budget import Budget, BudgetExceeded, prior_spend
+from lab.budget import Budget, BudgetExceeded, estimates_for, prior_spend
 from lab.contracts import DIRECTOR, WORKER, Adapter, Agent, AgentResult, Backend, EventLog, Memory, Org, Study
 from lab.gateway import Gateway
 from lab.inventory import INVENTORY_FILE, build_inventory, hypothesis_text, render_inventory
@@ -847,7 +847,8 @@ class Lab:
         self.config = config or Config()
         self.exa_call = exa_call
         # A dollar cap counts what this run directory spent before (a resumed run) against the cap.
-        budget = Budget(self.config.max_usd, prior_spend(log)) if self.config.max_usd is not None else None
+        budget = (Budget(self.config.max_usd, prior_spend(log), estimates=estimates_for(getattr(adapter, "name", None)))
+                  if self.config.max_usd is not None else None)
         self.runner = AgentRunner(backend, log, self.config.max_agents, budget=budget)
         self.rng = random.Random(self.config.seed)
         self.org: Org | None = None

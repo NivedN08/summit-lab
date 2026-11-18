@@ -44,6 +44,36 @@ ESTIMATE_USD: dict[tuple[str, str], float] = {
 }
 DEFAULT_ESTIMATE_USD = 1.50          # a role or model never measured (for example a new role, or haiku)
 
+# BioDSA-1K runs cost far less than the GeneBench runs that set several entries above (an Opus single
+# attempt averages $0.11 on BioDSA and $0.72 on GeneBench), so the global table makes a BioDSA run's cap
+# refuse runs it could afford. These entries replace the global ones for a BioDSA benchmark (dev or
+# held-out, with or without the convention note). Measured on the BioDSA runs to 2026-11-18; each is
+# about the 90th percentile, rounded up.
+BENCHMARK_ESTIMATE_USD: dict[str, dict[tuple[str, str], float]] = {
+    "biodsa": {
+        # (role, model): estimate        measured on BioDSA: runs, mean, 90th percentile
+        ("analyst", "fable"): 0.55,      # 180 runs, mean 0.343, p90 0.546
+        ("analyst", "opus"): 0.45,       # 363 runs, mean 0.257, p90 0.437
+        ("baseline", "fable"): 0.20,     # 152 runs, mean 0.109, p90 0.170
+        ("baseline", "opus"): 0.20,      # 160 runs, mean 0.110, p90 0.196
+        ("director", "fable"): 0.40,     # 111 runs, mean 0.219, p90 0.394
+        ("director", "opus"): 0.35,      # 199 runs, mean 0.225, p90 0.336
+        ("recheck", "opus"): 0.20,       # 40 runs, mean 0.126, p90 0.176
+        # the control arms' roles, not yet run live: a single attempt's brief or less, set above baseline
+        ("self-solo", "opus"): 0.25,
+        ("self-challenge", "opus"): 0.25,
+        ("self-revise", "opus"): 0.25,
+        ("vote-arm", "opus"): 0.25,
+    },
+}
+
+
+def estimates_for(benchmark: str | None) -> dict[tuple[str, str], float]:
+    """The estimate table for a benchmark's runs: the global table, with the benchmark's own entries
+    (BENCHMARK_ESTIMATE_USD, matched by the adapter name's first word) in place of the global ones."""
+    family = (benchmark or "").split("-")[0]
+    return {**ESTIMATE_USD, **BENCHMARK_ESTIMATE_USD.get(family, {})}
+
 
 def estimate_usd(role: str, model: str, table: dict | None = None) -> float:
     """The estimated cost of one run: the (role, model) entry, else the highest for the role, else the default."""

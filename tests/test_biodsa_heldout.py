@@ -458,3 +458,16 @@ def test_upload_heldout_puts_tables_under_bh_folders(staged_both, monkeypatch):
     put.clear()
     biodsa.main(["upload", "--split", "heldout", "bh01,bh02"])
     assert {remote.split("/")[1] for _, remote in put} == {"bh01", "bh02"}
+
+
+def test_the_cli_loads_the_heldout_split_plain_and_with_the_convention(staged_both):
+    from lab import run
+    from lab.protocol import LABEL_ADAPTERS
+    plain, conv = run.load_adapter("biodsa-heldout"), run.load_adapter("biodsa-heldout-convention")
+    assert (plain.split, plain.convention, plain.name) == ("heldout", False, "biodsa-heldout")
+    assert (conv.split, conv.convention, conv.name) == ("heldout", True, "biodsa-heldout-convention")
+    assert {plain.name, conv.name} <= LABEL_ADAPTERS
+    by_id = {s.id: s.statement for s in plain.studies()}
+    for s in conv.studies():
+        assert s.statement == biodsa.with_convention(by_id[s.id])
+    assert run.load_adapter("biodsa").split == "dev" and run.load_adapter("biodsa-convention").split == "dev"

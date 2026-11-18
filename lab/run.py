@@ -55,10 +55,10 @@ def _scbench():
     return ScBench()
 
 
-def _biodsa(convention: bool = False):
+def _biodsa(convention: bool = False, split: str = "dev"):
     def factory():
         from lab.adapters.biodsa import BioDSA
-        return BioDSA(convention=convention)
+        return BioDSA(split=split, convention=convention)
     return factory
 
 
@@ -75,6 +75,8 @@ def _planted(split: str):
 # benchmark name -> factory, called with no argument (or, for one with local_option, `mounted`)
 ADAPTERS = {"genebench": _genebench, "scbench": _scbench, "biodsa": _biodsa(),
             "biodsa-convention": _biodsa(convention=True),
+            "biodsa-heldout": _biodsa(split="heldout"),
+            "biodsa-heldout-convention": _biodsa(convention=True, split="heldout"),
             "planted": _planted("all"), "planted-dev": _planted("dev"), "planted-heldout": _planted("heldout")}
 
 

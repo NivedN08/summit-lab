@@ -38,7 +38,7 @@ import shutil
 import time
 
 from lab.baseline import baseline_brief
-from lab.budget import Budget, prior_spend
+from lab.budget import Budget, estimates_for, prior_spend
 from lab.contracts import WORKER, Adapter, Agent, AgentResult, Backend, EventLog, Study
 from lab.inventory import CODE_SUFFIXES, INVENTORY_FILE, build_inventory, hypothesis_text, render_inventory
 from lab.measures import LAB_ROLES
@@ -136,8 +136,9 @@ def notes_without_answer(doc, answers: list[dict]):
     return clean(doc)
 
 
-def make_runner(backend: Backend, log: EventLog, max_agents: int, max_usd: float | None) -> AgentRunner:
-    budget = Budget(max_usd, prior_spend(log)) if max_usd is not None else None
+def make_runner(backend: Backend, log: EventLog, max_agents: int, max_usd: float | None,
+                benchmark: str | None = None) -> AgentRunner:
+    budget = Budget(max_usd, prior_spend(log), estimates=estimates_for(benchmark)) if max_usd is not None else None
     return AgentRunner(backend, log, max_agents, budget=budget)
 
 
@@ -328,7 +329,7 @@ def run_self_arm(adapter: Adapter, backend: Backend, log: EventLog, run_dir: pat
     """Run the self-challenge arm on every study it has not finished. Returns {study: {"status", "final"}}.
     The agents' runs share one dollar cap, counting what the run directory spent before."""
     cfg = cfg or Config()
-    runner = make_runner(backend, log, max_agents, max_usd)
+    runner = make_runner(backend, log, max_agents, max_usd, getattr(adapter, "name", None))
     done = {e["study"]: e for e in log.events("arm.final") if e.get("arm") == "self"}
     out = {sid: {"status": e.get("status"), "skipped": True} for sid, e in done.items()
            if sid in {s.id for s in studies}}
@@ -348,7 +349,7 @@ def run_vote_arm(adapter: Adapter, backend: Backend, log: EventLog, run_dir: pat
                  attempts: int, model: str, max_agents: int, timeout_s: int = 1800,
                  max_usd: float | None = None, prompt_dir=None) -> dict:
     """Run `attempts` vote-arm agents per study, skipping attempts already done. Returns {study: {k: ok}}."""
-    runner = make_runner(backend, log, max_agents, max_usd)
+    runner = make_runner(backend, log, max_agents, max_usd, getattr(adapter, "name", None))
     run_dir = pathlib.Path(run_dir).resolve()
     done = {(e["study"], e["attempt_number"]) for e in log.events("arm.attempt") if e.get("arm") == "vote"}
     jobs = [(s, k) for s in studies for k in range(1, attempts + 1) if (s.id, k) not in done]

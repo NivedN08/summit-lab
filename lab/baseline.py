@@ -15,7 +15,7 @@ import json
 import pathlib
 import statistics
 
-from lab.budget import Budget, prior_spend
+from lab.budget import Budget, estimates_for, prior_spend
 from lab.contracts import WORKER, Adapter, Agent, Backend, EventLog, Study
 from lab.protocol import AgentRunner, answer_file, load_doc, make_brief
 
@@ -37,7 +37,7 @@ def run_baselines(adapter: Adapter, backend: Backend, log: EventLog, run_dir: pa
     """Run `attempts` single agents per study, skipping attempts already done. Returns {study: {k: ok}}.
     With max_usd, the run directory's spend (what its event log already records, plus these attempts)
     is capped: an attempt that would pass it raises BudgetExceeded and is not marked done."""
-    budget = Budget(max_usd, prior_spend(log)) if max_usd is not None else None
+    budget = Budget(max_usd, prior_spend(log), estimates=estimates_for(getattr(adapter, "name", None))) if max_usd is not None else None
     runner = AgentRunner(backend, log, max_agents, budget=budget)
     run_dir = pathlib.Path(run_dir).resolve()
     done = {(e["study"], e["attempt_number"]) for e in log.events("baseline.done")}

@@ -10,7 +10,7 @@ import pytest
 
 from lab import baseline as baseline_mod
 from lab import protocol, run
-from lab.budget import Budget, BudgetExceeded, ESTIMATE_USD, estimate_usd, prior_spend
+from lab.budget import BENCHMARK_ESTIMATE_USD, Budget, BudgetExceeded, ESTIMATE_USD, estimate_usd, estimates_for, prior_spend
 from lab.contracts import WORKER, Agent, AgentResult
 from lab.eventlog import JsonlEventLog
 from lab.limits import UsageLimit
@@ -186,6 +186,49 @@ def test_baselines_stop_at_the_cap_and_resume(tmp_path):
     out = baseline_mod.run_baselines(adapter, backend, log, tmp_path / "run", adapter.studies(), attempts=2,
                                      model="fable", max_agents=1, max_usd=5.0)
     assert sum(len(v) for v in out.values()) == 1 and len(log.events("baseline.done")) == 4
+
+
+# ----- per-benchmark estimates -----
+
+@pytest.mark.parametrize("name", ["biodsa-1k", "biodsa-1k-convention", "biodsa-heldout", "biodsa-heldout-convention"])
+def test_every_biodsa_split_uses_the_biodsa_estimates(name):
+    table = estimates_for(name)
+    assert estimate_usd("baseline", "opus", table) == BENCHMARK_ESTIMATE_USD["biodsa"][("baseline", "opus")]
+    assert estimate_usd("vote-arm", "opus", table) < estimate_usd("vote-arm", "opus")   # no $1.50 fallback
+    assert estimate_usd("library", "opus", table) == ESTIMATE_USD[("library", "opus")]   # unmeasured on BioDSA: global
+
+
+@pytest.mark.parametrize("name", [None, "genebench-pro", "scbench", "planted", "fake"])
+def test_other_benchmarks_keep_the_global_table(name):
+    assert estimates_for(name) == ESTIMATE_USD
+
+
+def test_the_biodsa_table_lets_a_loop2_sized_cap_run_eight_at_once():
+    # loop 2's Opus-alone run: $7.17 spent, cap $14, 8 attempts in flight. The global estimate ($0.95)
+    # refused the eighth; the BioDSA estimate fits all eight.
+    plain, biodsa = Budget(14.0, 7.17), Budget(14.0, 7.17, estimates=estimates_for("biodsa-1k-convention"))
+    for _ in range(7):
+        plain.reserve("baseline", "opus")
+    with pytest.raises(BudgetExceeded):
+        plain.reserve("baseline", "opus")
+    for _ in range(8):
+        biodsa.reserve("baseline", "opus")
+
+
+def test_baselines_lab_and_arms_pass_the_benchmark_to_the_budget(tmp_path):
+    from lab import arms
+    adapter = FakeAdapter(tmp_path / "bench")
+    adapter.name = "biodsa-heldout-convention"
+    log = JsonlEventLog(tmp_path / "run" / "events.jsonl")
+    backend = CostBackend(0.15)
+    # BioDSA Opus baseline estimate 0.20: 0 -> 0.15 -> 0.30 -> 0.45 fit a $0.65 cap; the global 0.95 fits none
+    out = baseline_mod.run_baselines(adapter, backend, log, tmp_path / "run", adapter.studies(), attempts=2,
+                                     model="opus", max_agents=1, max_usd=0.65)
+    assert backend.calls >= 3 and sum(len(v) for v in out.values()) == backend.calls
+    runner = arms.make_runner(backend, log, 1, 5.0, adapter.name)
+    assert runner.budget.estimates == estimates_for("biodsa-heldout-convention")
+    lab, lab_adapter, *_ = make(tmp_path / "lab", {"team-a": [A], "team-b": [A]}, protocol.Config(max_usd=5.0))
+    assert lab.runner.budget.estimates == estimates_for(getattr(lab_adapter, "name", None))
 
 
 # ----- the command line -----
