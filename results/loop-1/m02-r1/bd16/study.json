@@ -1,0 +1,288 @@
+{
+  "study": "bd16",
+  "status": "replicated",
+  "final": {
+    "agent": "bd16-team-a",
+    "team": "team-a",
+    "round": "analysis",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd16/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "checks": [
+      "recheck_on_agreed_nv"
+    ],
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m02/prompts",
+    "reuse_first_round": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1"
+  },
+  "models": {
+    "director": "opus",
+    "bd16-library": "opus",
+    "bd16-team-a": "opus",
+    "bd16-team-b": "opus",
+    "bd16-team-c": "opus",
+    "bd16-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd16-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd16/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd16-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd16/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd16-team-a",
+      "round": "recheck",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd16/candidates/team-a-recheck.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      },
+      "not_used": "the re-check's verdict kept the earlier answer: the answer is still 'Not verifiable'"
+    },
+    {
+      "team": "team-b",
+      "agent": "bd16-team-b",
+      "round": "recheck",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd16/candidates/team-b-recheck.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      },
+      "not_used": "the re-check's verdict kept the earlier answer: the answer is still 'Not verifiable'"
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd16-team-a",
+        "bd16-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Recurrent TERT promoter mutations (C228T at chr5:1,295,228 and C250T at chr5:1,295,250, hg19) lie upstream of the coding sequence in a GC-rich region that whole-exome capture usually does not cover. Before testing anything, check whether this study records TERT promoter status at all: look for Hugo_Symbol == TERT rows in data_mutations.txt, read each row's Variant_Classification (5'Flank/5'UTR versus coding) and Start_Position, and search the clinical tables for any TERT-related column. A coding TERT variant such as a missense mutation is not a promoter mutation and should not be used in its place.",
+      "from": [
+        "sl-dev-panel-noise-lab1-34b27e163013",
+        "sl-dev-panel-noise-lab1-a450058ad17c"
+      ],
+      "reason": "Whether the hypothesis variable exists is the central question here. Teams could easily treat any TERT row in the MAF as a promoter mutation, or miss that the assay may never have targeted the promoter.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-407e35737251"
+      }
+    },
+    {
+      "text": "TERT copy number, TERT expression itself, IDH1-wildtype status or ATRX-wildtype status are not measures of TERT promoter mutation. Expression is the outcome, so using it as a proxy is circular, and the IDH/ATRX links are only correlational. If no direct promoter-status variable exists, any proxy changes the hypothesis being tested and can be reported only as context, not as evidence.",
+      "from": [
+        "sl-dev-panel-noise-lab1-6121e25a456c"
+      ],
+      "reason": "If the direct variable is missing, building a proxy is the most likely way to reach an unjustified conclusion.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-fe5f57ea2d42"
+      }
+    },
+    {
+      "text": "In cBioPortal data, a sample with no mutation row for a gene is not necessarily wildtype; it may not have been profiled. data_gene_panel_matrix.txt contains samples with mutations=NA. Restrict any mutant-vs-wildtype comparison to profiled samples, and confirm that the genomic region of interest was covered by the assay, since absence in an untargeted region carries no information.",
+      "from": [
+        "sl-dev-panel-noise-lab1-9179c7d4a91b"
+      ],
+      "reason": "This decides how the comparison groups are defined and whether 'no call' means anything.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-bd871b8c90c3"
+      }
+    },
+    {
+      "text": "TERT mRNA is low in abundance and often zero in RNA-seq, with a bimodal distribution across tumours. Check the fraction of zeros and the skew of the TERT row in data_mrna_seq_v2_rsem.txt. For group comparisons, prefer log2(RSEM+1) with a rank-based test (Mann-Whitney) plus a comparison of the fraction of tumours expressing TERT, rather than t-tests on raw values or on reference-scaled z-scores.",
+      "from": [
+        "sl-dev-panel-noise-lab1-a1a14adf1adf"
+      ],
+      "reason": "This is the correct handling of the expression outcome if a valid mutation grouping exists.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-32dafe21b8e2"
+      }
+    },
+    {
+      "text": "TERT can be activated without a promoter mutation, through amplification, rearrangement or promoter hypermethylation, and TERT-promoter-wildtype GBMs are often IDH/ATRX-mutant tumours that differ systematically from the rest. If a genuine promoter-status variable exists, tabulate TERT CNA (data_cna.txt), IDH1 mutation and G-CIMP status by group, and report both crude comparisons and comparisons adjusted or stratified for these (for example, IDH-wildtype only, or excluding TERT-amplified samples).",
+      "from": [
+        "sl-dev-panel-noise-lab1-81cef1df9732"
+      ],
+      "reason": "These are confounders that could distort a mutant-vs-wildtype expression comparison.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-70cb35549ed9"
+      }
+    },
+    {
+      "text": "The hypothesis claims there is no correlation. A non-significant test from tiny groups, or from a proxy variable, is absence of evidence, not support for that claim. Report group sizes and an effect size with a confidence interval, and judge whether the test had the power to support or reject the claim.",
+      "from": [
+        "sl-dev-panel-noise-lab1-eeaa7dc1cffc"
+      ],
+      "reason": "This guards against reading an underpowered null result as support for a 'no correlation' hypothesis.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-7b37e984acbd"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 0,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assume that, when no direct TERT promoter-status variable exists, the right label is 'Not verifiable' rather than a label based on a substitute variable. This matches the task's definition, since the hypothesis is specifically about promoter mutations.",
+      "Both assume that the absence of promoter calls in the mutation file means 'not measured', not 'all wild-type'. This holds because the samples are whole-exome sequenced (the gene panel matrix says WXS), and exome capture does not reliably cover the promoter hotspots."
+    ],
+    "unused_evidence": [
+      "TERT copy number (data_cna.txt, data_linear_cna.txt), the TERT expression rows, IDH1/G-CIMP status and RPPA were not used. All of these are outcomes or correlates, not measures of promoter status, so ignoring them cannot change the label.",
+      "The mutation file has a few non-coding rows (43 5'UTR, 9 upstream_gene_variant, 36 intronic), so off-target calls were kept. The director independently confirmed that the only call in chr5:1.25-1.35 Mb (GRCh37, chromosome coded as '5') is the single coding TERT missense at 1,279,521. No variant lies near the hotspots at 1,295,228 and 1,295,250."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weak point: a promoter-status field might exist somewhere they did not look. Both scanned the MAF and the clinical headers, and the director found no TERT-related clinical column (the sample table has subtype, MGMT, methylation cluster, G-CIMP, IDH1 and TMB; the patient table has age, sex, OS, DFS and therapy). This weak point is resolved."
+    ],
+    "second_readings": [
+      "The hypothesis could be read loosely as 'TERT alterations (for example amplification) do not correlate with expression'. That would be a different hypothesis. The wording says 'promoter mutations', so the strict reading stands.",
+      "The hypothesis claims an absence of association, and one might argue that with no promoter-mutated tumours observed there is trivially no correlation. That would confuse 'not measured' with 'absent', and the task's 'Not verifiable' definition covers exactly this case."
+    ],
+    "verdict": "I trust the agreed 'Not verifiable' label highly. The data hold no TERT promoter-status variable: the exome MAF has no calls near the promoter hotspots and no clinical column records promoter status, and the director checked both independently. Each team's named weak point was checked directly, so I have no concrete check that could change the label and I ask no questions.",
+    "questions": []
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd16-team-b",
+      "round": "analysis",
+      "reason": "agreed with bd16-team-a; that team's file is the reported copy"
+    },
+    {
+      "agent": "bd16-team-a",
+      "round": "recheck",
+      "reason": "the re-check's verdict kept the earlier answer: the answer is still 'Not verifiable'"
+    },
+    {
+      "agent": "bd16-team-b",
+      "round": "recheck",
+      "reason": "the re-check's verdict kept the earlier answer: the answer is still 'Not verifiable'"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd16-team-a",
+      "phase": "recheck",
+      "ok": true,
+      "seconds": 26.499791082926095,
+      "cost_usd": 0.12832079999999998,
+      "error": null
+    },
+    {
+      "agent": "bd16-team-b",
+      "phase": "recheck",
+      "ok": true,
+      "seconds": 27.607822999940254,
+      "cost_usd": 0.1060306,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 42.92656183394138,
+      "cost_usd": 0.24165040000000002,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": [],
+  "recheck": [
+    {
+      "team": "team-a",
+      "before": "Not verifiable",
+      "after": "Not verifiable",
+      "accepted": false,
+      "reason": "the answer is still 'Not verifiable'",
+      "candidate": "team-a-recheck",
+      "test": {
+        "test": "none run: no TERT promoter mutation status variable exists in any file",
+        "variables": [
+          "data_mutations.txt: Hugo_Symbol/Variant_Classification/Start_Position (only TERT row is a coding Missense_Mutation at chr5:1279521 in one sample; no 5'Flank/promoter calls at chr5:1295228/1295250)",
+          "data_clinical_sample.txt: no TERT column",
+          "data_clinical_patient.txt: no TERT column",
+          "data_mrna_seq_v2_rsem.txt: TERT (outcome only)"
+        ],
+        "statistic": null,
+        "p_value": null,
+        "n": 0,
+        "direction": "contradicts"
+      },
+      "in_use": "team-a-analysis"
+    },
+    {
+      "team": "team-b",
+      "before": "Not verifiable",
+      "after": "Not verifiable",
+      "accepted": false,
+      "reason": "the answer is still 'Not verifiable'",
+      "candidate": "team-b-recheck",
+      "test": {
+        "test": "none possible: searched for TERT promoter mutation status (chr5:1,250,000-1,350,000 in data_mutations.txt; TERT columns in clinical, gene panel and RPPA files); only one TERT coding missense variant exists and no promoter variants or TERT status column",
+        "variables": [
+          "data_mutations.txt: Hugo_Symbol",
+          "data_mutations.txt: Chromosome",
+          "data_mutations.txt: Start_Position",
+          "data_mrna_seq_v2_rsem.txt: TERT"
+        ],
+        "statistic": null,
+        "p_value": null,
+        "n": 0,
+        "direction": "none"
+      },
+      "in_use": "team-b-analysis"
+    }
+  ],
+  "reused": {
+    "from": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1",
+    "memory_replayed": {
+      "writes": null,
+      "pass_downs": 6,
+      "note": "memory writes are replayed only with local memory"
+    },
+    "first_round_cost_usd": 0.830451,
+    "first_round_runs": 4
+  }
+}

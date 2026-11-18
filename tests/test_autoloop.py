@@ -783,6 +783,7 @@ def test_a_crashed_loop_resumes_where_it_stopped(tmp_path):
     assert summary["reason"] == "3 rejections in a row"
     assert [c[0] for c in calls2["evaluate"]] == ["m02", "m03"]      # m02 judged again, then a new move
     assert calls2["propose"] == 1 and summary["moves"] == 3
+    assert [h["path"] for h in summary["history"]] == ["proposer", "proposer", "proposer"]
     assert summary["spent_usd"] == 7.0 + 1.0 + 3.0 + 3.0
     mine = [e for e in again.entries() if e["data"].get("loop") == loop.id]
     resumed = next(e["data"] for e in mine if e["data"].get("event") == "loop.resume")

@@ -729,11 +729,12 @@ class Loop:
         inc_run = s.incumbent_run
         if s.lessons:
             self.lesson_store = Lessons(s.lessons, s.root, s.proposer_model)
-        moves, in_a_row, history, pending = 0, 0, [], None
+        moves, in_a_row, history, pending, pending_path = 0, 0, [], None, None
         if self.resume:
             state = self.restore()
             incumbent, inc_run = state["incumbent"] or incumbent, state["incumbent_run"] or inc_run
             moves, in_a_row, history, pending = state["moves"], state["in_a_row"], state["history"], state["pending"]
+            pending_path = state["pending_path"]
             self.spent_usd = state["spent_usd"]
         ensure_graded(inc_run, self.adapter())
         inc_out = run_outcomes(inc_run, s.panel)
@@ -752,7 +753,7 @@ class Loop:
         reason = None
         while reason is None:
             if pending is not None:                 # a resumed loop first finishes the move it was judging
-                proposed, variant, extra, path = pending, s.variants_dir / pending.id, {}, "resumed"
+                proposed, variant, extra, path = pending, s.variants_dir / pending.id, {}, pending_path or "resumed"
                 pending = None
                 reason = self.decide(proposed, variant, inc_run, inc_out, path, extra, history)
                 if reason == "accepted":
@@ -835,7 +836,7 @@ class Loop:
         if not any(e["kind"] == "note" and e["data"].get("event") == "loop.start" for e in mine):
             raise ValueError(f"no loop {self.id} in {self.s.ledger_path}")
         moves, in_a_row, history = 0, 0, []
-        incumbent = inc_run = pending = None
+        incumbent = inc_run = pending = pending_path = None
         stopped = None
         for e in mine:
             kind, d = e["kind"], e["data"]
@@ -872,7 +873,8 @@ class Loop:
             if (pathlib.Path(run_dir) / "events.jsonl").is_file():
                 spent_usd += prior_spend(JsonlEventLog(pathlib.Path(run_dir) / "events.jsonl"))
         return {"moves": moves, "in_a_row": in_a_row, "history": history, "incumbent": incumbent,
-                "incumbent_run": inc_run, "pending": pending, "spent_usd": spent_usd}
+                "incumbent_run": inc_run, "pending": pending, "pending_path": pending_path if pending else None,
+                "spent_usd": spent_usd}
 
     def judge(self, move: Move, variant: pathlib.Path, inc_run: pathlib.Path, inc_out: dict) -> dict:
         """Evaluate a variant (and a second replicate if the first is accepted) and log every step."""

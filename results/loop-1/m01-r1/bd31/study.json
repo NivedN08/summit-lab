@@ -1,0 +1,453 @@
+{
+  "study": "bd31",
+  "status": "replicated",
+  "final": {
+    "agent": "bd31-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd31/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "recheck": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m01/prompts",
+    "reuse_first_round": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1"
+  },
+  "models": {
+    "director": "opus",
+    "bd31-library": "opus",
+    "bd31-team-a": "opus",
+    "bd31-team-b": "opus",
+    "bd31-team-c": "opus",
+    "bd31-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd31-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd31/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd31-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd31/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd31-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd31/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd31-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd31/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd31-team-a",
+        "bd31-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd31-team-a",
+        "bd31-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "MSI-high colorectal tumours are mostly right-sided and carry BRAF V600E and RNF43 frameshifts (e.g. G659fs), so including them can make BRAF/RNF43 look right-enriched through MSI confounding alone. Tabulate MSI_STATUS (MSS/MSI/Inconclusive/NA) by PRIMARY_TUMOR_LOCATION in data_clinical_sample.txt and analyse MSS only. Many samples (about 327) have MSI_STATUS=NA but an MSI_SCORE; decide explicitly how to handle them (e.g. MSIsensor cut-offs: <3 MSS, 3-10 indeterminate, >=10 MSI-H) and report results both for strict MSI_STATUS==MSS and for score-derived MSS.",
+      "from": [
+        "sl-dev-panel-noise-lab1-1676066553a7"
+      ],
+      "reason": "The hypothesis is restricted to MSS; the MSS definition and NA handling directly change the analysed cohort and can create spurious enrichment.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-cbbced31cbb1"
+      }
+    },
+    {
+      "text": "The hypothesis concerns metastatic CRC, but the cohort includes MCRC_TYPE='Early Stage Primary' samples (about 123) and about 14 samples with PRIMARY_TUMOR_LOCATION=NA. Tabulate MCRC_TYPE and PRIMARY_TUMOR_LOCATION; run the main analysis on mCRC samples (mCRC Primary + mCRC Metastasis) with known Left/Right side, and include early-stage samples only as a sensitivity analysis. Standard convention: right = caecum to transverse colon (proximal to splenic flexure), left = splenic flexure to rectum. Check PRIMARY_SITE against the provided Right/Left label; transverse colon handling varies and rectum may behave differently from left colon.",
+      "from": [
+        "sl-dev-panel-noise-lab1-4b01bf883655"
+      ],
+      "reason": "Defines the correct population (metastatic) and the exposure variable (sidedness); both are easy to get wrong.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-dd455285b5bf"
+      }
+    },
+    {
+      "text": "About 31 patients have more than one sequenced sample (e.g. primary and metastasis). Count SAMPLE_ID per PATIENT_ID among MSS samples with known side and collapse to one row per patient before testing (either altered-if-any-sample-altered, or one prespecified sample such as the primary). Primary-metastasis concordance is high for KRAS/BRAF but lower for PIK3CA, so state the rule used.",
+      "from": [
+        "sl-dev-panel-noise-lab1-3f131cbb5e3f"
+      ],
+      "reason": "Duplicate patients double-count and break independence in Fisher tests.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-29dd49686380"
+      }
+    },
+    {
+      "text": "Samples were sequenced on different MSK-IMPACT panels (IMPACT341/410/468). Genes added in later panels (RNF43 may be absent from IMPACT341 - verify in data_gene_panel_matrix.txt / panel gene lists, and check whether any RNF43 mutation occurs in IMPACT341 samples) would be wrongly counted as wild-type in samples whose panel did not cover them. Cross-tabulate panel by side, and compute each gene's frequency with a denominator restricted to samples whose panel covers that gene; also exclude samples with mutations=NA in the panel matrix.",
+      "from": [
+        "sl-dev-panel-noise-lab1-f4bda4fbac3f"
+      ],
+      "reason": "If panel mix differs by side, uncovered genes counted as wild-type bias the side comparison.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-75c6255be34b"
+      }
+    },
+    {
+      "text": "The hypothesis is about ONCOGENIC alterations, and the mutation file has no OncoKB/oncogenic annotation column. List Variant_Classification and protein changes for KRAS, BRAF, PIK3CA, AKT1, RNF43, SMAD4, and define 'oncogenic' a priori before testing, e.g. KRAS G12/G13/Q61/K117/A146; BRAF V600 and class 2/3 kinase-domain variants; PIK3CA hotspots (E542/E545/H1047 etc.); AKT1 E17K; truncating mutations in RNF43 and SMAD4, plus SMAD4 deep deletions (value -2) from data_cna.txt. Report results under both an 'any non-synonymous' and a 'hotspot/truncating' definition and check whether the conclusion holds under both. Exclude silent/intronic rows.",
+      "from": [
+        "sl-dev-panel-noise-lab1-d7fc2f693e3e"
+      ],
+      "reason": "The alteration definition determines the counts; counting VUS/passengers inflates frequencies, and CNA data are needed for SMAD4.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-abd40b3128db"
+      }
+    },
+    {
+      "text": "Hypermutated MSS tumours (e.g. POLE exonuclease-domain mutants, aa 268-471; TMB often >50 mut/Mb) carry many incidental mutations in KRAS/BRAF/PIK3CA etc. and can inflate frequencies on whichever side they fall. Inspect TMB_NONSYNONYMOUS among MSS samples, POLE exonuclease mutations, and MSI_SCORE values in the 3-10 range, and run a sensitivity analysis excluding hypermutated MSS samples (e.g. TMB>20).",
+      "from": [
+        "sl-dev-panel-noise-lab1-c2aae2ea5e76"
+      ],
+      "reason": "A few hypermutators can drive apparent side differences within the MSS group.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-d313c1a9a3c2"
+      }
+    },
+    {
+      "text": "The hypothesis names six genes. Do not judge it on a single pooled 'any of six altered' test or on one gene alone. Run per-gene 2x2 Fisher tests (right vs left, MSS, one row per patient, panel-aware denominators), report odds ratios with 95% CI, direction of each effect, and Benjamini-Hochberg adjusted q-values. Decide in advance how the per-gene results map to a label: consider how many genes show right-side enrichment, whether the main ones are significant after FDR correction, and whether any gene is significantly enriched in the opposite direction. Rare genes (e.g. AKT1) may be underpowered; an underpowered non-significant result is not by itself a contradiction.",
+      "from": [
+        "sl-dev-panel-noise-lab1-cbd360bb9780"
+      ],
+      "reason": "Gives a prespecified multi-gene decision rule and multiple-testing control, so the label is not driven by one gene or by uncorrected p-values.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-311c47d46845"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams took the curated PRIMARY_TUMOR_LOCATION Left/Right label as given. 'Left' includes rectum (261) and rectosigmoid (119) samples, and transverse colon is split 19 Left / 35 Right. Neither team tested whether the result depends on putting rectum into the left group or on how transverse colon is assigned.",
+      "Both teams used one hand-made 'oncogenic' rule per gene and treated each gene's alterations as one class. Within-gene subclasses that are known to differ by side were not separated: BRAF V600E vs non-V600 (class 2/3), and KRAS G12/G13 vs Q61/A146/K117.",
+      "Both teams treated MSI_STATUS (strict, or with an MSI_SCORE<3 fill-in) as the definition of microsatellite stable. MOLECULAR_SUBTYPE (MSI 99, POLE 8, the rest 'MSI Status') and MSI_STATUS disagree in places. Team B excluded POLE; Team A used only a TMB>20 filter.",
+      "Both teams assumed sample type and chemotherapy exposure do not change side-specific frequencies. They pooled metastasis and primary specimens (Team B prefers the primary; Team A counts a patient as altered if any sample is), and pooled chemo-exposed and chemo-naive specimens."
+    ],
+    "unused_evidence": [
+      "data_sv.txt: neither team counted structural variants or fusions (e.g. BRAF or RNF43 rearrangements) as alterations.",
+      "data_cna.txt amplifications (+2) for KRAS, PIK3CA, AKT1 and BRAF. Only SMAD4 deep deletion was used.",
+      "MOLECULAR_SUBTYPE column (MSI/POLE). Team A did not use it to cross-check the MSS definition.",
+      "CHEMO_EXP_SEQ_SPECIMEN and SAMPLE_TYPE (primary vs metastasis), which could be used for stratified sensitivity checks.",
+      "PRIMARY_SITE detail, which would allow rectum-excluded and transverse-reassigned sensitivity analyses."
+    ],
+    "unresolved_weak_points": [
+      "SMAD4 is non-significant in strict MSS (Team B p=0.17; Team A calls it borderline). Both teams reported this but did not resolve it, and neither stated a prespecified rule for how six per-gene results map to the label.",
+      "AKT1 counts are tiny in both teams. Its direction is reported, but no test of it is informative.",
+      "Team B's weakest point is the hand-made oncogenic rule (no OncoKB annotation). Its only sensitivity check was 'any non-silent', which is broader, not finer.",
+      "Team A did not run an explicit POLE exonuclease-domain check."
+    ],
+    "second_readings": [
+      "'Left-sided' may mean distal colon only, excluding rectum, or distal colon plus rectum. The answer could differ, especially for SMAD4 and KRAS.",
+      "'Enrichment of oncogenic alterations in KRAS, BRAF, PIK3CA, AKT1, RNF43 and SMAD4' can be read as each gene being individually enriched, or as the set collectively (e.g. the per-patient burden or presence of any of these alterations) being enriched. The two readings may give different labels when one or two genes are non-significant.",
+      "'Oncogenic alterations' may cover mutations only, or mutations plus CNAs and SVs."
+    ],
+    "verdict": "The agreed answer is moderately trusted. Both teams handled MSI confounding, patient duplication and FDR correction, and the main genes give strong signals. Neither team tested whether the result depends on the side definition (rectum and transverse colon), the gene subclasses (non-V600 BRAF), or the mapping rule for the weak genes (SMAD4, AKT1).",
+    "questions": [
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Rerun the per-gene comparison twice: once with rectum and rectosigmoid samples excluded from the left group, and once with all transverse colon samples assigned to the same side. Does the direction or significance of any of the six genes (especially SMAD4) change, and does that change your label?",
+        "from": [
+          "sl-m01-r1-dd455285b5bf"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m01-r1-bf6d8f6c1b9b"
+      },
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Split BRAF into V600E and non-V600 alterations, and KRAS into codon 12/13 and other codons (Q61, A146, K117). Tabulate each subclass by side in MSS patients. Does any subclass go the opposite way from the gene-level result, and does that change how you define 'oncogenic'?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m01-r1-b7fd0e3b2afc"
+      },
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate MOLECULAR_SUBTYPE (MSI/POLE) against your MSS set. Also list MSS samples with POLE exonuclease-domain mutations (aa 268-471) that your TMB>20 filter did not remove. Does excluding them change any per-gene result?",
+        "from": [
+          "sl-m01-r1-d313c1a9a3c2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m01-r1-ea0db48de523"
+      },
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Say what rule you used to map six per-gene results to one label, given that SMAD4 is borderline and AKT1 is tiny. Also add KRAS/PIK3CA/AKT1/BRAF amplifications (data_cna +2) and any data_sv.txt events in the six genes. Does the label still hold under that rule?",
+        "from": [
+          "sl-m01-r1-311c47d46845"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m01-r1-6a4515b0f6ea"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Rerun the per-gene comparison twice: once with rectum and rectosigmoid samples excluded from the left group, and once with all transverse colon samples assigned to the same side. Does the direction or significance of any of the six genes (especially SMAD4) change, and does that change your label?",
+        "from": [
+          "sl-m01-r1-dd455285b5bf"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m01-r1-697b073c109b"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your oncogenic rule counts KRAS/BRAF hotspots. Which codons did you include? Tabulate by side BRAF V600E vs non-V600, and KRAS G12/G13 vs Q61/A146/K117, in MSS patients. Does any subclass go the opposite way, and would including or excluding it change the per-gene result?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m01-r1-a9b090dab631"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check data_sv.txt and data_cna.txt (+2 amplifications) for events in the six genes, and add them to your alteration calls. Then stratify the comparison by SAMPLE_TYPE (primary vs metastasis) and by CHEMO_EXP_SEQ_SPECIMEN. Is the right-vs-left direction consistent across strata?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m01-r1-244979360f5c"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your label rests on 'all six genes pointing the same way, four of them strongly'. Was that rule fixed before you saw the results? Also run a per-patient test of the collective reading (number of the six genes altered, right vs left). Does it agree with the per-gene reading?",
+        "from": [
+          "sl-m01-r1-311c47d46845"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m01-r1-f3596f419f42"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In colorectal cancer genomics studies, how is primary tumour sidedness conventionally defined (placement of transverse colon, splenic flexure and rectum)? Are rectal tumours usually analysed separately from left colon tumours when comparing mutation frequencies by side?",
+          "why": "The left group includes rectum and the transverse colon is split, so the side definition may drive the per-gene results.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Which BRAF and KRAS variant classes (e.g. BRAF class 1 V600 vs class 2/3 non-V600; KRAS codon 12/13 vs Q61/A146/K117) are considered oncogenic, and do they differ in their distribution between proximal and distal colorectal tumours?",
+          "why": "Lumping subclasses with opposite side distributions under one gene-level 'oncogenic' rule could mask or inflate enrichment.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Which RNF43 alterations (e.g. G659fs and other truncating variants) are considered oncogenic driver events rather than passenger or MSI-associated events in microsatellite-stable colorectal cancer?",
+          "why": "Both teams used a hand-made truncating rule for RNF43 with no annotation database, so a recurrent passenger frameshift could drive the RNF43 result.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In colorectal cancer genomics studies, how is primary tumour sidedness conventionally defined (placement of transverse colon, splenic flexure and rectum)? Are rectal tumours usually analysed separately from left colon tumours when comparing mutation frequencies by side?",
+          "answer": "The most common convention splits at the splenic flexure. Right-sided means caecum, ascending colon, hepatic flexure and the proximal two-thirds of the transverse colon (midgut). Left-sided means the splenic flexure (and distal third of the transverse colon), descending colon, sigmoid and rectum (hindgut). There is no single agreed definition. Because the transverse colon has a mixed embryological origin, some studies exclude it, and rectal cancer is often excluded or reported as a third group (e.g. Caris: right colon, left colon, rectum). Many mCRC studies do include rectum in the left group, since metastatic treatment is the same. Mutation rates vary along a continuum. Loree et al. found that the sigmoid-rectal region has fewer PIK3CA, BRAF and CTNNB1 mutations and less MSI than other left-sided sites, and that transverse tumours cluster closer to left-sided ones. The choice of definition can therefore move per-gene results, so a sensitivity analysis (colon-only, transverse excluded) is advisable.",
+          "sources": [
+            "https://doi.org/10.6004/jnccn.2017.0038",
+            "https://aacrjournals.org/clincancerres/article/24/5/1062/81237/Classifying-Colorectal-Cancer-by-Tumor-Location",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5689690/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7505124/"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd31-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m01-r1-14b7ebd7d08f"
+            },
+            "bd31-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m01-r1-c8248309b29f"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In colorectal cancer genomics studies, how is primary tumour sidedness conventionally defined (placement of transverse colon, splenic flexure and rectum)? Are rectal tumours usually analysed separately from left colon tumours when comparing mutation frequencies by side? ANSWER: The most common convention splits at the splenic flexure. Right-sided means caecum, ascending colon, hepatic flexure and the proximal two-thirds of the transverse colon (midgut). Left-sided means the splenic flexure (and distal third of the transverse colon), descending colon, sigmoid and rectum (hindgut). There is no single agreed definition. Because the transverse colon has a mixed embryological origin, some studies exclude it, and rectal cancer is often excluded or reported as a third group (e.g. Caris: right colon, left colon, rectum). Many mCRC studies do include rectum in the left group, since metastatic treatment is the same. Mutation rates vary along a continuum. Loree et al. found that the sigmoid-rectal region has fewer PIK3CA, BRAF and CTNNB1 mutations and less MSI than other left-sided sites, and that transverse tumours cluster closer to left-sided ones. The choice of definition can therefore move per-gene results, so a sensitivity analysis (colon-only, transverse excluded) is advisable. HOW SURE: high. SOURCES: https://doi.org/10.6004/jnccn.2017.0038, https://aacrjournals.org/clincancerres/article/24/5/1062/81237/Classifying-Colorectal-Cancer-by-Tumor-Location, https://pmc.ncbi.nlm.nih.gov/articles/PMC5689690/, https://pmc.ncbi.nlm.nih.gov/articles/PMC7505124/."
+        },
+        {
+          "question": "Which BRAF and KRAS variant classes (e.g. BRAF class 1 V600 vs class 2/3 non-V600; KRAS codon 12/13 vs Q61/A146/K117) are considered oncogenic, and do they differ in their distribution between proximal and distal colorectal tumours?",
+          "answer": "BRAF: class 1 (V600E), class 2 (codons 469/597/601, active dimers) and class 3 (kinase-impaired, codons 466/594/596, RAS-dependent) are all treated as pathogenic drivers. Their side distributions run in opposite directions. V600E is proximal (right-sided) and MSI-associated. Non-V600 class 2/3 mutations are associated with microsatellite stability and distal location: class 3 is significantly more left-sided than class 1 (P=0.0028), class 2 looks like class 1, and class 2/3 often co-occur with atypical RAS mutations. Counting class 2/3 as oncogenic under one gene-level BRAF rule would therefore dilute right-sided enrichment; this is most relevant in MSS tumours, where non-V600 mutations make up a larger share. KRAS: hotspots at G12, G13, Q61, K117 and A146 are all considered activating. A large Tempus cohort (n=3,391) found no significant difference in KRAS variant-type distribution between left and right colon, although overall KRAS mutation was more frequent on the right (52% vs 43%). A smaller cohort (n=722) found G12D, G12V and G13D associated with right-sided tumours. G13D is more MSI-associated. I found no strong evidence that KRAS subclasses run in opposite side directions. I did not read a source specifically on A146/K117 sidedness.",
+          "sources": [
+            "https://aacrjournals.org/mcr/article/23/4/300/754233/Coevolution-of-Atypical-BRAF-and-KRAS-Mutations-in",
+            "https://aacrjournals.org/clincancerres/article/25/13/3954/81843/Class-1-2-and-3-BRAF-Mutated-Metastatic-Colorectal",
+            "https://ascopubs.org/doi/10.1200/JCO.2023.41.4_suppl.231",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC11763696/",
+            "https://www.nature.com/articles/s41467-019-11530-0"
+          ],
+          "confidence": "medium (high for BRAF classes, medium for KRAS subclasses)",
+          "deliveries": {
+            "bd31-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m01-r1-6867385a6b3e"
+            },
+            "bd31-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m01-r1-9dff083c9d1c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Which BRAF and KRAS variant classes (e.g. BRAF class 1 V600 vs class 2/3 non-V600; KRAS codon 12/13 vs Q61/A146/K117) are considered oncogenic, and do they differ in their distribution between proximal and distal colorectal tumours? ANSWER: BRAF: class 1 (V600E), class 2 (codons 469/597/601, active dimers) and class 3 (kinase-impaired, codons 466/594/596, RAS-dependent) are all treated as pathogenic drivers. Their side distributions run in opposite directions. V600E is proximal (right-sided) and MSI-associated. Non-V600 class 2/3 mutations are associated with microsatellite stability and distal location: class 3 is significantly more left-sided than class 1 (P=0.0028), class 2 looks like class 1, and class 2/3 often co-occur with atypical RAS mutations. Counting class 2/3 as oncogenic under one gene-level BRAF rule would therefore dilute right-sided enrichment; this is most relevant in MSS tumours, where non-V600 mutations make up a larger share. KRAS: hotspots at G12, G13, Q61, K117 and A146 are all considered activating. A large Tempus cohort (n=3,391) found no significant difference in KRAS variant-type distribution between left and right colon, although overall KRAS mutation was more frequent on the right (52% vs 43%). A smaller cohort (n=722) found G12D, G12V and G13D associated with right-sided tumours. G13D is more MSI-associated. I found no strong evidence that KRAS subclasses run in opposite side directions. I did not read a source specifically on A146/K117 sidedness. HOW SURE: medium (high for BRAF classes, medium for KRAS subclasses). SOURCES: https://aacrjournals.org/mcr/article/23/4/300/754233/Coevolution-of-Atypical-BRAF-and-KRAS-Mutations-in, https://aacrjournals.org/clincancerres/article/25/13/3954/81843/Class-1-2-and-3-BRAF-Mutated-Metastatic-Colorectal, https://ascopubs.org/doi/10.1200/JCO.2023.41.4_suppl.231, https://pmc.ncbi.nlm.nih.gov/articles/PMC11763696/, https://www.nature.com/articles/s41467-019-11530-0."
+        },
+        {
+          "question": "Which RNF43 alterations (e.g. G659fs and other truncating variants) are considered oncogenic driver events rather than passenger or MSI-associated events in microsatellite-stable colorectal cancer?",
+          "answer": "RNF43 truncating mutations are strongly enriched in MSI-H CRC. Two recurrent frameshift hotspots, G659fs (about 48% of RNF43 mutations in a TCGA re-analysis, about 8% of CRC) and R117fs, sit at mononucleotide repeats that are prone to MSI slippage. Whether G659fs is functional is disputed. Earlier work found that the G659fs protein still degrades Frizzled and does not make tumours Wnt-dependent; an organoid carrying it did not respond to PORCN inhibitors, and such patients were excluded from PORCN inhibitor trials. Fang et al. (Nat Commun 2022) report a Wnt-independent oncogenic role through PI3K/p85. Seeber et al. (CCR 2022) report that about 99% of G659fs cases were MSI-H/TMB-high; I took this from the abstract/snippet and did not read the full text. In MSS CRC, RNF43 mutations occur mainly in the BRAF V600E/serrated pathway (26% of pMMR/MSS BRAF V600E mCRC), which is itself right-sided. Practical takeaway: in MSS tumours, G659fs/R117fs calls should be checked as possible MSI-like or artefact events, and non-hotspot truncating mutations (nonsense or frameshifts outside the homopolymer hotspots) plus clearly inactivating alterations are the more defensible driver set. The web did not give a definitive MSS-specific driver list; OncoKB annotations were not consulted.",
+          "sources": [
+            "https://www.nature.com/articles/s41467-022-30794-7",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4283570/",
+            "https://doi.org/10.1158/1078-0432.ccr-21-3018",
+            "https://gut.bmj.com/content/66/9/1645.full",
+            "https://ascopubs.org/doi/10.1200/PO.23.00255"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd31-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m01-r1-2b77275e62dd"
+            },
+            "bd31-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m01-r1-3cb06f002498"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Which RNF43 alterations (e.g. G659fs and other truncating variants) are considered oncogenic driver events rather than passenger or MSI-associated events in microsatellite-stable colorectal cancer? ANSWER: RNF43 truncating mutations are strongly enriched in MSI-H CRC. Two recurrent frameshift hotspots, G659fs (about 48% of RNF43 mutations in a TCGA re-analysis, about 8% of CRC) and R117fs, sit at mononucleotide repeats that are prone to MSI slippage. Whether G659fs is functional is disputed. Earlier work found that the G659fs protein still degrades Frizzled and does not make tumours Wnt-dependent; an organoid carrying it did not respond to PORCN inhibitors, and such patients were excluded from PORCN inhibitor trials. Fang et al. (Nat Commun 2022) report a Wnt-independent oncogenic role through PI3K/p85. Seeber et al. (CCR 2022) report that about 99% of G659fs cases were MSI-H/TMB-high; I took this from the abstract/snippet and did not read the full text. In MSS CRC, RNF43 mutations occur mainly in the BRAF V600E/serrated pathway (26% of pMMR/MSS BRAF V600E mCRC), which is itself right-sided. Practical takeaway: in MSS tumours, G659fs/R117fs calls should be checked as possible MSI-like or artefact events, and non-hotspot truncating mutations (nonsense or frameshifts outside the homopolymer hotspots) plus clearly inactivating alterations are the more defensible driver set. The web did not give a definitive MSS-specific driver list; OncoKB annotations were not consulted. HOW SURE: medium. SOURCES: https://www.nature.com/articles/s41467-022-30794-7, https://pmc.ncbi.nlm.nih.gov/articles/PMC4283570/, https://doi.org/10.1158/1078-0432.ccr-21-3018, https://gut.bmj.com/content/66/9/1645.full, https://ascopubs.org/doi/10.1200/PO.23.00255."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd31-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd31-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd31-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd31-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 101.50716308294795,
+      "cost_usd": 0.42534939999999993,
+      "error": null
+    },
+    {
+      "agent": "bd31-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 133.47302137501538,
+      "cost_usd": 0.5745254,
+      "error": null
+    },
+    {
+      "agent": "bd31-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 97.30727333400864,
+      "cost_usd": 0.41709419999999997,
+      "error": null
+    },
+    {
+      "agent": "bd31-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 114.05503937508911,
+      "cost_usd": 0.5335110000000001,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": [],
+  "recheck": [],
+  "reused": {
+    "from": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1",
+    "memory_replayed": {
+      "writes": null,
+      "pass_downs": 7,
+      "note": "memory writes are replayed only with local memory"
+    },
+    "first_round_cost_usd": 1.246924,
+    "first_round_runs": 4
+  }
+}

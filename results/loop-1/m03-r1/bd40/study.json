@@ -1,0 +1,430 @@
+{
+  "study": "bd40",
+  "status": "replicated",
+  "final": {
+    "agent": "bd40-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd40/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m03/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bd40-library": "opus",
+    "bd40-team-a": "opus",
+    "bd40-team-b": "opus",
+    "bd40-team-c": "opus",
+    "bd40-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd40-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd40/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd40-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd40/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd40-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd40/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd40-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd40/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd40-team-a",
+        "bd40-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd40-team-a",
+        "bd40-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "'Acquiring new alterations' is a within-patient, across-time idea. Find patients with 2 or more samples and order each patient's samples (Primary first, then Local Recurrence/Metastasis; use the sample-ID T-number to break ties; note any SAMPLE_TYPE 'Unknown'). For each patient, count alterations present in later sample(s) but absent from the earliest one, then compare fusion-negative with fusion-positive patients. Patients with only one sample cannot tell you anything about acquisition. Comparing pooled per-sample burden between groups does not measure acquisition.",
+      "from": [
+        "sl-m03-r1-e1483485486c"
+      ],
+      "reason": "This defines the unit of analysis. Without it, teams may compare cross-sectional mutation burden, which does not test the hypothesis.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-057ff91a8921"
+      }
+    },
+    {
+      "text": "Group patients by PAX3-FOXO1 or PAX7-FOXO1 fusion status, not by histology (ONCOTREE ARMS vs ERMS). Some alveolar tumours lack the fusion. Call a patient fusion-positive if data_sv.txt shows a PAX3/PAX7-FOXO1 fusion in any of their samples, and fusion-negative otherwise. Cross-tabulate this against ONCOTREE_CODE to show where the two groupings disagree.",
+      "from": [
+        "sl-m03-r1-160cd889334f"
+      ],
+      "reason": "FN-RMS is defined by fusion status, so using histology as the grouping would misclassify patients.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-bc029e3e525b"
+      }
+    },
+    {
+      "text": "The hypothesis is about 'alterations', not only point mutations. Count new alterations across mutations (data_mutations.txt), copy-number changes (data_cna.txt, deep calls only: +2 amplification, -2 homozygous deletion) and structural variants (data_sv.txt). Leave out the founding PAX-FOXO1 fusion, which is present at diagnosis. Report the combined count and each type on its own.",
+      "from": [
+        "sl-m03-r1-77ee180219f3"
+      ],
+      "reason": "Counting mutations alone could miss differences between groups that show up only in CNAs or SVs.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-a53b23751816"
+      }
+    },
+    {
+      "text": "Paired samples may have been sequenced on different MSK-IMPACT panel versions (e.g. IMPACT410/468/505; see data_gene_panel_matrix.txt). An alteration in a later sample, in a gene the earlier sample's panel did not cover, was never tested earlier and should not be called 'new'. Limit new-alteration calls to genes covered by both panels in a pair.",
+      "from": [
+        "sl-m03-r1-a4d7035f5730"
+      ],
+      "reason": "Differences between panels create false 'acquired' alterations and would inflate the counts.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-7306ea0e3ff3"
+      }
+    },
+    {
+      "text": "Low tumour purity or coverage in one sample of a pair can hide mutations or CNAs and make them look gained or lost. Compare TUMOR_PURITY and SAMPLE_COVERAGE within each pair (if those columns exist), and check the VAF/allele counts of each 'new' mutation. Flag samples with purity below about 30% and report results with and without them.",
+      "from": [
+        "sl-m03-r1-bf437055085d"
+      ],
+      "reason": "This is a technical artefact that can bias the count of new alterations in either direction.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-f23a825ddcaa"
+      }
+    },
+    {
+      "text": "Test the 'no common mutations' part as recurrence: is the same gene newly acquired in 2 or more fusion-negative patients? Do the same tabulation for fusion-positive patients. Keep somatic calls only, and drop non-functional classes (Silent/Intron/UTR) if any are present.",
+      "from": [
+        "sl-m03-r1-c6e8005a3e76"
+      ],
+      "reason": "The hypothesis has two parts. This gives an operational test for the second part, which teams might otherwise skip or define loosely.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-c002703cf4b5"
+      }
+    },
+    {
+      "text": "There will probably be few paired patients per group. Count them first. Summarise per patient, not per sample (for patients with several later samples, use the union of later samples versus the earliest sample, or average across later samples). Report medians and ranges. Use exact tests (Wilcoxon/Fisher) only as supporting evidence, because p-values from very small groups are weak. The direction and size of the descriptive difference is the main evidence.",
+      "from": [
+        "sl-m03-r1-a5cd43464329"
+      ],
+      "reason": "Small n and patients with several samples affect how the comparison should be done and how it should be interpreted.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-1dd0cfb3e04a"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "A per-patient raw count of 'new' alterations compares fairly between groups. Neither team normalised for the number of later samples per patient, or tested whether FN patients simply have more or longer-spaced follow-up samples, which gives more chances to see a 'new' call.",
+      "Absent in the earliest sample means not present. Both treat a gene not called in the first sample as truly absent, without checking whether the variant has supporting reads below the calling threshold, or whether the first sample's low purity stopped a deep CNA call (team A excluded purity <=30% but still compared calls, not segments).",
+      "Sample chronology comes from SAMPLE_TYPE or T-number. Some FN 'pairs' are two primaries or have 'Unknown' type. Both assume the later sample descends from the earlier one rather than being a parallel lesion.",
+      "Only deep CNA (+/-2) counts as a copy-number alteration, and gene-level CNA calls are independent events. One focal amplicon (for example, the MDM2 region) spans several genes, and counting each gene could inflate FN counts."
+    ],
+    "unused_evidence": [
+      "data_cna_hg19.seg (segment-level log2 ratios) was used by neither team. It can show whether 'new' deep CNAs are true gains or losses or threshold effects of purity (a shallow segment in the first sample), and whether several 'new' genes are one contiguous event.",
+      "t_ref_count/t_alt_count in data_mutations.txt were not used. These read counts can show whether 'new' mutations are subclonal, low-VAF calls, and whether the earlier sample has any alt reads at the same position.",
+      "TMB_NONSYNONYMOUS and SAMPLE_COVERAGE in data_clinical_sample.txt were not used as a check of burden change between first and later samples.",
+      "data_gene_panel_matrix.txt was not used directly. Team A inferred panel coverage from CNA NA values. Team B also used non-NaN CNA as the coverage proxy.",
+      "data_clinical_patient.txt OS_MONTHS: follow-up length could differ between groups and confound how many alterations can be acquired."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named small n (10 vs 10) and only reported it. Neither checked whether the result depends on one or two hypermutated or highly altered FN patients (team A's FN range is 0-19), for example with a leave-one-out analysis.",
+      "Team B named T-number chronology and FN pairs that are two primaries, but only listed them. Team A ran a Primary-first vs T-number ordering but did not exclude primary-primary pairs.",
+      "Team A named the CNA-NA proxy for panel coverage but did not check it against actual panel gene lists.",
+      "Team B named purity dependence of CNA calls but ran no purity sensitivity analysis."
+    ],
+    "second_readings": [
+      "'No common mutations' could mean no recurrent newly acquired point mutations (data_mutations only). Both teams' recurrence evidence mixes in CNAs (MDM2 amplification, possibly TP53/BAP1 deletions). Under a strict mutations-only reading, the recurrence half may come out differently from the count half.",
+      "'Fewer new alterations' could be relative to FP-RMS (the reading both teams used), or per unit of time or per follow-up sample rather than per patient.",
+      "'Acquire' could mean between diagnosis and relapse/metastasis only (Primary to Recurrence/Metastasis), not between any two samples, including two primaries."
+    ],
+    "verdict": "Moderate trust. Both teams independently found the direction opposite to the claim and survived panel and ordering checks. But both counted gene-level deep CNAs without using the segment file or read counts, did not normalise for sampling, and mixed CNAs into the 'common mutations' half. A shared CNA-counting artefact or a mutations-only reading could weaken the contradiction.",
+    "questions": [
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Split your recurrent newly acquired genes (TP53, MDM2, BAP1) by alteration type. Recount 'common' new events using point mutations from data_mutations.txt only. Does the 'no common mutations' half of your verdict still hold, and does it change your label reasoning?",
+        "from": [
+          "sl-m03-r1-beded2a79450"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-026fbac976ca"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For each 'new' deep CNA, look at data_cna_hg19.seg for the earliest sample over the same region. Is there already a shallow gain or loss there, which would make it a purity or threshold effect? Also check whether several 'new' genes fall in one segment, and collapse those to one event. Does the FN-vs-FP difference survive?",
+        "from": [
+          "sl-m03-r1-f6b404d99374"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-c65330201ab9"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate the number of later samples per patient and the patient's OS_MONTHS by group. Re-express new alterations per later sample, and run a leave-one-patient-out analysis on the FN group (range 0-19). Does any single patient or the sample count drive the difference?",
+        "from": [
+          "sl-m03-r1-beded2a79450"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-36474fd1e131"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Replace the CNA-NA coverage proxy with the actual panel assignment in data_gene_panel_matrix.txt, using the genes shared by both panels. Also check t_alt_count/t_ref_count of 'new' mutations for low-VAF calls. Do either of these change the counts?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-015cae994cf9"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You report that the FN excess is 'mostly CNAs'. Recount new events and recurrence using point mutations from data_mutations.txt only, and separately collapse contiguous genes in one data_cna_hg19.seg segment into a single event. Do the count comparison and the 'no common mutations' half still contradict the hypothesis?",
+        "from": [
+          "sl-m03-r1-221ce47e814f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-dea00f83f0e3"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You named FN pairs that are two primaries and T-number chronology as weak points. Rerun with only pairs where the earliest sample is a Primary and the later one is a Local Recurrence or Metastasis. Does the result or the group size change enough to affect your label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-6fe687fd8ff9"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Run a purity sensitivity analysis, excluding samples with TUMOR_PURITY <=30% or checking seg.mean in the earliest sample at each 'new' deep CNA locus. Also check the alt read counts of 'new' mutations. Does the FN-vs-FP gap persist?",
+        "from": [
+          "sl-m03-r1-8be7808bc914"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-dee86fcdd08d"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate later samples per patient and OS_MONTHS by group, express new alterations per later sample, and do a leave-one-patient-out analysis. Is the MWU p=0.008 result robust to sample count and to any single FN patient?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-ea4825c99c02"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In targeted-panel copy-number pipelines that report gene-level discrete calls (-2, -1, 0, 1, 2), how are these thresholds derived from segment log2 ratios, and how strongly does tumour purity affect whether a deep deletion or amplification is called?",
+          "why": "Both teams count 'new' deep CNAs between samples of differing purity. If the calls depend strongly on purity, apparent acquisition may be an artefact.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In longitudinal tumour-sequencing studies, what is the standard way to define a 'newly acquired' alteration between an initial and a later sample (e.g. requiring zero supporting reads in the earlier sample, or collapsing amplicons into one event)?",
+          "why": "Neither team checked read support in earlier samples or collapsed multi-gene events, and the definition decides the counts.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In targeted-panel copy-number pipelines that report gene-level discrete calls (-2, -1, 0, 1, 2), how are these thresholds derived from segment log2 ratios, and how strongly does tumour purity affect whether a deep deletion or amplification is called?",
+          "answer": "NOT SETTLED BY THE WEB: every search call returned HTTP 403, so I read no pages. From domain knowledge only: gene-level calls come from thresholds on segment or gene log2 fold-change against pooled normals. Roughly, log2 <= about -1 is a deep deletion (-2) and log2 >= about 0.8-1 (about twofold or more) is an amplification (+2), with shallow -1/+1 in between. FACETS-style calls instead use purity- and ploidy-adjusted integer copy number. Thresholds on raw log2 depend strongly on purity: at 30% purity a homozygous deletion gives only about -0.5 log2 and goes uncalled. So a deep CNA that seems new in a later sample of higher purity may be an artefact; compare purity within each pair.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bd40-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-96625b452945"
+            },
+            "bd40-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-4f710b2ae41d"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In targeted-panel copy-number pipelines that report gene-level discrete calls (-2, -1, 0, 1, 2), how are these thresholds derived from segment log2 ratios, and how strongly does tumour purity affect whether a deep deletion or amplification is called? ANSWER: NOT SETTLED BY THE WEB: every search call returned HTTP 403, so I read no pages. From domain knowledge only: gene-level calls come from thresholds on segment or gene log2 fold-change against pooled normals. Roughly, log2 <= about -1 is a deep deletion (-2) and log2 >= about 0.8-1 (about twofold or more) is an amplification (+2), with shallow -1/+1 in between. FACETS-style calls instead use purity- and ploidy-adjusted integer copy number. Thresholds on raw log2 depend strongly on purity: at 30% purity a homozygous deletion gives only about -0.5 log2 and goes uncalled. So a deep CNA that seems new in a later sample of higher purity may be an artefact; compare purity within each pair. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "In longitudinal tumour-sequencing studies, what is the standard way to define a 'newly acquired' alteration between an initial and a later sample (e.g. requiring zero supporting reads in the earlier sample, or collapsing amplicons into one event)?",
+          "answer": "NOT SETTLED BY THE WEB: every search call returned HTTP 403, so I read no pages. From domain knowledge only: there is no single standard. Common practice calls an alteration acquired, or private to the later sample, when it is absent from the earlier sample at a site both panels cover with enough depth. This often means zero or near-zero alt reads in a fill-out or genotyping of the earlier sample, not just missing from the earlier sample's somatic call list. Studies also usually collapse co-amplified or co-deleted contiguous genes on one segment into one event. Counts depend on these choices, so check them for robustness.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bd40-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-12df23a17203"
+            },
+            "bd40-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-5b77d74e4ac6"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In longitudinal tumour-sequencing studies, what is the standard way to define a 'newly acquired' alteration between an initial and a later sample (e.g. requiring zero supporting reads in the earlier sample, or collapsing amplicons into one event)? ANSWER: NOT SETTLED BY THE WEB: every search call returned HTTP 403, so I read no pages. From domain knowledge only: there is no single standard. Common practice calls an alteration acquired, or private to the later sample, when it is absent from the earlier sample at a site both panels cover with enough depth. This often means zero or near-zero alt reads in a fill-out or genotyping of the earlier sample, not just missing from the earlier sample's somatic call list. Studies also usually collapse co-amplified or co-deleted contiguous genes on one segment into one event. Counts depend on these choices, so check them for robustness. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd40-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd40-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd40-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd40-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd40-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 97.97346591693349,
+      "cost_usd": 0.24525960000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 60.148480415926315,
+      "cost_usd": 0.22398579999999998,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 76.35174716706388,
+      "cost_usd": 0.2258278,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 118.94388841697946,
+      "cost_usd": 0.3612154,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 97.33415062492713,
+      "cost_usd": 0.2605114,
+      "error": null
+    },
+    {
+      "agent": "bd40-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 47.089699542033486,
+      "cost_usd": 0.12844740000000002,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 126.87275370792486,
+      "cost_usd": 0.5048154,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 114.48060233297292,
+      "cost_usd": 0.4756679999999999,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,38 @@
+# Your job: analyst on a blind team
+
+Another team is working on the same task at the same time. You cannot see their work and they cannot see yours. That is deliberate: the lab trusts an answer when two teams reach it independently. Do your own best analysis.
+
+Work in this order.
+
+1. **Read what you have been given.** Run `python3 {tools}/memory.py recall "pitfalls and guidance for this analysis"`. A head researcher may have passed down known pitfalls. Treat each one as a check you must run, not as a hint about the answer. For every pitfall you were given, report in `result.json` whether you found it in this data and whether it changed your method.
+
+2. **Write your plan before you analyse.** You may list the files and read their headers and a few rows first. Then record the plan with `memory.py write`, label "PLAN": the quantity you will estimate, the method, the checks you will run, and what would make you change the method. The time on this record shows the plan came before the result.
+
+3. **Analyse.** Save your code as files in your working folder so the analysis can be re-run.
+
+4. **Record every warning sign.** Whenever the data or a diagnostic shows something unexpected (duplicates, a batch pattern, a failed assumption, an outlier group, a mismatch between files, a result that moves a lot under a reasonable change), record it at once with `memory.py write`, label "WARNING SIGN", in this form:
+   "WARNING SIGN: <what you saw, with the number>. MEANS: <what it implies for the method>. ACTION: <what you changed, or why you changed nothing>."
+   Noticing a problem and then carrying on with the same method is the most common way this kind of analysis goes wrong. For every warning sign, ask: does this change which method is right, or only which rows I keep? If it changes the method, change it.
+
+5. **Answer.** Write `{answer_file}` exactly as the task asks. Then write `result.json`.
+
+   If the task asks whether a claim holds and allows "Not verifiable": that label means only that the data hold no variables with which to test the claim. Before you choose it, list every data file and its columns (including files you have not opened) and look for the claim's groups, exposure or condition, and outcome, which may go by other names than the claim's words. If such variables exist, run the test and answer with the label it supports: a result that shows what the claim says supports it; a result showing the opposite, or no effect where the claim says there is one, contradicts it. A weak, null or imperfect test is still a test, not a reason for "Not verifiable". Name the variables you looked for in `result.json` under `method`.
+
+{diversity}{search}
+
+## Working limits
+
+- You have {time_limit_minutes} minutes in total. When they run out you are stopped, and only what is in `{answer_file}` at that moment counts.
+- Write a first `{answer_file}` as soon as you have a defensible estimate, then improve it. Do not leave it to the end.
+- Keep every script under about 3 minutes. If a method would take longer (a large bootstrap, an exhaustive search), use fewer repetitions or a faster approximation.
+- Use at most 2 CPU cores, and do not leave jobs running in the background.
+
+## The task
+
+{statement}
+
+The data files are in `{data_dir}` (read-only).
+
+## result.json
+
+{{"answer_file": "{answer_file}", "method": "what you did, in a few sentences", "warning_signs": [{{"sign": "...", "means": "...", "action": "..."}}], "pitfalls_checked": [{{"pitfall": "short name of a pitfall you were given", "found_in_data": true, "changed_method": true}}], "checks_run": ["..."], "weakest_point": "the part of your analysis you trust least, and why", "confidence": 0.0}}

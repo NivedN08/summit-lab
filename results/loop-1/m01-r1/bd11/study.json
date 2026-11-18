@@ -1,0 +1,265 @@
+{
+  "study": "bd11",
+  "status": "replicated",
+  "final": {
+    "agent": "bd11-team-a",
+    "team": "team-a",
+    "round": "analysis",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd11/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "recheck": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m01/prompts",
+    "reuse_first_round": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1"
+  },
+  "models": {
+    "director": "opus",
+    "bd11-library": "opus",
+    "bd11-team-a": "opus",
+    "bd11-team-b": "opus",
+    "bd11-team-c": "opus",
+    "bd11-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd11-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd11/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd11-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd11/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd11-team-a",
+      "round": "recheck",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd11/candidates/team-a-recheck.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      },
+      "not_used": "the re-check's verdict kept the earlier answer: the answer is still 'Not verifiable'"
+    },
+    {
+      "team": "team-b",
+      "agent": "bd11-team-b",
+      "round": "recheck",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd11/candidates/team-b-recheck.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      },
+      "not_used": "the re-check's verdict kept the earlier answer: the answer is still 'Not verifiable'"
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd11-team-a",
+        "bd11-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Before any heterogeneity analysis, confirm which cancers the cohort actually contains: tabulate CANCER_TYPE, CANCER_TYPE_DETAILED and ONCOTREE_CODE in data_clinical_sample.txt, and grep every file for 'renal', 'kidney', 'CCRCC' and 'RCC'. The library's inspection found only colorectal, small bowel and unknown-primary cancers (an IBD/colitis-associated cohort, with no CCRCC code). Check this yourself. Heterogeneity seen in tumours of other types says nothing direct about clear cell renal cell carcinoma, and the hypothesis is about ccRCC only.",
+      "from": [
+        "sl-dev-panel-noise-lab1-5e8a8c9f102b"
+      ],
+      "reason": "Whether the target population is present at all decides whether any ITH analysis is relevant to the claim. Teams have to check it first.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-85c3d5b9c802"
+      }
+    },
+    {
+      "text": "Spatial intratumor heterogeneity is measured by sequencing several regions of the same tumour. With a single biopsy, subclones are missed and mutations look clonal. Count samples per PATIENT_ID (the library saw 171 patients with 1 sample, 3 with 2 and 1 with 3), and use SAMPLE_TYPE to check whether repeat samples come from the same primary tumour or are primary/metastasis pairs. Primary-versus-metastasis differences reflect metastatic/temporal heterogeneity, not intratumor heterogeneity. Because the claim is universal ('all tumours'), refuting it would require a tumour shown to be homogeneous after adequate multi-region sampling. Not detecting subclones in one or a few samples is not evidence of homogeneity.",
+      "from": [
+        "sl-dev-panel-noise-lab1-32f920aeef6b",
+        "sl-dev-panel-noise-lab1-e26fe300b32f"
+      ],
+      "reason": "This defines what kind of evidence could support or refute a universal ITH claim. It also stops teams from reading single-sample or primary-vs-met data as proof of homogeneity or heterogeneity.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-2a10bead5511"
+      }
+    },
+    {
+      "text": "The samples come from targeted panels (e.g. FoundationOne; see data_gene_panel_matrix.txt and GENE_PANEL), which give too few mutations per sample for reliable subclonal clustering, and different panels cover different genes. If you try to infer subclonality from VAF within a sample, correct for purity and local copy number (TUMOR_PURITY, coverage, t_alt_count/t_ref_count, CNA at the locus) to get cancer cell fractions. If purity or depth is missing or inadequate, treat ITH as not estimable rather than calling mutations subclonal from raw VAF.",
+      "from": [
+        "sl-dev-panel-noise-lab1-6122e9901114",
+        "sl-dev-panel-noise-lab1-ce265ad0e06c"
+      ],
+      "reason": "This stops teams from reading raw panel VAFs as evidence of subclonal structure.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-d02854fbf166"
+      }
+    },
+    {
+      "text": "Clean the mutation calls before using them for any clonal/private comparison. Tabulate the status/filter columns and Center in data_mutations.txt and exclude FAILED or filtered rows. Also check SOMATIC_STATUS and Matched_Norm_Sample_Barcode for tumour-only or pooled-normal calling. Those let germline variants (VAF ~0.5/1.0, often with dbSNP IDs) pass as somatic, so filter them out using population frequencies.",
+      "from": [
+        "sl-dev-panel-noise-lab1-56669f4b2717",
+        "sl-dev-panel-noise-lab1-881f45936596"
+      ],
+      "reason": "Failed calls and germline variants inflate private mutations and distort clonality, which would bias any ITH comparison.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-4f78ed15d232"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 0,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed the hypothesis's population (ccRCC) must be present in the cohort for any relevant variable to exist; I checked this against CANCER_TYPE, CANCER_TYPE_DETAILED, ONCOTREE_CODE and PRIMARY_SITE and it holds: every sample is colorectal, small-bowel or anal adenocarcinoma, and no file contains a renal/kidney/ccRCC/KIRC term."
+    ],
+    "unused_evidence": [
+      "Neither team used the seg, CNA, SV or timeline files, or TUMOR_PURITY/TMB, for an ITH analysis. That is correct here: those files describe non-renal tumours and cannot bear on a claim about ccRCC. The 3 'Cancer of Unknown Primary' samples have PRIMARY_SITE Ileum or Anus, so they are not hidden renal cases."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weak point: whether 'False' could be meant. The task defines False as relevant variables being present and contradicting the claim. Since no ccRCC variable exists, both teams settled this correctly with Not verifiable."
+    ],
+    "second_readings": [
+      "I found no second reasonable reading. 'All ccRCCs' names a tumour type, and no wording would make colorectal ITH data bear on it."
+    ],
+    "verdict": "I trust the agreed Not verifiable label highly. I independently confirmed that the cohort has no renal samples or terms, so no relevant variable exists and there is nothing to ask either team.",
+    "questions": []
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd11-team-b",
+      "round": "analysis",
+      "reason": "agreed with bd11-team-a; that team's file is the reported copy"
+    },
+    {
+      "agent": "bd11-team-a",
+      "round": "recheck",
+      "reason": "the re-check's verdict kept the earlier answer: the answer is still 'Not verifiable'"
+    },
+    {
+      "agent": "bd11-team-b",
+      "round": "recheck",
+      "reason": "the re-check's verdict kept the earlier answer: the answer is still 'Not verifiable'"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd11-team-a",
+      "phase": "recheck",
+      "ok": true,
+      "seconds": 33.30950670898892,
+      "cost_usd": 0.15906540000000002,
+      "error": null
+    },
+    {
+      "agent": "bd11-team-b",
+      "phase": "recheck",
+      "ok": true,
+      "seconds": 34.42853433301207,
+      "cost_usd": 0.16931620000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 48.88609445805196,
+      "cost_usd": 0.1819442,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": [],
+  "recheck": [
+    {
+      "team": "team-a",
+      "before": "Not verifiable",
+      "after": "Not verifiable",
+      "accepted": false,
+      "reason": "the answer is still 'Not verifiable'",
+      "candidate": "team-a-recheck",
+      "test": {
+        "test": "none possible: searched all 9 files (CANCER_TYPE, CANCER_TYPE_DETAILED, ONCOTREE_CODE, plus grep for renal/kidney/ccRCC/RCC in every file incl. mutations, CNA, seg, SV, panel files); no ccRCC samples exist, so ITH in ccRCC cannot be tested",
+        "variables": [
+          "data_clinical_sample.txt: CANCER_TYPE",
+          "data_clinical_sample.txt: CANCER_TYPE_DETAILED",
+          "data_clinical_sample.txt: ONCOTREE_CODE",
+          "data_clinical_sample.txt: PATIENT_ID",
+          "data_clinical_sample.txt: SAMPLE_TYPE"
+        ],
+        "statistic": null,
+        "p_value": null,
+        "n": 0,
+        "direction": "none"
+      },
+      "in_use": "team-a-analysis"
+    },
+    {
+      "team": "team-b",
+      "before": "Not verifiable",
+      "after": "Not verifiable",
+      "accepted": false,
+      "reason": "the answer is still 'Not verifiable'",
+      "candidate": "team-b-recheck",
+      "test": {
+        "test": "none possible: searched all 9 files for ccRCC/renal samples and multi-region sampling; none found",
+        "variables": [
+          "data_clinical_sample.txt: CANCER_TYPE",
+          "data_clinical_sample.txt: ONCOTREE_CODE",
+          "data_clinical_sample.txt: PATIENT_ID"
+        ],
+        "statistic": null,
+        "p_value": null,
+        "n": 0,
+        "direction": "not tested"
+      },
+      "in_use": "team-b-analysis"
+    }
+  ],
+  "reused": {
+    "from": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1",
+    "memory_replayed": {
+      "writes": null,
+      "pass_downs": 4,
+      "note": "memory writes are replayed only with local memory"
+    },
+    "first_round_cost_usd": 0.716977,
+    "first_round_runs": 4
+  }
+}

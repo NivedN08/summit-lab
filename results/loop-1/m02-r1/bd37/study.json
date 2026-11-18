@@ -1,0 +1,459 @@
+{
+  "study": "bd37",
+  "status": "refereed",
+  "final": {
+    "agent": "bd37-team-b",
+    "team": "team-b",
+    "round": "revise",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd37/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "checks": [
+      "recheck_on_agreed_nv"
+    ],
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m02/prompts",
+    "reuse_first_round": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1"
+  },
+  "models": {
+    "director": "opus",
+    "bd37-library": "opus",
+    "bd37-team-a": "opus",
+    "bd37-team-b": "opus",
+    "bd37-team-c": "opus",
+    "bd37-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "bd37-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd37/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd37-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd37/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd37-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd37/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd37-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd37/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd37-team-a",
+        "bd37-team-b"
+      ],
+      "fields": {
+        "label": false
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "bd37-team-a",
+        "bd37-team-b"
+      ],
+      "fields": {
+        "label": false
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The established comparator is in the data. data_clinical_sample.txt has PROGNOSTIC_MODEL ('Genomic Risk Model Classification': Low/Medium/High), filled for roughly three quarters of samples. data_clinical_patient.txt has IPI (0-5), its five factor columns (IPI_AGE, IPI_LDH, IPI_ECOG, IPI_ANNARBOR_STAGE, IPI_EXTRANODAL_SITES) and OS_MONTHS/OS_STATUS. Count the patients who have PROGNOSTIC_MODEL, IPI and OS all present, and compare the genomic model with IPI head to head on them. Testing single genes against survival does not answer the question.",
+      "from": [
+        "sl-dev-panel-noise-lab1-f4680360f8a5"
+      ],
+      "reason": "Without this the comparator is easy to miss, which leads to a wrong 'Not verifiable' or to an analysis that never compares against established methods.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-2aea93e4b1e6"
+      }
+    },
+    {
+      "text": "To show 'outperforms', it is not enough for both predictors to be significant on log-rank, or for one to have a smaller p-value. Fit Cox models OS~IPI, OS~genomic model and OS~IPI+genomic model on the same patients. Compare discrimination (Harrell's C) and AIC, and run likelihood-ratio tests of the combined model against each single model. Outperformance means a clearly higher C for the genomic model, with a paired CI for the difference that excludes 0. Adding information beyond IPI (significant LRT) is a weaker claim and should be reported as such.",
+      "from": [
+        "sl-dev-panel-noise-lab1-36bcfebcb127"
+      ],
+      "reason": "This sets the criterion that decides the label. P-value comparisons are the most likely error.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-f43f7ea2a104"
+      }
+    },
+    {
+      "text": "IPI and PROGNOSTIC_MODEL are missing for different patients. Compute every comparison on the intersection of patients with both predictors and valid OS. Get a paired CI for the difference in C by bootstrap, or with survival::concordance on both fits together. A C-index or p-value from different patient sets cannot be compared.",
+      "from": [
+        "sl-dev-panel-noise-lab1-5364b41e657a"
+      ],
+      "reason": "Unpaired comparisons on different subsets give results that cannot be interpreted.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-cb0263ecca82"
+      }
+    },
+    {
+      "text": "The genomic risk model was probably derived from this same cohort, so its performance here is in-sample and optimistic. IPI was defined externally. Check the column descriptions for training/validation information or a cohort split column. Treat a small in-sample advantage for the genomic model (C difference under about 0.03) as weak evidence. If you build your own gene-based model, use bootstrap optimism correction (at least 100 resamples, redoing selection each time) or cross-validation.",
+      "from": [
+        "sl-dev-panel-noise-lab1-6fa7b1b9962a"
+      ],
+      "reason": "Overfitting bias can make the genomic model look better than it is.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-8c3532b9d357"
+      }
+    },
+    {
+      "text": "The IPI column can be missing or inconsistent even when its factor columns exist. Recompute IPI as the sum of the five 0/1 factors and check it against the IPI column. Never treat a missing factor as 0. Tabulate IPI missingness by genomic-risk group. As a sensitivity analysis, also try the grouped IPI (0-1/2/3/4-5).",
+      "from": [
+        "sl-dev-panel-noise-lab1-9d2ecd1c3a5f"
+      ],
+      "reason": "Mishandling the comparator variable biases the head-to-head comparison.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-5a3b466b7522"
+      }
+    },
+    {
+      "text": "OS_STATUS is coded like '0:LIVING'/'1:DECEASED'; parse the leading digit to get the event indicator. The sample table has a CENSORED column that may disagree with OS_STATUS, so cross-tabulate the two. Use OS_STATUS with OS_MONTHS. Drop rows with missing or non-positive OS_MONTHS and report how many were excluded.",
+      "from": [
+        "sl-dev-panel-noise-lab1-e60f4042faca"
+      ],
+      "reason": "If the event coding is wrong, every survival result is wrong.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-e12a08b6b4b1"
+      }
+    },
+    {
+      "text": "Both predictors are coarse ordinal scores (3 genomic groups against 6 IPI levels), so many risk scores are tied. Score ties as 0.5 in Harrell's C, which is the survival::concordance default. Also compute Uno's IPCW C with a truncation time (for example 60 months). If the conclusion changes with the choice, report both and give little weight to small differences.",
+      "from": [
+        "sl-dev-panel-noise-lab1-f0e87f7c7072"
+      ],
+      "reason": "Tie handling and censoring can shift C enough to flip a close comparison.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-b4caab274de4"
+      }
+    },
+    {
+      "text": "Check proportional hazards with cox.zph for the IPI and genomic-model fits, and plot KM curves for both. If the curves cross or PH fails, compare time-dependent C/AUC at fixed horizons (for example 2 and 5 years) instead of relying on a single HR.",
+      "from": [
+        "sl-dev-panel-noise-lab1-4d08b338a983"
+      ],
+      "reason": "When PH is violated, which model looks better can depend on follow-up length.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-59c33ec4b7c7"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "bd37-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team argued that a 3-level score is at a structural disadvantage in Harrell's C because of ties, and so compared the genomic model with IPI collapsed into three risk groups as a like-for-like test. Your grouped-IPI sensitivity used four groups. Which IPI form is the 'current established method' the hypothesis refers to, and does a three-group comparison change your conclusion or your method?",
+      "from": [
+        "teams/bd37-team-b.json"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m02-r1-ac3d678be172"
+    },
+    {
+      "to": "bd37-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team fitted a cross-validated Cox model on mutation indicators alone to test whether the genetic alterations themselves, rather than the supplied in-sample risk labels, predict survival against IPI. You noted the in-sample derivation but did not change your method. Does the hypothesis refer to the supplied labels or to the alterations, and does testing the alterations directly change your method or label?",
+      "from": [
+        "teams/bd37-team-b.json"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m02-r1-de3159ca3b03"
+    },
+    {
+      "to": "bd37-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the two teams computed the same discrimination and likelihood metrics on the same patients and still reached different labels. Do the metrics you report contradict the hypothesis, or do they only fail to support it? Re-check your label against the task's definitions of 'False' and 'Not verifiable'.",
+      "from": [
+        "teams/bd37-team-b.json",
+        "sl-m02-r1-f43f7ea2a104"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m02-r1-aa55fe3c13e1"
+    },
+    {
+      "to": "bd37-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that the proportional-hazards assumption is violated for the genomic-model Cox fit (Schoenfeld test). Your method relies on Cox AIC and lists no PH check. Check whether PH holds in your fits. Does that change how much weight you give to AIC, or call for time-specific discrimination measures?",
+      "from": [
+        "sl-m02-r1-59c33ec4b7c7"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m02-r1-0466ec065c96"
+    },
+    {
+      "to": "bd37-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team treated 'outperform' as a discrimination advantage over the established score with a paired CI excluding zero. It treated a likelihood/AIC gain or a significant combined-model LRT as the weaker claim that the model 'adds information', and gave little weight to small in-sample advantages for a model derived on the same cohort. What is your definition of 'outperform', and does your evidence meet it once in-sample optimism in AIC is taken into account?",
+      "from": [
+        "sl-m02-r1-f43f7ea2a104",
+        "sl-m02-r1-8c3532b9d357"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m02-r1-5d882d55b98d"
+    },
+    {
+      "to": "bd37-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that IPI missingness differs strongly depending on whether a patient has a genomic risk label, and recomputed IPI from its five factors to check the IPI column. You checked event rates by label presence only. Check IPI missingness by genomic group and the IPI column against its factors. Does this change your patient set or your method?",
+      "from": [
+        "sl-m02-r1-5a3b466b7522",
+        "sl-m02-r1-cb0263ecca82"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m02-r1-f6535665fea6"
+    },
+    {
+      "to": "bd37-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team treated the full IPI score as the established comparator and used a grouped IPI only as a sensitivity analysis. Your argument partly rests on collapsing IPI into three groups. Is a collapsed IPI the established method the hypothesis refers to, and does your label still hold when you compare with the score as clinically defined?",
+      "from": [
+        "sl-m02-r1-5a3b466b7522"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m02-r1-61caf34ffb52"
+    }
+  ],
+  "warning_signs_to_team_c": [],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": {
+    "difference": "Same 618 patients, same numbers (genomic C 0.673 vs full IPI 0.682, n.s.; AIC 2085 vs 2119). They differ only in what 'outperform' means: X uses likelihood/AIC with discrimination no worse and says True; Y uses Harrell C, whose point estimate slightly favours the 6-level IPI, and says False.",
+    "test": "test.py. I compared both at equal granularity: 3-level genomic model vs 3-level IPI (0-1/2-3/4-5), 2 df each, which removes the tie/granularity advantage in C. I measured Cox AIC and C, the LR chi2 each adds on top of the other in a joint model, C within strata of the other variable, and a 150-rep bootstrap of the log-likelihood difference.",
+    "expected_if_x": "At equal df/granularity the genomic model has lower AIC and higher C, adds more LR chi2 beyond IPI than IPI adds beyond it, and wins in most bootstraps.",
+    "expected_if_y": "At equal granularity IPI matches or beats the genomic model on C and AIC, and IPI adds as much as or more than the genomic model in the joint model.",
+    "outcome": "Genomic model vs 3-group IPI: AIC 2081.8 vs 2125.2; C 0.673 vs 0.664; LR chi2 genomic added to IPI 95.8 vs IPI added to genomic 52.4. Genomic loglik higher in 95% of bootstraps. Within-stratum C: genomic within IPI groups 0.656, IPI3 within genomic groups 0.651, full 0-5 IPI within genomic groups 0.670. Y's C gap comes from the finer 6-level IPI scale and is not significant. On every like-for-like measure the genomic model is ahead.",
+    "pick": "X",
+    "reason": "Y's evidence against the hypothesis is a non-significant C gap of -0.009 that disappears or reverses at matched granularity. Likelihood and incremental information favour the genomic model clearly. So the data support the hypothesis rather than contradict it. Caveat: the advantage is in-sample, because the labels were derived on this cohort.",
+    "own_answer": null,
+    "picked_agent": "bd37-team-b",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "bd37-team-b",
+      "Y": "bd37-team-a"
+    }
+  },
+  "research": [
+    {
+      "round": "questions",
+      "questions": [
+        {
+          "question": "When a prognostic score with few levels (e.g. 3 groups) is compared with one with more levels (e.g. 6) using Harrell's C-index, how do tied predictions affect the C-index? Is collapsing the finer score to the same number of groups an accepted way to make the comparison fair?",
+          "why": "One team's support for the hypothesis depends on a tie-matched comparison against a collapsed established score. Whether that is a standard, valid adjustment decides how much weight it carries.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In prognostic-model validation, what is the accepted evidence that a new model 'outperforms' an established index: a difference in C-index with a confidence interval, AIC/likelihood-ratio improvement, net reclassification, or time-dependent AUC? How should results be judged when these metrics disagree?",
+          "why": "The teams share almost identical metrics but weigh discrimination and likelihood-based fit differently, which leads to opposite labels.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How large is the optimism in AIC and C-index when a risk classification is derived and evaluated on the same cohort, and what corrections (bootstrap optimism, cross-validation) are standard?",
+          "why": "Both teams note the genomic labels were derived in-sample. Whether that optimism could account for the observed likelihood advantage bears on whether the data support the hypothesis.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When a prognostic score with few levels (e.g. 3 groups) is compared with one with more levels (e.g. 6) using Harrell's C-index, how do tied predictions affect the C-index? Is collapsing the finer score to the same number of groups an accepted way to make the comparison fair?",
+          "answer": "Harrell's C counts pairs tied on predicted risk as 0.5, or drops them in some implementations. That penalises coarse scores mechanically. With n equally sized discrete levels the maximum attainable C is 1-1/(2n): about 0.83 for 3 groups versus 0.92 for 6. Rounding or collapsing a score lowers its attainable C. So a raw C comparison between a 3-level and a 6-level score is tilted toward the finer score. Collapsing the finer score to the same number of groups is a reasonable sensitivity check for this tie artefact. It is not an established, standard adjustment, and a post-hoc choice of how to collapse adds its own selection freedom. The literature instead recommends likelihood-based comparison or continuous risk predictions. Give the tie-matched result moderate weight as supporting evidence, not decisive weight.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6041741/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC10219847/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6996176/"
+          ],
+          "confidence": "high on the tie mechanics; medium on 'collapsing is not a standard adjustment', because no source I read addresses the practice directly",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-808b3e76390d"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-f1a03067aa96"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a prognostic score with few levels (e.g. 3 groups) is compared with one with more levels (e.g. 6) using Harrell's C-index, how do tied predictions affect the C-index? Is collapsing the finer score to the same number of groups an accepted way to make the comparison fair? ANSWER: Harrell's C counts pairs tied on predicted risk as 0.5, or drops them in some implementations. That penalises coarse scores mechanically. With n equally sized discrete levels the maximum attainable C is 1-1/(2n): about 0.83 for 3 groups versus 0.92 for 6. Rounding or collapsing a score lowers its attainable C. So a raw C comparison between a 3-level and a 6-level score is tilted toward the finer score. Collapsing the finer score to the same number of groups is a reasonable sensitivity check for this tie artefact. It is not an established, standard adjustment, and a post-hoc choice of how to collapse adds its own selection freedom. The literature instead recommends likelihood-based comparison or continuous risk predictions. Give the tie-matched result moderate weight as supporting evidence, not decisive weight. HOW SURE: high on the tie mechanics; medium on 'collapsing is not a standard adjustment', because no source I read addresses the practice directly. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC6041741/, https://pmc.ncbi.nlm.nih.gov/articles/PMC10219847/, https://pmc.ncbi.nlm.nih.gov/articles/PMC6996176/."
+        },
+        {
+          "question": "In prognostic-model validation, what is the accepted evidence that a new model 'outperforms' an established index: a difference in C-index with a confidence interval, AIC/likelihood-ratio improvement, net reclassification, or time-dependent AUC? How should results be judged when these metrics disagree?",
+          "answer": "Methodologists treat likelihood-based measures as the primary and most powerful evidence of added predictive value (Harrell; Pencina, D'Agostino and Vasan). For nested models that means the LR chi-square test. For non-nested models, such as two different scoring systems, it means AIC or BIC. Comparing two C-indexes is a low-power, rank-based procedure that often misses real gains, and delta-C, NRI and IDI tests are degenerate under the null for nested models. A clear AIC/LR advantage alongside a small C difference whose CI includes 0 is therefore the expected pattern for a real but modest improvement, not a contradiction of it. Two caveats apply. A better likelihood does not by itself mean clinical significance. And 'outperforms an established index' is convincing only when the advantage holds after honest validation: optimism-corrected or external. Steyerberg et al. recommend reporting discrimination and calibration together.",
+          "sources": [
+            "https://hbiostat.org/blog/post/addvalue/",
+            "https://link.springer.com/article/10.1186/s41512-018-0037-2",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3575184/"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-d15801af625f"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-83bfc00aaebc"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In prognostic-model validation, what is the accepted evidence that a new model 'outperforms' an established index: a difference in C-index with a confidence interval, AIC/likelihood-ratio improvement, net reclassification, or time-dependent AUC? How should results be judged when these metrics disagree? ANSWER: Methodologists treat likelihood-based measures as the primary and most powerful evidence of added predictive value (Harrell; Pencina, D'Agostino and Vasan). For nested models that means the LR chi-square test. For non-nested models, such as two different scoring systems, it means AIC or BIC. Comparing two C-indexes is a low-power, rank-based procedure that often misses real gains, and delta-C, NRI and IDI tests are degenerate under the null for nested models. A clear AIC/LR advantage alongside a small C difference whose CI includes 0 is therefore the expected pattern for a real but modest improvement, not a contradiction of it. Two caveats apply. A better likelihood does not by itself mean clinical significance. And 'outperforms an established index' is convincing only when the advantage holds after honest validation: optimism-corrected or external. Steyerberg et al. recommend reporting discrimination and calibration together. HOW SURE: high. SOURCES: https://hbiostat.org/blog/post/addvalue/, https://link.springer.com/article/10.1186/s41512-018-0037-2, https://pmc.ncbi.nlm.nih.gov/articles/PMC3575184/."
+        },
+        {
+          "question": "How large is the optimism in AIC and C-index when a risk classification is derived and evaluated on the same cohort, and what corrections (bootstrap optimism, cross-validation) are standard?",
+          "answer": "Apparent, same-cohort performance is optimistically biased. The bias is largest at low events-per-variable and shrinks as EPV rises; bootstrap-corrected estimates match independent validation once EPV is about 20 or more. The size of the bias depends on the data, so the web gives no general number. The preferred standard is Harrell's bootstrap optimism correction, which must repeat every modelling step in each resample, including variable or group selection. 10-fold cross-validation is acceptable, and split-sample validation is discouraged. When groupings are chosen from the data in the same cohort, nominal p-values and effect sizes are badly inflated. Altman reports that minimum-p 'optimal' cutpoints give about a 40% false-positive rate, and a nominal P=0.002 corresponds to a true P of about 0.05. AIC's penalty of 2 per parameter does not account for that selection search. An in-sample AIC/LR advantage for a genomic classification derived in that cohort is therefore biased upward. Optimism could explain part of the advantage, or all of it if the margin is modest. Only a bootstrap that repeats the derivation, or external data, can settle this.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5578404/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5394463/",
+            "https://www.jclinepi.com/article/S0895-4356(01)00341-9/abstract",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC2063091/"
+          ],
+          "confidence": "high on direction and standard corrections; low on magnitude for this dataset, which the web cannot settle",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": false,
+              "reasons": [
+                "contains another team's value for \"label\""
+              ],
+              "fact_id": null
+            },
+            "bd37-team-b": {
+              "delivered": false,
+              "reasons": [
+                "contains another team's value for \"label\""
+              ],
+              "fact_id": null
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How large is the optimism in AIC and C-index when a risk classification is derived and evaluated on the same cohort, and what corrections (bootstrap optimism, cross-validation) are standard? ANSWER: Apparent, same-cohort performance is optimistically biased. The bias is largest at low events-per-variable and shrinks as EPV rises; bootstrap-corrected estimates match independent validation once EPV is about 20 or more. The size of the bias depends on the data, so the web gives no general number. The preferred standard is Harrell's bootstrap optimism correction, which must repeat every modelling step in each resample, including variable or group selection. 10-fold cross-validation is acceptable, and split-sample validation is discouraged. When groupings are chosen from the data in the same cohort, nominal p-values and effect sizes are badly inflated. Altman reports that minimum-p 'optimal' cutpoints give about a 40% false-positive rate, and a nominal P=0.002 corresponds to a true P of about 0.05. AIC's penalty of 2 per parameter does not account for that selection search. An in-sample AIC/LR advantage for a genomic classification derived in that cohort is therefore biased upward. Optimism could explain part of the advantage, or all of it if the margin is modest. Only a bootstrap that repeats the derivation, or external data, can settle this. HOW SURE: high on direction and standard corrections; low on magnitude for this dataset, which the web cannot settle. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC5578404/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5394463/, https://www.jclinepi.com/article/S0895-4356(01)00341-9/abstract, https://pmc.ncbi.nlm.nih.gov/articles/PMC2063091/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd37-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "bd37-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "bd37-team-a",
+      "round": "revise",
+      "reason": "the referee's test supported the other answer: Y's evidence against the hypothesis is a non-significant C gap of -0.009 that disappears or reverses at matched granularity. Likelihood and incremental information favour the genomic model clearly. So the data support the hypothesis rather than contradict it. Caveat: the advantage is in-sample, because the labels were derived on this cohort."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 51.79162899998482,
+      "cost_usd": 0.22120320000000002,
+      "error": null
+    },
+    {
+      "agent": "bd37-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 94.11479408293962,
+      "cost_usd": 0.474623,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 93.02257458306849,
+      "cost_usd": 0.272594,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 93.89806779194623,
+      "cost_usd": 0.2940566,
+      "error": null
+    },
+    {
+      "agent": "bd37-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 71.41835754201747,
+      "cost_usd": 0.20437300000000003,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": [],
+  "recheck": [],
+  "reused": {
+    "from": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1",
+    "memory_replayed": {
+      "writes": null,
+      "pass_downs": 8,
+      "note": "memory writes are replayed only with local memory"
+    },
+    "first_round_cost_usd": 1.114331,
+    "first_round_runs": 4
+  }
+}

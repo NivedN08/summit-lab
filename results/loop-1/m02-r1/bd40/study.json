@@ -1,0 +1,420 @@
+{
+  "study": "bd40",
+  "status": "replicated",
+  "final": {
+    "agent": "bd40-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd40/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "checks": [
+      "recheck_on_agreed_nv"
+    ],
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m02/prompts",
+    "reuse_first_round": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1"
+  },
+  "models": {
+    "director": "opus",
+    "bd40-library": "opus",
+    "bd40-team-a": "opus",
+    "bd40-team-b": "opus",
+    "bd40-team-c": "opus",
+    "bd40-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd40-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd40/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd40-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd40/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd40-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd40/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd40-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd40/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd40-team-a",
+        "bd40-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd40-team-a",
+        "bd40-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "'Acquiring new alterations' is a within-patient, over-time claim. Find patients with two or more samples (repeated PATIENT_ID in data_clinical_sample.txt; use SAMPLE_TYPE such as Primary vs Recurrence/Metastasis, or sample suffixes T01/T02, to put them in order). For each patient, count alterations present in a later sample but absent from the earliest one. Then compare these per-patient acquired counts between fusion-negative (FN) and fusion-positive (FP) patients. Pooled per-sample alteration counts or TMB do not measure acquisition.",
+      "from": [
+        "sl-dev-panel-noise-lab1-fff74731cebd"
+      ],
+      "reason": "This defines the right unit of analysis. A pooled per-sample comparison answers a different question and could give the wrong label.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-ccc7a13f25b3"
+      }
+    },
+    {
+      "text": "Define FP vs FN-RMS by whether a PAX3-FOXO1 or PAX7-FOXO1 fusion is detected in data_sv.txt (Site1/Site2_Hugo_Symbol), in any sample of the patient, or by an explicit fusion-status clinical column if one exists. Do not define it by histology (ONCOTREE_CODE ARMS vs ERMS): about 20-25% of alveolar RMS are fusion-negative. Cross-tabulate fusion status against histology and report it.",
+      "from": [
+        "sl-dev-panel-noise-lab1-4ce61f196a95"
+      ],
+      "reason": "Grouping by histology would put some patients in the wrong group, and that would change the FN vs FP comparison.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-43fc9fac45f6"
+      }
+    },
+    {
+      "text": "'Alterations' includes more than SNVs/indels. Tally acquired events separately for mutations (data_mutations.txt), discrete CNAs (data_cna.txt values of +2/-2) and SVs (data_sv.txt). You can also compare fraction genome altered from data_cna_hg19.seg. State whether any FN vs FP difference holds for each alteration type.",
+      "from": [
+        "sl-dev-panel-noise-lab1-82154fe34c19"
+      ],
+      "reason": "Tumours mainly gain copy-number changes during progression, so counting mutations alone could reverse the conclusion.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-80ab70b26d3a"
+      }
+    },
+    {
+      "text": "Samples from the same patient may have been sequenced on different MSK-IMPACT panel versions (IMPACT341/410/468/505; see data_gene_panel_matrix.txt). A gene 'gained' in the later sample may simply not have been on the earlier sample's panel. Count acquired or lost alterations only in genes covered by both panels of the pair. For TMB, compare per-Mb values.",
+      "from": [
+        "sl-dev-panel-noise-lab1-345d7a95e569"
+      ],
+      "reason": "Differences in panel coverage can create false 'new' alterations and inflate one group's acquired count.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-67a127f5498f"
+      }
+    },
+    {
+      "text": "Low tumour purity in one sample of a pair causes missed mutation and CNA calls, so alterations look acquired or lost when they were just undetected. Compare TUMOR_PURITY and SAMPLE_COVERAGE within each pair, and check the VAF of private mutations. Report results with and without pairs that include a sample of purity <=30%.",
+      "from": [
+        "sl-dev-panel-noise-lab1-cdbfb8166ee5"
+      ],
+      "reason": "This artefact directly inflates or deflates per-patient acquired counts.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-18bb9487b605"
+      }
+    },
+    {
+      "text": "Keep only somatic calls: check Mutation_Status and Variant_Classification in data_mutations.txt and SV_Status in data_sv.txt. Apply the same rule to both groups on whether silent or non-coding variants are counted.",
+      "from": [
+        "sl-dev-panel-noise-lab1-aff9cf383fc3"
+      ],
+      "reason": "Germline or filtered calls, or rules applied inconsistently between groups, distort the alteration counts.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-6e45f76d2f10"
+      }
+    },
+    {
+      "text": "Judge 'no common mutations' at the patient level. For acquired alterations in FN-RMS, count the distinct PATIENTS per gene, not samples, and note whether any gene is acquired in two or more FN patients. Also note whether recurrent genes are known drivers (e.g. RAS, TP53, CDKN2A) or likely passengers.",
+      "from": [
+        "sl-dev-panel-noise-lab1-2f3ecc91915b"
+      ],
+      "reason": "Counting several samples of one patient as recurrence would wrongly contradict the second part of the hypothesis.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-688b252ed092"
+      }
+    },
+    {
+      "text": "The cohort is small and samples from one patient are not independent. Use one value per patient or per pair, and use exact or nonparametric tests or a descriptive comparison. When groups have fewer than about 10 patients, judge by the direction and consistency of the difference, not by p-values alone.",
+      "from": [
+        "sl-dev-panel-noise-lab1-c40b91dd5b6e"
+      ],
+      "reason": "Per-sample tests on a tiny cohort would overstate how strong the evidence is.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-d74a42c52660"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat T-number (sequencing order) as time order and call alterations absent from the earliest sample 'acquired'. In at least 7 of 20 patients the lower T-number is a Metastasis and the higher one is the Primary (e.g. P-0022317, P-0028971, P-0045478, P-0068164, P-0074869, P-0077663). P-0050430 has two 'Primary' samples and P-0069477 has an 'Unknown' one. So 'present later, absent earlier' may be counting private, branch-specific alterations in either direction, not acquisition.",
+      "Both count alterations asymmetrically: present in later, absent in earliest. Neither reports alterations LOST from the earliest sample. Without that, a group with more private events in general (from noise, purity or panel) looks like it 'acquires more'.",
+      "Both use summed per-patient counts. Team A's FN mean (~4.7, 7.8 after the purity filter) may be driven by one or two patients (P-0048073 with ~20 acquired, P-0074869, P-0051132), and P-0048073 has only 5 mutation rows, so most of its count must come from CNA/SV calls.",
+      "Both treat discrete CNA \u00b12 calls as reliable presence/absence across samples of different purity and panel versions."
+    ],
+    "unused_evidence": [
+      "data_cna_hg19.seg: neither team used the segmented log ratios. They could tell whether a \u00b12 call 'acquired' in a later sample is a true new event or a sub-threshold shift already present in the earlier sample, and they give a panel-independent copy-number measure.",
+      "AGE_AT_SEQ_REPORTED_YEARS and SAMPLE_TYPE in data_clinical_sample.txt: both are usable for ordering (e.g. P-0033453 at 23 vs 26, P-0050430 at 53 vs 54, P-0035844 T01 Primary then T03 Local Recurrence). Neither team used them to check or replace T-number order.",
+      "t_alt_count/t_ref_count in data_mutations.txt: neither team checked whether 'acquired' mutations are subclonal or low-VAF, or whether the 'absent' sample has sub-threshold supporting reads at that site.",
+      "data_gene_panel_matrix.txt + GENE_PANEL: Team A did a same-panel sensitivity check, but Team B did not restrict to shared genes at all."
+    ],
+    "unresolved_weak_points": [
+      "Team A: panel coverage could not be rebuilt gene by gene. A same-panel subset was run, but the report does not give the number of FN and FP patients in that subset or the per-patient values, so it is not known whether the direction rests on 1-2 patients.",
+      "Team B: named sample order and mixed panels as weak points but resolved neither ('kept T-number order'). The p=0.008 rests on that unverified order.",
+      "Neither team showed whether the FN > FP difference survives with the most extreme FN patient left out, or with acquired and lost events counted together."
+    ],
+    "second_readings": [
+      "'Fewer new alterations' compared with what? Most likely FN vs FP, but it could also mean FN acquires few alterations in absolute terms (e.g. a median near 0). In that case the answer depends on the absolute per-patient distribution, not on the FN-FP contrast.",
+      "'No common mutations' could mean (a) no gene newly mutated in 2 or more FN patients (recurrence across patients), or (b) no mutations shared (truncal) between a patient's paired samples. Both teams used reading (a). Reading (b) is testable from the same files and could give a different verdict on the second clause.",
+      "'Alterations' could mean mutations only. The teams pooled mutations, CNAs and SVs. The direction for mutations alone (79 rows in total) may differ from the pooled count."
+    ],
+    "verdict": "I moderately trust the agreed direction (FN shows more, not fewer, new alterations than FP). But both teams counted 'acquired' events by T-number order, which often puts a metastasis before its primary. Neither counted lost events, so general discordance from purity or panel noise could look like acquisition. Team A's FN mean may also rest on one or two outlier patients. These checks should be run before the result is reported.",
+    "questions": [
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: In several patients the lower T-number is a Metastasis and the higher one the Primary (e.g. P-0045478, P-0068164, P-0074869, P-0077663). Rerun the per-patient counts with samples ordered by SAMPLE_TYPE (Primary first) and AGE_AT_SEQ_REPORTED_YEARS, and also count alterations LOST from the earliest sample. Does FN still exceed FP for acquired events, and does it also exceed FP for lost events (which would point to noise rather than acquisition)?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-2c51aab7f05c"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: List the per-patient acquired counts for every FN and FP patient, split by type (mutation, CNA \u00b12, SV). Recompute the comparison with P-0048073 left out, and then with mutations only. Does the direction or the Mann-Whitney result change? Also report how many FN and FP patients are in your same-panel subset.",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-e0fd22daad6c"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For each CNA counted as acquired, look up the gene's seg.mean in the earliest sample in data_cna_hg19.seg, and for each acquired mutation check t_alt_count at that position in the earlier sample, if it is listed. What share of 'acquired' events were already present below the calling threshold, and does removing them change the FN vs FP direction?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-07e3a3dec105"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: 'No common mutations' has a second reading: no mutations shared between a patient's paired samples. Count, per FN patient, the mutations present in both samples. Is that count zero, and does this reading change your verdict on the second clause of the hypothesis?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-e23d68ea4dc7"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You kept T-number order, but several patients have Metastasis at T02 and Primary at T03 (e.g. P-0022317, P-0045478, P-0074869, P-0077663). Reorder samples by SAMPLE_TYPE and AGE_AT_SEQ_REPORTED_YEARS, and also tabulate alterations lost from the earliest sample. Does the FN vs FP difference in acquired events remain, and is it specific to gains rather than to discordance in general?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-3d19c5aad0e5"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Use data_gene_panel_matrix.txt/GENE_PANEL to find pairs on different panels (IMPACT410->468, 468->505). Restrict acquired events to genes on the older panel, or rerun on same-panel pairs only. Report n per group and whether the p=0.008 result and its direction hold.",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-67208be5bde3"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Report per-patient acquired counts split by type (mutations / CNA \u00b12 / SV), and check purity in each pair (TUMOR_PURITY \u226430% in either sample). Does the difference hold for mutations alone, and with low-purity pairs and the single highest FN patient left out?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-2bb02de873d9"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: For 'no common mutations', you listed genes newly altered in 2 or more patients. Also count, per FN patient, the mutations shared between that patient's samples. Does either reading of 'common' give a result that contradicts the second clause independently of the first?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-8255d106ee9f"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In longitudinal multi-sample targeted tumour sequencing studies, how are 'acquired' (newly emerging) alterations usually defined when samples were not sequenced in chronological order (e.g. a metastasis sequenced before the primary)? Is ordering by collection date, by sample type, or by symmetric private-alteration counts the accepted convention?",
+          "why": "Both teams ordered by sequencing index. If the field convention is collection order or symmetric discordance, the per-patient 'acquired' counts and possibly the direction could change.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In cBioPortal-format discrete copy-number tables derived from targeted-panel log ratios, what thresholds and purity adjustments define the -2/+2 calls? How often does a \u00b12 call differ between two samples of the same tumour because of purity alone?",
+          "why": "Acquired CNA calls appear to make up much of the outlier patients' counts. If \u00b12 calls depend strongly on purity, pairwise CNA gains are unreliable markers of acquisition.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In longitudinal multi-sample targeted tumour sequencing studies, how are 'acquired' (newly emerging) alterations usually defined when samples were not sequenced in chronological order (e.g. a metastasis sequenced before the primary)? Is ordering by collection date, by sample type, or by symmetric private-alteration counts the accepted convention?",
+          "answer": "I found no written universal rule, but the papers I read use a directional definition. Acquired, de novo or metastasis-private alterations are those present in the later or metastatic sample and absent from the earlier or primary sample. Zhao et al. 2025 (MSK-IMPACT, 3,732 longitudinally biopsied patients) describe alterations 'emerging de novo' during metastasis, in the primary-to-metastasis direction. Hu et al. 2020 (457 paired primary and metastasis samples) and Ng et al. 2017 classify alterations as primary-private, metastasis-private or shared by sample type. None of them ordered samples by sequencing index. None used symmetric private counts as the definition of 'acquired'; symmetric counts describe discordance or heterogeneity, not acquisition. The defensible convention is chronological or clinical order: collection or procedure date where available, otherwise primary before metastasis. Re-ordering by collection date or sample type could change per-patient acquired counts wherever the sequencing index disagrees with that order. Only the Zhao et al. abstract was readable (paywalled), so its exact methods text was not checked.",
+          "sources": [
+            "https://www.nature.com/articles/s41588-025-02204-3",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7343625/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5768571/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd40-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-c6e4aeb7afa7"
+            },
+            "bd40-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-3fffb5677791"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In longitudinal multi-sample targeted tumour sequencing studies, how are 'acquired' (newly emerging) alterations usually defined when samples were not sequenced in chronological order (e.g. a metastasis sequenced before the primary)? Is ordering by collection date, by sample type, or by symmetric private-alteration counts the accepted convention? ANSWER: I found no written universal rule, but the papers I read use a directional definition. Acquired, de novo or metastasis-private alterations are those present in the later or metastatic sample and absent from the earlier or primary sample. Zhao et al. 2025 (MSK-IMPACT, 3,732 longitudinally biopsied patients) describe alterations 'emerging de novo' during metastasis, in the primary-to-metastasis direction. Hu et al. 2020 (457 paired primary and metastasis samples) and Ng et al. 2017 classify alterations as primary-private, metastasis-private or shared by sample type. None of them ordered samples by sequencing index. None used symmetric private counts as the definition of 'acquired'; symmetric counts describe discordance or heterogeneity, not acquisition. The defensible convention is chronological or clinical order: collection or procedure date where available, otherwise primary before metastasis. Re-ordering by collection date or sample type could change per-patient acquired counts wherever the sequencing index disagrees with that order. Only the Zhao et al. abstract was readable (paywalled), so its exact methods text was not checked. HOW SURE: medium. SOURCES: https://www.nature.com/articles/s41588-025-02204-3, https://pmc.ncbi.nlm.nih.gov/articles/PMC7343625/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5768571/."
+        },
+        {
+          "question": "In cBioPortal-format discrete copy-number tables derived from targeted-panel log ratios, what thresholds and purity adjustments define the -2/+2 calls? How often does a \u00b12 call differ between two samples of the same tumour because of purity alone?",
+          "answer": "cBioPortal does not define or check the thresholds. Discrete CNA data is loaded as integers from -2 to +2 as supplied: -2 is a deep loss (possibly homozygous) and +2 is a high-level amplification. In GISTIC the low-level threshold is fixed (about 0.1 to 0.3) and the high-level threshold is set per sample from arm-level values. Panel pipelines such as MSK-IMPACT call from tumour/normal coverage fold-change with a fixed cutoff, reported as about 2-fold for amplification in a search snippet I could not open. These calls are generally not purity-adjusted unless FACETS integer copy numbers are used. Purity strongly changes the observed log ratio, which follows log2(p*CN/2 + (1-p)). A 5-copy amplification gives a log2 ratio of about 1.32 at 100% purity but only about 0.81 at 50% purity. The CNVkit validation paper (PMC9302205) describes tumour purity as a variable that affects CNA calling. Hu et al. 2020 found metastases had systematically higher purity than paired primaries. That bias would produce apparent +2/-2 'gains' in the metastasis. I found no published rate for how often purity alone flips a \u00b12 call between same-tumour samples, so the web does not settle that part. Pairwise \u00b12 differences, especially without purity adjustment, are weak evidence of acquisition.",
+          "sources": [
+            "https://docs.cbioportal.org/user-guide/faq/",
+            "https://groups.google.com/g/cbioportal/c/qP_OaeRdbDo",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC9302205/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7343625/"
+          ],
+          "confidence": "medium on the threshold and purity mechanism; the frequency of purity-driven discordance is unresolved (low)",
+          "deliveries": {
+            "bd40-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-c5f09baee25a"
+            },
+            "bd40-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-86902192a6c9"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cBioPortal-format discrete copy-number tables derived from targeted-panel log ratios, what thresholds and purity adjustments define the -2/+2 calls? How often does a \u00b12 call differ between two samples of the same tumour because of purity alone? ANSWER: cBioPortal does not define or check the thresholds. Discrete CNA data is loaded as integers from -2 to +2 as supplied: -2 is a deep loss (possibly homozygous) and +2 is a high-level amplification. In GISTIC the low-level threshold is fixed (about 0.1 to 0.3) and the high-level threshold is set per sample from arm-level values. Panel pipelines such as MSK-IMPACT call from tumour/normal coverage fold-change with a fixed cutoff, reported as about 2-fold for amplification in a search snippet I could not open. These calls are generally not purity-adjusted unless FACETS integer copy numbers are used. Purity strongly changes the observed log ratio, which follows log2(p*CN/2 + (1-p)). A 5-copy amplification gives a log2 ratio of about 1.32 at 100% purity but only about 0.81 at 50% purity. The CNVkit validation paper (PMC9302205) describes tumour purity as a variable that affects CNA calling. Hu et al. 2020 found metastases had systematically higher purity than paired primaries. That bias would produce apparent +2/-2 'gains' in the metastasis. I found no published rate for how often purity alone flips a \u00b12 call between same-tumour samples, so the web does not settle that part. Pairwise \u00b12 differences, especially without purity adjustment, are weak evidence of acquisition. HOW SURE: medium on the threshold and purity mechanism; the frequency of purity-driven discordance is unresolved (low). SOURCES: https://docs.cbioportal.org/user-guide/faq/, https://groups.google.com/g/cbioportal/c/qP_OaeRdbDo, https://pmc.ncbi.nlm.nih.gov/articles/PMC9302205/, https://pmc.ncbi.nlm.nih.gov/articles/PMC7343625/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd40-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd40-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd40-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd40-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 68.89476487506181,
+      "cost_usd": 0.31812660000000004,
+      "error": null
+    },
+    {
+      "agent": "bd40-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 94.15764612494968,
+      "cost_usd": 0.4711558,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 92.04921945894603,
+      "cost_usd": 0.3845466,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 140.73308516701218,
+      "cost_usd": 0.6996022,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": [],
+  "recheck": [],
+  "reused": {
+    "from": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1",
+    "memory_replayed": {
+      "writes": null,
+      "pass_downs": 8,
+      "note": "memory writes are replayed only with local memory"
+    },
+    "first_round_cost_usd": 1.085719,
+    "first_round_runs": 4
+  }
+}

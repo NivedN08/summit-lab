@@ -1,0 +1,299 @@
+{
+  "study": "bd05",
+  "status": "replicated",
+  "final": {
+    "agent": "bd05-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd05/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m03/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bd05-library": "opus",
+    "bd05-team-a": "opus",
+    "bd05-team-b": "opus",
+    "bd05-team-c": "opus",
+    "bd05-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd05-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd05/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd05-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd05/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd05-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd05/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd05-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd05/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd05-team-a",
+        "bd05-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd05-team-a",
+        "bd05-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "CALR driver mutations in myeloproliferative neoplasms are mostly exon 9 frameshift indels (type 1 is a 52-bp deletion, type 2 is a 5-bp insertion, and there are rarer indels). When you pick CALR rows from data_mutations.txt, keep every Variant_Classification, including Frame_Shift_Del, Frame_Shift_Ins and In_Frame_*. Look at the protein and DNA change fields. Do not filter to SNPs or to missense/nonsense rows.",
+      "from": [
+        "sl-m03-r1-b89d576c6486"
+      ],
+      "reason": "An SNV-only or missense-only filter would hide every CALR mutation and make the CALR count wrong.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-6afc73704f9a"
+      }
+    },
+    {
+      "text": "JAK2 status can be read from two places: JAK2 rows in data_mutations.txt (exon 12 mutations count as well as V617F) and a per-sample column 'JAK2/MPL mutation' with values JAK2, MPL or unmutated. Cross-tabulate the two sources, and also check each against CALR carriage. If they disagree, define JAK2-nonmutated as having no JAK2 mutation in either source, and report the result under both definitions.",
+      "from": [
+        "sl-m03-r1-04b2aae85da5"
+      ],
+      "reason": "This defines the population the hypothesis is about. Using only one source could put patients in the wrong group.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-9b922f89d338"
+      }
+    },
+    {
+      "text": "'Nonmutated JAK2' covers MPL-mutated patients as well as patients with no JAK2 or MPL mutation. Do not restrict the analysis to the 'unmutated' group alone. Count CALR-mutated samples separately in the JAK2, MPL and unmutated groups, and assess the hypothesis on all non-JAK2 samples (MPL plus unmutated).",
+      "from": [
+        "sl-m03-r1-ee7719459aaf"
+      ],
+      "reason": "Using too narrow a definition of the JAK2-nonmutated group changes the population being tested.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-f595d6673ad7"
+      }
+    },
+    {
+      "text": "The hypothesis is about somatic CALR mutations. For each CALR row, check Mutation_Status, 'Germline allele percentage (%)', 'Germline reads' and 'Tumor allele burden (%)'. Also check SOMATIC_STATUS in the clinical table (for example, 'Matched' tumour/normal). Exclude rows with a substantial germline allele fraction. Treat calls filtered against a matched normal as somatic.",
+      "from": [
+        "sl-m03-r1-7da4a25ef0e1"
+      ],
+      "reason": "Germline or artefact calls should not count as somatic CALR mutations.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-aa31f284df55"
+      }
+    },
+    {
+      "text": "Join Tumor_Sample_Barcode in the mutation table to SAMPLE_ID/PATIENT_ID in the clinical table. List any IDs that do not match and any patients with more than one sample. Count at patient level, since the claim is about patients. Treat clinical samples with no MAF rows as having no detected mutation, and do not drop them silently.",
+      "from": [
+        "sl-m03-r1-1b1a5ae3a152"
+      ],
+      "reason": "Mismatched IDs or several samples per patient distort patient-level counts and denominators.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-eee7aa9cd49d"
+      }
+    },
+    {
+      "text": "The hypothesis is a universal negative: no patient with nonmutated JAK2 has a somatic CALR mutation. The relevant quantity is the number of distinct patients who have a somatic CALR mutation and no JAK2 mutation. Significance tests or proportions do not decide it. Decide the label from that count and from whether CALR and JAK2 status can actually be determined in the data.",
+      "from": [
+        "sl-m03-r1-66c70e1dc5fa"
+      ],
+      "reason": "Analysing the claim as an association test instead of an existence check would apply the wrong logic to it.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-d2457961ec27"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 3,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams take every CALR row in the mutation table as a real somatic call. Only team A looked at the germline allele percentage, and Mutation_Status, Validation_Status and Verification_Status are empty for every row, so no flag in the file confirms somatic status.",
+      "Both teams treat 'no JAK2 row in the mutation table' as meaning JAK2-nonmutated. That only holds if JAK2 was sequenced with enough coverage in every sample."
+    ],
+    "unused_evidence": [
+      "Team B did not use the 'JAK2/MPL mutation' column (values JAK2, MPL, unmutated) or the germline read and allele-percentage columns. Team A used both.",
+      "Neither team used the per-row 'Tumor allele burden (%)', t_alt_count or 'Germline reads' to check that the CALR calls are well supported."
+    ],
+    "unresolved_weak_points": [
+      "Team A says its 10% germline threshold is arbitrary, but that 'the conclusion holds at any threshold'. 22 calls remain, so this is very likely true.",
+      "Team B named reliance on the pipeline's somatic status as its weakest point and did not check it, although the germline columns are present."
+    ],
+    "second_readings": [
+      "'Nonmutated JAK2' could mean only the 'unmutated' group, or MPL plus unmutated. Team A reports that all CALR carriers are in the 'unmutated' group, so the count is above zero under either reading."
+    ],
+    "verdict": "I trust the agreed 'False' label highly. Both teams independently find 22 to 25 patients with exon 9 CALR frameshifts and no JAK2 mutation, and those patients are labelled 'unmutated' in a dedicated column. A universal negative falls with one valid case, so a germline or low-support artefact affecting a few calls cannot overturn it.",
+    "questions": [
+      {
+        "to": "bd05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Using the 'Germline allele percentage (%)' and 'Germline reads' columns, how many of your 25 CALR-mutant JAK2-wildtype samples have little or no CALR variant signal in the matched normal? Does the count stay above zero, and does that change your method?",
+        "from": [
+          "sl-m03-r1-c7b63c1b45cc"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-7dc5547eaf6b"
+      },
+      {
+        "to": "bd05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate your CALR carriers against the 'JAK2/MPL mutation' column. Is any CALR carrier labelled JAK2 there even though it has no JAK2 row? Does that change which samples you count as JAK2-nonmutated?",
+        "from": [
+          "sl-m03-r1-c7b63c1b45cc"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-c84c51f6662a"
+      },
+      {
+        "to": "bd05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For the 22 retained CALR carriers, check tumour allele burden and t_alt_count. Are any supported by very few reads, and if you drop low-support calls, does the count of somatic CALR carriers without JAK2 change your label?",
+        "from": [
+          "sl-m03-r1-f44778471177"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-0b0a87c8ca89"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd05-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd05-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd05-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd05-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd05-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 78.74425666697789,
+      "cost_usd": 0.1799232,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 45.63496129098348,
+      "cost_usd": 0.185793,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 46.05102654197253,
+      "cost_usd": 0.1154946,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 56.80046554200817,
+      "cost_usd": 0.1748402,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 42.60668045899365,
+      "cost_usd": 0.1759084,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 49.11562158400193,
+      "cost_usd": 0.18928,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 52.00690466701053,
+      "cost_usd": 0.1365786,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}
