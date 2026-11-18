@@ -1,0 +1,432 @@
+{
+  "study": "bd37",
+  "status": "replicated",
+  "final": {
+    "agent": "bd37-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd37/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bd37-library": "opus",
+    "bd37-team-a": "opus",
+    "bd37-team-b": "opus",
+    "bd37-team-c": "opus",
+    "bd37-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd37-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd37/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd37-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd37/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd37-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd37/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd37-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd37/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd37-team-a",
+        "bd37-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd37-team-a",
+        "bd37-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "This dataset is a DLBCL cohort (DLBCL_DUKE patients). It holds overall survival, IPI and its components, FISH, mutations, CNA and a sample-level column PROGNOSTIC_MODEL (Low/Medium/High risk). That makes the hypothesis about this study's own cohort and measurements, so under the benchmark convention the label should be True or False, not Not verifiable. Check that CANCER_TYPE_DETAILED, PROGNOSTIC_MODEL, IPI, OS_MONTHS and OS_STATUS are present, and compare the genetic model against established prognostic tools (IPI, and cell-of-origin if the tables have it).",
+      "from": [
+        "sl-incumbent-156344f43cd3"
+      ],
+      "reason": "A wrong Not verifiable counts as wrong. The deposited genetic risk column is the variable that makes the claim testable.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-edf81d0a52ba"
+      }
+    },
+    {
+      "text": "OS_STATUS uses cBioPortal strings such as '0:LIVING' and '1:DECEASED'. Map '1:DECEASED' to event=1, drop rows with missing OS_MONTHS, and check that the Kaplan-Meier curves point the expected way before any Cox or C-index analysis.",
+      "from": [
+        "sl-incumbent-a684684b3ce5"
+      ],
+      "reason": "If the event is coded wrongly, every survival comparison flips.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-68ffaabf6138"
+      }
+    },
+    {
+      "text": "Judge 'outperforms' by discrimination on the same patients, not by comparing p-values. Restrict to patients with non-missing PROGNOSTIC_MODEL, IPI and OS, since IPI is blank for some patients. Report n and events, and compute Harrell's C-index (or time-dependent AUC) for each model on that identical set, with a bootstrap CI for the paired difference. Also run a likelihood-ratio test of IPI + genetic model against IPI alone. Check proportional hazards with Schoenfeld residuals; if they fail, rely on C-index and KM/log-rank rather than single hazard ratios.",
+      "from": [
+        "sl-incumbent-50ab1a7ec64a",
+        "sl-incumbent-ed0e49b4a1ad",
+        "sl-incumbent-fafece5639aa"
+      ],
+      "reason": "If each model is scored on its own subset, or only p-values are compared, the head-to-head comparison is not valid.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-fb1eca34868e"
+      }
+    },
+    {
+      "text": "Code IPI fairly. Compute its C-index both as the 0-5 score and as the standard four risk groups (0-1 low, 2 low-intermediate, 3 high-intermediate, 4-5 high), and code PROGNOSTIC_MODEL as ordered Low<Medium<High. Report both IPI codings.",
+      "from": [
+        "sl-incumbent-2f17b654d8af"
+      ],
+      "reason": "How the comparator is coded can tilt the comparison.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-cf6bfc386b48"
+      }
+    },
+    {
+      "text": "If the genetic risk model was derived in this same cohort, its in-sample performance is optimistically biased. Prefer the deposited PROGNOSTIC_MODEL as-is to refitting gene-level models in-sample. If you do refit, use cross-validation or bootstrap optimism correction. Count OS events in the complete-case set: with few events per parameter (fewer than about 10), multivariable Cox models and C-index differences are unstable, so keep models small and report uncertainty. Weigh both the size of the effect and its precision when you decide.",
+      "from": [
+        "sl-incumbent-c83dccbad2c4",
+        "sl-incumbent-3e6bd47a0e86"
+      ],
+      "reason": "These affect how much weight in-sample results and noisy differences can bear when choosing the label.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-10d949f75b97"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed the deposited PROGNOSTIC_MODEL ('Genomic Risk Model Classification') is a purely genetic score; neither tested whether it already incorporates IPI or other clinical/expression inputs, in which case comparing it with IPI does not isolate the value of the genetic alterations.",
+      "Both took IPI alone as 'the current established methods'; FISH double-hit status (BCL2/MYC/BCL6) and other established markers were not considered as comparators.",
+      "Both treated the 618 complete cases as a representative, independent test set, without checking why 248 samples lack a model class (possible training/validation split or non-random exclusion).",
+      "Both resolved a metric conflict (C-index tie vs. likelihood) in favour of the likelihood and the study's claim, assuming the 3-level vs 6-level coding difference is the explanation."
+    ],
+    "unused_evidence": [
+      "data_mutations.txt and data_log2_cna.txt: neither team built or checked any genetic-only predictor from the actual alterations, so the 'genetic alterations' themselves were never examined.",
+      "BCL2_FISH_STATUS, MYC_FISH, BCL6_FISH_STATUS (125 samples): an established comparator (double/triple-hit) not used.",
+      "IPI component columns (IPI_AGE, IPI_LDH, IPI_ECOG, IPI_ANNARBOR_STAGE, IPI_EXTRANODAL_SITES) and INITIAL_TX_RESPONSE, TUMOR_PURITY: could show whether the model is confounded with IPI or purity.",
+      "Pattern of PROGNOSTIC_MODEL missingness (248, including all 14 with missing OS) - may mark a held-out set."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the C-index showing no advantage over IPI as their weakest point and only reported it; neither ran a tie-robust or time-dependent discrimination measure or an IPI-categorised (3-group) comparison to resolve it.",
+      "Both named in-sample optimism (model fit on this cohort) and neither tested it (e.g. comparing on samples that could be a validation subset).",
+      "Team A named the proportional-hazards check as not run; it remains unrun."
+    ],
+    "second_readings": [
+      "'Genetic alterations identified in the study' could mean the alterations alone (genetic-only predictor) rather than a combined risk model that may include clinical factors.",
+      "'Current established methods' is plural: IPI, cell-of-origin, and double-hit FISH status, not IPI alone.",
+      "'Outperform' could mean better discrimination (C-index) or added prognostic information beyond IPI (incremental LRT); these gave different signals here."
+    ],
+    "verdict": "Moderate trust: both teams found the deposited model does not beat IPI by C-index and reached True mainly through likelihood/incremental value and the study's own claim, which is consistent with the benchmark convention; the untested risks are that the model may already contain IPI and that evaluation is in-sample.",
+    "questions": [
+      {
+        "to": "bd37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate PROGNOSTIC_MODEL against IPI score and each IPI component (age, LDH, ECOG, stage, extranodal). If the model class is strongly determined by IPI, does your incremental-LRT argument still show value of the genetic alterations specifically, and does that change your method?",
+        "from": [
+          "sl-incumbent-d9074a8a3858"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-b4f74cb258e1"
+      },
+      {
+        "to": "bd37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Compare the 248 samples without a PROGNOSTIC_MODEL class with the 753 that have one (OS events, follow-up, IPI distribution, purity). Does the missingness look like a training/validation split or non-random exclusion, and does that change which subset you should evaluate on?",
+        "from": [
+          "sl-incumbent-6a81a327997b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-5ba64a2c7493"
+      },
+      {
+        "to": "bd37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Re-run the discrimination comparison with IPI collapsed to its standard risk groups (so both predictors have similar numbers of levels) and with a time-dependent AUC at fixed horizons. Does the C-index conflict you named as your weakest point resolve either way, and does that change your weighting?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-b5d90ab99b02"
+      },
+      {
+        "to": "bd37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Check whether the FISH columns (BCL2/MYC/BCL6) define a double-hit comparator in enough patients to compare against the genetic model on the same cases. Does including this established method change your conclusion?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-1928090ec17b"
+      },
+      {
+        "to": "bd37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your plan said you would change method if the prognostic model is not derived from genetics. Did you test that? Cross-tabulate PROGNOSTIC_MODEL against IPI score and its components; if IPI largely drives the class, does the likelihood comparison still speak to the genetic alterations?",
+        "from": [
+          "sl-incumbent-2d2b7346d690"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-ba619084a764"
+      },
+      {
+        "to": "bd37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Neither the mutation nor the CNA file entered your method. Check whether alterations in the mutation/CNA tables separate survival after adjusting for IPI (on the same complete cases). Does this genetic-only evidence agree with the deposited-model result, and does it change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-8c19d93574ed"
+      },
+      {
+        "to": "bd37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Compare the 248 samples lacking a model class with the rest (events, IPI, purity, follow-up). If they look like a held-out subset, does the in-sample optimism you named as your weakest point change your reading of the likelihood advantage?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-d65fb7ef310a"
+      },
+      {
+        "to": "bd37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your Cox log-likelihoods compare a 3-level model with IPI; check the comparison with matched degrees of freedom (AIC, or IPI as categorical groups) and a time-dependent AUC. Does the metric disagreement persist, and does it change how much the label rests on the study's own claim?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-89a56c77beff"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "When comparing a 3-category risk classifier with a 6-level ordinal clinical index by Harrell's C-index, how are tied predictions handled, and what tie-robust or time-dependent alternatives (e.g. Uno's C, time-dependent AUC) are recommended?",
+          "why": "Both teams attribute the C-index disagreement to ties without verifying; the definition decides whether the metric conflict is real.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In published genomic risk models for diffuse large B-cell lymphoma, is it standard for the final risk classification to combine genetic alterations with clinical index (IPI) and cell-of-origin, rather than genetics alone?",
+          "why": "If the risk class includes IPI, comparing it with IPI does not isolate the genetic contribution, which bears on how the hypothesis is tested.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "What are the standard methods to assess whether a new prognostic marker 'outperforms' an established index: change in C-index, likelihood-ratio test of added value, NRI, or validation in an independent set?",
+          "why": "The teams' metrics disagree; the accepted definition of outperforming determines which evidence should decide the label.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When comparing a 3-category risk classifier with a 6-level ordinal clinical index by Harrell's C-index, how are tied predictions handled, and what tie-robust or time-dependent alternatives (e.g. Uno's C, time-dependent AUC) are recommended?",
+          "answer": "NOT SETTLED BY WEB: the research gateway returned HTTP 403 on every call, so no page was read. Unverified background knowledge: Harrell's C as implemented in R survival::concordance and lifelines counts tied risk predictions as half-concordant. A 3-level classifier produces many more tied pairs than a 6-level index, which pulls its C toward 0.5, so this is a real but definitional effect. Alternatives: Uno's IPCW C, which handles censoring but does not resolve ties; time-dependent AUC (Heagerty, Uno); and reporting C with ties excluded or Somers' D.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-0ffe7f62e812"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-f79665da85c3"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When comparing a 3-category risk classifier with a 6-level ordinal clinical index by Harrell's C-index, how are tied predictions handled, and what tie-robust or time-dependent alternatives (e.g. Uno's C, time-dependent AUC) are recommended? ANSWER: NOT SETTLED BY WEB: the research gateway returned HTTP 403 on every call, so no page was read. Unverified background knowledge: Harrell's C as implemented in R survival::concordance and lifelines counts tied risk predictions as half-concordant. A 3-level classifier produces many more tied pairs than a 6-level index, which pulls its C toward 0.5, so this is a real but definitional effect. Alternatives: Uno's IPCW C, which handles censoring but does not resolve ties; time-dependent AUC (Heagerty, Uno); and reporting C with ties excluded or Somers' D. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "In published genomic risk models for diffuse large B-cell lymphoma, is it standard for the final risk classification to combine genetic alterations with clinical index (IPI) and cell-of-origin, rather than genetics alone?",
+          "answer": "NOT SETTLED BY WEB: the gateway returned HTTP 403. Unverified background knowledge: practice is mixed. Genetic subtype systems such as LymphGen and the Chapuy clusters use genetics alone. Some prognostic models, for example Reddy et al. 2017 (Cell, a Duke cohort), combine gene alterations with IPI and cell-of-origin/expression features into the final risk groups. If the deposited risk model includes IPI, comparing it with IPI does not isolate the genetic contribution.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-a07b75e67853"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-ec179d7c7dcf"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In published genomic risk models for diffuse large B-cell lymphoma, is it standard for the final risk classification to combine genetic alterations with clinical index (IPI) and cell-of-origin, rather than genetics alone? ANSWER: NOT SETTLED BY WEB: the gateway returned HTTP 403. Unverified background knowledge: practice is mixed. Genetic subtype systems such as LymphGen and the Chapuy clusters use genetics alone. Some prognostic models, for example Reddy et al. 2017 (Cell, a Duke cohort), combine gene alterations with IPI and cell-of-origin/expression features into the final risk groups. If the deposited risk model includes IPI, comparing it with IPI does not isolate the genetic contribution. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "What are the standard methods to assess whether a new prognostic marker 'outperforms' an established index: change in C-index, likelihood-ratio test of added value, NRI, or validation in an independent set?",
+          "answer": "NOT SETTLED BY WEB: the gateway returned HTTP 403. Unverified background knowledge: the accepted evidence is a likelihood-ratio test of the nested Cox model (index + marker vs index alone) plus a paired C-index/AUC difference with a bootstrap CI on the same patients. Calibration and independent validation (Steyerberg; REMARK) are also expected. NRI/IDI are often reported but have been criticised. In practice, publications claim 'outperforms IPI' when the new model's C-index/AUC is higher than IPI's.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-be1c9f87c071"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-f863e39c96e6"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What are the standard methods to assess whether a new prognostic marker 'outperforms' an established index: change in C-index, likelihood-ratio test of added value, NRI, or validation in an independent set? ANSWER: NOT SETTLED BY WEB: the gateway returned HTTP 403. Unverified background knowledge: the accepted evidence is a likelihood-ratio test of the nested Cox model (index + marker vs index alone) plus a paired C-index/AUC difference with a bootstrap CI on the same patients. Calibration and independent validation (Steyerberg; REMARK) are also expected. NRI/IDI are often reported but have been criticised. In practice, publications claim 'outperforms IPI' when the new model's C-index/AUC is higher than IPI's. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd37-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd37-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd37-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd37-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd37-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 57.720393417053856,
+      "cost_usd": 0.1898494,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 38.318701500073075,
+      "cost_usd": 0.1828486,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 41.4820032089483,
+      "cost_usd": 0.14338839999999997,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 67.46196083398536,
+      "cost_usd": 0.22552319999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 60.647762916982174,
+      "cost_usd": 0.23403059999999998,
+      "error": null
+    },
+    {
+      "agent": "bd37-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 44.27965512510855,
+      "cost_usd": 0.144619,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 67.3518805410713,
+      "cost_usd": 0.3056608,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 229.61889895889908,
+      "cost_usd": 0.33209720000000004,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

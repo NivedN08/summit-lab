@@ -6,6 +6,8 @@
 
 Frozen as `prereg/loop-2.json`, with seed moves in `prereg/loop-2-seeds.json`.
 
+**Result (2026-11-18, M-17).** With the convention stated, the lab passed 19 of 20 and Opus alone 18 of 20 by vote. The incumbent failed fewer than 3 tasks, so by the pre-registered rule the loop did not run. Spent: $39.89 of $350. The open question moves to the held-out test: does the note still help on a natural label mix, where about a third of the labels are "Not verifiable"?
+
 ## Why loop 1 found nothing
 
 Loop 1 (M-16) tried three moves and kept none. The run records show why. They are the teams' answers and our own pass/fail grades; no sealed file was read.

@@ -1,0 +1,417 @@
+{
+  "study": "bd20",
+  "status": "replicated",
+  "final": {
+    "agent": "bd20-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd20/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bd20-library": "opus",
+    "bd20-team-a": "opus",
+    "bd20-team-b": "opus",
+    "bd20-team-c": "opus",
+    "bd20-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd20-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd20/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd20-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd20/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd20-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd20/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd20-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd20/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd20-team-a",
+        "bd20-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd20-team-a",
+        "bd20-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Initial engraftment means patient tumour (T) to the first xenograft passage (X0 or X1; letters A-D mark parallel mice/lineages). Parse SAMPLE_ID into patient, T/X, passage number and replicate letter, find patients with both T and X0/X1 data (some patients may lack a T sample), and test the hypothesis on T vs first-passage pairs. Treat later passages (X1 vs X2+) as a separate contrast, and use parallel replicates to tell reproducible selection from random drift.",
+      "from": [
+        "sl-incumbent-6e4c36a0be42"
+      ],
+      "reason": "Comparing T to later passages mixes engraftment selection with serial-passage drift, which would test a different claim.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-ac7327c9bb8e"
+      }
+    },
+    {
+      "text": "Samples can appear twice, as deep targeted sequencing and as whole genome (SAMPLE_ID suffixes such as -targeted and -whole_genome), with very different depth. Compare T vs X within the same assay only. Prefer the deep targeted data for VAF/prevalence comparisons and use WGS to find mutations gained or lost.",
+      "from": [
+        "sl-incumbent-8d40a09df7a5"
+      ],
+      "reason": "Mixing assays between T and X creates artificial VAF and detection differences that look like clonal change.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-75b215495a81"
+      }
+    },
+    {
+      "text": "Do not call a mutation lost or gained at engraftment from presence/absence alone. For each mutation, check depth in both T and X1, require adequate depth (e.g. >=50x targeted) before calling it absent, and use Fisher/binomial tests of alt vs ref counts with multiple-testing correction to find significant prevalence shifts.",
+      "from": [
+        "sl-incumbent-ff0afcbb8c42"
+      ],
+      "reason": "Low-coverage sites miss subclonal variants, which inflates apparent clonal changes.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-44b041eb71ec"
+      }
+    },
+    {
+      "text": "Xenografts contain varying amounts of mouse stromal DNA and patient tumours contain human normal cells, so VAFs can shift globally because of purity. Compare the VAFs of presumed truncal (highest-VAF cluster) mutations between T and X per patient. Normalise by purity or convert to cancer cell fraction, and count selection only as a change in relative clone proportions, not as uniform VAF scaling.",
+      "from": [
+        "sl-incumbent-2288960ad634"
+      ],
+      "reason": "Without this, purity differences can be mistaken for selection.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-c7a3b4e5a8c2"
+      }
+    },
+    {
+      "text": "Copy-number changes and LOH change VAF independently of clone prevalence. Join mutations to CN segments (data_cna_hg19.seg / data_log2_cna.txt), check whether VAF-shifted mutations sit in regions where CN differs between T and X, and use copy-number-aware cancer cell fraction where possible. New or lost CN segments in X relative to T are themselves direct evidence on clonal shift.",
+      "from": [
+        "sl-incumbent-ed83a9d550ce"
+      ],
+      "reason": "Without this, CN-driven VAF changes are confounded with selection, and the CNA tables are left unused as a second line of evidence.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-2928b04c2bce"
+      }
+    },
+    {
+      "text": "Many mutation calls may be tumour-only ('Unmatched'), so the table can include germline SNPs (dbSNP IDs, VAF near 0.5/1.0 in every sample of a patient) and mouse-read artefacts (low-VAF variants present only in xenografts). Flag these and exclude them before measuring clonal shifts.",
+      "from": [
+        "sl-incumbent-9b9a277c779f"
+      ],
+      "reason": "These artefacts distort the T-vs-X comparison in both directions.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-8dfca05a0f0a"
+      }
+    },
+    {
+      "text": "Measure clonal selection per patient as a change in clonal composition (subclones expanding or contracting, CCF shifts, change in clonal diversity), and report how many patients show it. The degree can vary between patients. Judge the hypothesis on whether selection is frequent and reproducible, rather than averaging across patients or requiring it in every patient.",
+      "from": [
+        "sl-incumbent-ed93d85817c1"
+      ],
+      "reason": "This sets the decision criterion. Pooled averages or an 'every patient' requirement could mislead the label.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-2719c692f544"
+      }
+    },
+    {
+      "text": "The hypothesis covers both primary and metastatic tumours, and the clinical table may lack a primary/metastatic site column. The dataset does contain breast tumour (T) and xenograft (X) samples from the same patients, so it is on-topic for this study. Under the benchmark convention, a missing site column is not grounds for 'Not verifiable': decide True or False from the T-vs-first-passage evidence and established biology.",
+      "from": [
+        "sl-incumbent-a2eb0321f531"
+      ],
+      "reason": "Without this, the teams might give 'Not verifiable' just because the site column is missing, and that label is graded wrong for an on-topic dataset.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-b36be07977f3"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assume a gene-level log2 CN difference between T and X1 reflects a change in clone composition. Neither separated that from purity, ploidy re-centring or mouse-stroma dilution, though both named SA531 as a possible scaling artefact.",
+      "Both treat every patient as in scope for 'primary and metastatic' tumours. No table marks which tumours were primary and which were metastatic, so the 'primary and metastatic' part of the claim was never tested.",
+      "Both treat 'initial engraftment' as T vs X0/X1. Patients whose first sample with data is X2 or later, or which have no T, cannot inform the engraftment step, yet they may still be pooled into the overall picture.",
+      "Team A assumes that X1-only WGS calls are new or expanded clones. Somatic status is asymmetric: every tumour is 'Unmatched' and every xenograft is 'Matched'. Calls in the two arms may therefore come from different filtering."
+    ],
+    "unused_evidence": [
+      "The SOMATIC_STATUS column (Tumor = Unmatched, Xenograft = Matched). Neither team used it to judge whether T vs X mutation-set differences are comparable.",
+      "The segment file data_cna_hg19.seg. Both teams used only gene-level log2 CNA. Segment-level breakpoints could tell new or lost CN events apart from a whole-genome offset, which bears directly on the purity/ploidy confound.",
+      "Replicate xenografts at the same passage (e.g. SA534X1A-D, SA532X1A-D, SA535X1A-C) and later passages. These could give a noise floor, and could show whether engraftment changes repeat across replicates (selection) or vary at random (drift or noise).",
+      "The TMB_NONSYNONYMOUS column, which differs between T and X within a patient in WGS."
+    ],
+    "unresolved_weak_points": [
+      "Team A named the purity confound in its CN divergence and the lack of depth for absence calls, but only reported them and did not resolve either.",
+      "Team B named the SA531 ploidy-scaling possibility and the missing primary/metastatic status. It treated the CN evidence as supportive only and decided mainly from recollection of the study's finding, which was not tested."
+    ],
+    "second_readings": [
+      "'Clonal selection occurs' could mean selection in most engraftments (a general claim), or selection in at least some cases. The teams report variable divergence (large in 2 patients, small in others), so the two readings could differ.",
+      "'During the initial engraftment' as opposed to during later serial passaging: the claim needs selection at T->X1 specifically.",
+      "'Primary and metastatic breast tumors' may require evidence in both tumour types. The tables cannot separate them."
+    ],
+    "verdict": "Moderate trust. The agreed label rests largely on both teams recalling the study's design and finding, which is plausible for a breast xenograft serial-passage study. The in-data support (CN shifts in two patients and X-only WGS calls) is open to purity/ploidy and asymmetric-filtering confounds that neither team resolved.",
+    "questions": [
+      {
+        "to": "bd20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tumour samples are labelled SOMATIC_STATUS 'Unmatched' and xenografts 'Matched'. Tabulate the WGS X1-only and T-only mutation counts against this flag, and check whether X1-only calls are enriched for features of mouse or germline artefacts (e.g. non-coding or synonymous classes, or the same site recurring across patients). Does this change how much weight the WGS gained-mutation counts can carry?",
+        "from": [
+          "sl-incumbent-ef34bd6d9609"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-712dac34b021"
+      },
+      {
+        "to": "bd20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For SA531 and SA534, use data_cna_hg19.seg to test whether the T-vs-X1 CN difference is a near-uniform genome-wide shift (consistent with purity or ploidy scaling) or a set of discrete segments that gain or lose. Re-centre each profile and recompute the fraction of genes that differ. Does the per-patient divergence pattern survive?",
+        "from": [
+          "sl-incumbent-ef34bd6d9609"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-cde420b066c3"
+      },
+      {
+        "to": "bd20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: List which patients actually have a T plus an X0/X1 sample with WGS or CN data, and which have only later passages. Is your conclusion about initial engraftment drawn only from the first group, and how many patients is that?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-dc3b6964d41c"
+      },
+      {
+        "to": "bd20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your baseline was correlation with unrelated tumours. Also compute a within-patient noise floor, e.g. consecutive later passages (X1 vs X2, X4 vs X5). Then check whether the T->X1 CN differences stand clearly above that floor, and in how many patients. Does this change whether the CN data support or contradict selection at engraftment?",
+        "from": [
+          "sl-incumbent-2a2c072b40f2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-1cf34066af37"
+      },
+      {
+        "to": "bd20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your label rests mainly on the study's reported finding. Which concrete observation in these tables would contradict it, for instance most evaluable T-X1 pairs being CN-identical within noise? Have you counted how many of the evaluable T-X1 pairs fall in that category?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-cabc8da27425"
+      },
+      {
+        "to": "bd20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Unlike the targeted sets, the WGS mutation sets differ between T and X. Compute per-pair WGS overlap (shared / T-only / X-only) for each T-X1 pair, and check whether it agrees with your CN-based ranking of which patients changed at engraftment. Does it?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-0e0004cf9e36"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In patient-derived xenograft genomics, how do mouse-stroma contamination and tumour-purity differences between a patient tumour and its xenograft affect gene-level log2 copy-number ratios, and what standard corrections (purity/ploidy estimation, re-centring) are used before comparing profiles?",
+          "why": "Both teams' main in-data evidence is T vs xenograft log2 CN divergence. Whether that divergence reflects clonal change or scaling decides whether the data support the claim.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When somatic variants in primary tumours are called without a matched normal and in xenografts with a matched normal, what systematic differences between the call sets are expected, and how is mouse-read contamination usually filtered in xenograft variant calling?",
+          "why": "Team A counts xenograft-only WGS mutations as evidence of clonal shifts. Asymmetric calling or mouse reads could produce those differences artificially.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In patient-derived xenograft genomics, how do mouse-stroma contamination and tumour-purity differences between a patient tumour and its xenograft affect gene-level log2 copy-number ratios, and what standard corrections (purity/ploidy estimation, re-centring) are used before comparing profiles?",
+          "answer": "NOT WEB-VERIFIED: the research gateway returned HTTP 403 on every call, so this answer comes from established knowledge only. When normal cells are mixed in, the log2 ratio is pulled toward 0, roughly log2(p*CN/ploidy + (1-p)). Mouse stromal reads that mis-map to human dilute the signal in the same way. A ploidy difference shifts where the whole profile is centred. Xenografts are usually purer than the patient tumour, so their CN amplitudes tend to be larger. A T-vs-X difference that is just a uniform scaling or offset of the same breakpoints points to purity or ploidy, not clonal change. Standard practice before comparing profiles: remove mouse reads, re-centre each profile on its median or mode, and estimate purity and ploidy (ABSOLUTE, ASCAT, TITAN, FACETS) to get absolute or integer copy number. Real clonal selection shows up as breakpoints or segments that appear or disappear, or as changes in specific segments that are not proportional to the rest of the profile.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bd20-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-2c796a303fe0"
+            },
+            "bd20-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-c3fbbe7a146e"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In patient-derived xenograft genomics, how do mouse-stroma contamination and tumour-purity differences between a patient tumour and its xenograft affect gene-level log2 copy-number ratios, and what standard corrections (purity/ploidy estimation, re-centring) are used before comparing profiles? ANSWER: NOT WEB-VERIFIED: the research gateway returned HTTP 403 on every call, so this answer comes from established knowledge only. When normal cells are mixed in, the log2 ratio is pulled toward 0, roughly log2(p*CN/ploidy + (1-p)). Mouse stromal reads that mis-map to human dilute the signal in the same way. A ploidy difference shifts where the whole profile is centred. Xenografts are usually purer than the patient tumour, so their CN amplitudes tend to be larger. A T-vs-X difference that is just a uniform scaling or offset of the same breakpoints points to purity or ploidy, not clonal change. Standard practice before comparing profiles: remove mouse reads, re-centre each profile on its median or mode, and estimate purity and ploidy (ABSOLUTE, ASCAT, TITAN, FACETS) to get absolute or integer copy number. Real clonal selection shows up as breakpoints or segments that appear or disappear, or as changes in specific segments that are not proportional to the rest of the profile. HOW SURE: medium. SOURCES: none given."
+        },
+        {
+          "question": "When somatic variants in primary tumours are called without a matched normal and in xenografts with a matched normal, what systematic differences between the call sets are expected, and how is mouse-read contamination usually filtered in xenograft variant calling?",
+          "answer": "NOT WEB-VERIFIED: the gateway was down, so this answer comes from established knowledge only. Tumour-only calling keeps leftover germline variants (VAF about 0.5 or 1.0, often in dbSNP or gnomAD) and more artefacts. Matched-normal calling removes these. Differences in filters, depth, assay and caller thresholds can also create apparently private calls on either side. Mouse reads are usually removed before calling, either by aligning to a combined human+mouse reference or with a read classifier (Xenome, Disambiguate, bbsplit, XenoCP, XenofilteR). Mouse-derived calls that get through tend to be low-VAF, xenograft-only variants at sites where human and mouse sequences differ. Before counting xenograft-only WGS mutations as evidence of clonal shift, check them: drop low-VAF or mouse-homologous sites and look for the same variant in the tumour's deep targeted data. Variants that are confirmed, and are detectable at low VAF in the tumour, are good evidence of selection.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bd20-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-f1cc9aa80093"
+            },
+            "bd20-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-2cef8d4c0c65"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When somatic variants in primary tumours are called without a matched normal and in xenografts with a matched normal, what systematic differences between the call sets are expected, and how is mouse-read contamination usually filtered in xenograft variant calling? ANSWER: NOT WEB-VERIFIED: the gateway was down, so this answer comes from established knowledge only. Tumour-only calling keeps leftover germline variants (VAF about 0.5 or 1.0, often in dbSNP or gnomAD) and more artefacts. Matched-normal calling removes these. Differences in filters, depth, assay and caller thresholds can also create apparently private calls on either side. Mouse reads are usually removed before calling, either by aligning to a combined human+mouse reference or with a read classifier (Xenome, Disambiguate, bbsplit, XenoCP, XenofilteR). Mouse-derived calls that get through tend to be low-VAF, xenograft-only variants at sites where human and mouse sequences differ. Before counting xenograft-only WGS mutations as evidence of clonal shift, check them: drop low-VAF or mouse-homologous sites and look for the same variant in the tumour's deep targeted data. Variants that are confirmed, and are detectable at low VAF in the tumour, are good evidence of selection. HOW SURE: medium. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd20-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd20-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd20-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd20-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd20-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 73.6203737501055,
+      "cost_usd": 0.21740420000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 44.00959387491457,
+      "cost_usd": 0.15615020000000002,
+      "error": null
+    },
+    {
+      "agent": "bd20-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 58.031707042013295,
+      "cost_usd": 0.23189939999999998,
+      "error": null
+    },
+    {
+      "agent": "bd20-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 70.48586279095616,
+      "cost_usd": 0.27965260000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 79.50143408309668,
+      "cost_usd": 0.35048380000000007,
+      "error": null
+    },
+    {
+      "agent": "bd20-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 44.99105850001797,
+      "cost_usd": 0.1563604,
+      "error": null
+    },
+    {
+      "agent": "bd20-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 66.208846500027,
+      "cost_usd": 0.2689596,
+      "error": null
+    },
+    {
+      "agent": "bd20-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 85.74786291609053,
+      "cost_usd": 0.3524622,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

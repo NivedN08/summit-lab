@@ -1,0 +1,388 @@
+{
+  "study": "bd27",
+  "status": "replicated",
+  "final": {
+    "agent": "bd27-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd27/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bd27-library": "opus",
+    "bd27-team-a": "opus",
+    "bd27-team-b": "opus",
+    "bd27-team-c": "opus",
+    "bd27-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd27-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd27/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd27-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd27/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd27-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd27/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd27-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd27/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd27-team-a",
+        "bd27-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd27-team-a",
+        "bd27-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Scope: this cohort is desmoplastic melanoma (ONCOTREE_CODE DESM, pure and mixed histology), so the hypothesis concerns this study's own cancer type and should be decided as True or False, not Not verifiable. Confirm CANCER_TYPE_DETAILED and histology category in data_clinical_sample.txt and that Tumor_Sample_Barcode values in the mutation file match. A single robust mutated sample is enough to contradict a claim of 'absent'; report counts separately for pure and mixed histology.",
+      "from": [
+        "sl-incumbent-3f0a55868ef6"
+      ],
+      "reason": "Prevents a wrong Not verifiable label and sets the decision rule for an 'absent' claim.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-a7658dcd0e00"
+      }
+    },
+    {
+      "text": "Promoter mutations are non-coding, so filtering to protein-altering Variant_Classification removes them. For NFKBIE, list rows with Variant_Classification 5'Flank, 5'UTR, IGR or Intron, or a Consequence containing upstream_gene_variant or 5_prime_UTR_variant. NFKBIE sits on the minus strand of chr6 near 44.23-44.25 Mb (GRCh37), so its promoter lies at coordinates higher than the gene's 5' end. Count distinct DESM samples; do not use coding-only or TMB filters.",
+      "from": [
+        "sl-incumbent-9b646e8b0dd8"
+      ],
+      "reason": "A coding-only filter would make promoter mutations look absent.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-7d7baa9f0c3f"
+      }
+    },
+    {
+      "text": "Annotation tools (VEP/vcf2maf) may assign a promoter variant of a minus-strand gene to a neighbouring gene or to IGR, so searching Hugo_Symbol == NFKBIE alone can miss it. Also search the all_effects column for 'NFKBIE' and search chr6 about 44,230,000-44,260,000 (GRCh37) by coordinate, whatever the Hugo_Symbol. Count variants within about 1 kb upstream of the TSS as promoter mutations.",
+      "from": [
+        "sl-incumbent-9c6256d3e5c6"
+      ],
+      "reason": "Searching by gene symbol only can miss the variants that matter.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-e0bcda24c619"
+      }
+    },
+    {
+      "text": "Recurrent UV-driven promoter mutations in melanoma are often C>T at one hotspot position, like the TERT promoter, and can be called as SNP or as DNP (CC>TT). Tabulate Start_Position, Variant_Type and alleles of NFKBIE-proximal non-coding calls and check whether the same coordinate recurs across samples. Do not count SNPs only or collapse by unique position.",
+      "from": [
+        "sl-incumbent-900328431f71"
+      ],
+      "reason": "Recurrence at one site tells a real promoter mutation from noise, and counting SNPs only undercounts.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-118d8f84f66b"
+      }
+    },
+    {
+      "text": "Exome capture covers promoters poorly, so having no calls may mean the region was not covered. Check whether the mutation file has any 5'Flank or upstream calls genome-wide, and whether samples have whole-genome data (GENE_PANEL may say 'Exome, Whole Genome'). If promoter-region calls exist, the region was assayed. If the file has no non-coding calls at all, decide from the study's reported finding and established biology, per the benchmark convention, rather than answering Not verifiable.",
+      "from": [
+        "sl-incumbent-3c79b823402d"
+      ],
+      "reason": "Shows how to read a zero count and what to fall back on when the data cannot test the claim directly.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-ecbc7929ac3f"
+      }
+    },
+    {
+      "text": "Germline variants and artefacts can pass as promoter mutations. Check Mutation_Status, t_alt_count/t_depth, n_alt_count (should be about 0) and dbSNP or population frequency. Exclude common SNPs and calls supported in the normal before counting.",
+      "from": [
+        "sl-incumbent-2b7f3a1f598b"
+      ],
+      "reason": "Makes sure any count that decides the label is of real somatic mutations.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-757f849d721c"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assume the recurrent chr6 variant at the NFKBIE 5' end is a promoter (non-coding) mutation even though the canonical annotation calls it missense; neither checked its position against the canonical transcript start using DISTANCE/HGVSc/cDNA_position or the genome build in NCBI_Build.",
+      "Both assume the deposited calls are somatic and real despite missing read counts; neither looked at t_depth, n_depth, FILTER, Mutation_Status or Existing_variation/GMAF/ExAC_AF as alternative evidence of somatic status or germline polymorphism.",
+      "Both treat the 20 deposited samples (all COHORT=Discovery) as the whole evidence base, with the study's reported finding filling the gap."
+    ],
+    "unused_evidence": [
+      "COHORT column: all 20 patients are 'Discovery', so any extension/validation cohort is not deposited; this bears on how much the tables alone can show versus the study's reported finding.",
+      "Mutation columns DISTANCE, cDNA_position, HGVSc, Feature, BIOTYPE, TSL, FILTER, t_depth, n_depth, Existing_variation, GMAF/ExAC_AF*: these could settle whether the hotspot is promoter vs coding and whether it is somatic or a known polymorphism.",
+      "PLATFORM / SECONDARY_PLATFORM (Exome, Whole Genome; Agilent 1Mil vs Exome CN Inference): whether some samples had whole-genome data that would give promoter coverage, and whether the hotspot occurs in both platform groups."
+    ],
+    "unresolved_weak_points": [
+      "Team A: somatic status of the hotspot is unverifiable from read counts and it is a promoter variant only on an alternative transcript; reported, not resolved.",
+      "Team B: no promoter-annotated NFKBIE calls in the MAF, so the label rests on the study's reported finding plus a coding 5'-end hotspot; reported, not resolved. Teams also differ on the count (4/20 vs 4-5/20), which has not been reconciled."
+    ],
+    "second_readings": [
+      "'Absent' is a universal claim: a single confirmed somatic NFKBIE promoter mutation in a DM contradicts it, so the question is whether at least one call is truly a promoter mutation, not what the frequency is.",
+      "'NFKBIE promoter mutations' could mean variants upstream of the canonical TSS only, or any variant in the 5' regulatory region including those that overlap an alternative transcript's coding sequence; the label depends on whether the study meant the latter."
+    ],
+    "verdict": "I trust the agreed 'False' fairly well. The hypothesis is about this study's cancer type and gene, and both teams found a recurrent NFKBIE 5'-end variant in several of 20 DMs. The residual risk is in annotation (promoter vs coding) and somatic status, which neither team checked with the columns that are available.",
+    "questions": [
+      {
+        "to": "bd27-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For each NFKBIE-locus call, tabulate NCBI_Build, DISTANCE, HGVSc, cDNA_position, Feature/BIOTYPE/TSL and the canonical transcript's start coordinate. Is the recurrent site upstream of the canonical TSS, inside the canonical 5'UTR, or in coding sequence? Does that change whether you call it a promoter mutation?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-f93bf39e6b9b"
+      },
+      {
+        "to": "bd27-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Read counts are empty, but did you check t_depth, n_depth, FILTER, Mutation_Status, Existing_variation, GMAF and ExAC_AF for the hotspot rows? Is there any sign the site is a germline polymorphism or a filtered artefact, and would that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-cc9f3ff1009a"
+      },
+      {
+        "to": "bd27-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Team B counts 4-5/20 carriers and you count 4/20. List the exact sample barcodes and alleles (including any DNP/neighbouring-base calls) so the counts match. Does any carrier also have another NFKBIE variant?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-f7af0e7068d0"
+      },
+      {
+        "to": "bd27-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Search the all_effects column (not only Variant_Classification) for NFKBIE upstream_gene_variant / 5_prime_UTR_variant terms on any transcript, and check DISTANCE and HGVSc for the 5'-end hotspot. Does the hotspot fall upstream of the TSS of any NFKBIE transcript, and does that turn your 'closest variable' into a direct one?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-8f30a2108337"
+      },
+      {
+        "to": "bd27-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Pin down whether it is 4 or 5 of 20 by listing barcodes, positions and alleles at the site. For those rows, check t_depth/n_depth, FILTER, Mutation_Status and population-frequency columns (GMAF, ExAC_AF, Existing_variation) for evidence that they are germline or artefacts. Does anything there weaken the evidence against 'absent'?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-21984bc7f971"
+      },
+      {
+        "to": "bd27-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: All 20 patients are COHORT=Discovery. Split hotspot carriers by PLATFORM/SECONDARY_PLATFORM and histology (Pure/Mixed). Is the signal present across groups or confined to one subset, and does that affect how much the tables alone support your label versus the reported finding?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-574cc0c39b9d"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "When VEP annotates a variant as missense on the canonical transcript and as upstream_gene_variant on another transcript of the same gene, what does the DISTANCE field report, and how is the 'upstream' window defined by default (e.g., 5 kb from the transcript start)?",
+          "why": "Decides whether the recurrent call can count as a promoter mutation from its annotation, which is the teams' shared weak point.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In cBioPortal-style MAF exports, are 5'Flank/upstream variants from whole-exome data usually kept or filtered out, and what do empty t_alt_count with populated t_depth/n_depth fields usually mean?",
+          "why": "Shows whether the lack of promoter-annotated calls reflects biology or export filtering, and whether somatic status can be judged without alt counts.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When VEP annotates a variant as missense on the canonical transcript and as upstream_gene_variant on another transcript of the same gene, what does the DISTANCE field report, and how is the 'upstream' window defined by default (e.g., 5 kb from the transcript start)?",
+          "answer": "DISTANCE is filled only for upstream_gene_variant/downstream_gene_variant consequences. It gives the shortest distance in bp from the variant to that particular transcript (for upstream, to its transcription start, taking strand into account). The default --distance is 5000 bp both upstream and downstream. Consequences are given per transcript, so a variant that is missense on the canonical transcript lies in that transcript's coding exon. The upstream tag only means it falls within 5 kb before an alternative transcript's start. vcf2maf/cBioPortal MAFs report the picked (usually canonical) consequence, so such a call is a coding missense call, not proof of a promoter mutation. WEB NOT REACHED: every research gateway call returned HTTP 502/Exa 403, so this is from domain knowledge only.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bd27-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-34487aa64f3e"
+            },
+            "bd27-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-f54e45a80fd8"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When VEP annotates a variant as missense on the canonical transcript and as upstream_gene_variant on another transcript of the same gene, what does the DISTANCE field report, and how is the 'upstream' window defined by default (e.g., 5 kb from the transcript start)? ANSWER: DISTANCE is filled only for upstream_gene_variant/downstream_gene_variant consequences. It gives the shortest distance in bp from the variant to that particular transcript (for upstream, to its transcription start, taking strand into account). The default --distance is 5000 bp both upstream and downstream. Consequences are given per transcript, so a variant that is missense on the canonical transcript lies in that transcript's coding exon. The upstream tag only means it falls within 5 kb before an alternative transcript's start. vcf2maf/cBioPortal MAFs report the picked (usually canonical) consequence, so such a call is a coding missense call, not proof of a promoter mutation. WEB NOT REACHED: every research gateway call returned HTTP 502/Exa 403, so this is from domain knowledge only. HOW SURE: medium. SOURCES: none given."
+        },
+        {
+          "question": "In cBioPortal-style MAF exports, are 5'Flank/upstream variants from whole-exome data usually kept or filtered out, and what do empty t_alt_count with populated t_depth/n_depth fields usually mean?",
+          "answer": "Practice varies. cBioPortal accepts and stores 5'Flank/3'Flank/IGR/Intron/UTR rows if the study submits them, but treats them as non-coding: they are filtered from default mutation views and counts. Many WES pipelines (e.g. the MAF-to-oncoprint filters) drop flank/intronic calls before export. Exome capture also covers promoters poorly. So an absence of promoter calls in WES-derived MAFs mostly reflects the assay and filtering, not biology. If some 5'Flank rows are present, non-coding calls were not filtered out completely. Empty t_alt_count with populated depths usually means the submitting pipeline did not supply allele counts (missing data), not zero alt reads. Somatic status then has to rest on Mutation_Status, or on the call being in the curated somatic MAF, not on VAF. WEB NOT REACHED (gateway HTTP 403 on all calls); this is from domain knowledge only.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bd27-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-a10528921b57"
+            },
+            "bd27-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-372e996c8c3c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cBioPortal-style MAF exports, are 5'Flank/upstream variants from whole-exome data usually kept or filtered out, and what do empty t_alt_count with populated t_depth/n_depth fields usually mean? ANSWER: Practice varies. cBioPortal accepts and stores 5'Flank/3'Flank/IGR/Intron/UTR rows if the study submits them, but treats them as non-coding: they are filtered from default mutation views and counts. Many WES pipelines (e.g. the MAF-to-oncoprint filters) drop flank/intronic calls before export. Exome capture also covers promoters poorly. So an absence of promoter calls in WES-derived MAFs mostly reflects the assay and filtering, not biology. If some 5'Flank rows are present, non-coding calls were not filtered out completely. Empty t_alt_count with populated depths usually means the submitting pipeline did not supply allele counts (missing data), not zero alt reads. Somatic status then has to rest on Mutation_Status, or on the call being in the curated somatic MAF, not on VAF. WEB NOT REACHED (gateway HTTP 403 on all calls); this is from domain knowledge only. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd27-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd27-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd27-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd27-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd27-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 58.15787579107564,
+      "cost_usd": 0.178356,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 28.100669165956788,
+      "cost_usd": 0.1279142,
+      "error": null
+    },
+    {
+      "agent": "bd27-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 44.44689662498422,
+      "cost_usd": 0.163043,
+      "error": null
+    },
+    {
+      "agent": "bd27-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 47.51499995903578,
+      "cost_usd": 0.2059214,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 55.84186533407774,
+      "cost_usd": 0.2208194,
+      "error": null
+    },
+    {
+      "agent": "bd27-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 46.072113583097234,
+      "cost_usd": 0.15025159999999999,
+      "error": null
+    },
+    {
+      "agent": "bd27-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 63.75845483399462,
+      "cost_usd": 0.28402059999999996,
+      "error": null
+    },
+    {
+      "agent": "bd27-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 77.09221174998675,
+      "cost_usd": 0.397716,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

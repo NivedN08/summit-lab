@@ -1,0 +1,376 @@
+{
+  "study": "bd16",
+  "status": "replicated",
+  "final": {
+    "agent": "bd16-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd16/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bd16-library": "opus",
+    "bd16-team-a": "opus",
+    "bd16-team-b": "opus",
+    "bd16-team-c": "opus",
+    "bd16-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd16-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd16/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd16-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd16/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd16-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd16/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd16-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd16/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd16-team-a",
+        "bd16-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd16-team-a",
+        "bd16-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The mutation table (data_mutations.txt) is exome-based and contains no TERT promoter calls: the only TERT record is a single missense variant at chr5:1279521, nothing falls at the promoter hotspots C228T (hg19 chr5:1295228) or C250T (chr5:1295250), and no clinical column mentions TERT. Verify this by grepping. Do not treat the missense as a 'TERT promoter mutation'. The study is TCGA glioblastoma, so the hypothesis is about this study's cohort and genes; a missing promoter-mutation variable is not by itself grounds for 'Not verifiable' under the task's labelling convention.",
+      "from": [
+        "sl-incumbent-787a6cac4809"
+      ],
+      "reason": "This is the central data gap. Without it a team may misuse the coding missense or default to Not verifiable, which the labelling convention rules out for in-study hypotheses.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-40aa357203cc"
+      }
+    },
+    {
+      "text": "TERT promoter mutation is nearly mutually exclusive with IDH1 mutation and ATRX loss: ATRX/IDH-mutant gliomas maintain telomeres by ALT and have low TERT, while about 80% of IDH-wildtype, ATRX-wildtype primary GBMs carry TERTp mutations (Killela 2013 PNAS). One indirect proxy is to compare log2 TERT RSEM between IDH1-WT/ATRX-WT samples and IDH1-mutant or ATRX-mutant samples. Take IDH1 status from the clinical IDH1_MUTATION column and ATRX status from data_mutations.txt. If you use this proxy, call it a proxy.",
+      "from": [
+        "sl-incumbent-f8f74ffe4d14"
+      ],
+      "reason": "Gives the teams a way to test the relationship in-data when no direct TERTp variable exists.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-333b819f26a0"
+      }
+    },
+    {
+      "text": "Background literature (Huang 2013 and Horn 2013 Science; Killela 2013 PNAS; Arita 2013; TCGA GBM, Brennan 2013 Cell): the TERT promoter mutations C228T and C250T create de novo ETS/GABP binding sites, and these papers studied how the mutations relate to TERT mRNA levels in glioblastoma and other tumours. The task says that when the tables cannot test a claim directly, the label is decided from established biology. If the in-data proxies are weak, use this literature, and state in the reasoning which kind of evidence decided the label.",
+      "from": [
+        "sl-incumbent-a17cbf4265a4"
+      ],
+      "reason": "The direct variable is missing, so the decision may rest on established biology. Teams need to know which literature is relevant.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-07a4fe2f4140"
+      }
+    },
+    {
+      "text": "TERT mRNA is expressed at very low levels. RSEM values in data_mrna_seq_v2_rsem.txt are mostly 0-100, with many zeros and rare outliers (e.g. ~617), and only about 153 samples have RNA-seq. Use log2(x+1), rank-based tests (Mann-Whitney) and report n per group. Do not rely on means or on the z-score files alone.",
+      "from": [
+        "sl-incumbent-590ccdbca1a0"
+      ],
+      "reason": "Outliers and zeros can make a proxy comparison spurious or hide a real difference.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-ba5ee7bf94c8"
+      }
+    },
+    {
+      "text": "TERT amplification or 5p gain also raises TERT mRNA, which can confound any comparison involving TERT expression. Check TERT in data_cna.txt / data_linear_cna.txt and stratify or adjust for TERT copy number.",
+      "from": [
+        "sl-incumbent-fae25175ec50"
+      ],
+      "reason": "A confounder that affects the expression readout independently of promoter status.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-91e0d99c75d7"
+      }
+    },
+    {
+      "text": "Sample IDs differ across files: Tumor_Sample_Barcode in the mutation table, column headers in the expression files and SAMPLE_ID in the clinical files. Recurrent or non-primary samples are also present. Mismatches can silently shrink or bias groups. Intersect IDs across files, restrict to primary tumours that have both data types, and report n.",
+      "from": [
+        "sl-incumbent-1a3204800e2a"
+      ],
+      "reason": "With only ~153 RNA-seq samples, losing or mixing samples quietly can change a proxy result.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-641cf6880550"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 4,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assume the hypothesis is the reversal of the source study's TERT promoter / TERT mRNA finding. Neither tested whether the deposited tables point the same way.",
+      "Both assume the exome mutation table could not hold promoter calls. Neither checked how far the file covers upstream regions: it has many 5'Flank/5'UTR rows. That decides whether the missing TERTp calls mean the region was not covered or that no mutations were found.",
+      "Team A assumes IDH1/ATRX wild-type status can stand in for TERTp-mutant status in this cohort, and that samples are independent units (one per patient)."
+    ],
+    "unused_evidence": [
+      "G_CIMP_METHYLATION and EXPRESSION_SUBTYPE in data_clinical_sample.txt. G-CIMP/Proneural tumours are the IDH-mutant group, which is mostly TERTp wild-type. These columns give a second, possibly larger proxy group than Team A's n=8 IDH/ATRX mutants.",
+      "SAMPLE_TYPE (Primary vs Recurrence) was not used by Team B. Recurrent samples or patients with more than one sample could bias any proxy comparison.",
+      "TERT copy number (data_cna.txt, data_linear_cna.txt, seg file) was not used by Team B. TERT diploid-reference z-scores were used by neither team."
+    ],
+    "unresolved_weak_points": [
+      "Team A: one proxy group has n=8, and the method note does not report the proxy's direction or size. So we cannot tell whether the data agree with the literature-based label or were overridden by it.",
+      "Team B: ran no in-data proxy, so its label rests only on recalling the source finding. It reported this weakness but did not resolve it."
+    ],
+    "second_readings": [
+      "'Elevated mRNA expression' could mean higher than in TERTp-wild-type tumours, or higher than in normal brain. The tables seem to hold no normal tissue, so the second reading cannot be tested here.",
+      "'Correlate' read as an association across the whole cohort is, in GBM, largely an IDH-mutant vs IDH-wild-type contrast, because most IDH-wild-type GBMs are TERTp-mutant."
+    ],
+    "verdict": "I trust the agreed label moderately to highly: it follows well-established biology and the in-scope labelling convention. But neither team reported an in-data result that confirms it, and Team B ran no data test at all.",
+    "questions": [
+      {
+        "to": "bd16-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: What were the direction, group medians and p-value of your IDH1/ATRX proxy comparison of TERT log2 RSEM? Repeat it grouping by G_CIMP_METHYLATION (G-CIMP vs non-G-CIMP), which may give a larger TERTp-wild-type-like group. Does the direction agree, and does that change how much weight the in-data evidence gets in your reasoning?",
+        "from": [
+          "sl-incumbent-f8f74ffe4d14"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-a2b5dd764543"
+      },
+      {
+        "to": "bd16-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Count RNA-profiled samples per PATIENT_ID and by SAMPLE_TYPE. If there are recurrent or duplicate samples, does keeping one primary sample per patient change the proxy result?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-e40a042ab258"
+      },
+      {
+        "to": "bd16-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You ran no in-data proxy. Compare TERT log2 RSEM between G-CIMP/IDH1-mutant and non-G-CIMP/IDH1-wild-type primary samples, stratified by TERT copy number from data_cna.txt. Does the result agree with the source-study finding you relied on? If not, does that change your label or only your stated confidence?",
+        "from": [
+          "sl-incumbent-ed67530a2e83"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-c3fa187f2277"
+      },
+      {
+        "to": "bd16-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Count the rows in data_mutations.txt with Variant_Classification 5'Flank or 5'UTR, and check how far upstream of gene start sites they reach. Does this show that the file covers promoter regions, so that the absence of TERTp calls is informative, or that it does not? Does that change how you justify the label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-55ec7d5f2f7e"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "Does whole-exome sequencing usually cover the TERT promoter hotspot positions (about 124 and 146 bp upstream of the start codon) well enough to call mutations, and do standard MAF annotations record such variants as 5'Flank?",
+          "why": "This decides whether the absence of promoter calls in an exome mutation table means the region was not covered or that no mutations were found. That affects how the teams justify their evidence.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How does TERT mRNA expression differ between IDH-wild-type and IDH-mutant (G-CIMP) glioblastomas, and how strongly does IDH/G-CIMP status predict TERT promoter mutation status?",
+          "why": "This shows whether IDH/G-CIMP status is a valid proxy for TERT promoter status in an expression comparison.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "Does whole-exome sequencing usually cover the TERT promoter hotspot positions (about 124 and 146 bp upstream of the start codon) well enough to call mutations, and do standard MAF annotations record such variants as 5'Flank?",
+          "answer": "The web did not settle this: all research calls failed with HTTP 403 from the search backend. From domain knowledge: standard exome capture kits mostly do not target the TERT promoter, and the hotspots (hg19 chr5:1295228 C228T and chr5:1295250 C250T) are GC-rich and poorly covered. The TCGA GBM 2013 study had to call TERTp status from off-target or low-pass WGS reads. MAF annotation (VEP/Oncotator) would label such variants 5'Flank, and many filtered MAFs drop 5'Flank variants. So no hotspot calls in an exome mutation table means the region was not assessed. It is not evidence that the tumours are wild-type.",
+          "sources": [],
+          "confidence": "medium (domain knowledge; not web-verified)",
+          "deliveries": {
+            "bd16-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-7177b52fb67d"
+            },
+            "bd16-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-6ea286f64bd1"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Does whole-exome sequencing usually cover the TERT promoter hotspot positions (about 124 and 146 bp upstream of the start codon) well enough to call mutations, and do standard MAF annotations record such variants as 5'Flank? ANSWER: The web did not settle this: all research calls failed with HTTP 403 from the search backend. From domain knowledge: standard exome capture kits mostly do not target the TERT promoter, and the hotspots (hg19 chr5:1295228 C228T and chr5:1295250 C250T) are GC-rich and poorly covered. The TCGA GBM 2013 study had to call TERTp status from off-target or low-pass WGS reads. MAF annotation (VEP/Oncotator) would label such variants 5'Flank, and many filtered MAFs drop 5'Flank variants. So no hotspot calls in an exome mutation table means the region was not assessed. It is not evidence that the tumours are wild-type. HOW SURE: medium (domain knowledge; not web-verified). SOURCES: none given."
+        },
+        {
+          "question": "How does TERT mRNA expression differ between IDH-wild-type and IDH-mutant (G-CIMP) glioblastomas, and how strongly does IDH/G-CIMP status predict TERT promoter mutation status?",
+          "answer": "The web did not settle this: the gateway returned HTTP 403. From domain knowledge (Killela 2013 PNAS; Arita 2013 Acta Neuropathol; Brennan 2013 Cell; Eckel-Passow 2015 NEJM): IDH-wild-type primary GBMs are about 80-85% TERTp-mutant and have higher TERT mRNA. IDH-mutant/G-CIMP GBMs are mostly TERTp-wild-type and ATRX-mutant/ALT, with low or absent TERT mRNA. IDH status is a strong but imperfect proxy (about 15-20% of IDH-wt GBMs are TERTp-wt). The IDH-mutant group in a GBM cohort is small, about 5-10%. Using IDH-wt/ATRX-wt vs IDH-mut or ATRX-mut is a better indirect contrast. Any such comparison must be described as a proxy, and TERT amplification should be accounted for.",
+          "sources": [],
+          "confidence": "medium (domain knowledge; not web-verified)",
+          "deliveries": {
+            "bd16-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-6d342d933c7d"
+            },
+            "bd16-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-849bd4ec30c5"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How does TERT mRNA expression differ between IDH-wild-type and IDH-mutant (G-CIMP) glioblastomas, and how strongly does IDH/G-CIMP status predict TERT promoter mutation status? ANSWER: The web did not settle this: the gateway returned HTTP 403. From domain knowledge (Killela 2013 PNAS; Arita 2013 Acta Neuropathol; Brennan 2013 Cell; Eckel-Passow 2015 NEJM): IDH-wild-type primary GBMs are about 80-85% TERTp-mutant and have higher TERT mRNA. IDH-mutant/G-CIMP GBMs are mostly TERTp-wild-type and ATRX-mutant/ALT, with low or absent TERT mRNA. IDH status is a strong but imperfect proxy (about 15-20% of IDH-wt GBMs are TERTp-wt). The IDH-mutant group in a GBM cohort is small, about 5-10%. Using IDH-wt/ATRX-wt vs IDH-mut or ATRX-mut is a better indirect contrast. Any such comparison must be described as a proxy, and TERT amplification should be accounted for. HOW SURE: medium (domain knowledge; not web-verified). SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd16-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd16-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd16-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd16-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd16-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 58.0065689580515,
+      "cost_usd": 0.17877400000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 40.975997709087096,
+      "cost_usd": 0.1454588,
+      "error": null
+    },
+    {
+      "agent": "bd16-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 28.03165866609197,
+      "cost_usd": 0.1069,
+      "error": null
+    },
+    {
+      "agent": "bd16-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 40.9761082920013,
+      "cost_usd": 0.15817460000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 62.363440082990564,
+      "cost_usd": 0.26901040000000004,
+      "error": null
+    },
+    {
+      "agent": "bd16-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 42.36978050007019,
+      "cost_usd": 0.1418994,
+      "error": null
+    },
+    {
+      "agent": "bd16-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 48.84158558305353,
+      "cost_usd": 0.2230934,
+      "error": null
+    },
+    {
+      "agent": "bd16-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 59.719779875013046,
+      "cost_usd": 0.25250399999999995,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}
