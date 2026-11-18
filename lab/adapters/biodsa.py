@@ -138,6 +138,43 @@ where `<label>` is exactly one of "True", "False" or "Not verifiable".
 """
 
 
+# The benchmark's label convention, for the "convention" variant of the adapter (BioDSA(convention=True),
+# benchmark "biodsa-convention"). It states how the labels were built (the paper's section 2.4, as in the
+# module docstring), not anything about one task, and every arm (lab, single models, control arms) reads
+# the same text. It goes before "# The data"; task.md on disk is never changed.
+CONVENTION_NOTE = """\
+# How the labels were assigned
+
+This task comes from a benchmark whose labels follow one convention. Read it before you choose:
+
+- Most hypotheses come from the publication that produced this dataset: a finding that study
+  reported, or that finding reversed. Their label is "True" or "False", even when these tables
+  lack a variable the claim needs, such as a processed score, a pathway readout or a measurement
+  the study made but did not deposit.
+- The rest were taken from a different publication and attached to this dataset. Only these are
+  "Not verifiable": the hypothesis is about a disease, a cohort or a kind of data that these
+  tables do not cover at all.
+
+So first decide whether the hypothesis is about this study: its cancer type, its cohort, its genes
+and its measurements. If it is not, answer "Not verifiable". If it is, answer "True" or "False":
+test it with the closest variables the tables hold, and where they cannot test it directly, decide
+from established biology. Say in your reasoning which kind of evidence decided your label.
+
+Grading is exact match on the label: a wrong "Not verifiable" counts as wrong, the same as a wrong
+"True" or "False".
+
+"""
+CONVENTION_ANCHOR = "# The data\n"
+
+
+def with_convention(statement: str) -> str:
+    """The task text with CONVENTION_NOTE inserted before its "# The data" section."""
+    if CONVENTION_ANCHOR not in statement:
+        raise ValueError('the task text has no "# The data" section')
+    head, tail = statement.split(CONVENTION_ANCHOR, 1)
+    return head + CONVENTION_NOTE + CONVENTION_ANCHOR + tail
+
+
 # ----------------------------------------------------------------------------- download
 
 def _get(url: str, timeout: int = 60) -> bytes:
@@ -609,11 +646,14 @@ class BioDSA:
     name = "biodsa-1k"
     modal_only = True     # the tables are mounted from the Modal Volume at MOUNT
 
-    def __init__(self, split: str = "dev"):
+    def __init__(self, split: str = "dev", convention: bool = False):
         split_paths(split)    # an unknown split fails here
         self.split = split
+        self.convention = convention       # every task text carries CONVENTION_NOTE
         if split == "heldout":
             self.name = "biodsa-heldout"
+        if convention:
+            self.name += "-convention"
 
     @property
     def public(self) -> pathlib.Path:
@@ -629,7 +669,10 @@ class BioDSA:
         if not public.exists():
             command = "stage" if self.split == "dev" else "stage --split heldout --seed S"
             raise RuntimeError(f"run `python3 -m lab.adapters.biodsa {command}` first")
-        return [Study(id=d.name, title=d.name, statement=(d / "task.md").read_text(), data_dir=pathlib.Path(MOUNT),
+        def statement(d: pathlib.Path) -> str:
+            text = (d / "task.md").read_text()
+            return with_convention(text) if self.convention else text
+        return [Study(id=d.name, title=d.name, statement=statement(d), data_dir=pathlib.Path(MOUNT),
                       deliverables=[DELIVERABLE])
                 for d in sorted(public.iterdir()) if (d / "task.md").exists()]
 

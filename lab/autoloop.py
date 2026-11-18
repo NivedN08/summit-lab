@@ -20,6 +20,9 @@ Move kinds (validate):
   threshold     target a knob in THRESHOLDS; value a number within its bounds, unlike the incumbent's.
   add_check     target a check id in lab/check_registry.py that the incumbent lacks and that would
                 act with the incumbent's switches (check_registry.has_effect); value true.
+  bundle        target "bundle"; value a list of MAX_BUNDLE_PARTS or fewer moves of the kinds above
+                ({"kind", "target", "value"}), at least two, with different targets. Each part is
+                validated on the incumbent with the parts before it applied, then applied in order.
 
 affects_first_round is computed (first_round), never taken from the proposer: true for edits to
 the prompts the library, briefing or analysis round reads (FIRST_ROUND_PROMPTS), and for the
@@ -28,10 +31,15 @@ reuse mode (Config.reuse_first_round): both runs start from the same first answe
 less and removes most of the noise.
 
 The loop, per move:
+  0. seeds    moves written in advance (LoopSettings.seed_moves, from the pre-registration) come
+              first, in order, path "seed". A seed that cannot be made on the incumbent of the
+              moment (say, its switch is already on) is skipped with a ledger note.
   1. propose  the proposer agent (role "proposer", lab/prompts/proposer.md) sees the ledger summary
               (past moves, their paired results, why each was rejected), the dev outcome kinds with a
-              failure count per kind, the move schema and the incumbent's settings. Never answers,
-              labels per task or sealed data. It writes move.json. A move that is invalid or repeats a
+              failure count per kind, the move schema and the incumbent's settings; with
+              LoopSettings.proposer_evidence, also failure_evidence(): the labels the lab gave and
+              how often each was right, and for each failed task (numbered, not named) the label and
+              stated reasoning of each step. Never the right label of a task, nor sealed data. It writes move.json. A move that is invalid or repeats a
               past one is replaced by rules_move(), which maps the top failure kind to the next untried
               move in a fixed queue. The ledger says which path made the move.
   2. evaluate the variant runs on the panel through the lab command, in-process (evaluate), and is
@@ -41,8 +49,8 @@ The loop, per move:
               task <= cost_ratio_max x the incumbent's. An accepted move is run once more (a second
               replicate) and must show net > 0 again before it becomes the incumbent.
 Every proposal, evaluation, acceptance and rejection goes to the research ledger (lab/ledger.py)
-with its numbers. The loop stops after max_moves moves, after MAX_REJECTIONS_IN_A_ROW rejections in
-a row, when the total dollar cap is spent, or when no move is left; it then writes
+with its numbers. The loop stops after max_moves moves, after max_rejections rejections in a row
+(default MAX_REJECTIONS_IN_A_ROW), when the total dollar cap is spent, or when no move is left; it then writes
 `variants/incumbent/` (a copy of the final incumbent, with pointer.json) and a final ledger note.
 """
 
@@ -64,7 +72,9 @@ from lab import ledger as ledger_mod
 from lab.measures import NOT_VERIFIABLE_KIND, SETTLED_WRONGLY_KIND, LAB_ROLES
 from lab.protocol import PROMPTS, Config
 
-KINDS = ("edit_section", "toggle", "threshold", "add_check")
+KINDS = ("edit_section", "toggle", "threshold", "add_check", "bundle")
+PART_KINDS = KINDS[:-1]
+MAX_BUNDLE_PARTS = 2
 # Config switches a toggle may flip. brief_teams is a tuple in Config: true means both first teams.
 TOGGLES = ("recheck", "guard", "challenge", "research", "questions", "referee", "team_search", "library",
            "brief_teams")
@@ -91,6 +101,8 @@ DAMAGE_KIND = "a later step damaged a correct first answer"   # from measures.st
 MAX_SECTION_CHARS = 6000
 MAX_RATIONALE_CHARS = 2000
 MAX_REJECTIONS_IN_A_ROW = 3
+MAX_REASON_CHARS = 700        # per step of a failed task, in the proposer's evidence
+EVIDENCE_ROUNDS = ("analysis", "recheck", "challenge", "questions", "revise", "team-c", "referee")
 BASE_VARIANT = "v4-base"
 INCUMBENT_DIR = "incumbent"
 DEFAULT_T_SOURCE = "default 2: Phase 1 (the A/A noise run) has not run yet"
@@ -116,7 +128,22 @@ class Move:
     def record(self) -> dict:
         return dataclasses.asdict(self)
 
+    def parts(self) -> list["Move"]:
+        """A bundle's parts as moves (ids <id>.1, <id>.2), else the move itself. Raises ValueError
+        when a bundle's value is not a list of move objects."""
+        if self.kind != "bundle":
+            return [self]
+        if not isinstance(self.value, list) or not all(isinstance(p, dict) for p in self.value):
+            raise ValueError("a bundle's value is a list of moves")
+        return [Move(f"{self.id}.{i}", str(p.get("kind")), str(p.get("target")), p.get("value"), self.rationale)
+                for i, p in enumerate(self.value, 1)]
+
     def describe(self) -> str:
+        if self.kind == "bundle":
+            try:
+                return "bundle: " + " + ".join(p.describe() for p in self.parts())
+            except ValueError:
+                return "bundle: <malformed>"
         value = json.dumps(self.value) if self.kind != "edit_section" else f"<{len(str(self.value))} characters>"
         return f"{self.kind} {self.target} = {value}"
 
@@ -137,6 +164,8 @@ def move_from(doc: Any, move_id: str) -> tuple[Move | None, list[str]]:
 
 def first_round(move: Move) -> bool:
     """Whether a move changes what the first round (library, briefing, analysis) does."""
+    if move.kind == "bundle":
+        return any(first_round(p) for p in move.parts())
     if move.kind == "edit_section":
         return move.target.split("#", 1)[0] in FIRST_ROUND_PROMPTS
     if move.kind in ("toggle", "threshold"):
@@ -254,18 +283,27 @@ def make_variant(move: Move, incumbent: pathlib.Path, variants_dir: pathlib.Path
     shutil.copytree(incumbent / "prompts", path / "prompts") if (incumbent / "prompts").is_dir() \
         else (path / "prompts").mkdir(parents=True)
     config = dict(current)
+    for part in move.parts():
+        config = apply_part(part, config, path)
+    (path / "config.json").write_text(json.dumps(config, indent=2) + "\n")
+    (path / "move.json").write_text(json.dumps({**move.record(), "parent": incumbent.name}, indent=2) + "\n")
+    return path
+
+
+def apply_part(move: Move, config: dict, path: pathlib.Path) -> dict:
+    """Apply one move that is not a bundle to a variant being built in `path` (its prompts/ already
+    holds the overrides so far); returns the new config values."""
+    config = dict(config)
     if move.kind == "edit_section":
         name, heading = move.target.split("#", 1)
-        (path / "prompts" / name).write_text(replace_section(prompt_text(incumbent, name), heading, move.value))
+        (path / "prompts" / name).write_text(replace_section(prompt_text(path, name), heading, move.value))
     elif move.kind == "toggle" and move.target == "brief_teams":
         config["brief_teams"] = ["team-a", "team-b"] if move.value else ["team-a"]
     elif move.kind in ("toggle", "threshold"):
         config[move.target] = THRESHOLDS[move.target][2](move.value) if move.kind == "threshold" else move.value
     elif move.kind == "add_check":
         config["checks"] = sorted(set(config.get("checks") or []) | {move.target})
-    (path / "config.json").write_text(json.dumps(config, indent=2) + "\n")
-    (path / "move.json").write_text(json.dumps({**move.record(), "parent": incumbent.name}, indent=2) + "\n")
-    return path
+    return config
 
 
 # ----- validation -----
@@ -281,6 +319,8 @@ def validate(move: Move, current: dict, incumbent: pathlib.Path | None = None) -
         return [f"kind {move.kind!r} is not one of {', '.join(KINDS)}"]
     if not isinstance(move.rationale, str) or len(move.rationale) > MAX_RATIONALE_CHARS:
         return [f"rationale must be text of at most {MAX_RATIONALE_CHARS} characters"]
+    if move.kind == "bundle":
+        return validate_bundle(move, current, incumbent)
     if move.kind == "toggle":
         if move.target not in TOGGLES:
             return [f"toggle target {move.target!r} is not one of {', '.join(TOGGLES)}"]
@@ -326,6 +366,38 @@ def validate(move: Move, current: dict, incumbent: pathlib.Path | None = None) -
         return [f"editing {str(move.target).split('#', 1)[0]} would change nothing: it is read only with {needs} on, "
                 f"and {needs} is off"]
     return validate_edit(move, incumbent)
+
+
+def validate_bundle(move: Move, current: dict, incumbent: pathlib.Path | None) -> list[str]:
+    """A bundle is valid when it has 2 to MAX_BUNDLE_PARTS parts of the other kinds, with different
+    targets, and each part is valid on the incumbent with the parts before it applied (built in a
+    scratch folder; nothing is written elsewhere)."""
+    import tempfile
+    if move.target != "bundle":
+        return ['a bundle\'s target is "bundle"']
+    try:
+        parts = move.parts()
+    except ValueError as err:
+        return [str(err)]
+    if not 2 <= len(parts) <= MAX_BUNDLE_PARTS:
+        return [f"a bundle has 2 to {MAX_BUNDLE_PARTS} parts, not {len(parts)}"]
+    if any(p.kind not in PART_KINDS for p in parts):
+        return [f"a bundle's parts are of the kinds {', '.join(PART_KINDS)}"]
+    if len({p.target for p in parts}) != len(parts):
+        return ["a bundle's parts must have different targets"]
+    with tempfile.TemporaryDirectory() as tmp:
+        scratch = pathlib.Path(tmp)
+        (scratch / "prompts").mkdir()
+        if incumbent is not None and (pathlib.Path(incumbent) / "prompts").is_dir():
+            for f in (pathlib.Path(incumbent) / "prompts").glob("*.md"):
+                shutil.copyfile(f, scratch / "prompts" / f.name)
+        config = dict(current)
+        for i, part in enumerate(parts, 1):
+            problems = validate(part, config, scratch)
+            if problems:
+                return [f"part {i} ({part.kind} {part.target}): {p}" for p in problems]
+            config = apply_part(part, config, scratch)
+    return []
 
 
 def validate_edit(move: Move, incumbent: pathlib.Path | None) -> list[str]:
@@ -490,6 +562,76 @@ def spent(run_dir: pathlib.Path) -> dict:
             "runs": len(finishes), "runs_without_cost": sum(e.get("cost_usd") is None for e in finishes)}
 
 
+def _label_of(path: pathlib.Path) -> tuple[str | None, str]:
+    """(label, reasoning) of an answer file in BioDSA's form; (None, "") when unreadable."""
+    doc = read_json(path)
+    if not isinstance(doc, dict):
+        return None, ""
+    answer = doc.get("answer") if isinstance(doc.get("answer"), dict) else doc
+    label = answer.get("label") if isinstance(answer, dict) else None
+    reasoning = doc.get("reasoning") if isinstance(doc.get("reasoning"), str) else ""
+    return (label if isinstance(label, str) else None), reasoning
+
+
+def _trim(text: str, limit: int = MAX_REASON_CHARS) -> str:
+    text = " ".join(str(text).split())
+    return text if len(text) <= limit else text[:limit - 3].rstrip() + "..."
+
+
+def failure_evidence(run_dir: pathlib.Path, panel: list[str]) -> dict:
+    """What the proposer may see of a graded run beyond counts, from results.json and the answer
+    files in each study's candidates/ and final/ folders:
+      labels  for each label the lab's final answer gave: how many final answers were right, wrong
+      failed  for each failed final answer (numbered in panel order, never named): its outcome kind,
+              the final label, and each step's team, round, label and stated reasoning (trimmed)
+    The right label of a task is never included (a failed task's outcome kind says what sort of
+    mistake it was, as in failure_counts)."""
+    run_dir = pathlib.Path(run_dir)
+    studies = (read_json(run_dir / "results.json") or {}).get("studies") or {}
+    labels: dict[str, dict[str, int]] = {}
+    failed = []
+    for sid in panel:
+        entry = studies.get(sid) or {}
+        cands = entry.get("candidates") or []
+        final = next((c for c in cands if c.get("kind") == "final"), None)
+        if final is None:
+            continue
+        label, reasoning = _label_of(run_dir / sid / "final" / "answer.json")
+        row = labels.setdefault(label or "no valid answer", {"right": 0, "wrong": 0})
+        row["right" if final.get("passed") else "wrong"] += 1
+        if final.get("passed"):
+            continue
+        steps = []
+        for c in cands:
+            if c.get("kind") != "lab":
+                continue
+            l, r = _label_of(run_dir / sid / "candidates" / f"{c.get('id')}.json")
+            steps.append({"team": c.get("team"), "round": c.get("round"), "label": l, "reasoning": _trim(r)})
+        order = {name: i for i, name in enumerate(EVIDENCE_ROUNDS)}
+        steps.sort(key=lambda x: (order.get(str(x["round"]), len(order)), str(x["team"])))
+        failed.append({"task": f"failed task {len(failed) + 1}", "outcome_kind": final.get("outcome_kind"),
+                       "final_label": label, "final_reasoning": _trim(reasoning), "steps": steps})
+    return {"labels": labels, "failed": failed}
+
+
+def evidence_text(evidence: dict | None) -> str:
+    """failure_evidence() as the proposer brief gives it."""
+    if evidence is None:
+        return "Not shown in this loop: you see counts only."
+    lines = ["Final answers by the label the lab gave:", ""]
+    for label, row in sorted(evidence["labels"].items()):
+        lines.append(f"- {label}: right {row['right']}, wrong {row['wrong']}")
+    lines += ["", "Each failed task, with what each step answered and why (in the agents' own words, trimmed):"]
+    for f in evidence["failed"]:
+        lines += ["", f"### {f['task']}: {f['outcome_kind']}; final label {f['final_label']}"]
+        for st in f["steps"]:
+            lines.append(f"- {st['team']}, {st['round']}: {st['label']}. {st['reasoning']}")
+        lines.append(f"- final: {f['final_label']}. {f['final_reasoning']}")
+    if not evidence["failed"]:
+        lines.append("- none: every final answer passed")
+    return "\n".join(lines)
+
+
 # ----- the rules fallback -----
 
 def _spec(kind: str, target: str, value: Any, why: str) -> dict:
@@ -572,9 +714,12 @@ def ledger_summary(entries: list[dict], limit: int = 30) -> list[str]:
     lines = []
     for (loop, mid), m in list(moves.items())[-limit:]:
         mv = m["move"]
-        value = json.dumps(mv.get("value")) if mv.get("kind") != "edit_section" \
-            else f"<new text, {len(str(mv.get('value')))} characters>"
-        text = f"- {mid} ({m['path']}): {mv.get('kind')} {mv.get('target')} = {value}"
+        if mv.get("kind") == "bundle":
+            text = f"- {mid} ({m['path']}): " + Move(str(mid), "bundle", "bundle", mv.get("value")).describe()
+        else:
+            value = json.dumps(mv.get("value")) if mv.get("kind") != "edit_section" \
+                else f"<new text, {len(str(mv.get('value')))} characters>"
+            text = f"- {mid} ({m['path']}): {mv.get('kind')} {mv.get('target')} = {value}"
         for ev in m["evals"]:
             p = ev.get("paired") or {}
             ratio = (p.get("cost_per_task") or {}).get("ratio")
@@ -601,7 +746,10 @@ def schema_text() -> str:
             f"no heading. Files: {', '.join(EDITABLE_PROMPTS)}.\n"
             f"- toggle: target one of {toggles}; value true or false (brief_teams true briefs both first teams).\n"
             f"- threshold: {knobs}.\n"
-            f"- add_check: target a check id, value true. Checks:\n{checks}")
+            f"- add_check: target a check id, value true. Checks:\n{checks}\n"
+            f'- bundle: target "bundle", value a list of 2 to {MAX_BUNDLE_PARTS} moves of the kinds above, '
+            f'each {{{{"kind", "target", "value"}}}}, with different targets. They are applied in order and '
+            f"judged as one move: use it when two changes are each too small to clear the threshold alone.")
 
 
 def settings_text(current: dict, incumbent: pathlib.Path) -> str:
@@ -628,7 +776,8 @@ def prompt_listing(incumbent: pathlib.Path) -> str:
 def proposer_brief(*, entries: list[dict], failures: dict[str, int], current: dict, incumbent: pathlib.Path,
                    moves_so_far: int, T: float, cost_ratio_max: float, max_damage: int, panel_size: int,
                    lessons: list[str] | None = None, prompt_dir: str | None = None,
-                   prompts_path: str | None = None, overlay_path: str | None = None) -> str:
+                   prompts_path: str | None = None, overlay_path: str | None = None,
+                   evidence: dict | None = None) -> str:
     from lab.protocol import make_brief
     summary = ledger_summary(entries)
     fails = "\n".join(f"- {k}: {n}" for k, n in sorted(failures.items(), key=lambda kv: (-kv[1], kv[0])))
@@ -640,6 +789,7 @@ def proposer_brief(*, entries: list[dict], failures: dict[str, int], current: di
         moves_so_far=moves_so_far, ledger_summary="\n".join(summary) or "- none yet",
         lessons="\n".join(f"- {x}" for x in lessons or []) or "- none yet",
         move_schema=schema_text(), prompt_sections=prompt_listing(incumbent),
+        failure_evidence=evidence_text(evidence),
         prompts_dir=prompts_path or str(PROMPTS),
         overlay_dir=overlay_path or str(pathlib.Path(incumbent) / "prompts"))
 
@@ -668,6 +818,9 @@ class LoopSettings:
     proposer_model: str = "opus"
     proposer_timeout: int = 900
     lessons: str | None = None            # None, "local" or "past": where the proposer's lessons are kept
+    max_rejections: int = MAX_REJECTIONS_IN_A_ROW
+    seed_moves: list = dataclasses.field(default_factory=list)   # move documents tried first, in order
+    proposer_evidence: bool = False       # the proposer brief carries failure_evidence() of the incumbent's run
 
     def __post_init__(self):
         self.root = pathlib.Path(self.root).resolve()
@@ -689,6 +842,7 @@ class Loop:
         self._backend, self._adapter = backend, adapter
         self.spent_usd = 0.0
         self.lesson_store = None
+        self.incumbent_run = s.incumbent_run
 
     # ----- ledger -----
 
@@ -765,8 +919,8 @@ class Loop:
             if moves >= s.max_moves:
                 reason = f"{s.max_moves} moves made (--max-moves)"
                 break
-            if in_a_row >= MAX_REJECTIONS_IN_A_ROW:
-                reason = f"{MAX_REJECTIONS_IN_A_ROW} rejections in a row"
+            if in_a_row >= s.max_rejections:
+                reason = f"{s.max_rejections} rejections in a row"
                 break
             if s.max_usd is not None and self.remaining() <= 0:
                 reason = f"the total cap of ${s.max_usd} is spent"
@@ -774,11 +928,16 @@ class Loop:
             current = settings(incumbent)
             failures = failure_counts(inc_run, s.panel)
             move_id = self.next_id()
-            proposed, problems, extra = self.propose_fn(self, move_id=move_id, incumbent=incumbent, current=current,
-                                                        failures=failures, moves_so_far=moves)
-            self.spent_usd += float(extra.get("spent_usd") or 0)
-            path = "proposer"
+            proposed = self.next_seed(move_id, current, incumbent)
             if proposed is not None:
+                problems, extra, path = [], {}, "seed"
+            else:
+                self.incumbent_run = inc_run          # what propose() reads its evidence from
+                proposed, problems, extra = self.propose_fn(self, move_id=move_id, incumbent=incumbent,
+                                                            current=current, failures=failures, moves_so_far=moves)
+                self.spent_usd += float(extra.get("spent_usd") or 0)
+                path = "proposer"
+            if path == "proposer" and proposed is not None:
                 problems = problems + validate(proposed, current, incumbent)
                 if not problems and proposed.key() in tried_keys(self.entries()):
                     problems = ["repeats a move proposed before"]
@@ -806,6 +965,29 @@ class Loop:
                    "spent_usd": round(self.spent_usd, 4)}
         self.note("note", summary)
         return summary
+
+    def next_seed(self, move_id: str, current: dict, incumbent: pathlib.Path) -> Move | None:
+        """The first seed move not yet proposed (by key) that can be made on the incumbent. A seed
+        that cannot be made is noted in the ledger once (event seed.skipped) and passed over."""
+        entries = self.entries()
+        tried = tried_keys(entries)
+        skipped = {(e.get("data") or {}).get("seed") for e in entries
+                   if e.get("kind") == "note" and (e.get("data") or {}).get("event") == "seed.skipped"
+                   and (e.get("data") or {}).get("loop") == self.id}
+        for i, doc in enumerate(self.s.seed_moves, 1):
+            move, problems = move_from(doc, move_id)
+            if move is None:
+                raise ValueError(f"seed move {i} is malformed: {'; '.join(problems)}")
+            if move.key() in tried or i in skipped:
+                continue
+            problems = validate(move, current, incumbent)
+            if problems:
+                self.note("note", {"event": "seed.skipped", "seed": i, "move": move.record(), "problems": problems,
+                                   "incumbent": pathlib.Path(incumbent).name})
+                continue
+            move.affects_first_round = first_round(move)
+            return move
+        return None
 
     def decide(self, proposed: Move, variant: pathlib.Path, inc_run: pathlib.Path, inc_out: dict, path: str,
                extra: dict, history: list) -> str:
@@ -981,7 +1163,8 @@ def propose(loop: Loop, *, move_id: str, incumbent: pathlib.Path, current: dict,
     brief = proposer_brief(entries=loop.entries(), failures=failures, current=current, incumbent=incumbent,
                            moves_so_far=moves_so_far, T=s.noise_threshold, cost_ratio_max=s.cost_ratio_max,
                            max_damage=s.max_damage, panel_size=len(s.panel), lessons=loop.lessons(),
-                           prompts_path=PROPOSER_PROMPTS + "/", overlay_path=PROPOSER_OVERLAY + "/")
+                           prompts_path=PROPOSER_PROMPTS + "/", overlay_path=PROPOSER_OVERLAY + "/",
+                           evidence=failure_evidence(loop.incumbent_run, s.panel) if s.proposer_evidence else None)
     cap = loop.remaining()
     runner = AgentRunner(proposer_backend(loop), log, 1,
                          budget=Budget(before + cap, before) if cap is not None else None)

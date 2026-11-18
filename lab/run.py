@@ -55,9 +55,11 @@ def _scbench():
     return ScBench()
 
 
-def _biodsa():
-    from lab.adapters.biodsa import BioDSA
-    return BioDSA()
+def _biodsa(convention: bool = False):
+    def factory():
+        from lab.adapters.biodsa import BioDSA
+        return BioDSA(convention=convention)
+    return factory
 
 
 def _planted(split: str):
@@ -71,7 +73,8 @@ def _planted(split: str):
 
 
 # benchmark name -> factory, called with no argument (or, for one with local_option, `mounted`)
-ADAPTERS = {"genebench": _genebench, "scbench": _scbench, "biodsa": _biodsa,
+ADAPTERS = {"genebench": _genebench, "scbench": _scbench, "biodsa": _biodsa(),
+            "biodsa-convention": _biodsa(convention=True),
             "planted": _planted("all"), "planted-dev": _planted("dev"), "planted-heldout": _planted("heldout")}
 
 
@@ -909,6 +912,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--noise-threshold-source", default=None, help="where T came from, for the ledger")
     p.add_argument("--cost-ratio-max", type=float, default=1.25)
     p.add_argument("--max-damage", type=int, default=1)
+    p.add_argument("--max-rejections", type=int, default=3, help="stop after this many rejections in a row")
+    p.add_argument("--seed-moves", default=None, metavar="FILE",
+                   help="moves tried first, in order, before the proposer (see read_seed_moves)")
+    p.add_argument("--proposer-evidence", action="store_true",
+                   help="show the proposer the failed tasks' labels and stated reasons (numbered, not named)")
     p.add_argument("--variants-dir", default=None, help="default: <run-root>/variants")
     p.add_argument("--incumbent", default=None, metavar="VARIANT_DIR",
                    help="the incumbent variant (default: <variants-dir>/v4-base, made from --preset v4)")
@@ -930,6 +938,33 @@ def build_parser() -> argparse.ArgumentParser:
 def add_prompt_dir(p) -> None:
     p.add_argument("--prompt-dir", default=None, metavar="DIR",
                    help="a folder of prompt overrides: DIR/<name>.md replaces lab/prompts/<name>.md (Config.prompt_dir)")
+
+
+def read_seed_moves(path: str | None) -> list:
+    """The seed moves file: {"moves": [move, ...]} or a bare list of moves, each {"kind", "target",
+    "value", "rationale"}; an edit's or a bundle part's value may be {"from_variant": DIR} to take the
+    value of the edit that variant's move.json made to the same target."""
+    if not path:
+        return []
+    doc = json.loads(pathlib.Path(path).read_text())
+    moves = doc.get("moves") if isinstance(doc, dict) else doc
+    if not isinstance(moves, list):
+        raise SystemExit(f"{path}: seed moves are a list")
+    base = pathlib.Path(path).resolve().parent
+
+    def resolve(m: dict) -> dict:
+        m = dict(m)
+        if m.get("kind") == "bundle" and isinstance(m.get("value"), list):
+            m["value"] = [resolve(x) for x in m["value"]]
+        elif isinstance(m.get("value"), dict) and "from_variant" in m["value"]:
+            folder = (base / m["value"]["from_variant"]).resolve()
+            made = json.loads((folder / "move.json").read_text())
+            if made.get("kind") != m.get("kind") or made.get("target") != m.get("target"):
+                raise SystemExit(f"{path}: {folder}/move.json is {made.get('kind')} {made.get('target')}, "
+                                 f"not {m.get('kind')} {m.get('target')}")
+            m["value"] = made["value"]
+        return m
+    return [resolve(m) for m in moves]
 
 
 def cmd_loop(args) -> int:
@@ -971,7 +1006,9 @@ def cmd_loop(args) -> int:
         noise_source=args.noise_threshold_source or ("given with --noise-threshold" if given
                                                      else autoloop.DEFAULT_T_SOURCE),
         cost_ratio_max=args.cost_ratio_max, max_damage=args.max_damage, ledger_path=ledger_path,
-        variants_dir=variants, incumbent=incumbent, proposer_model=args.proposer_model, lessons=args.lessons)
+        variants_dir=variants, incumbent=incumbent, proposer_model=args.proposer_model, lessons=args.lessons,
+        max_rejections=args.max_rejections, seed_moves=read_seed_moves(args.seed_moves),
+        proposer_evidence=args.proposer_evidence)
     loop = autoloop.Loop(settings, adapter=adapter, resume=args.resume_loop)
     summary = loop.run()
     entries = [e for e in ledger_mod.entries(ledger_path) if (e.get("data") or {}).get("loop") == loop.id]

@@ -9,7 +9,7 @@ Each change you propose (a move) is tested on a development panel of {panel_size
 
 An accepted move is then run once more and must again rescue more than it damages. A smaller effect than that is noise.
 
-You see summaries only: no task's answer, label or data. Do not guess at them.
+You see summaries, and in some loops the failed tasks' answers and reasons (numbered, not named): never a task's right label or its data. Do not guess at them.
 
 ## The incumbent's settings
 
@@ -20,6 +20,10 @@ You see summaries only: no task's answer, label or data. Do not guess at them.
 Failing final answers, counted by the kind of mistake:
 
 {failures}
+
+## What the failed tasks show
+
+{failure_evidence}
 
 ## Moves so far
 
@@ -43,7 +47,7 @@ The prompt files are in `{prompts_dir}`; the incumbent's own versions of the fil
 
 ## What to do
 
-1. Read the failure counts and the moves so far. Pick the mistake that costs the most tasks and that no earlier move has addressed.
+1. Read the failure counts, what the failed tasks show and the moves so far. Pick the mistake that costs the most tasks and that no earlier move has addressed.
 2. Choose one move that targets it. Prefer a small, specific change over a broad one. Do not repeat a move from the list above: a repeat, or a move that breaks the rules of its kind, is replaced by the lab's own rule-based choice.
 3. Write `move.json` in this folder:
 

@@ -121,7 +121,8 @@ NOT_VERIFIABLE = "Not verifiable"
 SETTLED = ("True", "False")
 # Adapters whose answers use BioDSA's labels; the re-check falls back to the label rule for these
 # when the adapter has no abstains() method of its own.
-LABEL_ADAPTERS = {"biodsa", "biodsa-1k", "biodsa-heldout", "biodsa-1k-heldout", "planted"}
+LABEL_ADAPTERS = {"biodsa", "biodsa-1k", "biodsa-heldout", "biodsa-1k-heldout", "biodsa-1k-convention",
+                  "biodsa-heldout-convention", "planted"}
 TEST_FILE = "test_result.json"
 TEST_FIELDS = ("test", "variables", "statistic", "p_value", "n", "direction")
 
