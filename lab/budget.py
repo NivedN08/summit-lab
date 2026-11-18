@@ -68,10 +68,17 @@ BENCHMARK_ESTIMATE_USD: dict[str, dict[tuple[str, str], float]] = {
 }
 
 
+# The planted-fault suite's small synthetic tables cost about what BioDSA's do: in the held-out smoke test
+# (2026-11-18) the Opus lab spent $1.47 a planted task against $1.56 a BioDSA task, and single Opus runs
+# $0.06 to $0.12. So it uses the BioDSA entries until it has enough runs of its own.
+SAME_ESTIMATES_AS = {"planted": "biodsa"}
+
+
 def estimates_for(benchmark: str | None) -> dict[tuple[str, str], float]:
     """The estimate table for a benchmark's runs: the global table, with the benchmark's own entries
     (BENCHMARK_ESTIMATE_USD, matched by the adapter name's first word) in place of the global ones."""
     family = (benchmark or "").split("-")[0]
+    family = SAME_ESTIMATES_AS.get(family, family)
     return {**ESTIMATE_USD, **BENCHMARK_ESTIMATE_USD.get(family, {})}
 
 

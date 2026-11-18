@@ -198,7 +198,11 @@ def test_every_biodsa_split_uses_the_biodsa_estimates(name):
     assert estimate_usd("library", "opus", table) == ESTIMATE_USD[("library", "opus")]   # unmeasured on BioDSA: global
 
 
-@pytest.mark.parametrize("name", [None, "genebench-pro", "scbench", "planted", "fake"])
+def test_the_planted_suite_uses_the_biodsa_estimates():
+    assert estimates_for("planted") == estimates_for("planted-heldout") == estimates_for("biodsa-1k")
+
+
+@pytest.mark.parametrize("name", [None, "genebench-pro", "scbench", "fake"])
 def test_other_benchmarks_keep_the_global_table(name):
     assert estimates_for(name) == ESTIMATE_USD
 
