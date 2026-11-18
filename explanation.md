@@ -651,3 +651,20 @@ The pre-registered stop rule then applied: the incumbent failed fewer than 3 tas
 What this shows. On this panel the lab's failures were a label-convention problem, not an analysis problem. Once the convention is stated, the lab gains 9 to 10 tasks and the Opus vote 7, and the two arms finish one task apart. The one difference is bd34. There the teams' first answers split, and team B moved to team A's correct answer after the question round; Opus alone was right on 1 of its 4 attempts. bd14 went the same way in the lab, and Opus alone was right on 2 of 4 attempts and won the vote. Both arms fail bd37, a truly unverifiable claim judged True. The lab now costs about 3.6 times the 4-attempt vote.
 
 What it does not show. One task is well under the noise threshold, so this is no evidence the lab beats Opus alone. The panel was chosen around Fable's over-abstentions, so it holds few true "Not verifiable" labels (our grades show at least 2), while about a third of the benchmark's labels are. A note that pushes models toward True or False may cost them on those tasks. Only the held-out draw (Phase 6), with its natural label mix, can say whether the convention note helps overall. These scores are not comparable with the earlier plain-text runs, or with published BioDSA-1K numbers.
+
+**M-18 · Nov 18, 15:41 · Measured · Held-out prep on dev tasks: every arm runs end to end; the lab passes 8 of 8 planted dev tasks and Opus alone 7 of 8 by vote.**
+Plan: `research/heldout-plan.md`. Commands: `bash scripts/heldout_smoke_pilot.sh`, then the two pilot runs resumed with the same commands (the lab's cap raised from $14 to $24). For the smoke test it runs `lab`, `arm --arm vote --attempts 3`, `arm --arm self`, `baseline --attempts 1` with Opus and with Fable on bd01, bd02 (benchmark `biodsa-convention`) and pf03, pf04 (`planted-dev`); for the pilot, it runs `lab` and `baseline --model opus --attempts 4` on all 8 planted dev tasks. All runs used `--backend modal`; the lab ran the loop-2 incumbent's config and prompts with `--memory past`. Then `grade` after every agent had exited. Records: `results/heldout-dev/`, ledger entry 70.
+
+| | Smoke: BioDSA, 2 tasks | Smoke: planted, 2 tasks | Pilot: planted, 8 tasks |
+|---|---|---|---|
+| Lab | 2 of 2, $3.20 | 2 of 2, $2.93 | 8 of 8, $18.52 ($11.69 without repeated work) |
+| Same-cost vote, 3 attempts | 2 of 2, $0.77 | 2 of 2, $0.58 | not run |
+| Self-challenge | 2 of 2, $0.73 | 2 of 2, $0.93 | not run |
+| Opus alone | 2 of 2 attempts, $0.20 | 2 of 2, $0.41 | 29 of 32 attempts, vote 7 of 8 (fails pf24), $3.49 |
+| Fable alone | 2 of 2 attempts, $0.17 | 2 of 2, $0.18 | not run |
+
+Spent: $32.11 of the $45 cap.
+
+What this shows. The two control arms and the planted suite work live for the first time: 64 smoke-test agent runs, all ok, all graded. The lab costs the same per task on planted tables as on BioDSA ($1.46 against $1.56 without repeated work), and an Opus attempt costs $0.11 on both, so the same-cost vote gets k = 15 attempts a task on BioDSA and k = 13 on the planted tasks. Opus alone catches most planted faults on its own: its three wrong attempts are all on pf24, the faulted twin of a misleading data dictionary. So the planted tasks may separate the arms less than hoped.
+
+What it does not show. Eight dev tasks say nothing about the held-out result. Three things went wrong and were fixed or noted. The arms' new roles fell back to a $1.50 estimate on the planted suite, which stopped the planted self-challenge early; planted runs now use the BioDSA estimates (b020835). The two pilot runs started a second before that commit, ran with the old estimates and stopped on their caps; both were resumed with the same commands. Resuming the self-challenge arm restarts a stopped task from its first step, which repeats work but does not change how its final answer is chosen.

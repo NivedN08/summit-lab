@@ -1,0 +1,410 @@
+{
+  "study": "bd02",
+  "status": "replicated",
+  "final": {
+    "agent": "bd02-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-smoke/lab-biodsa/bd02/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bd02-library": "opus",
+    "bd02-team-a": "opus",
+    "bd02-team-b": "opus",
+    "bd02-team-c": "opus",
+    "bd02-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd02-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-smoke/lab-biodsa/bd02/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd02-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-smoke/lab-biodsa/bd02/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd02-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-smoke/lab-biodsa/bd02/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd02-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-smoke/lab-biodsa/bd02/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd02-team-a",
+        "bd02-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd02-team-a",
+        "bd02-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "All samples in this study were sequenced by whole-exome sequencing with matched normals (check data_gene_panel_matrix.txt). So a sample with no RNF43 row in data_mutations.txt counts as RNF43 wild-type, not as missing data. The cohort is pancreatic cysts (SCA, SPN, IPMN, MCN), which is the disease and the subtypes the hypothesis names. Under the benchmark convention this makes the claim about this study, so the label should be True or False. Do not call it Not verifiable because RNF43 is rare or absent.",
+      "from": [
+        "sl-lab-biodsa-c88908f0738f"
+      ],
+      "reason": "This stops the teams from wrongly answering Not verifiable, which is graded as wrong.",
+      "fact_ids": {
+        "team-a": "sl-lab-biodsa-d56ed546869e"
+      }
+    },
+    {
+      "text": "Join Tumor_Sample_Barcode in the MAF to SAMPLE_ID in the clinical sample table to get each sample's cyst type (CANCER_TYPE_DETAILED). The comparison is mucinous cysts (IPMN + MCN) against non-mucinous cysts (SCA + SPN). Use a 2x2 Fisher exact test, because the expected counts are small and chi-square is not valid. Also report counts for each of the four cyst types.",
+      "from": [
+        "sl-lab-biodsa-e2354ea3c22a"
+      ],
+      "reason": "This sets the right comparison groups and the right test for small counts.",
+      "fact_ids": {
+        "team-a": "sl-lab-biodsa-2550cd77b528"
+      }
+    },
+    {
+      "text": "Count mutated samples, not mutation rows. One tumour can carry several RNF43 variants. Build a binary mutated/wild-type table with one row per sample before running any test.",
+      "from": [
+        "sl-lab-biodsa-06cb68f3f482"
+      ],
+      "reason": "Counting variants instead of samples would inflate the frequencies and break the 2x2 test.",
+      "fact_ids": {
+        "team-a": "sl-lab-biodsa-2110307631d2"
+      }
+    },
+    {
+      "text": "The MAF includes RNF43 rows that do not change the protein: intronic, UTR, upstream, synonymous and non-coding-transcript variants. Tabulate Variant_Classification/Consequence for the RNF43 rows. Run the primary analysis on protein-altering calls only (missense, nonsense, frameshift, in-frame, splice-site). Report all calls as a sensitivity analysis.",
+      "from": [
+        "sl-lab-biodsa-f9e99299fcea"
+      ],
+      "reason": "Which variants count as mutations can change the counts in each group.",
+      "fact_ids": {
+        "team-a": "sl-lab-biodsa-b882bf1bf35d"
+      }
+    },
+    {
+      "text": "The groups are small (about 16 vs 16), so power is low. A clear difference between the groups can still give a Fisher p-value near or above 0.05. Report the counts in each group, the two-sided and one-sided Fisher p-values, and the odds ratio with its confidence interval. Base the decision on the whole pattern, not on the p-value alone, and do not read a non-significant p as evidence against the claim. RNF43 is a single prespecified gene, so use its uncorrected p-value. Apply multiple-testing correction only if you screen many genes.",
+      "from": [
+        "sl-lab-biodsa-6ddc40de6ab8",
+        "sl-lab-biodsa-b139eba30ddd"
+      ],
+      "reason": "Misreading p-values from a small sample is the main way the teams could reach the wrong label once they have the counts.",
+      "fact_ids": {
+        "team-a": "sl-lab-biodsa-acee4760bb49"
+      }
+    },
+    {
+      "text": "Check whether mutational burden differs between cyst types (TMB_NONSYNONYMOUS, if present, or the number of nonsynonymous mutations per sample) and look for hypermutated samples. If burden differs, mention it and compare RNF43 with background genes.",
+      "from": [
+        "sl-lab-biodsa-ec2b5365f284"
+      ],
+      "reason": "A difference in mutational burden could confound any gene-level enrichment.",
+      "fact_ids": {
+        "team-a": "sl-lab-biodsa-b63f3bf11d36"
+      }
+    },
+    {
+      "text": "Sanity check for the sample-to-type mapping: SCA cysts typically carry VHL alterations, SPN typically carry CTNNB1 mutations, and IPMN typically carry KRAS/GNAS mutations. If these markers do not fall in the expected groups, the join or the type labels are probably wrong.",
+      "from": [
+        "sl-lab-biodsa-2d9976b27d67"
+      ],
+      "reason": "This gives the teams an independent check that the group labels were joined correctly before they test RNF43.",
+      "fact_ids": {
+        "team-a": "sl-lab-biodsa-67908ef6cfb8"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams pooled IPMN and MCN into one 'mucinous' group and tested it against SCA+SPN. The hypothesis names IPMNs and MCNs, which could mean each type on its own. Neither team reported whether each type separately differs from the non-mucinous cysts.",
+      "Both treated the 32 samples as independent, one per patient, and took every call in the MAF as a somatic event without checking it.",
+      "Both treated a gene with no call in a WXS sample as wild-type, without checking coverage or allele depth at RNF43."
+    ],
+    "unused_evidence": [
+      "The DYSPLASIA column (high grade vs low grade, for IPMN and MCN) and MAIN_VS_BRANCH_DUCT (for IPMN). Neither method looked at whether RNF43 calls cluster in the high-grade lesions. If they do, part of the association could be about grade rather than cyst type.",
+      "The t_ref_count and t_alt_count columns in the MAF. Neither team checked the variant allele fractions of the RNF43 calls, so it is unknown whether they are clonal or only a few supporting reads.",
+      "The patient table (SEX, SMOKER, LOCATION). MCNs are almost always in women, so cyst type and sex are confounded. Neither team looked at this, but it is unlikely to change the label."
+    ],
+    "unresolved_weak_points": [
+      "Team A named the higher TMB in mucinous cysts and argued it away from the size of the effect, but did not compare RNF43 against background genes of similar length.",
+      "Team B named its mucinous grouping as its weakest point but did not show the per-type tests that would settle it."
+    ],
+    "second_readings": [
+      "'Associated with IPMNs and MCNs' can mean (a) mucinous cysts pooled versus other cysts, or (b) a significant association within each of IPMN and MCN separately. With 8 samples per type, the two readings could differ in significance. Under the benchmark convention, the label most likely follows the study's own reported finding."
+    ],
+    "verdict": "I trust the agreed answer highly. The data cover the hypothesis's cohort and gene directly, both teams' counts are consistent and clear-cut, and the marker checks validated the type labels. The main untested points are the per-type reading, the dysplasia and VAF columns, and burden-matched background genes. None of them is likely to overturn the label.",
+    "questions": [
+      {
+        "to": "bd02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Run the Fisher test separately for IPMN vs SCA+SPN and for MCN vs SCA+SPN, and report RNF43 counts for each type. Does either single-type comparison fail on its own, and if so, does that change how you read 'IPMNs and MCNs'?",
+        "from": [
+          "sl-lab-biodsa-3e0ef17639c4"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-biodsa-71579a4861c6"
+      },
+      {
+        "to": "bd02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate RNF43 status against DYSPLASIA within the mucinous cysts, and list t_alt_count/(t_ref_count+t_alt_count) for each RNF43 call. Are the calls confined to high-grade lesions or to low-VAF calls, and does either finding change your method?",
+        "from": [
+          "sl-lab-biodsa-3e0ef17639c4"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-biodsa-c2726fbc6917"
+      },
+      {
+        "to": "bd02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Compare the mucinous-vs-other split for RNF43 with the same split for other genes that are about as long and are mutated in a similar number of samples. Does the burden difference explain a split of RNF43's size, or does the gene stand out?",
+        "from": [
+          "sl-lab-biodsa-3e0ef17639c4"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-biodsa-9c2802eb4e9d"
+      },
+      {
+        "to": "bd02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You named the IPMN+MCN grouping as your weakest point. Run the test separately for IPMN and for MCN against SCA+SPN and report the per-type counts. Does the conclusion hold for each type, and does the answer depend on the grouping?",
+        "from": [
+          "sl-lab-biodsa-11e7e7dfdec2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-biodsa-50630d83901e"
+      },
+      {
+        "to": "bd02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Compare TMB_NONSYNONYMOUS between cyst types. Then check whether RNF43 stands out against background genes with similar mutation opportunity. Does differing burden weaken the association enough to change your method?",
+        "from": [
+          "sl-lab-biodsa-35e60b4572d8"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-biodsa-3009bd4a0c9a"
+      },
+      {
+        "to": "bd02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate the read support (t_alt_count, VAF) and the DYSPLASIA grade for each RNF43-mutated sample. Do any calls look like low-support artefacts, or confined to one grade, in a way that would change your counts?",
+        "from": [
+          "sl-lab-biodsa-35e60b4572d8"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-biodsa-b772548d514b"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "When a hypothesis states that mutations in a gene are associated with two named tumour subtypes, is the usual analysis in cancer genomics to pool the subtypes against the other groups, or to test each subtype on its own?",
+          "why": "Both teams pooled the subtypes. This would show whether the per-type reading is a real alternative.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "What standard methods correct a gene-level mutation enrichment between tumour groups for differences in overall mutational burden and gene length (for example, MutSigCV-style background models)?",
+          "why": "Burden differed between the groups, and neither team adjusted for it.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When a hypothesis states that mutations in a gene are associated with two named tumour subtypes, is the usual analysis in cancer genomics to pool the subtypes against the other groups, or to test each subtype on its own?",
+          "answer": "NOT WEB-VERIFIED: the research gateway returned HTTP 403 on every call. From domain knowledge: for 'IPMNs and MCNs' the conventional reading is to pool them as mucinous cysts against non-mucinous cysts (SCA+SPN), with per-type counts reported too. Pancreatic-cyst genomics papers tabulate frequencies per type and use mucinous vs non-mucinous as the key contrast. Per-type tests are a valid secondary reading, but at n=8 per type they are underpowered and should not override the pooled result.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bd02-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-biodsa-64d464d7d5e1"
+            },
+            "bd02-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-biodsa-7cd19ba3a51c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a hypothesis states that mutations in a gene are associated with two named tumour subtypes, is the usual analysis in cancer genomics to pool the subtypes against the other groups, or to test each subtype on its own? ANSWER: NOT WEB-VERIFIED: the research gateway returned HTTP 403 on every call. From domain knowledge: for 'IPMNs and MCNs' the conventional reading is to pool them as mucinous cysts against non-mucinous cysts (SCA+SPN), with per-type counts reported too. Pancreatic-cyst genomics papers tabulate frequencies per type and use mucinous vs non-mucinous as the key contrast. Per-type tests are a valid secondary reading, but at n=8 per type they are underpowered and should not override the pooled result. HOW SURE: medium. SOURCES: none given."
+        },
+        {
+          "question": "What standard methods correct a gene-level mutation enrichment between tumour groups for differences in overall mutational burden and gene length (for example, MutSigCV-style background models)?",
+          "answer": "NOT WEB-VERIFIED: gateway HTTP 403. From domain knowledge: MutSigCV (Lawrence et al. 2013) estimates a background rate for each gene and patient. It uses patient mutation rate and spectrum, gene covariates (expression, replication timing, HiC compartment) and coding territory or length. dNdScv (Martincorena 2017) uses dN/dS with trinucleotide context and gene length. OncodriveFML and MuSiC are other options. To compare two groups with burden accounted for: logistic regression of mutated status on group + log(TMB), a burden-preserving permutation test, or excluding hypermutators. A plain Fisher test (e.g. maftools mafCompare) does not adjust. With 32 samples, a formal background model is impractical; a TMB comparison plus a sensitivity analysis is the feasible check.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bd02-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-biodsa-f931883eabe9"
+            },
+            "bd02-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-biodsa-db743cc74809"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What standard methods correct a gene-level mutation enrichment between tumour groups for differences in overall mutational burden and gene length (for example, MutSigCV-style background models)? ANSWER: NOT WEB-VERIFIED: gateway HTTP 403. From domain knowledge: MutSigCV (Lawrence et al. 2013) estimates a background rate for each gene and patient. It uses patient mutation rate and spectrum, gene covariates (expression, replication timing, HiC compartment) and coding territory or length. dNdScv (Martincorena 2017) uses dN/dS with trinucleotide context and gene length. OncodriveFML and MuSiC are other options. To compare two groups with burden accounted for: logistic regression of mutated status on group + log(TMB), a burden-preserving permutation test, or excluding hypermutators. A plain Fisher test (e.g. maftools mafCompare) does not adjust. With 32 samples, a formal background model is impractical; a TMB comparison plus a sensitivity analysis is the feasible check. HOW SURE: medium. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd02-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd02-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd02-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd02-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd02-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 64.01613162504509,
+      "cost_usd": 0.25120939999999997,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 45.13443316600751,
+      "cost_usd": 0.2152852,
+      "error": null
+    },
+    {
+      "agent": "bd02-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 36.78890366689302,
+      "cost_usd": 0.1306378,
+      "error": null
+    },
+    {
+      "agent": "bd02-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 54.22378254099749,
+      "cost_usd": 0.19974760000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 50.417513375054114,
+      "cost_usd": 0.20218919999999999,
+      "error": null
+    },
+    {
+      "agent": "bd02-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 42.97039654199034,
+      "cost_usd": 0.13073700000000002,
+      "error": null
+    },
+    {
+      "agent": "bd02-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 55.89922000002116,
+      "cost_usd": 0.256662,
+      "error": null
+    },
+    {
+      "agent": "bd02-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 64.09644129197113,
+      "cost_usd": 0.2636066,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}
