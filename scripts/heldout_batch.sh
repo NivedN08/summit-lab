@@ -34,7 +34,7 @@ run_one() {
 export -f run_one
 export LOGS
 
-tr '\n' '\0' < "$LOGS/commands.txt" | xargs -0 -P 4 -I{} bash -c 'run_one "$1"' _ {}
+tr '\n' '\0' < "$LOGS/commands.txt" | xargs -0 -P 4 -n 1 bash -c 'run_one "$1"' _
 echo "$(date -u +%H:%M:%S) every command has exited"
 
 for d in runs/heldout/biodsa/* runs/heldout/planted/*; do
