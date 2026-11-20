@@ -1,0 +1,393 @@
+{
+  "study": "bh48",
+  "status": "replicated",
+  "final": {
+    "agent": "bh48-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh48/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh48-library": "opus",
+    "bh48-team-a": "opus",
+    "bh48-team-b": "opus",
+    "bh48-team-c": "opus",
+    "bh48-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh48-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh48/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh48-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh48/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh48-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh48/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh48-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh48/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh48-team-a",
+        "bh48-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh48-team-a",
+        "bh48-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The bh48 tables (MSK-IMPACT pancreatic cancer: clinical, mutations, CNA, SV, gene panel) contain no expression or pathway readout, so NF-kB signaling cannot be measured directly. Under this benchmark's convention that alone does not make the hypothesis 'Not verifiable': if the cohort is pancreatic cancer and both KRAS G12R and G12D carriers are present in data_mutations.txt, the hypothesis is about this study and the label must be True or False, decided from the closest proxies plus established KRAS-allele biology. State explicitly which kind of evidence decided the label.",
+      "from": [
+        "sl-lab-94fe42fcef1f"
+      ],
+      "reason": "The most likely error on this task is a wrong 'Not verifiable' because the pathway readout is absent; this changes which labels are admissible.",
+      "fact_ids": {
+        "team-a": "sl-lab-65d2746c043c"
+      }
+    },
+    {
+      "text": "Define KRAS allele groups from HGVSp_Short (p.G12R vs p.G12D) for Hugo_Symbol == KRAS, not from Variant_Classification. Tabulate all KRAS alleles, count samples with more than one KRAS variant, handle double-KRAS samples separately or exclude them, and keep KRAS-wild-type and other alleles (G12V, G12C, G13, Q61) out of the G12R-vs-G12D comparison.",
+      "from": [
+        "sl-lab-253c79428e84"
+      ],
+      "reason": "Misassigned allele groups would corrupt any proxy comparison.",
+      "fact_ids": {
+        "team-a": "sl-lab-645627ba2d0b"
+      }
+    },
+    {
+      "text": "MSK-IMPACT cohorts can have several samples per patient (e.g. T01, T02). Count samples per patient in data_clinical_sample.txt and keep one per patient (prefer primary or highest purity) before any group comparison or survival analysis.",
+      "from": [
+        "sl-lab-5302f2de592b"
+      ],
+      "reason": "Prevents pseudoreplication inflating n and significance.",
+      "fact_ids": {
+        "team-a": "sl-lab-bd20ce6d88b2"
+      }
+    },
+    {
+      "text": "G12R is a minority KRAS allele in PDAC (roughly 10-20% of KRAS-mutant cases), so proxy tests such as mutation frequency of NF-kB-related genes (e.g. TRAF3, NFKBIA, CYLD, TNFAIP3 if on the panel) are underpowered. Report group sizes, use Fisher exact tests with effect sizes and confidence intervals and BH-FDR across genes, and do not treat a non-significant proxy result as evidence against the hypothesis.",
+      "from": [
+        "sl-lab-328dc0974435"
+      ],
+      "reason": "Guards against reading an underpowered null as contradiction (a wrong 'False').",
+      "fact_ids": {
+        "team-a": "sl-lab-73200132ec3a"
+      }
+    },
+    {
+      "text": "Survival or other clinical differences between G12R and G12D are not a readout of NF-kB signaling; use them only as context. For mechanism, rely on KRAS-allele biology: G12R is an atypical allele with impaired binding to PI3K p110alpha and reduced macropinocytosis compared with G12D (Hobbs et al., Cancer Discovery 2020, cited from memory, not retrieved), so downstream effector signaling differs between these alleles; check what that literature implies for NF-kB specifically before deciding.",
+      "from": [
+        "sl-lab-a505c5ffaa32"
+      ],
+      "reason": "Stops teams using an invalid proxy and points to the biology they will need when the data cannot test the claim directly.",
+      "fact_ids": {
+        "team-a": "sl-lab-e6428c924d3e"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed the label can be decided from recalled KRAS-allele biology (G12R impaired PI3K/p110a binding, reduced macropinocytosis) and that this recall transfers to NF-kB; neither showed a source that links G12R vs G12D to NF-kB specifically, and impaired PI3K does not by itself fix the direction of NF-kB signaling.",
+      "Both assumed the hypothesis is stated in the study's original direction rather than reversed; the convention says hypotheses may be the study's finding or that finding reversed, and neither team tested which applies.",
+      "Both treated all pancreatic samples as one PDAC population; the cohort contains adenosquamous (14), undifferentiated, acinar, IPMN and a cancer-of-unknown-primary sample, and one metastasis, which may differ in KRAS allele mix and inflammatory biology.",
+      "Both counted NF-kB-pathway mutations without stating that every gene was on every panel version (IMPACT341/410/468), so denominators may be wrong for genes absent from older panels."
+    ],
+    "unused_evidence": [
+      "data_cna.txt: NF-kB-related genes (TRAF3, BIRC3, CYLD, TNFAIP3, NFKBIA, MAP3K14) are present as rows; homozygous deletions of negative regulators (e.g. TRAF3, CYLD, TNFAIP3) or gains of activators are the commonest genomic route to NF-kB activation, and neither team reported them by allele.",
+      "data_sv.txt: rearrangements in NF-kB pathway genes were not checked.",
+      "data_gene_panel_matrix.txt: panel coverage per sample was not used to set gene-specific denominators.",
+      "Clinical sample fields CANCER_TYPE_DETAILED, SAMPLE_TYPE, TUMOR_PURITY, MSI_TYPE/TMB were not used to restrict or adjust the comparison (e.g. MSI-high or low-purity samples changing proxy rates).",
+      "data_cna_hg19.seg: arm/segment-level copy-number context was unused."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named as weakest point that the label rests on recalled biology/publication with no NF-kB readout in the data; neither resolved it, they only reported it. Team B's stated biology (impaired PI3K) is not an NF-kB finding, and Team A cited Hobbs et al. from memory without confirming what it says about NF-kB.",
+      "Team A's only NF-kB proxy (NFKBIA/BIRC3 2/55 vs 0/144) and Team B's (4/55 vs 4/145) were reported as underpowered and then set aside; the two teams' proxy counts also differ (G12D n=144 vs 145, gene sets differ) and were not reconciled."
+    ],
+    "second_readings": [
+      "'NF-kB signaling' could mean canonical vs non-canonical NF-kB, or a transcriptional signature reported in the source study; the direction recalled for one may not hold for the other.",
+      "The hypothesis could be the study's reported finding or its reversal; the agreed label depends on which direction the source paper reported, which neither team established from anything other than memory.",
+      "'Tumors' could mean PDAC tumors in this cohort, or model systems (cell lines/organoids) in the source publication; the comparison group could be G12D only or all non-G12R KRAS alleles."
+    ],
+    "verdict": "Low-to-moderate trust: both teams agree, but neither used any data that measures NF-kB, both decided from recalled biology that addresses PI3K/macropinocytosis rather than NF-kB direction, and neither established whether the hypothesis is the study's finding or its reversal. CNA/SV evidence on NF-kB regulators was left unused.",
+    "questions": [
+      {
+        "to": "bh48-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate copy-number states (homozygous deletion / amplification) in data_cna.txt and any rearrangements in data_sv.txt for TRAF3, CYLD, TNFAIP3, BIRC3, NFKBIA and MAP3K14 in G12R vs G12D samples, with gene-specific denominators from the panel matrix. Does adding these alterations change your proxy result or the weight you put on it?",
+        "from": [
+          "sl-lab-e6428c924d3e",
+          "sl-lab-b73671cdf38d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-50e6bd399c73"
+      },
+      {
+        "to": "bh48-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your label rests on recalled G12R biology about PI3K binding and macropinocytosis. Write down, separately, the specific recalled statement about NF-kB in G12R vs G12D and its direction, and check whether it is a finding of this study or of another paper. If you cannot state it, does your label still follow, and does it decide the direction rather than just the existence of a difference?",
+        "from": [
+          "sl-lab-e6428c924d3e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-bbfe692e04ef"
+      },
+      {
+        "to": "bh48-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Restrict the G12R vs G12D comparison to Pancreatic Adenocarcinoma primaries with MSI-stable status (dropping adenosquamous, undifferentiated, acinar, IPMN, CUP and the metastasis) and re-run your proxy and co-mutation checks. Does any result or your reading of the study scope change?",
+        "from": [
+          "sl-lab-0c3d78a8e39e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-3b2c2768b9b5"
+      },
+      {
+        "to": "bh48-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your biological basis is that G12R is impaired in PI3K signaling. State the specific link from that to NF-kB activity and its direction in G12R vs G12D, and whether it was reported by this study. If the link is not established, does the PI3K argument still decide this label?",
+        "from": [
+          "sl-lab-e2f6e4891abf"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-2baf57914473"
+      },
+      {
+        "to": "bh48-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your NF-kB gene count (4/55 vs 4/145) used mutations only. Check copy-number deletions/amplifications in data_cna.txt and SVs in data_sv.txt for the same NF-kB genes, using panel-specific denominators from data_gene_panel_matrix.txt. Does the per-allele alteration rate change, and does it change your method?",
+        "from": [
+          "sl-lab-e2f6e4891abf"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-b7d7c335b97f"
+      },
+      {
+        "to": "bh48-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: List the genes in your NF-kB/PI3K set and their per-allele counts, and reconcile your G12D n=145 with the other count of 144 after handling samples with two KRAS variants. Does excluding double-KRAS samples and non-adenocarcinoma histologies change your counts or your conclusion?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-1d428cecfe55"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In published studies comparing KRAS G12R with KRAS G12D pancreatic cancer (cell lines, organoids or patient tumors), what has been reported about the relative activity of NF-kB signaling (canonical or non-canonical) between these two alleles, and in which direction?",
+          "why": "Both teams decided the label from recalled allele biology that concerns PI3K and macropinocytosis; the direction of any NF-kB difference is the one fact that settles the label, and neither team showed it knew it.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Which somatic copy-number or mutation events in genes such as TRAF3, CYLD, TNFAIP3, BIRC3, NFKBIA and MAP3K14 are conventionally interpreted as activating NF-kB signaling, and are such events used as genomic proxies for NF-kB activity in solid-tumor targeted-panel studies?",
+          "why": "Determines whether the unused CNA/SV data can serve as a legitimate proxy readout and how to score direction.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In published studies comparing KRAS G12R with KRAS G12D pancreatic cancer (cell lines, organoids or patient tumors), what has been reported about the relative activity of NF-kB signaling (canonical or non-canonical) between these two alleles, and in which direction?",
+          "answer": "Not settled by the web: all research gateway calls failed (HTTP 502/Exa 403), so I read no pages. From unverified recall only, the KRAS G12R PDAC literature (MSK-led allele studies, following Hobbs et al. 2020 on impaired PI3K/p110alpha binding and macropinocytosis in G12R) has been described as showing lower NF-kB/inflammatory transcriptional signaling in G12R than in G12D. That direction fits the hypothesis, but I could not verify it and it should not be treated as an established citation.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh48-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-ab2c0ad8c834"
+            },
+            "bh48-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-ceb01a573297"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In published studies comparing KRAS G12R with KRAS G12D pancreatic cancer (cell lines, organoids or patient tumors), what has been reported about the relative activity of NF-kB signaling (canonical or non-canonical) between these two alleles, and in which direction? ANSWER: Not settled by the web: all research gateway calls failed (HTTP 502/Exa 403), so I read no pages. From unverified recall only, the KRAS G12R PDAC literature (MSK-led allele studies, following Hobbs et al. 2020 on impaired PI3K/p110alpha binding and macropinocytosis in G12R) has been described as showing lower NF-kB/inflammatory transcriptional signaling in G12R than in G12D. That direction fits the hypothesis, but I could not verify it and it should not be treated as an established citation. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "Which somatic copy-number or mutation events in genes such as TRAF3, CYLD, TNFAIP3, BIRC3, NFKBIA and MAP3K14 are conventionally interpreted as activating NF-kB signaling, and are such events used as genomic proxies for NF-kB activity in solid-tumor targeted-panel studies?",
+          "answer": "From recall (web unavailable): loss-of-function events in negative regulators are conventionally read as NF-kB-activating. These are homozygous deletions or truncating/inactivating mutations of TRAF3, BIRC2/BIRC3 and TRAF2 (non-canonical) and of CYLD, TNFAIP3 (A20) and NFKBIA (IkBa) (canonical). Amplification, rearrangement or stabilizing alterations of MAP3K14 (NIK) are activating (non-canonical). This scheme comes mainly from multiple myeloma, lymphoma and HPV+ head and neck cancer genomics. These events are rare in PDAC, and solid-tumor targeted-panel studies do not conventionally use them as a validated NF-kB activity proxy. Any such use would be exploratory and underpowered.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bh48-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-958bda43c166"
+            },
+            "bh48-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-6486c19a7391"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Which somatic copy-number or mutation events in genes such as TRAF3, CYLD, TNFAIP3, BIRC3, NFKBIA and MAP3K14 are conventionally interpreted as activating NF-kB signaling, and are such events used as genomic proxies for NF-kB activity in solid-tumor targeted-panel studies? ANSWER: From recall (web unavailable): loss-of-function events in negative regulators are conventionally read as NF-kB-activating. These are homozygous deletions or truncating/inactivating mutations of TRAF3, BIRC2/BIRC3 and TRAF2 (non-canonical) and of CYLD, TNFAIP3 (A20) and NFKBIA (IkBa) (canonical). Amplification, rearrangement or stabilizing alterations of MAP3K14 (NIK) are activating (non-canonical). This scheme comes mainly from multiple myeloma, lymphoma and HPV+ head and neck cancer genomics. These events are rare in PDAC, and solid-tumor targeted-panel studies do not conventionally use them as a validated NF-kB activity proxy. Any such use would be exploratory and underpowered. HOW SURE: medium. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh48-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh48-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh48-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh48-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh48-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 63.014936791034415,
+      "cost_usd": 0.2018296,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 35.705859459005296,
+      "cost_usd": 0.128369,
+      "error": null
+    },
+    {
+      "agent": "bh48-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 38.644669334054925,
+      "cost_usd": 0.1456856,
+      "error": null
+    },
+    {
+      "agent": "bh48-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 44.860440250020474,
+      "cost_usd": 0.1801974,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 57.09602304198779,
+      "cost_usd": 0.2821014,
+      "error": null
+    },
+    {
+      "agent": "bh48-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 57.323250749963336,
+      "cost_usd": 0.134593,
+      "error": null
+    },
+    {
+      "agent": "bh48-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 58.67851433297619,
+      "cost_usd": 0.24038879999999999,
+      "error": null
+    },
+    {
+      "agent": "bh48-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 62.125614208052866,
+      "cost_usd": 0.30057100000000003,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

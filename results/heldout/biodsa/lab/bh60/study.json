@@ -1,0 +1,410 @@
+{
+  "study": "bh60",
+  "status": "replicated",
+  "final": {
+    "agent": "bh60-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh60/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh60-library": "opus",
+    "bh60-team-a": "opus",
+    "bh60-team-b": "opus",
+    "bh60-team-c": "opus",
+    "bh60-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh60-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh60/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh60-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh60/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh60-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh60/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh60-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh60/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh60-team-a",
+        "bh60-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh60-team-a",
+        "bh60-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The tables appear to hold only breast adenoid cystic carcinomas (about 12 samples), with no salivary AdCC or conventional TNBC samples to compare against directly. Confirm this by tabulating CANCER_TYPE_DETAILED / ONCOTREE_CODE in the clinical tables. Under the benchmark convention, 'Not verifiable' applies only when the hypothesis concerns a disease or cohort the tables do not cover. A hypothesis about this cohort's own tumours (breast AdCC) must be labelled True or False, even though the comparison groups are absent. Compare the in-data features of breast AdCC with established literature profiles of salivary AdCC and of TNBC, and say in the reasoning that literature supplied the comparison groups.",
+      "from": [
+        "sl-lab-e95220df504b"
+      ],
+      "reason": "Without in-data comparison groups, teams may wrongly default to 'Not verifiable'.",
+      "fact_ids": {
+        "team-a": "sl-lab-3887a3df6ef7"
+      }
+    },
+    {
+      "text": "Judge similarity on the defining genomic features, not on overlap of individual gene names. Literature reference profiles: salivary AdCC has very low TMB (about 0.3 mutations/Mb), MYB-NFIB or MYBL1 rearrangements, rare TP53 mutations, few copy-number alterations, and recurrent hits in chromatin remodellers (KDM6A, ARID1A, SMARCA2, CREBBP/EP300), NOTCH1/FBXW7 and the PI3K pathway. Conventional TNBC has TP53 mutations in about 80% of cases, high genomic instability with many CNAs, PIK3CA mutations and higher TMB. Per sample, compute nonsynonymous mutation count/TMB, TP53 mutation status, high-level CNA burden, MYB/MYBL1 rearrangement status and hits in chromatin/NOTCH/PI3K genes. Then judge which reference profile the cohort matches.",
+      "from": [
+        "sl-lab-029426038e59"
+      ],
+      "reason": "These give the teams the external reference profiles and the feature set they need, because the data contain only one group.",
+      "fact_ids": {
+        "team-a": "sl-lab-07529e42d35a"
+      }
+    },
+    {
+      "text": "MYB-family activation evidence may be spread across several places: data_sv.txt plus clinical columns such as MYB_NFIB FISH, fusion status and MYB/MYBL1 fusion fields. Some cases lack MYB-NFIB but carry MYBL1 rearrangements or MYB amplification. Take the union of all evidence per sample, and report MYB and MYBL1 separately. Count unique samples, not SV rows.",
+      "from": [
+        "sl-lab-30928f2a1750"
+      ],
+      "reason": "Counting from one source only, or counting rows, misstates the hallmark AdCC feature.",
+      "fact_ids": {
+        "team-a": "sl-lab-b24301c28fe7"
+      }
+    },
+    {
+      "text": "The CNA matrix uses GISTIC-style -2..2 calls. Low-level \u00b11 calls are noisy and overstate instability. Count only -2/+2 calls per sample, both as a count and as a fraction of genes, to summarise genomic instability. Note any focal MYB (6q23) or NFIB (9p23) events separately.",
+      "from": [
+        "sl-lab-1657cc6942d3"
+      ],
+      "reason": "CNA burden is a key feature for telling an AdCC-like genome from a TNBC-like one, and counting \u00b11 calls would bias it.",
+      "fact_ids": {
+        "team-a": "sl-lab-7ced77716ae5"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 7,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed that literature reference profiles for salivary AdCC (low TMB, MYB-NFIB, rare TP53, chromatin remodellers) and for TNBC (TP53 ~80%, high CNA burden) are correct and can stand in for the missing comparison groups. Neither team says where these numbers come from, and the library notes say they come from domain knowledge with no source.",
+      "Both teams assumed the MYB-NFIB fusion is part of the 'mutational landscape'. A fusion is a structural rearrangement, not a somatic point mutation, and with the fusion removed the similarity argument rests only on TMB and TP53.",
+      "Both teams assumed all 12 samples are the same entity (breast AdCC) and are equivalent. They did not examine the field differences: AdCC5T has CANCER_TYPE 'Breast Cancer' while the others have 'Invasive Breast Carcinoma', and the histology includes solid/trabecular variants, which in salivary AdCC are linked to NOTCH1 mutations and a higher burden.",
+      "Both teams assumed the TMB_NONSYNONYMOUS clinical column and their own counts use the same denominator as the published salivary AdCC and TNBC TMB values, which come from different capture sizes and pipelines."
+    ],
+    "unused_evidence": [
+      "The Hotspot column in data_mutations.txt, which would show whether any TP53, PIK3CA or other driver calls are recognised hotspots, such as those seen in TNBC.",
+      "Variant_Classification and Consequence by gene class. Neither team reports whether truncating mutations in chromatin-remodelling, NOTCH or MYB-pathway genes are present, the defining salivary AdCC pattern, or just counts gene names.",
+      "t_ref_count/t_alt_count (VAF). These could show whether driver mutations are clonal or subclonal passengers, which matters when a single TP53 or PIK3CA hit is weighed.",
+      "Clinical fields for MYB_NFIB_FISH, MYB_NFIB_REARRANGEMENT (exon breakpoints) and FUSION_STATUS, and the SV rows. These disagree for AdCC5T (SV positive, FISH negative) and AdCC32T (FISH and clinical positive, no SV row). FUSION_STATUS is YES for all 12, including the two 'Negative' cases.",
+      "GENOMIC_ALTERATIONS and MYB_NFIB_CNA arm-level summaries (12q12-q14.1 loss, 17q gain/17p loss). Neither team compared these with the characteristic CNA patterns of salivary AdCC (for example 6q, 12q, 1p losses) or of TNBC."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the absence of in-data comparator groups as their weakest point. Neither resolved it: neither gave quantitative reference ranges with sources, nor did a test such as comparing observed TP53 frequency with a stated TNBC reference rate using a binomial interval.",
+      "Team A resolved the AdCC5T FISH/SV conflict by taking the union of the evidence. Team B did not report the conflict at all.",
+      "Team A noticed that two samples have ~1331 genes at \u00b12 from broad 17q/17p events and switched to arm-level summaries. It did not test whether this genomic instability is TNBC-like, which runs against its own 'few CNAs' reference."
+    ],
+    "second_readings": [
+      "'Mutational landscape' could mean only somatic SNVs and indels (genes mutated, TMB, signatures), not fusions or CNAs. Under that reading the evidence is TMB plus driver genes alone.",
+      "'Other types of TNBC' treats breast AdCC as itself a TNBC. The data confirm ER, PR and HER2 negative for all 12. The claim is therefore a ranking: closer to salivary AdCC than to conventional TNBC. It is not a claim that breast AdCC lacks all TNBC features, and the teams should judge relative distance, not the mere presence of shared genes."
+    ],
+    "verdict": "Both teams reached the same label, and it rests on in-data TMB, TP53 and fusion features compared against literature profiles, which fits the benchmark convention because the hypothesis is about this study's own cohort. I trust it moderately to well. Neither team gave sources for its reference profiles or tested the subset with broad 17q/17p changes, and the fusion fields disagree across files, so the questions probe whether the conclusion survives those checks.",
+    "questions": [
+      {
+        "to": "bh60-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: If you drop MYB-NFIB and the CNA summaries and use only somatic SNVs and indels from data_mutations.txt (TMB, TP53, PIK3CA, and truncating hits in chromatin-remodelling and NOTCH genes, with the Hotspot flag), does the cohort still sit closer to the salivary AdCC reference than to the TNBC reference? Does that change your method?",
+        "from": [
+          "sl-lab-2f7a6797fd19",
+          "sl-lab-d1b9bf0c4661"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-2f2a759a5b60"
+      },
+      {
+        "to": "bh60-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For the two samples with broad 17q gain/17p loss (AdCC4T, AdCC10T), list their TP53 and PIK3CA status, TMB and histology. Are they TNBC-like outliers? If so, does a 10-versus-2 split change how you weigh the cohort-level similarity?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-592fe8d4c745"
+      },
+      {
+        "to": "bh60-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate the fusion evidence per sample across data_sv.txt, MYB_NFIB_FISH, MYB_NFIB_REARRANGEMENT, FUSION_STATUS and MYB_MYBL1_FUSION. Note that AdCC32T is FISH positive with no SV row and FUSION_STATUS is YES for all 12. Does the fusion rate you report depend on which field you trust, and does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-ec0b71d8460c"
+      },
+      {
+        "to": "bh60-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Write down the numerical reference values you used for salivary AdCC and TNBC (TMB per Mb, TP53 frequency, CNA burden) with their stated basis. Then compare the observed per-sample values (TMB_NONSYNONYMOUS, TP53 status with the Hotspot flag) to each reference using an interval rather than a point comparison. Does the conclusion hold with 12 samples?",
+        "from": [
+          "sl-lab-b40fcc02080b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-089f55d0a53e"
+      },
+      {
+        "to": "bh60-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your checks did not cover copy-number data. Using data_cna.txt and the GENOMIC_ALTERATIONS/MYB_NFIB_CNA fields, how many samples show broad arm-level instability (for example 17q gain/17p loss), and does this TNBC-like feature in a subset change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-f638294ac25d"
+      },
+      {
+        "to": "bh60-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: data_sv.txt lists AdCC5T as MYB-NFIB positive although its FISH is Negative, and AdCC32T has no SV row although FISH is Positive. Reconcile the fusion evidence per sample and say whether your MYB-NFIB frequency, and the weight you put on it, changes.",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-495b883c535d"
+      },
+      {
+        "to": "bh60-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Break the mutated genes down by Variant_Classification. Are the hits in chromatin-remodelling, NOTCH and PI3K genes truncating or missense, and are any flagged in the Hotspot column? Does restricting to likely-functional mutations change which reference profile the cohort matches?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-5e46409149d5"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "What are the typical somatic mutation rates (mutations per Mb), TP53 mutation frequencies and copy-number alteration burdens reported in exome sequencing studies of salivary gland adenoid cystic carcinoma compared with conventional triple-negative breast cancer?",
+          "why": "Both teams compared against these reference profiles from memory without sources. The label depends on them being correct.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In genomics papers, does the term 'mutational landscape' conventionally include gene fusions and copy-number alterations, or only somatic single-nucleotide variants and small indels?",
+          "why": "This decides whether the MYB-NFIB fusion can count as evidence of mutational-landscape similarity, or whether only point mutations count.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How are arm-level copy-number changes such as 17q gain/17p loss and 12q loss distributed in salivary adenoid cystic carcinoma versus basal-like triple-negative breast cancer?",
+          "why": "Some samples show broad 17q/17p events, and it is unclear whether these point towards a TNBC-like or an AdCC-like profile.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "What are the typical somatic mutation rates (mutations per Mb), TP53 mutation frequencies and copy-number alteration burdens reported in exome sequencing studies of salivary gland adenoid cystic carcinoma compared with conventional triple-negative breast cancer?",
+          "answer": "NOT SETTLED BY WEB: all research gateway calls failed (HTTP 502/Exa 403), so no pages were read. Unsourced background knowledge: salivary AdCC exomes (Ho et al. 2013 Nat Genet; Stephens et al. 2013 JCI) report about 0.3 non-silent mutations/Mb, rare TP53 mutations (about 5% or less) and few CNAs. Conventional/basal-like TNBC (TCGA) has a higher burden (about 1-2+/Mb), TP53 mutated in about 80%, and extensive CNAs.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh60-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-bc2b1ed71b2f"
+            },
+            "bh60-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-3aa8841afe5f"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What are the typical somatic mutation rates (mutations per Mb), TP53 mutation frequencies and copy-number alteration burdens reported in exome sequencing studies of salivary gland adenoid cystic carcinoma compared with conventional triple-negative breast cancer? ANSWER: NOT SETTLED BY WEB: all research gateway calls failed (HTTP 502/Exa 403), so no pages were read. Unsourced background knowledge: salivary AdCC exomes (Ho et al. 2013 Nat Genet; Stephens et al. 2013 JCI) report about 0.3 non-silent mutations/Mb, rare TP53 mutations (about 5% or less) and few CNAs. Conventional/basal-like TNBC (TCGA) has a higher burden (about 1-2+/Mb), TP53 mutated in about 80%, and extensive CNAs. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "In genomics papers, does the term 'mutational landscape' conventionally include gene fusions and copy-number alterations, or only somatic single-nucleotide variants and small indels?",
+          "answer": "NOT SETTLED BY WEB (gateway failure). Background knowledge: there is no strict convention. Many papers use the term broadly to cover SNVs/indels, CNAs and rearrangements/fusions; some restrict it to point mutations and indels. Using MYB-NFIB as supporting evidence is reasonable but should not be the only evidence.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh60-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-8f24088b6a4e"
+            },
+            "bh60-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-90dddd5f0db6"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In genomics papers, does the term 'mutational landscape' conventionally include gene fusions and copy-number alterations, or only somatic single-nucleotide variants and small indels? ANSWER: NOT SETTLED BY WEB (gateway failure). Background knowledge: there is no strict convention. Many papers use the term broadly to cover SNVs/indels, CNAs and rearrangements/fusions; some restrict it to point mutations and indels. Using MYB-NFIB as supporting evidence is reasonable but should not be the only evidence. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "How are arm-level copy-number changes such as 17q gain/17p loss and 12q loss distributed in salivary adenoid cystic carcinoma versus basal-like triple-negative breast cancer?",
+          "answer": "NOT SETTLED BY WEB (gateway failure). Background knowledge: salivary AdCC has recurrent losses of 6q, 12q, 1p and 17p, plus 1q gain. 12q loss is described as AdCC-associated. Basal-like TNBC has widespread changes (1q/8q/10p gain; 5q/8p/4p/15q/17p loss). 17p loss occurs in both, so it does not discriminate. 12q loss leans AdCC-like.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh60-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-002c527ead6b"
+            },
+            "bh60-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-52aaaaa2e59a"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How are arm-level copy-number changes such as 17q gain/17p loss and 12q loss distributed in salivary adenoid cystic carcinoma versus basal-like triple-negative breast cancer? ANSWER: NOT SETTLED BY WEB (gateway failure). Background knowledge: salivary AdCC has recurrent losses of 6q, 12q, 1p and 17p, plus 1q gain. 12q loss is described as AdCC-associated. Basal-like TNBC has widespread changes (1q/8q/10p gain; 5q/8p/4p/15q/17p loss). 17p loss occurs in both, so it does not discriminate. 12q loss leans AdCC-like. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh60-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh60-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh60-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh60-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh60-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 56.014537125010975,
+      "cost_usd": 0.1976878,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 30.643977000028826,
+      "cost_usd": 0.203186,
+      "error": null
+    },
+    {
+      "agent": "bh60-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 33.383101333049126,
+      "cost_usd": 0.15223520000000001,
+      "error": null
+    },
+    {
+      "agent": "bh60-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 46.99473095801659,
+      "cost_usd": 0.2182882,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 52.440294999978505,
+      "cost_usd": 0.2902152,
+      "error": null
+    },
+    {
+      "agent": "bh60-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 36.73903708299622,
+      "cost_usd": 0.14456339999999998,
+      "error": null
+    },
+    {
+      "agent": "bh60-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 48.57958462496754,
+      "cost_usd": 0.2750674,
+      "error": null
+    },
+    {
+      "agent": "bh60-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 63.35094304208178,
+      "cost_usd": 0.27451960000000003,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

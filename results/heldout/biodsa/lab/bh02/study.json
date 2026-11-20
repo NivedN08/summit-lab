@@ -1,0 +1,404 @@
+{
+  "study": "bh02",
+  "status": "replicated",
+  "final": {
+    "agent": "bh02-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh02/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh02-library": "opus",
+    "bh02-team-a": "opus",
+    "bh02-team-b": "opus",
+    "bh02-team-c": "opus",
+    "bh02-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "bh02-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh02/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh02-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh02/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh02-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh02/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh02-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh02/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh02-team-a",
+        "bh02-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh02-team-a",
+        "bh02-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The tables have no explicit squamous/subtype column, but the cohort appears to be a pancreatic ductal adenocarcinoma study (ICGC/QCMG-style) with RNA-seq expression and survival/vital-status outcomes. Confirm CANCER_TYPE and that expression and survival variables exist; if so, the hypothesis concerns this study, and under the benchmark convention the label should be True or False, not Not verifiable. Subtype can be derived from expression (squamous/basal-like gene programs) or from the histology column.",
+      "from": [
+        "sl-lab-bcf971b82798"
+      ],
+      "reason": "The missing subtype column could push a team toward a wrong 'Not verifiable'. This explains how to make the variable testable.",
+      "fact_ids": {
+        "team-a": "sl-lab-dbb90f1b4e41"
+      }
+    },
+    {
+      "text": "Tabulate HISTOLOGICAL_SUBTYPE. It reportedly includes about 16 'PDA - Adenosquamous carcinoma' cases, which are a histological proxy for squamous, along with IPMN-associated invasive, acinar and other non-ductal histologies whose prognosis differs. Use adenosquamous vs conventional PDAC as a second, independent test, and exclude or adjust for non-ductal histologies so they do not bias the comparison.",
+      "from": [
+        "sl-lab-cd70c2972ced"
+      ],
+      "reason": "This gives a second operationalisation of 'squamous' that does not rely on expression, and flags a confounder in the comparison group.",
+      "fact_ids": {
+        "team-a": "sl-lab-f1c22c7afaae"
+      }
+    },
+    {
+      "text": "The sample table reportedly mixes primary tumours (about 376), metastases, cell lines (about 69) and xenografts (about 8). Check SAMPLE_CLASS and SAMPLE_TYPE. Restrict survival analysis to primary tumour samples, keep one sample per patient, and recompute any expression z-scores or subtype scores within that set, because the deposited z-scores reference all samples, including cell lines that lack stroma.",
+      "from": [
+        "sl-lab-fb58fef6f9ca"
+      ],
+      "reason": "Cell lines and xenografts have no follow-up, and they distort expression-based subtype calls. This choice changes both the sample set and the scores.",
+      "fact_ids": {
+        "team-a": "sl-lab-61c6ef0c76ac"
+      }
+    },
+    {
+      "text": "Squamous subgroups (about 16 adenosquamous cases, or a top-quantile basal/squamous score) are small, so log-rank tests are underpowered and Cox estimates are unstable, and stage confounds the comparison. Report n and events per group, the hazard ratio with its 95% CI, and a Cox model adjusted for stage and age. Judge on the direction of the HR and its CI, not on p<0.05 alone.",
+      "from": [
+        "sl-lab-74dba4404e65"
+      ],
+      "reason": "This shapes how the survival evidence is weighed, so that a non-significant small-group result is not misread.",
+      "fact_ids": {
+        "team-a": "sl-lab-e718fd907b97"
+      }
+    },
+    {
+      "text": "If the data analysis is underpowered or inconclusive, decide from the established literature on PDAC transcriptional subtypes (Bailey 2016 squamous; Collisson quasi-mesenchymal; Moffitt basal-like) and their reported prognosis. In the reasoning, say explicitly whether the data or established biology decided the label.",
+      "from": [
+        "sl-lab-382e9b535e95"
+      ],
+      "reason": "This is the benchmark's fallback rule for weak data. I stated it neutrally so the brief gives method guidance without supplying the answer.",
+      "fact_ids": {
+        "team-a": "sl-lab-13900bae33be"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 7,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "DAYS_TO_LAST_FOLLOWUP is treated as time-to-death for deceased patients and time-to-censoring for the living; the column description says only 'last followup', and neither team checked whether death times and last-contact times are on the same footing.",
+      "The 133 patients with follow-up time are assumed to be a non-informative subset of the cohort. In fact follow-up exists for only some countries (none from Germany or Japan, 1 of 47 from Italy), so this is a site-selected subset.",
+      "Both teams use the deposited 'ref_all_samples' z-scores (team A re-standardised within primaries). The reference set may include cell lines and xenografts, which would shift what counts as 'high squamous' among bulk tumours.",
+      "A hand-picked basal/squamous marker score is assumed to stand in for the study's expression-defined squamous class. Neither team scored a classical/progenitor counter-program (for example GATA6 or HNF1A) or checked the score against stromal or low-purity content."
+    ],
+    "unused_evidence": [
+      "TUMOR_GRADE (including 15 undifferentiated and 143 poorly differentiated tumours) was not used. Squamous/basal tumours are typically poorly differentiated, so grade could confound the comparison or sit on the causal path.",
+      "COUNTRY / procurement site was not used. It determines who has follow-up time and could confound survival through differences in centre and treatment era.",
+      "data_mutations.txt was not used. Mutations linked to the squamous class (e.g. TP53, KDM6A and other chromatin-modifier genes) could be used to check that the expression score agrees with the squamous class.",
+      "Non-ductal histologies (IPMN with invasion, mucinous, undifferentiated, acinar, etc.) are in the 'other' reference group. Team B compared adenosquamous with all other histologies, and IPMN-associated tumours do better, which could inflate the contrast.",
+      "data_mrna_seq_v2_rsem.txt (raw RSEM) was not used to rebuild the score within bulk primary tumours only."
+    ],
+    "unresolved_weak_points": [
+      "Team A: about two-thirds of primaries lack follow-up time. This was reported but not tested; missingness was not compared by histology, score, stage or country.",
+      "Team B: the gene score is its own proxy, not the study's class labels. This was named but not checked against a classical-program score or against purity.",
+      "Team B: counting DOC and deaths of unknown cause as events was named but not resolved with a disease-specific (DOD-only) sensitivity analysis.",
+      "Team B: its RNA score Cox model was not adjusted for stage. Team A adjusted for stage and age but not grade."
+    ],
+    "second_readings": [
+      "'Squamous subtype' could mean the study's transcriptomic squamous class or the histological adenosquamous variant. Both teams tested both, so this reading is covered.",
+      "'Prognosis' could mean overall survival or disease-specific survival (DOD only). The teams used overall-type events, so team B's coding mixes in other causes of death.",
+      "'Associated with' could mean a univariable association or an independent one after adjusting for stage and grade. Either reading gives the same direction only if the adjusted HR stays above 1."
+    ],
+    "verdict": "I trust the agreed direction highly. Two separate squamous definitions (histology and expression) both give HR>1 with CIs excluding 1 in both teams, and this matches the established biology. The remaining risks are follow-up missing by site and confounding by grade or histology, and these seem more likely to change effect sizes than to flip the direction.",
+    "questions": [
+      {
+        "to": "bh02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Among primary tumours, compare the patients with and without DAYS_TO_LAST_FOLLOWUP by COUNTRY, histology, squamous score and stage. If missingness depends on squamous status or site, does a model stratified by country change the direction or CI of your HRs?",
+        "from": [
+          "sl-lab-02183289cc5d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-1bb87dd6e153"
+      },
+      {
+        "to": "bh02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Add TUMOR_GRADE to your adjusted Cox models for adenosquamous and for the top-quartile score, and report n and events per grade. Does the HR for squamous stay above 1, and does that change how you word the claim?",
+        "from": [
+          "sl-lab-f21c9b2d2120"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-d60a9959b36c"
+      },
+      {
+        "to": "bh02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Compute a classical/progenitor score (e.g. GATA6, HNF1A and related genes) from raw RSEM within bulk primaries and use squamous-minus-classical as the exposure. Does it rank the same patients as squamous, and does the survival result hold?",
+        "from": [
+          "sl-lab-78e9703d07d0"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-f63c7936effe"
+      },
+      {
+        "to": "bh02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Restrict the reference group to conventional 'Pancreatic Ductal Adenocarcinoma' (drop IPMN-with-invasion and other non-ductal histologies) and rerun the adenosquamous comparison. Does the HR change materially?",
+        "from": [
+          "sl-lab-d5a4914af42d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-8f2141df05ed"
+      },
+      {
+        "to": "bh02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Rerun both survival analyses counting only DOD as the event (censoring DOC and deaths of unknown cause), and adjust the RNA score Cox model for AJCC stage, age and TUMOR_GRADE. Does the direction or CI of either HR change?",
+        "from": [
+          "sl-lab-c5c48cebe343"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-dd60e821813e"
+      },
+      {
+        "to": "bh02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check whether the deposited z-score reference includes cell lines and xenografts by recomputing your score from raw RSEM within bulk primary tumours only. Do the same patients fall in the top tertile, and does the survival result hold?",
+        "from": [
+          "sl-lab-2708c109dcea"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-b4d578a73633"
+      },
+      {
+        "to": "bh02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate your squamous score against mutation status in data_mutations.txt for genes reported to go with the squamous class (e.g. TP53, KDM6A) and against TUMOR_GRADE. Does the score behave like a squamous class rather than a purity/stroma or grade proxy, and does this affect how you use it?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-b5449e7fa5f6"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In pancreatic ductal adenocarcinoma transcriptomic subtyping (squamous/basal-like vs progenitor/classical), which marker genes define each class, and is the squamous class usually scored against a classical counter-program rather than on its own?",
+          "why": "Both teams used hand-picked squamous marker scores without a classical counter-program. Knowing the defining genes would show whether their proxy captures the intended class.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In cBioPortal clinical files, when a patient has died, does 'Days to Last Followup' conventionally record days to death, or days to the last contact before death?",
+          "why": "Both teams treated this column as survival time for deceased patients without checking. If it records something else, the survival times would be mis-specified.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In pancreatic ductal adenocarcinoma transcriptomic subtyping (squamous/basal-like vs progenitor/classical), which marker genes define each class, and is the squamous class usually scored against a classical counter-program rather than on its own?",
+          "answer": "Web unavailable (research gateway returned HTTP 403 on every call), so this answer comes from domain knowledge and was not checked against any page. Squamous/basal-like genes: KRT5, KRT6A, KRT14, KRT17, S100A2, TP63 (deltaNp63) programme, GPR87, CAV1, LY6D, SPRR genes. Progenitor/classical genes: GATA6, HNF1A, HNF4A, FOXA2/3, PDX1, TFF1, CLDN18, LGALS4, CDH17, MUC13. Common classifiers contrast the two programmes: Moffitt basal-like vs classical, and PurIST, which uses k-TSP gene pairs. A squamous score is therefore usually read relative to classical, for example basal minus classical or GATA6-low. A squamous-only marker score is a weaker proxy. Squamous/basal-like PDAC is consistently linked to worse survival.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bh02-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-b43a325c5a63"
+            },
+            "bh02-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-b5da930612cb"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In pancreatic ductal adenocarcinoma transcriptomic subtyping (squamous/basal-like vs progenitor/classical), which marker genes define each class, and is the squamous class usually scored against a classical counter-program rather than on its own? ANSWER: Web unavailable (research gateway returned HTTP 403 on every call), so this answer comes from domain knowledge and was not checked against any page. Squamous/basal-like genes: KRT5, KRT6A, KRT14, KRT17, S100A2, TP63 (deltaNp63) programme, GPR87, CAV1, LY6D, SPRR genes. Progenitor/classical genes: GATA6, HNF1A, HNF4A, FOXA2/3, PDX1, TFF1, CLDN18, LGALS4, CDH17, MUC13. Common classifiers contrast the two programmes: Moffitt basal-like vs classical, and PurIST, which uses k-TSP gene pairs. A squamous score is therefore usually read relative to classical, for example basal minus classical or GATA6-low. A squamous-only marker score is a weaker proxy. Squamous/basal-like PDAC is consistently linked to worse survival. HOW SURE: medium. SOURCES: none given."
+        },
+        {
+          "question": "In cBioPortal clinical files, when a patient has died, does 'Days to Last Followup' conventionally record days to death, or days to the last contact before death?",
+          "answer": "The web did not settle this: the gateway returned HTTP 403, and no page was read. cBioPortal's standard survival fields are OS_STATUS and OS_MONTHS, where time for a deceased patient is time to death. A free-text 'Days to Last Followup' column has no enforced convention. In ICGC/QCMG-derived pancreatic data, a deceased donor's last follow-up is generally the date of death, so using it as survival time is the usual practice. Teams should check it against any OS or death-days column if one is present.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh02-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-1c6462f79a70"
+            },
+            "bh02-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-6dfd3eebef80"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cBioPortal clinical files, when a patient has died, does 'Days to Last Followup' conventionally record days to death, or days to the last contact before death? ANSWER: The web did not settle this: the gateway returned HTTP 403, and no page was read. cBioPortal's standard survival fields are OS_STATUS and OS_MONTHS, where time for a deceased patient is time to death. A free-text 'Days to Last Followup' column has no enforced convention. In ICGC/QCMG-derived pancreatic data, a deceased donor's last follow-up is generally the date of death, so using it as survival time is the usual practice. Teams should check it against any OS or death-days column if one is present. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh02-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh02-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh02-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh02-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh02-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 67.86493512499146,
+      "cost_usd": 0.22161920000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 30.511882208054885,
+      "cost_usd": 0.1896872,
+      "error": null
+    },
+    {
+      "agent": "bh02-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 47.78135095897596,
+      "cost_usd": 0.186434,
+      "error": null
+    },
+    {
+      "agent": "bh02-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 56.83110970805865,
+      "cost_usd": 0.21517200000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 62.90474904200528,
+      "cost_usd": 0.29625179999999995,
+      "error": null
+    },
+    {
+      "agent": "bh02-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 105.36621216603089,
+      "cost_usd": null,
+      "error": null
+    },
+    {
+      "agent": "bh02-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 71.53884441591799,
+      "cost_usd": 0.3073484,
+      "error": null
+    },
+    {
+      "agent": "bh02-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 77.90170245803893,
+      "cost_usd": 0.3491552,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

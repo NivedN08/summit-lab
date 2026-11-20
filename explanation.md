@@ -349,6 +349,12 @@ The run started at 20:02 and halted at 20:17, with no task finished. This time t
 2. The loop crashed during m02's evaluation on a past.dev network error (5 tries, about 15 s of backoff). Fixed in 9eddeb0: past.dev calls now retry 8 times over about 2 minutes, and a crashed loop can resume from its ledger entries (`loop --resume-loop <id>`), judging again the move it was on and counting what it already spent against the cap.
 3. Nived paused the loop during the setup of m03's evaluation. I took the stop for the app ending the task and restarted it; it was stopped again within a minute, before any agent ran, and resumed when Nived asked. The ledger shows that restart as a second `loop.resume` note. Lesson: an unexplained stop may be a pause; ask before restarting.
 
+**I-17 · Nov 19-20 · Open · Four interruptions during the held-out batch (M-19); the lab's cap was raised twice with the owner's approval (ledger 78, 79).**
+1. The launcher's first start ran nothing: macOS `xargs -I` refuses arguments over 255 bytes, and every registered command is longer. Fixed in 7c587f6 (each command passed whole); nothing was spent.
+2. The BioDSA lab's first try crashed in memory setup, before any agent ran. A past.dev namespace is named from the run folder, and both labs ran in a folder called `lab`, so both used `sl-lab`; the shared director identity then reached the planted lab's 80 audiences and the lab's own membership check refused to start. With the owner's approval the planted lab's 80 audiences were deleted (`runs/heldout/logs/past-cleanup.jsonl`) and the registered command was rerun unchanged. The planted lab, which finished first, never reached a BioDSA audience. Not yet fixed in code: two runs in folders with the same name must not run at once.
+3. A network outage on the launching Mac (DNS failures, 21:27-21:40 UTC on Nov 19) failed every agent run in flight: 48 runs, 35 tasks ended in error. Failed runs were charged at their estimate, and the lab halted on its $145 cap. The owner approved a $205 cap (ledger 78); the resume restarted the 35 tasks and finished 29, then halted on that cap; the owner approved $220 (ledger 79) and the last 6 finished. No run had been graded at either resume.
+4. The BioDSA self-challenge arm stopped on its $35 cap with 236 of 240 agent runs done; its three automatic retries made almost no progress (each restarts a stopped task from its first step), so it was not resumed. Six tasks have no graded answer (bh71, bh74, bh77-bh80) and count as failed.
+
 ## 8. Research behind decisions
 
 All sources below were read on Nov 14. This section is what documentation and papers say. What we measured ourselves is in section 9.
@@ -668,3 +674,29 @@ Spent: $32.11 of the $45 cap.
 What this shows. The two control arms and the planted suite work live for the first time: 64 smoke-test agent runs, all ok, all graded. The lab costs the same per task on planted tables as on BioDSA ($1.46 against $1.56 without repeated work), and an Opus attempt costs $0.11 on both, so the same-cost vote gets k = 15 attempts a task on BioDSA and k = 13 on the planted tasks. Opus alone catches most planted faults on its own: its three wrong attempts are all on pf24, the faulted twin of a misleading data dictionary. So the planted tasks may separate the arms less than hoped.
 
 What it does not show. Eight dev tasks say nothing about the held-out result. Three things went wrong and were fixed or noted. The arms' new roles fell back to a $1.50 estimate on the planted suite, which stopped the planted self-challenge early; planted runs now use the BioDSA estimates (b020835). The two pilot runs started a second before that commit, ran with the old estimates and stopped on their caps; both were resumed with the same commands. Resuming the self-challenge arm restarts a stopped task from its first step, which repeats work but does not change how its final answer is chosen.
+
+**M-19 · Nov 20, 00:30 · Measured · Pre-registered held-out test, 96 tasks: the lab passed 89, the same-cost vote 87, Fable alone 91. The lab's 2 wins over the vote are not significant (p = 0.25).**
+Plan and decisions: `research/heldout-plan.md`. Specs: `prereg/heldout-biodsa.json`, `prereg/heldout-biodsa-plain.json`, `prereg/heldout-planted.json` (frozen in 1643898). Command: `bash scripts/heldout_batch.sh` (11 registered commands, 4 at a time), then the BioDSA lab rerun and resumed by hand (I-17), then `grade --ledger` and `measures` on every run folder after every agent had exited, then `python3 -m lab.heldout runs/heldout --json runs/heldout/analysis.json`. Tasks: bh01-bh80, a fresh BioDSA-1K draw nobody had seen (with the label convention note), and the 16 planted held-out tasks. Models: Opus 5.5 in every lab role; Fable 5.2 only in its own arm. Records: `results/heldout/`, ledger entries 78-144.
+
+| Arm | BioDSA, 80 tasks | Planted, 16 tasks | All 96 | Cost (agent runs) |
+|---|---|---|---|---|
+| Lab (Opus director and analysts) | 74 | 15 | **89** | $200.64 ($174.54 + $26.10) |
+| Same-cost vote (15 Opus attempts a task on BioDSA, 13 on planted) | 74 | 13 | **87** | $157.91 |
+| Opus alone, 4 attempts, vote | 74 | 13 | 87 | $40.07 |
+| Self-challenge (Opus solves, challenges itself, revises) | 69 | 13 | 82 | $41.49 |
+| Fable alone, 2 attempts | 76 | 15 | **91** | $17.31 |
+| Opus alone without the convention note, 4 attempts | 47 | not run | | $35.64 |
+
+Primary endpoint (registered): the lab against the same-cost vote, both benchmarks pooled. The lab won 2 tasks (pf13, pf14, both duplicated-sample faults) and lost none: exact one-sided sign test p = 0.25, not significant at 0.05. The lab's share of discordant wins is 2 of 2, with an exact 95% interval of 0.16 to 1, so this test cannot rule out a lab that is no better than the vote.
+
+What this shows.
+- On BioDSA the three Opus arms are the same arm. The lab, the vote and Opus alone failed exactly the same 6 tasks (bh34, bh45, bh48, bh60, bh63, bh71). With the convention note, Opus gives the same right or wrong answer whether it works alone, in a 15-attempt vote or in the lab. The lab's whole difference is on the planted tasks.
+- Fable alone, at $0.18 a task, passed the most: 91 of 96. Against the lab it won 3 tasks (bh45, bh48, pf16) and lost 1 (pf14). On the planted faults the lab and Fable each caught 7 of 8; Opus alone and the vote caught 5.
+- The convention note is the largest effect measured in this project: Opus alone passed 74 of 80 with it and 47 of 80 without it, gaining 28 tasks and losing 1 (bh71, which every arm with the note failed too).
+- The lab cost about $2.09 a task (budget counter about $2.48 with the outage's failed runs charged at their estimates), the vote $1.64, Fable alone $0.18.
+
+What it does not show.
+- That the lab beats a single model. It does not beat the vote significantly, and it is behind Fable alone.
+- The self-challenge comparison. That arm has no answer on 6 BioDSA tasks because it ran out of budget (I-17), and those count as failed; its 5 BioDSA "losses" to the lab are those tasks.
+- Clean conditions for the lab. A 12-minute network outage cost it 35 tasks mid-run; they were restarted from scratch under a raised cap, so every lab answer comes from an uninterrupted run, but the cap the registration named ($145) was exceeded: the lab's budget counter ended at about $212. Batch total: $493.06 reported by agent runs.
+- Anything about the scBench or GeneBench tasks; this test used only fresh BioDSA tasks and the planted suite.

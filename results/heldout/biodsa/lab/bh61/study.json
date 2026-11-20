@@ -1,0 +1,372 @@
+{
+  "study": "bh61",
+  "status": "replicated",
+  "final": {
+    "agent": "bh61-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh61/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh61-library": "opus",
+    "bh61-team-a": "opus",
+    "bh61-team-b": "opus",
+    "bh61-team-c": "opus",
+    "bh61-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh61-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh61/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh61-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh61/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh61-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh61/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh61-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh61/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh61-team-a",
+        "bh61-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh61-team-a",
+        "bh61-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The tables (clinical patient, clinical sample, mutations) hold no proteomic or phosphoproteomic matrix, but the cohort appears to be a colorectal cancer proteogenomic study of primaries with and without (liver) metastasis (columns such as METASTATIC_STATUS, DISTANT_LM). Confirm CANCER_TYPE is colorectal and that both metastatic and non-metastatic groups exist. If so, the hypothesis is about this study, and under the benchmark convention the label must be True or False, not 'Not verifiable'; a missing proteomic table alone is not grounds for 'Not verifiable'. Decide from the closest variables plus established biology and state which kind of evidence decided the label.",
+      "from": [
+        "sl-lab-f37b070b09aa"
+      ],
+      "reason": "The obvious mistake here is answering 'Not verifiable' because the proteomic data were not deposited; this check sets the scope of the answer.",
+      "fact_ids": {
+        "team-a": "sl-lab-bb6f8588991c"
+      }
+    },
+    {
+      "text": "The hypothesis is about protein and phosphoprotein profiles, not mutations. Mutation profiles of metastatic and non-metastatic primaries are often similar even when protein and phospho signalling differ, so a null result in mutation, TMB or driver-gene comparisons does not show that proteomic profiling 'cannot distinguish' metastatic cases. Keep the genomic analysis separate from the proteomic claim in your reasoning. Where the tables cannot test the proteomic claim directly, weigh what proteogenomic studies of colorectal cancer (e.g. CPTAC, Vasaikar et al. Cell 2019) have established above a genomic null.",
+      "from": [
+        "sl-lab-53542fcf2020",
+        "sl-lab-465bb5cf5e88"
+      ],
+      "reason": "This stops teams from carrying a mutation-level null over to the proteomic claim, which would decide the label on the wrong evidence layer.",
+      "fact_ids": {
+        "team-a": "sl-lab-15940d69b617"
+      }
+    },
+    {
+      "text": "Metastasis can be defined in several ways: synchronous (M1 at surgery), metachronous (later progression) or site-specific (DISTANT_LM, liver). Pre-treated patients (PRETHERAPY=Yes) may also be present. Cross-tabulate METASTATIC_STATUS, the TNM M category, PROGRESSION and PRETHERAPY. Define the metastatic/non-metastatic groups explicitly, and exclude or stratify treated samples.",
+      "from": [
+        "sl-lab-d4bf7df6e0f3"
+      ],
+      "reason": "Mixing up the definitions of the grouping variable changes who counts as metastatic and biases any comparison.",
+      "fact_ids": {
+        "team-a": "sl-lab-9ef09e806f9b"
+      }
+    },
+    {
+      "text": "Some patients may have more than one sample, e.g. a primary plus metastatic tissue such as liver (check TISSUE_SEQUENCED / sample type). Keep one primary-tumour sample per patient before comparing groups. Apply Benjamini-Hochberg FDR correction when testing many genes.",
+      "from": [
+        "sl-lab-d505557eadf9"
+      ],
+      "reason": "This prevents pseudoreplication and false positives from many tests in any group comparison.",
+      "fact_ids": {
+        "team-a": "sl-lab-3e175cd67ed7"
+      }
+    },
+    {
+      "text": "Tumour purity and necrosis (e.g. PRIMARY_PURITY, PRIMARY_NECROSIS, if present) can differ between metastatic and non-metastatic primaries and confound omics comparisons, because stromal content drives mesenchymal, metastasis-linked signal. Compare them between the groups (Wilcoxon) and adjust for purity if they differ.",
+      "from": [
+        "sl-lab-3f539dcff1e5"
+      ],
+      "reason": "This is a confounder of any group comparison the teams run.",
+      "fact_ids": {
+        "team-a": "sl-lab-7ff05292dffc"
+      }
+    },
+    {
+      "text": "If you build a classifier of metastatic status from the available variables, do feature selection inside the cross-validation folds. Report cross-validated AUC with a permutation p-value, not training accuracy.",
+      "from": [
+        "sl-lab-70f5a155e4c7"
+      ],
+      "reason": "With a small cohort and many features, separation is easily overstated, which would bias the 'can/cannot distinguish' judgement.",
+      "fact_ids": {
+        "team-a": "sl-lab-c25ff8c5e7ce"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams take METASTATIC_STATUS (synchronous metastasis at surgery) as the only definition of 'cases with metastasis'. Neither tested patients recorded as non-metastatic who later progressed (PROGRESSION, PROGRESSION_SITE), which would be metachronous metastasis.",
+      "Both treat the 146 samples as primary-tumour profiles of independent patients. The 28 samples with METASTATIC_PURITY/METASTATIC_NECROSIS filled in suggest metastatic tissue was also collected for some patients, and nobody checked what that tissue was.",
+      "Both assume the hypothesis is the reverse of what the study reported, so the label would be False. The teams reconstructed that finding from the cohort design, not from any proteomic evidence in the tables."
+    ],
+    "unused_evidence": [
+      "PROGRESSION / PROGRESSION_SITE / PROGRESSION_TIME: 56 patients progressed. Some 'Non-Metastatic' cases may have developed metastasis later, which would blur the comparison groups.",
+      "DISTANT_LM (43 Yes) and METASTATIC_PURITY/NECROSIS (28 non-missing): these mark matched liver-metastasis tissue. That tissue is evidence the study compared primary and metastasis profiles, and neither team used it.",
+      "PAIRED_STATUS (blood vs remote normal tissue as the germline reference, 18 vs 128). If this is unbalanced between groups, the mutation comparisons could be biased. That matters little here because the label does not rest on mutations.",
+      "INTRAVASCULAR_TUMOR_THROMBUS, NEUROLOGICAL_INVASION, CEA, CA19_9: clinical correlates of metastasis that neither team used as context."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weak point: the proteomic claim cannot be tested from the deposited tables, so the label rests on the reconstructed study finding. Neither resolved it; both only reported it.",
+      "Team A's coding slip put 3 'Metastatic, mini PDX done' samples in the non-metastatic group. They called it minor and did not fix it.",
+      "Team B did not handle pre-treated samples (23+2+3) beyond collapsing the categories, and listed no pitfalls as checked."
+    ],
+    "second_readings": [
+      "'Cases with metastasis' could mean synchronous liver metastasis at diagnosis (METASTATIC_STATUS / DISTANT_LM), or any metastasis including later progression.",
+      "'Cannot distinguish' could mean that no single protein or phosphosite differs, or that no multivariate classifier separates the groups. A study can report both differential features and a weak classifier. Either way, the reported finding is most likely that the profiles do distinguish metastatic cases."
+    ],
+    "verdict": "I trust the agreed label fairly well. The cohort is clearly this study's colorectal metastasis proteogenomic cohort, so 'Not verifiable' is excluded by convention. A 'cannot distinguish' claim is very likely the reversal of the study's finding. The main residual risk is that both teams inferred the study's finding rather than observing it.",
+    "questions": [
+      {
+        "to": "bh61-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate METASTATIC_STATUS against PROGRESSION and PROGRESSION_SITE. How many 'Non-Metastatic' patients later developed distant (e.g. liver) metastasis? Does this change how you define the comparison groups, or how firmly the study context supports your label?",
+        "from": [
+          "sl-lab-0d33f3dc9675"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-45441d0c89fc"
+      },
+      {
+        "to": "bh61-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate METASTATIC_PURITY/METASTATIC_NECROSIS non-missingness against DISTANT_LM and METASTATIC_STATUS. Did the study profile matched metastasis tissue, and does that change your reconstruction of what the source study compared and reported?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-e743847d510c"
+      },
+      {
+        "to": "bh61-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Re-run your group comparison with the 3 'Metastatic, mini PDX done' samples in the metastatic group. Does any result move enough to change your reasoning?",
+        "from": [
+          "sl-lab-003e372041de"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-0bbd301d8efc"
+      },
+      {
+        "to": "bh61-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your SMAD4 Fisher p=0.025 is uncorrected and includes 28 pre-treated samples. Does it survive multiple-testing correction across all genes tested and exclusion of PRETHERAPY=Yes samples? Did this result influence your label?",
+        "from": [
+          "sl-lab-68984ab64b69"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-22bffccf7941"
+      },
+      {
+        "to": "bh61-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate METASTATIC_STATUS against PROGRESSION/PROGRESSION_SITE and DISTANT_LM. Is 'cases with metastasis' unambiguous in this cohort, and does a metachronous reading change your label reasoning?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-8ac3636f1279"
+      },
+      {
+        "to": "bh61-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check whether PAIRED_STATUS (blood vs remote normal reference) is balanced between metastatic and non-metastatic groups. Do your TMB and driver-gene comparisons hold within the blood-referenced subset?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-9997f36aed83"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In proteogenomic studies comparing primary colorectal tumours from patients with and without synchronous liver metastasis, is it typically reported that proteomic or phosphoproteomic profiles of the primary tumour distinguish the metastatic group (e.g. via differential proteins, kinase activity or classifiers)?",
+          "why": "Both teams decided the label from an unverified reconstruction of the study's finding; general literature on whether primary-tumour proteomes separate metastatic CRC would confirm or undercut that.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In proteogenomic studies comparing primary colorectal tumours from patients with and without synchronous liver metastasis, is it typically reported that proteomic or phosphoproteomic profiles of the primary tumour distinguish the metastatic group (e.g. via differential proteins, kinase activity or classifiers)?",
+          "answer": "The web did not settle this: every research call failed with HTTP 403 (gateway: 'Exa returned HTTP 403'), so no page was read. From prior knowledge only: such studies typically report that primary-tumour proteomic and phosphoproteomic profiles DO distinguish the metastatic group, through differential proteins and pathways, kinase-activity differences and proteomic classifiers or subtypes, often even where the mutation profiles are similar. A hypothesis saying they 'cannot distinguish' is therefore most likely the reversed finding (pointing to 'False'), but this is unverified.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh61-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-d9e283420f24"
+            },
+            "bh61-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-6c46eae3377a"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In proteogenomic studies comparing primary colorectal tumours from patients with and without synchronous liver metastasis, is it typically reported that proteomic or phosphoproteomic profiles of the primary tumour distinguish the metastatic group (e.g. via differential proteins, kinase activity or classifiers)? ANSWER: The web did not settle this: every research call failed with HTTP 403 (gateway: 'Exa returned HTTP 403'), so no page was read. From prior knowledge only: such studies typically report that primary-tumour proteomic and phosphoproteomic profiles DO distinguish the metastatic group, through differential proteins and pathways, kinase-activity differences and proteomic classifiers or subtypes, often even where the mutation profiles are similar. A hypothesis saying they 'cannot distinguish' is therefore most likely the reversed finding (pointing to 'False'), but this is unverified. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh61-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh61-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh61-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh61-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh61-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 50.94740529090632,
+      "cost_usd": 0.1672192,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 41.555654583033174,
+      "cost_usd": 0.24554659999999998,
+      "error": null
+    },
+    {
+      "agent": "bh61-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 37.32871629204601,
+      "cost_usd": 0.152261,
+      "error": null
+    },
+    {
+      "agent": "bh61-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 46.51660220802296,
+      "cost_usd": 0.20634080000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 55.22193350002635,
+      "cost_usd": 0.2554006,
+      "error": null
+    },
+    {
+      "agent": "bh61-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 24.092612000065856,
+      "cost_usd": 0.0934644,
+      "error": null
+    },
+    {
+      "agent": "bh61-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 51.27146283397451,
+      "cost_usd": 0.23807820000000002,
+      "error": null
+    },
+    {
+      "agent": "bh61-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 56.50420512503479,
+      "cost_usd": 0.2279122,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

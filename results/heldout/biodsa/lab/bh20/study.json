@@ -1,0 +1,394 @@
+{
+  "study": "bh20",
+  "status": "replicated",
+  "final": {
+    "agent": "bh20-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh20/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh20-library": "opus",
+    "bh20-team-a": "opus",
+    "bh20-team-b": "opus",
+    "bh20-team-c": "opus",
+    "bh20-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh20-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh20/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh20-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh20/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh20-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh20/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh20-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh20/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh20-team-a",
+        "bh20-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh20-team-a",
+        "bh20-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "This dataset is a uveal melanoma cohort (check ONCOTREE_CODE = UM in the sample table) whose canonical drivers include the Gq-pathway genes GNAQ, GNA11, CYSLTR2 and PLCB4. A PLCB4/GNAQ/GNA11 exclusivity hypothesis is therefore about this study's own disease and genes. Under the benchmark convention it must be answered True or False, not Not verifiable, even if PLCB4 D630Y is rare or the tables hold no ready-made exclusivity statistic. Confirm that GNAQ, GNA11 and PLCB4 rows exist in data_mutations.txt.",
+      "from": [
+        "sl-lab-b2cf97409871",
+        "sl-lab-8ea8bf29b83c"
+      ],
+      "reason": "A wrong Not verifiable scores as wrong. Rarity of the variant or the lack of a precomputed statistic is the most likely trigger for that mistake.",
+      "fact_ids": {
+        "team-a": "sl-lab-9f58012b7eed"
+      }
+    },
+    {
+      "text": "Define carriers precisely. PLCB4 carriers are samples with the D630Y hotspot, not any PLCB4 mutation. The change may be written p.D630Y (HGVSp_Short), p.Asp630Tyr (HGVSp) or under another transcript's numbering, so list every PLCB4 row with HGVSp, HGVSp_Short, Transcript_ID and Start_Position (chr20, GRCh37) and grep for both 'D630' and 'Asp630' rather than matching one string. Define GNAQ/GNA11 carriers primarily by the Q209 and R183 hotspots. List every other GNAQ/GNA11 variant per Tumor_Sample_Barcode and report those separately.",
+      "from": [
+        "sl-lab-f601091940cf",
+        "sl-lab-e4554f20b825"
+      ],
+      "reason": "The carrier definition decides the overlap count. A strict string match can miss carriers, and counting passenger variants can create or hide co-occurrence.",
+      "fact_ids": {
+        "team-a": "sl-lab-75a21686bb66"
+      }
+    },
+    {
+      "text": "Build a per-sample 2x2 table of PLCB4 D630Y against GNAQ/GNA11 hotspot status. The key cell is the double-positive one: samples carrying both. A PLCB4 carrier that has no GNAQ/GNA11 mutation is what exclusivity predicts, not evidence against it. Because D630Y is rare (about 1-3% of uveal melanomas), a Fisher or similar test has almost no power, and a non-significant p-value is not evidence against exclusivity. Base the judgement on the observed overlap together with the biology, and say which of the two decided it.",
+      "from": [
+        "sl-lab-5b2489afa082",
+        "sl-lab-d6510fc842c7",
+        "sl-lab-6b44c30c1899"
+      ],
+      "reason": "This stops the two common misreadings: treating a PLCB4-only tumour as non-exclusive, and treating an underpowered p-value as a refutation.",
+      "fact_ids": {
+        "team-a": "sl-lab-407f3197a160"
+      }
+    },
+    {
+      "text": "Compare the PATIENT_ID and SAMPLE_ID counts and check SAMPLE_TYPE/SAMPLE_CLASS. If a patient has several samples (primary plus metastasis, cell lines), collapse to one row per patient or per tumour before building the co-occurrence table. Otherwise co-occurrence can be double counted or created falsely across samples.",
+      "from": [
+        "sl-lab-f309ceac36cd"
+      ],
+      "reason": "The unit of analysis changes the 2x2 counts, and in a small cohort a single duplicate can matter.",
+      "fact_ids": {
+        "team-a": "sl-lab-3cb0354ebfc3"
+      }
+    },
+    {
+      "text": "If any sample carries both PLCB4 D630Y and a GNAQ/GNA11 variant, inspect it before weighing it. Check whether both changes are true hotspots, check their VAFs (t_alt_count / (t_alt_count + t_ref_count)) to see whether both are clonal, and check the sample's mutation burden for hypermutation. Passenger hits or subclonal calls in a hypermutated tumour can produce spurious co-occurrence. Report what you find either way.",
+      "from": [
+        "sl-lab-f068a3b0e61c"
+      ],
+      "reason": "Whether an overlap is real or an artefact is what separates evidence for the hypothesis from evidence against it.",
+      "fact_ids": {
+        "team-a": "sl-lab-2addf16386bc"
+      }
+    },
+    {
+      "text": "Background biology, from domain knowledge (no source was retrieved, medium confidence): PLC-beta4 is the direct downstream effector of Galpha-q/11, and D630Y is a recurrent, likely gain-of-function hotspot in its catalytic domain. Uveal melanoma studies (Johansson et al. 2016, Oncotarget; TCGA UVM, Robertson et al. 2017, Cancer Cell) describe GNAQ, GNA11, CYSLTR2 and PLCB4 hotspots as mutually exclusive Gq-pathway drivers. The direct biochemical evidence that D630Y is equivalent to Q209 is thinner than this genetic evidence, and whether co-occurrence has ever been reported is uncertain (low confidence). Use this as a prior to weigh against what the data show, not as a substitute for the data.",
+      "from": [
+        "sl-lab-628a6bb63255"
+      ],
+      "reason": "The task says to fall back on established biology where the tables cannot settle the question. The teams need this prior and its stated uncertainty.",
+      "fact_ids": {
+        "team-a": "sl-lab-2351a0a4c4f0"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat every sample without a GNAQ/GNA11 mutation row as wild-type, including the samples with zero mutation rows and TMB NA, which may not have been mutation-profiled at all.",
+      "Both teams treat the 28 samples as independent tumours; neither reports checking whether the cell lines, metastases and primaries include more than one sample from the same patient.",
+      "Both teams assume the deposited MAF is complete for GNAQ/GNA11 in every sample, though it holds only about 300 rows (around 10 per sample), so it may be a curated or filtered subset.",
+      "Both teams read 'mutually exclusive' as zero observed overlap, tested with a one-sided Fisher test that assumes every sample has the same chance of carrying a mutation."
+    ],
+    "unused_evidence": [
+      "data_gene_panel_matrix.txt lists SV profiling for the 13 WGS samples only, so a missing SV in a WES sample is not evidence that it has no SV; neither team says it took this into account.",
+      "The NUM_PROTEIN_ALTERING_MUTATIONS and TMB columns in the clinical table show samples with 0 or NA, which could be used to tell unprofiled samples from wild-type ones.",
+      "t_ref_count/t_alt_count for the GNAQ/GNA11 calls in the PLCB4 carriers, which would show whether a low-VAF G-protein call below the caller's threshold or a subclone was missed (team B notes that n_alt_count is empty).",
+      "SAMPLE_CLASS (cell line vs tumour) and SAMPLE_TYPE (primary vs metastasis) were not used to check whether the result holds across sample types."
+    ],
+    "unresolved_weak_points": [
+      "Both teams name only 2 PLCB4 D630Y carriers as their weakest point. Both only reported it; neither resolved it beyond appealing to biology.",
+      "Team B reports that Mutation_Status and normal alt counts are empty but does not say whether this affects how far the GNAQ/GNA11-negative status of the carriers can be trusted."
+    ],
+    "second_readings": [
+      "'Mutually exclusive' could mean only that no sample has both (a descriptive claim, which 0 overlap satisfies), or that there is statistically significant exclusivity; with n=2 these readings could give different confidence but probably the same label.",
+      "'Mutations in GNA11 and GNAQ' could mean hotspot (Q209/R183) only or any variant. Both teams checked both, so this reading is covered."
+    ],
+    "verdict": "I trust the agreed answer fairly well. The hypothesis matches this uveal melanoma study's genes, and both teams found zero overlap under both hotspot and any-variant definitions. The remaining risks are completeness of profiling and sample independence, and neither looks likely to flip the label.",
+    "questions": [
+      {
+        "to": "bh20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For the two PLCB4 D630Y carriers, did you confirm in the clinical table that they have nonzero NUM_PROTEIN_ALTERING_MUTATIONS and a TMB that is not NA, i.e. that they were fully profiled, and do their other driver calls (BAP1/SF3B1/EIF1AX) look like a complete exome? Would finding that the MAF is a filtered subset change how you read their GNAQ/GNA11-negative status?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-18eecedf27e1"
+      },
+      {
+        "to": "bh20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Did you check whether any patient contributes more than one sample (cell line plus tumour, or primary plus metastasis), and whether the two D630Y carriers are distinct patients? Does deduplicating change your 2x2 table or test?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-f6d5729f3dcf"
+      },
+      {
+        "to": "bh20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: data_gene_panel_matrix.txt shows SV profiling only for WGS samples. Are the PLCB4 carriers WGS or WES? If they are WES, does your SV check say anything about them?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-2135fbee4cd8"
+      },
+      {
+        "to": "bh20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Samples with 0 mutation rows also show TMB NA in the clinical table. Did you rerun the Fisher test excluding them as unprofiled rather than counting them as wild-type, and does either the p-value or your label change?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-85208cf3f795"
+      },
+      {
+        "to": "bh20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Did you confirm that the two D630Y carriers come from distinct patients and are not a cell line plus its parent tumour? Does that change the carrier count?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-1051eb8069b2"
+      },
+      {
+        "to": "bh20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You note that n_alt_count and Mutation_Status are empty. Did you check whether the MAF holds any GNAQ/GNA11 rows for the carrier samples with low t_alt_count, or rows that a filter may have dropped? Does the answer change how far you trust their G-protein-negative status?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-f88e8c302c6e"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In cBioPortal-style study data, does a sample with zero rows in the mutations file and NA TMB mean it was not sequenced for mutations, and how is mutation-profiling status normally recorded (e.g. a case list or gene panel matrix column)?",
+          "why": "It decides whether mutation-free samples should count as wild-type or be excluded from the exclusivity test.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "What statistical tests are standard for mutual exclusivity between rare somatic mutations in small cohorts, e.g. Fisher's exact test versus DISCOVER or other weighted tests that allow for different mutation rates per sample?",
+          "why": "The teams' Fisher test assumes equal per-sample rates; with only two carriers the choice of test may matter.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In cBioPortal-style study data, does a sample with zero rows in the mutations file and NA TMB mean it was not sequenced for mutations, and how is mutation-profiling status normally recorded (e.g. a case list or gene panel matrix column)?",
+          "answer": "No, not by itself. cBioPortal records mutation-profiling status through the case list cases_sequenced.txt (or the 'mutations' column of data_gene_panel_matrix.txt; if that is absent, all samples in the sequenced case list count as profiled with whole exome/genome). A profiled sample with zero mutation rows counts as wild-type in cBioPortal's mutual-exclusivity tool. NA TMB can simply mean no value was deposited. Here the panel matrix holds only a structural_variants column, so the best proxy is the WES/WGS PLATFORM in the clinical sample file. Either way, adding wild-type samples only enlarges the double-negative cell and cannot create an overlap, so the label decision does not depend on this. NOT WEB-VERIFIED: all 3 gateway calls returned HTTP 502/403, so this is domain knowledge.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bh20-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-a2a55e9938fe"
+            },
+            "bh20-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-aff420cfb4dd"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cBioPortal-style study data, does a sample with zero rows in the mutations file and NA TMB mean it was not sequenced for mutations, and how is mutation-profiling status normally recorded (e.g. a case list or gene panel matrix column)? ANSWER: No, not by itself. cBioPortal records mutation-profiling status through the case list cases_sequenced.txt (or the 'mutations' column of data_gene_panel_matrix.txt; if that is absent, all samples in the sequenced case list count as profiled with whole exome/genome). A profiled sample with zero mutation rows counts as wild-type in cBioPortal's mutual-exclusivity tool. NA TMB can simply mean no value was deposited. Here the panel matrix holds only a structural_variants column, so the best proxy is the WES/WGS PLATFORM in the clinical sample file. Either way, adding wild-type samples only enlarges the double-negative cell and cannot create an overlap, so the label decision does not depend on this. NOT WEB-VERIFIED: all 3 gateway calls returned HTTP 502/403, so this is domain knowledge. HOW SURE: medium. SOURCES: none given."
+        },
+        {
+          "question": "What statistical tests are standard for mutual exclusivity between rare somatic mutations in small cohorts, e.g. Fisher's exact test versus DISCOVER or other weighted tests that allow for different mutation rates per sample?",
+          "answer": "A one-sided Fisher's exact test (as in cBioPortal's mutual-exclusivity tab) is the most common test, but it assumes the same mutation rate in every sample and is miscalibrated when tumour burden varies. Tests that allow for this include DISCOVER (Canisius et al. 2016, Genome Biology), WeSME/WeSCO, MEGSA, the CoMEt exact test, MEMo and TiMEx. With about 2 PLCB4 D630Y carriers no test has power, so a non-significant p-value is not evidence against exclusivity. The decision should rest on the observed overlap (zero co-occurring GNAQ/GNA11 hotspots supports exclusivity) plus the established biology that PLCB4 D630Y, GNAQ/GNA11 Q209/R183 and CYSLTR2 L129Q are mutually exclusive Gq-pathway drivers in uveal melanoma. NOT WEB-VERIFIED: the gateway returned HTTP 403, so this is domain knowledge.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bh20-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-7af49c3c3924"
+            },
+            "bh20-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-74485263e268"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What statistical tests are standard for mutual exclusivity between rare somatic mutations in small cohorts, e.g. Fisher's exact test versus DISCOVER or other weighted tests that allow for different mutation rates per sample? ANSWER: A one-sided Fisher's exact test (as in cBioPortal's mutual-exclusivity tab) is the most common test, but it assumes the same mutation rate in every sample and is miscalibrated when tumour burden varies. Tests that allow for this include DISCOVER (Canisius et al. 2016, Genome Biology), WeSME/WeSCO, MEGSA, the CoMEt exact test, MEMo and TiMEx. With about 2 PLCB4 D630Y carriers no test has power, so a non-significant p-value is not evidence against exclusivity. The decision should rest on the observed overlap (zero co-occurring GNAQ/GNA11 hotspots supports exclusivity) plus the established biology that PLCB4 D630Y, GNAQ/GNA11 Q209/R183 and CYSLTR2 L129Q are mutually exclusive Gq-pathway drivers in uveal melanoma. NOT WEB-VERIFIED: the gateway returned HTTP 403, so this is domain knowledge. HOW SURE: medium. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh20-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh20-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh20-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh20-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh20-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 53.26259616599418,
+      "cost_usd": 0.22733840000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 70.15668983303476,
+      "cost_usd": 0.30217120000000003,
+      "error": null
+    },
+    {
+      "agent": "bh20-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 50.35635483299848,
+      "cost_usd": 0.18495260000000002,
+      "error": null
+    },
+    {
+      "agent": "bh20-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 51.00411670806352,
+      "cost_usd": 0.1960058,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 58.02836900006514,
+      "cost_usd": 0.20734940000000002,
+      "error": null
+    },
+    {
+      "agent": "bh20-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 50.502345041022636,
+      "cost_usd": 0.1597478,
+      "error": null
+    },
+    {
+      "agent": "bh20-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 57.55200645898003,
+      "cost_usd": 0.25486780000000003,
+      "error": null
+    },
+    {
+      "agent": "bh20-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 74.57610300008673,
+      "cost_usd": 0.3341764,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

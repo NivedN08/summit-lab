@@ -1,0 +1,404 @@
+{
+  "study": "bh80",
+  "status": "replicated",
+  "final": {
+    "agent": "bh80-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh80/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh80-library": "opus",
+    "bh80-team-a": "opus",
+    "bh80-team-b": "opus",
+    "bh80-team-c": "opus",
+    "bh80-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh80-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh80/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh80-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh80/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh80-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh80/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh80-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh80/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh80-team-a",
+        "bh80-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh80-team-a",
+        "bh80-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "This dataset is an MSK-IMPACT hepatocellular carcinoma cohort with sorafenib treatment, best response and PFS/OS fields, so the hypothesis is about this study's own cohort. Confirm that data_clinical_patient.txt holds SORAFENIB_TREATMENT and TREATMENT_BEST_RESPONSE. If it does, the label must be True or False, decided from the disease-control comparison. The lack of a ready-made pathway score is not a reason to answer 'Not verifiable'.",
+      "from": [
+        "sl-lab-57331be2a35b"
+      ],
+      "reason": "Under the benchmark convention a wrong 'Not verifiable' is the most likely avoidable error. The team needs to know the cohort matches before it picks a label type.",
+      "fact_ids": {
+        "team-a": "sl-lab-a1ae9b2c374c"
+      }
+    },
+    {
+      "text": "Compute disease control (CR/PR/SD vs PD) only among patients with SORAFENIB_TREATMENT==1, not the whole HCC cohort. Cross-tab TREATMENT_BEST_RESPONSE against SORAFENIB_TREATMENT and IMMUNE_TREATMENT to check which therapy the response refers to; the sample table has a separate IO_RESPONSE column, which should not be used. Exclude non-evaluable (NE/NA) responses rather than counting them as disease control, and report how many patients were excluded.",
+      "from": [
+        "sl-lab-30b0740ff681"
+      ],
+      "reason": "Patients who were untreated or had immunotherapy only, and NE responses counted as non-PD, distort the DCR. Both decide the denominator of the main comparison.",
+      "fact_ids": {
+        "team-a": "sl-lab-ad909d68e60d"
+      }
+    },
+    {
+      "text": "Decide the oncogenic PI3K-mTOR definition before testing. Use a curated gene set (PIK3CA, PIK3R1, PTEN, AKT1/2/3, TSC1, TSC2, MTOR, RICTOR, STK11 and similar). Count known hotspot mutations, truncating mutations in tumour suppressors (PTEN/TSC1/TSC2), PTEN/TSC deep deletions (CNA -2) and AKT/PIK3CA amplifications (+2). Leave out VUS and shallow CNAs, and use any OncoKB/hotspot annotation columns in data_mutations.txt. Report the oncogenic-filtered result as primary and an all-alterations grouping as sensitivity.",
+      "from": [
+        "sl-lab-e3ffa9117325"
+      ],
+      "reason": "The hypothesis names oncogenic alterations specifically. Counting every variant dilutes the altered group and biases the result toward null.",
+      "fact_ids": {
+        "team-a": "sl-lab-d191eb231d0c"
+      }
+    },
+    {
+      "text": "Samples were sequenced on three MSK-IMPACT panel versions (about 21 IMPACT341, 70 IMPACT410 and 36 IMPACT468). Some pathway genes may not be profiled on older panels and would wrongly appear as 'unaltered'. Check each gene's coverage per panel with data_gene_panel_matrix.txt and the panel gene lists. Then either limit the gene set to genes on all panels, or mark a patient unaltered only if their panel covers the gene.",
+      "from": [
+        "sl-lab-02b2f602e926",
+        "sl-lab-5c4cb15cb338",
+        "sl-lab-c983f2485773"
+      ],
+      "reason": "Misclassifying unprofiled patients as wild type contaminates the comparison group.",
+      "fact_ids": {
+        "team-a": "sl-lab-ba0189965785"
+      }
+    },
+    {
+      "text": "The sorafenib-treated, response-evaluable subgroup is small and the altered group may hold only a handful of patients, so Fisher tests have little power. Fix one primary definition and endpoint in advance and do not shop among definitions. Weigh effect size and direction, and supporting endpoints such as PFS on sorafenib, alongside the p-value.",
+      "from": [
+        "sl-lab-0befadaccf47"
+      ],
+      "reason": "This affects how the team reads a non-significant but directional result, and it guards against inflating false positives.",
+      "fact_ids": {
+        "team-a": "sl-lab-a9aed0accf64"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed TREATMENT_BEST_RESPONSE is the best response to sorafenib, but it is one patient-level column and 28 sorafenib-treated patients also received immunotherapy (and 6 got target therapy); neither team tested which line the response belongs to.",
+      "Both teams assumed a hand-curated 'oncogenic' PI3K-mTOR gene and variant rule is a valid stand-in for OncoKB-style oncogenic calls; the altered-group counts (9 vs 12) differ between teams, so the gene set and filter really differ.",
+      "Both teams treated a borderline DCR result (p about 0.04 to 0.07) together with a PFS log-rank as evidence of 'association', without fixing in advance what threshold or which endpoint decides the label."
+    ],
+    "unused_evidence": [
+      "data_sv.txt: neither method mentions structural variants, and the file has PI3K-pathway events (e.g., an INPP4B intragenic deletion). Leaving them out could change who is classed as altered.",
+      "data_cna_hg19.seg and TUMOR_PURITY: low-purity samples can miss CNA deep deletions (PTEN) or amplifications. Team B named this and did not check it.",
+      "IMMUNE_TREATMENT, TARGET_THERAPY and OS_SORAFENIB: these could show whether the response column is confounded by other lines of therapy. OS on sorafenib is a second outcome that neither team checked.",
+      "SAMPLE_TYPE (primary/metastasis/recurrence) and T02 samples: the rule for picking one sample per patient may decide alteration status."
+    ],
+    "unresolved_weak_points": [
+      "Team A: the DCR p-value is 0.07, which is not significant. They leaned on PFS as support and did not settle whether the DCR endpoint alone supports the claim.",
+      "Team B: significance depends on the alteration definition (broad p=0.21, oncogenic p of about 0.04-0.05). They reported this but did not resolve it, and they did not run the purity and panel checks they named.",
+      "Both teams: the curated oncogenic filter has not been validated, and the two teams' altered-group sizes (9 vs 12) have not been reconciled."
+    ],
+    "second_readings": [
+      "'Disease control rate' could mean CR+PR+SD only (Non-PR/CR left out or counted separately), and the denominator could be all treated patients or only evaluable ones.",
+      "'Oncogenic PI3K-mTOR pathway alterations' could mean the study's own pathway gene set (including e.g. TSC1/TSC2, INPP4B, STK11) or only the core genes PIK3CA/PTEN/MTOR. It could also mean oncogenic variants only, or any alteration."
+    ],
+    "verdict": "Moderate trust. Both teams see lower DCR and shorter PFS in the altered group, but the DCR result is borderline and depends on the definition. The altered groups are small (9 to 12) and their definitions do not match. Neither team checked whether the single best-response column really belongs to sorafenib, given that about a third of the patients also had immunotherapy.",
+    "questions": [
+      {
+        "to": "bh80-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate TREATMENT_BEST_RESPONSE against IMMUNE_TREATMENT and TARGET_THERAPY among sorafenib-treated patients. Is there any sign that the response column records a line other than sorafenib? If you restrict to sorafenib-only patients, does the direction of the DCR difference change your method?",
+        "from": [
+          "sl-lab-00570be78d96"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-fc26abdd5f9d"
+      },
+      {
+        "to": "bh80-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: List the exact genes and variants that put each of your 9 altered patients in the altered group. Then check data_sv.txt for PI3K-mTOR pathway structural events. Does adding them, or reconciling your set with a set of 12 altered patients, move anyone between groups?",
+        "from": [
+          "sl-lab-a4be1dfc7a07"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-c2f79c220d72"
+      },
+      {
+        "to": "bh80-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your primary DCR test has p=0.07. Before relying on PFS as support, state which endpoint the hypothesis names. Does a check of OS_SORAFENIB by the same status give a consistent direction, and would that change how you weight PFS?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-804176a07880"
+      },
+      {
+        "to": "bh80-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Check TUMOR_PURITY for the unaltered sorafenib patients. How many have low purity, where PTEN deep deletions might go undetected? Does excluding them change the group comparison?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-4e6c3ffbca20"
+      },
+      {
+        "to": "bh80-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate TREATMENT_BEST_RESPONSE against IMMUNE_TREATMENT and TARGET_THERAPY among your 81 sorafenib patients. If you restrict to patients who had no other systemic line, does the DCR difference by alteration status still point the same way?",
+        "from": [
+          "sl-lab-0fa0e6d10e2e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-8bc01f5e324e"
+      },
+      {
+        "to": "bh80-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your result depends on the definition (broad p=0.21 vs oncogenic p of about 0.05). List which patients move between groups under the two definitions and which variants move them. Also check data_sv.txt for pathway structural events. Does this change which definition you treat as primary?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-5628868a4367"
+      },
+      {
+        "to": "bh80-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You named purity and panel coverage as unchecked. Run them now. Are all your pathway genes on IM3, IM5 and IM6? How many unaltered patients have low TUMOR_PURITY? Does either result move patients between groups?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-c672210aed0a"
+      },
+      {
+        "to": "bh80-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Some patients have T02 samples, and samples are primary, metastasis or recurrence. Which sample did you pick per patient, and does picking a different sample change any patient's alteration status?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-e6afa7b1634c"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In cBioPortal-style clinical tables from HCC cohorts treated with several systemic lines, does a single patient-level 'treatment best response' field usually record response to first-line sorafenib, or best response across all lines?",
+          "why": "Both teams assumed it is the sorafenib response. If it is not, the DCR endpoint is mislabelled.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Which genes do published oncogenic-pathway curations (e.g., the TCGA ten-pathway curation) include in the PI3K-mTOR pathway, and which variant classes count as oncogenic there?",
+          "why": "The two teams' altered-group sizes differ, and the significance of the result depends on the definition.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In cBioPortal-style clinical tables from HCC cohorts treated with several systemic lines, does a single patient-level 'treatment best response' field usually record response to first-line sorafenib, or best response across all lines?",
+          "answer": "Not settled by the web: the research gateway returned HTTP 403 on all 3 calls, so no page was read. From domain knowledge only: in MSK/cBioPortal retrospective cohorts, a patient-level best-response field usually records the RECIST response to the therapy the study is about (here sorafenib), not the best response across all lines. Immunotherapy response is often kept in a separate column (e.g. IO_RESPONSE). Check the column's # description line in data_clinical_patient.txt and cross-tabulate it against SORAFENIB_TREATMENT. If the description is generic, report the ambiguity in the reasoning.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh80-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-14af0ab2d83a"
+            },
+            "bh80-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-f643088ca930"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cBioPortal-style clinical tables from HCC cohorts treated with several systemic lines, does a single patient-level 'treatment best response' field usually record response to first-line sorafenib, or best response across all lines? ANSWER: Not settled by the web: the research gateway returned HTTP 403 on all 3 calls, so no page was read. From domain knowledge only: in MSK/cBioPortal retrospective cohorts, a patient-level best-response field usually records the RECIST response to the therapy the study is about (here sorafenib), not the best response across all lines. Immunotherapy response is often kept in a separate column (e.g. IO_RESPONSE). Check the column's # description line in data_clinical_patient.txt and cross-tabulate it against SORAFENIB_TREATMENT. If the description is generic, report the ambiguity in the reasoning. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "Which genes do published oncogenic-pathway curations (e.g., the TCGA ten-pathway curation) include in the PI3K-mTOR pathway, and which variant classes count as oncogenic there?",
+          "answer": "Not settled by the web: the gateway returned HTTP 403 and no page was read. From domain knowledge: the PI3K pathway in the TCGA ten-pathway curation (Sanchez-Vega et al., Cell 2018) includes PIK3CA, PIK3CB, PIK3R1, PIK3R2, PIK3R3, PTEN, INPP4B, AKT1, AKT2, AKT3, MTOR, RICTOR, RPTOR, TSC1, TSC2, STK11, PPP2R1A and DEPTOR (about 17-18 genes). Oncogenic alterations are: in oncogenes (PIK3CA, PIK3CB, AKT1-3, MTOR, RICTOR, RPTOR), known/recurrent activating mutations or amplifications; in tumour suppressors (PTEN, TSC1/2, PIK3R1, STK11, INPP4B), truncating or known-inactivating mutations, deep deletions or disruptive fusions. VUS and shallow copy-number changes are excluded. MSK studies usually filter with OncoKB annotation. The teams should state their gene list and filter explicitly, and should exclude genes not covered by the patient's panel version.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bh80-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-9f383833b800"
+            },
+            "bh80-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-fedb71accdca"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Which genes do published oncogenic-pathway curations (e.g., the TCGA ten-pathway curation) include in the PI3K-mTOR pathway, and which variant classes count as oncogenic there? ANSWER: Not settled by the web: the gateway returned HTTP 403 and no page was read. From domain knowledge: the PI3K pathway in the TCGA ten-pathway curation (Sanchez-Vega et al., Cell 2018) includes PIK3CA, PIK3CB, PIK3R1, PIK3R2, PIK3R3, PTEN, INPP4B, AKT1, AKT2, AKT3, MTOR, RICTOR, RPTOR, TSC1, TSC2, STK11, PPP2R1A and DEPTOR (about 17-18 genes). Oncogenic alterations are: in oncogenes (PIK3CA, PIK3CB, AKT1-3, MTOR, RICTOR, RPTOR), known/recurrent activating mutations or amplifications; in tumour suppressors (PTEN, TSC1/2, PIK3R1, STK11, INPP4B), truncating or known-inactivating mutations, deep deletions or disruptive fusions. VUS and shallow copy-number changes are excluded. MSK studies usually filter with OncoKB annotation. The teams should state their gene list and filter explicitly, and should exclude genes not covered by the patient's panel version. HOW SURE: medium. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh80-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh80-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh80-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh80-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh80-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 74.47408374992665,
+      "cost_usd": 0.2337942,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 64.18189079093281,
+      "cost_usd": 0.2136748,
+      "error": null
+    },
+    {
+      "agent": "bh80-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 62.14591899991501,
+      "cost_usd": 0.22513060000000001,
+      "error": null
+    },
+    {
+      "agent": "bh80-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 70.34608704200946,
+      "cost_usd": 0.25867880000000004,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 69.99244962504599,
+      "cost_usd": 0.2006298,
+      "error": null
+    },
+    {
+      "agent": "bh80-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 54.69596554199234,
+      "cost_usd": 0.1638574,
+      "error": null
+    },
+    {
+      "agent": "bh80-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 75.47685916698538,
+      "cost_usd": 0.30084400000000006,
+      "error": null
+    },
+    {
+      "agent": "bh80-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 109.74957483401522,
+      "cost_usd": 0.4284222,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,386 @@
+{
+  "study": "bh37",
+  "status": "replicated",
+  "final": {
+    "agent": "bh37-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh37/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh37-library": "opus",
+    "bh37-team-a": "opus",
+    "bh37-team-b": "opus",
+    "bh37-team-c": "opus",
+    "bh37-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh37-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh37/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh37-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh37/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh37-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh37/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh37-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh37/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh37-team-a",
+        "bh37-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh37-team-a",
+        "bh37-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "TERT promoter mutations are non-coding: in data_mutations.txt they appear as Hugo_Symbol TERT with Variant_Classification 5'Flank (or 5'UTR), at the hotspots chr5 ~1,295,228 (C228T) and ~1,295,250 (C250T) in GRCh37. Roughly 138 such TERT 5'Flank rows exist. Define each sample's TERT-promoter status from these rows; filtering to coding or nonsynonymous variants, or using protein change, drops them.",
+      "from": [
+        "sl-lab-23c4da4ca76c"
+      ],
+      "reason": "If the team uses a standard coding-only filter, it will see almost no TERT events and may wrongly conclude the variable is missing or rare.",
+      "fact_ids": {
+        "team-a": "sl-lab-540d2d0ea997"
+      }
+    },
+    {
+      "text": "A sample with no TERT promoter row counts as wild-type only if the promoter was assayed in every sample. Whole-exome capture usually misses the TERT promoter. Compare the samples in data_clinical_sample.txt and data_gene_panel_matrix.txt with the samples that have TERT 5'Flank calls, and check whether other genes also have 5'Flank calls (which would point to targeted promoter genotyping). State the denominator explicitly.",
+      "from": [
+        "sl-lab-8709cd4969e0"
+      ],
+      "reason": "The wrong denominator changes the mutation frequency in each stage, and those frequencies are the core of the test.",
+      "fact_ids": {
+        "team-a": "sl-lab-89894078782b"
+      }
+    },
+    {
+      "text": "Some patients may have several samples, and some samples may not be HCC (for example, other ONCOTREE codes or mixed HCC-cholangiocarcinoma). Count SAMPLE_ID per PATIENT_ID and check ONCOTREE_CODE/CANCER_TYPE_DETAILED. Keep one sample per patient and only HCC. BCLC_STAGE and other stage variables may be in the patient table, so merge on PATIENT_ID.",
+      "from": [
+        "sl-lab-58ec87419499"
+      ],
+      "reason": "Repeated samples per patient and non-HCC tumours bias the stage-wise frequencies, and the merge step is easy to get wrong.",
+      "fact_ids": {
+        "team-a": "sl-lab-8f72f0f18fad"
+      }
+    },
+    {
+      "text": "'Early event' is a claim about timing. A cross-sectional comparison only tests it indirectly. If the mutation is early, its frequency should already be high in early-stage disease (BCLC 0/A, small, well-differentiated tumours without vascular invasion) and similar across stages. Enrichment only in advanced stages would point to a late event. Tabulate TERT-promoter frequency by BCLC_STAGE, tumour size, differentiation, disease stage and vascular invasion, whichever are present.",
+      "from": [
+        "sl-lab-20cf0c866cb6"
+      ],
+      "reason": "This sets out what pattern would support the hypothesis and what pattern would contradict it, so the team interprets the stage tables correctly.",
+      "fact_ids": {
+        "team-a": "sl-lab-b77383ad2a38"
+      }
+    },
+    {
+      "text": "Clonality gives more direct timing evidence. A truncal (early) mutation should have a VAF similar to or higher than other clonal mutations in the same tumour. If t_alt_count and t_ref_count are filled for TERT 5'Flank rows, compare each TERT VAF with the median VAF of the other mutations in that sample (relative VAF), because absolute VAF is confounded by purity and copy number.",
+      "from": [
+        "sl-lab-95b76168985f"
+      ],
+      "reason": "This is a second, more direct test of 'early' that the stage tables alone do not give.",
+      "fact_ids": {
+        "team-a": "sl-lab-82bb57ebce95"
+      }
+    },
+    {
+      "text": "Etiology confounds TERT promoter frequency. It is lower in HBV-related HCC, where HBV integration at TERT can activate the gene instead, and higher in HCV- and alcohol-related HCC. Etiology may also differ by stage. If an etiology variable exists, cross-tabulate it against stage and TERT status, and stratify or adjust (for example, logistic regression) before attributing a trend to stage.",
+      "from": [
+        "sl-lab-144732fe0754"
+      ],
+      "reason": "An apparent stage trend could really be an etiology effect.",
+      "fact_ids": {
+        "team-a": "sl-lab-6fb339d23ec7"
+      }
+    },
+    {
+      "text": "With about 100-300 tumours and ordinal stages, power is low and some cells will be sparse. Use Fisher's exact test or a Cochran-Armitage trend test, merge sparse categories (for example, BCLC 0/A vs B/C), and report proportions with confidence intervals. A non-significant p-value is not evidence of no association.",
+      "from": [
+        "sl-lab-27649bc3b3fe"
+      ],
+      "reason": "This keeps the team from over-reading null results or using an invalid chi-square test.",
+      "fact_ids": {
+        "team-a": "sl-lab-bca499d23b9f"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams read 'early event' as 'frequency is high in early groups and flat across later groups'. Neither tested the actual ordering of steps: premalignant macronodule, then early or small HCC, then classic HCC, then poor-prognosis HCC. Neither checked whether the frequency changes at the step from premalignant lesion to carcinoma.",
+      "Both teams assumed every one of the 243 samples was genotyped for the TERT promoter. Neither checked this in the MAF's validation and sequencing fields, so the denominator is assumed rather than shown.",
+      "Both teams grouped the DISEASE_STAGE categories into 'early' and 'late' bins of their own choosing. Neither checked whether the conclusion still holds under a different grouping, or with the non-ordinal categories (F0_F1/F2_F3 non-cirrhotic, HCC in Adenoma, Hypermutated) left out."
+    ],
+    "unused_evidence": [
+      "DISEASE_STAGE = 'HCC in Adenoma' (n=8). This is a separate route of tumour progression, from adenoma to carcinoma, in which TERT promoter status could mark the malignant transformation. Neither team looked at it.",
+      "ISHAK_FIBROSIS_SCORE (F0_F1/F2_F3/F4) and the cirrhotic versus non-cirrhotic background. Fibrosis may be linked to both stage group and TERT status, and neither team used it as a covariate or a stratum.",
+      "SERUM_ALPHA_FOETO_PROTEIN and TMB_NONSYNONYMOUS. These are aggressiveness and progression markers that could serve as further stage proxies. Neither team used them.",
+      "MAF fields Validation_Method, Sequencing_Phase, Sequence_Source and Verification_Status. These could show whether the TERT 5'Flank calls came from a separate targeted assay that covered every sample."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the small early-lesion groups (Macronodule n=7, Early HCC n=7) as their weakest point. Both reported it without resolving it. Neither gave confidence intervals, and neither tested whether a flat frequency is distinguishable from a modest rise or fall.",
+      "Team A planned a clonality (VAF) check, found that read counts were missing, and dropped it. Neither team found another way to make the timing argument more direct."
+    ],
+    "second_readings": [
+      "'Early event in tumor stage progression' could mean a change that is already present in premalignant lesions (macronodules / dysplastic nodules), before carcinoma. On this reading, the key comparison is macronodule versus early HCC, not BCLC 0/A versus B/C.",
+      "It could also mean an event that appears early in malignant transformation and then stays the same across clinical stage. This is the reading both teams used, and they tested it only with BCLC and cross-sectional frequencies."
+    ],
+    "verdict": "I trust the agreed answer moderately. Both teams consistently find a high TERT-promoter frequency already in early lesions, with no rise at later stages. However, neither team tested the premalignant step (macronodule) or the adenoma-to-carcinoma route directly, and neither confirmed the promoter-assay denominator.",
+    "questions": [
+      {
+        "to": "bh37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Order DISEASE_STAGE as Macronodule, then Early HCC, then Small HCC, then Classic HCC, then Poor prognosis HCC. Tabulate TERT-promoter frequency at each level with exact 95% confidence intervals, and run a trend test. Does the frequency at the macronodule-to-HCC step, or the overall trend, change how you read 'early event'?",
+        "from": [
+          "sl-lab-66ab19e27b6d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-d1d8563cf6f9"
+      },
+      {
+        "to": "bh37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate TERT-promoter status in the 8 'HCC in Adenoma' samples and compare them with the other HCC groups. Does this separate adenoma-to-carcinoma route agree with your conclusion, or does it contradict it?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-1a9a00a9d171"
+      },
+      {
+        "to": "bh37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Check Validation_Method, Sequencing_Phase and Sequence_Source for the TERT 5'Flank rows, and compare them with the coding rows. Can you show that every one of the 243 samples was genotyped at the promoter? If some were not, does restricting the denominator change any stage comparison?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-f4436be0b377"
+      },
+      {
+        "to": "bh37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Add ISHAK_FIBROSIS_SCORE, and also AFP or TMB, to your logistic model or use them as strata, alongside etiology. Does the stage association, or its absence, stay the same?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-56bf42b9c1cb"
+      },
+      {
+        "to": "bh37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You pooled Macronodule with Early/Small HCC. Test Macronodule separately against Early HCC and against all HCC, and give exact confidence intervals. Does it change your conclusion whether the mutation is already present before carcinoma or appears at transformation?",
+        "from": [
+          "sl-lab-a9b8d0131574"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-7c99fcb58407"
+      },
+      {
+        "to": "bh37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate TERT-promoter status in 'HCC in Adenoma' (n=8) and in the non-cirrhotic F0_F1/F2_F3 groups. Does leaving these non-ordinal categories out of your stage comparison, or analysing them separately, change your result?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-f0cd73788967"
+      },
+      {
+        "to": "bh37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your Fisher tests were not adjusted for anything. Cross-tabulate ETIOLOGY and ISHAK_FIBROSIS_SCORE against BCLC stage and TERT status, and run an adjusted model. Does the flat BCLC result hold within strata?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-02d2b89c75a0"
+      },
+      {
+        "to": "bh37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check the MAF validation and sequencing-source fields for the TERT promoter calls, and confirm that all 243 samples were assayed at the promoter. If not, what denominator do you use, and do your frequencies change?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-11f41c7d5546"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In the multistep progression of hepatocellular carcinoma (from cirrhotic dysplastic nodules, low- and high-grade, through early HCC to progressed HCC), at which step are TERT promoter mutations usually acquired, and in what fraction of each lesion type are they reported?",
+          "why": "This settles whether 'early event' refers to premalignant lesions or to malignant transformation, which decides how to read small lesion groups with flat frequencies.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In malignant transformation of hepatocellular adenoma to carcinoma, are TERT promoter mutations considered an early or a late (transforming) event?",
+          "why": "The data contain an adenoma-derived HCC group, and the timing of TERT in that route could support or contradict an 'early event' reading.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In whole-exome sequencing studies, is the TERT promoter usually covered by exome capture, or are promoter hotspot calls usually added from a separate targeted assay such as Sanger sequencing?",
+          "why": "This decides whether all samples share a valid denominator for promoter-mutation frequency.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": false,
+      "error": "ConnectionError: [Errno 8] nodename nor servname provided, or not known",
+      "findings": []
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh37-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh37-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh37-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh37-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh37-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 56.562784958048724,
+      "cost_usd": 0.18369280000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 42.801866541965865,
+      "cost_usd": 0.15246700000000002,
+      "error": null
+    },
+    {
+      "agent": "bh37-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 43.41252029198222,
+      "cost_usd": 0.1660322,
+      "error": null
+    },
+    {
+      "agent": "bh37-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 47.6342897079885,
+      "cost_usd": 0.2143524,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 72.40765304199886,
+      "cost_usd": null,
+      "error": null
+    },
+    {
+      "agent": "bh37-library",
+      "phase": "research",
+      "ok": false,
+      "seconds": 0.7331457138061523,
+      "cost_usd": null,
+      "error": "ConnectionError: [Errno 8] nodename nor servname provided, or not known"
+    },
+    {
+      "agent": "bh37-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 60.47552533401176,
+      "cost_usd": 0.2547534,
+      "error": null
+    },
+    {
+      "agent": "bh37-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 73.55621324991807,
+      "cost_usd": 0.32780279999999995,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

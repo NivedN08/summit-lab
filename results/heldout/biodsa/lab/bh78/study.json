@@ -1,0 +1,387 @@
+{
+  "study": "bh78",
+  "status": "replicated",
+  "final": {
+    "agent": "bh78-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh78/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh78-library": "opus",
+    "bh78-team-a": "opus",
+    "bh78-team-b": "opus",
+    "bh78-team-c": "opus",
+    "bh78-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh78-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh78/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh78-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh78/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh78-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh78/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh78-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh78/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh78-team-a",
+        "bh78-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh78-team-a",
+        "bh78-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The clinical tables have no explicit molecular-subgroup column, but PATIENT_ID values carry a subgroup prefix (for example 'WNT-02'); samples are SJMB* St Jude medulloblastoma tumours. Tabulate the prefixes to derive subgroup, and join to data_mutations.txt via SAMPLE_ID = Tumor_Sample_Barcode. Do not conclude that the WNT variable is missing.",
+      "from": [
+        "sl-lab-23c07b4e8621"
+      ],
+      "reason": "Without this, a team may wrongly decide subgroup is absent and label the task Not verifiable.",
+      "fact_ids": {
+        "team-a": "sl-lab-b3ef626538ee"
+      }
+    },
+    {
+      "text": "If the cohort contains few or no non-WNT samples, there is no within-data comparator. Under the task's labelling convention, a hypothesis about this study's cancer type and genes should still be labelled True or False, judged from the per-sample SMARCA4/CREBBP mutation frequency in WNT tumours set against established medulloblastoma biology, not labelled Not verifiable. If other subgroups are present, compare WNT against them (e.g. Fisher's exact test).",
+      "from": [
+        "sl-lab-5bacea6be567"
+      ],
+      "reason": "This decides which kind of evidence to use when the study design gives no comparison group.",
+      "fact_ids": {
+        "team-a": "sl-lab-5f38f171b08e"
+      }
+    },
+    {
+      "text": "Use every profiled sample (data_gene_panel_matrix.txt / data_clinical_sample.txt) as the denominator. A sample with no SMARCA4 or CREBBP call counts as wild-type. Count mutation status per sample, not per variant, using a sample-by-gene binary matrix.",
+      "from": [
+        "sl-lab-a607806ed1b8"
+      ],
+      "reason": "Using only samples that appear in the MAF inflates mutation frequencies and distorts any test.",
+      "fact_ids": {
+        "team-a": "sl-lab-821f4e45da56"
+      }
+    },
+    {
+      "text": "Tabulate Variant_Classification for SMARCA4 and CREBBP. Base the call on nonsynonymous variants (Missense, Nonsense, Frame_Shift, Splice_Site, In_Frame indels) and report whether including Silent/UTR/intronic calls changes the result. Also check Hugo_Symbol for aliases (BRG1, CBP) without regard to case before counting.",
+      "from": [
+        "sl-lab-46d503bf1921",
+        "sl-lab-68af7540daee"
+      ],
+      "reason": "The variant classes counted and missed aliases both change per-gene counts.",
+      "fact_ids": {
+        "team-a": "sl-lab-7d0d9ee4c15f"
+      }
+    },
+    {
+      "text": "Background: published medulloblastoma genomics papers (Robinson et al. 2012 Nature 488:43, St Jude SJMB cohort; also Pugh et al. 2012 and Jones et al. 2012) discussed SMARCA4 and CREBBP among recurrently mutated genes in medulloblastoma subgroups, alongside CTNNB1, DDX3X, TP53 and KMT2D. This comes from the library's recollection and was not verified. Compare the observed per-sample rates in WNT tumours with this published context and with background rates across all medulloblastoma.",
+      "from": [
+        "sl-lab-1f9a678a068e"
+      ],
+      "reason": "The task says to use established biology where the tables cannot test the claim directly. The team needs this reference point to interpret the observed frequencies.",
+      "fact_ids": {
+        "team-a": "sl-lab-2565dc0de1ea"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams took the PATIENT_ID prefix (WNT/SHH/G3/G4/U) as the molecular subgroup call and did not check it against any other evidence in the data, such as CTNNB1 mutation status for WNT samples.",
+      "Both teams treated a sample as wild-type whenever no call appears in data_mutations.txt. The file holds only about 555 calls across 37 WGS samples (about 15 per sample), so it may be a curated or filtered subset. Neither team checked whether SMARCA4/CREBBP calls could have been filtered out of non-WNT samples.",
+      "Both teams used a sample-level Fisher test of WNT against all other subgroups pooled, and assumed that per-sample mutation burden is comparable across subgroups."
+    ],
+    "unused_evidence": [
+      "TMB_NONSYNONYMOUS in data_clinical_sample.txt. Subgroup differences in burden could affect how surprising 2/5 against 0/32 is.",
+      "The Hotspot column and the t_alt_count/t_ref_count read support for the two hits (SJMB002 SMARCA4 G1232C, SJMB028 CREBBP R483*). Neither team showed that these calls are well supported, or that the missense hit sits in a functional domain.",
+      "CTNNB1 calls, which could confirm that the WNT prefix labels are right, and the TUMOR_CELLULARITY_PATHOLOGY_REVIEW histology column.",
+      "Splice_Region and other non-coding classes (29 Splice_Region rows). Neither team said whether any SMARCA4/CREBBP calls fall outside their nonsynonymous filter."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the tiny counts (one mutant sample per gene, WNT n=5) as their weakest point. Neither resolved it. Both fell back on pooling the two genes, which was decided after the data were seen, plus recalled literature. Neither checked whether the pooled result survives leaving one sample out or adjusting for burden."
+    ],
+    "second_readings": [
+      "'SMARCA4 and CREBBP' can be read as each gene separately, where neither per-gene test is significant (p=0.135), or as the two genes jointly. The label depends on which reading, and on whether 'not associated' means statistically non-significant in this cohort or biologically not linked as published.",
+      "'Associated with WNT' could mean enriched relative to the other subgroups, or simply recurrent within WNT tumours."
+    ],
+    "verdict": "I trust the agreed answer moderately to highly. The direction of the data (both hits fall in WNT samples) matches recalled literature that SMARCA4 and CREBBP are recurrently mutated in WNT medulloblastoma, which fits a reversed published finding. The weak spots are the post-hoc pooling of genes with n=1 each, and subgroup labels and filtering that neither team verified.",
+    "questions": [
+      {
+        "to": "bh78-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Check that every WNT-prefixed sample carries a CTNNB1 mutation and that no non-WNT sample does. Does any mismatch change your subgroup assignment or the 2x2 table?",
+        "from": [
+          "sl-lab-acbf79c533e0"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-fee3a23c7495"
+      },
+      {
+        "to": "bh78-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your label rests on pooling the two genes. Run each per-gene test and the pooled test again, conditioning on per-sample TMB_NONSYNONYMOUS or total mutation count (for example, a permutation weighted by burden). Does the WNT enrichment hold, and does that change how you weigh data against biology?",
+        "from": [
+          "sl-lab-acbf79c533e0"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-b028f4f6a1c8"
+      },
+      {
+        "to": "bh78-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Report t_alt_count/t_ref_count, the Hotspot flag and the protein domain for the SMARCA4 G1232C and CREBBP R483* calls. Also list every SMARCA4/CREBBP row of any Variant_Classification, including Splice_Region. Does any of this change the counts or your reading of them?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-77b69884ea9a"
+      },
+      {
+        "to": "bh78-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check that every WNT-prefixed sample carries a CTNNB1 mutation and that no non-WNT or U sample does. Does any mismatch change your subgroup assignment or the 2x2 table?",
+        "from": [
+          "sl-lab-53e346d46908"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-c4522df26031"
+      },
+      {
+        "to": "bh78-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your pooled p=0.015 assumes all samples are equally likely to carry a mutation. Compare TMB_NONSYNONYMOUS across subgroups and repeat the test with a permutation weighted by burden. Does the conclusion or your confidence change?",
+        "from": [
+          "sl-lab-53e346d46908"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-0a38296a68e4"
+      },
+      {
+        "to": "bh78-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: The mutation file holds about 15 calls per WGS sample. Check whether it looks filtered (for example, by the classes present or by read-support thresholds), and whether any SMARCA4/CREBBP calls of any class appear in non-WNT samples. Does the possibility of filtering change how you treat absent calls as wild-type?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-31b58d3fc30f"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In published whole-genome medulloblastoma studies, how is the frequency of SMARCA4 and CREBBP mutations reported by molecular subgroup (WNT, SHH, Group 3, Group 4)? Was enrichment in WNT tumours reported as a finding?",
+          "why": "With one mutant sample per gene, the label depends on established biology. Both teams relied on unverified recollection.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When testing whether a gene's mutations are enriched in one subgroup of a small cohort, what are standard ways to account for differences in per-sample mutation burden (for example, burden-weighted permutation)?",
+          "why": "Neither team checked whether differences in burden across subgroups could produce or hide the apparent enrichment.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In published whole-genome medulloblastoma studies, how is the frequency of SMARCA4 and CREBBP mutations reported by molecular subgroup (WNT, SHH, Group 3, Group 4)? Was enrichment in WNT tumours reported as a finding?",
+          "answer": "NOT VERIFIED FROM THE WEB: all research calls failed (HTTP 502 / upstream 403), so no page was read. From recollection: Robinson et al. 2012 (Nature 488:43, St Jude WGS cohort with SJMB samples) reported SMARCA4 and CREBBP as recurrently mutated in WNT medulloblastoma, together with CTNNB1, DDX3X, TP53 and MLL2. SMARCA4 was in roughly 26% of WNT tumours and also appeared in Group 3. CREBBP was in WNT and some SHH tumours. WNT enrichment was presented as a finding. A hypothesis saying 'not associated with WNT' therefore looks like the reversed finding, which points to False.",
+          "sources": [],
+          "confidence": "medium (from recollection only, no source read)",
+          "deliveries": {
+            "bh78-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-d915c513772d"
+            },
+            "bh78-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-e2168600332a"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In published whole-genome medulloblastoma studies, how is the frequency of SMARCA4 and CREBBP mutations reported by molecular subgroup (WNT, SHH, Group 3, Group 4)? Was enrichment in WNT tumours reported as a finding? ANSWER: NOT VERIFIED FROM THE WEB: all research calls failed (HTTP 502 / upstream 403), so no page was read. From recollection: Robinson et al. 2012 (Nature 488:43, St Jude WGS cohort with SJMB samples) reported SMARCA4 and CREBBP as recurrently mutated in WNT medulloblastoma, together with CTNNB1, DDX3X, TP53 and MLL2. SMARCA4 was in roughly 26% of WNT tumours and also appeared in Group 3. CREBBP was in WNT and some SHH tumours. WNT enrichment was presented as a finding. A hypothesis saying 'not associated with WNT' therefore looks like the reversed finding, which points to False. HOW SURE: medium (from recollection only, no source read). SOURCES: none given."
+        },
+        {
+          "question": "When testing whether a gene's mutations are enriched in one subgroup of a small cohort, what are standard ways to account for differences in per-sample mutation burden (for example, burden-weighted permutation)?",
+          "answer": "NOT VERIFIED FROM THE WEB: the gateway was unavailable. Standard approaches: (1) burden-weighted permutation, which reassigns each gene's mutations to samples with probability proportional to each sample's total mutation count and compares the observed count in the subgroup with that null; (2) logistic regression of mutated status on subgroup, with log total mutation burden as a covariate; (3) a Poisson-binomial test with sample-specific mutation probabilities (the DISCOVER approach, Canisius et al. 2016); (4) background-rate-aware methods such as MutSigCV or dNdScv. With one mutant sample per gene, none of these has meaningful power, so the label has to rest on the published biology.",
+          "sources": [],
+          "confidence": "medium for the methods, which are standard; low for the citations, which were not checked",
+          "deliveries": {
+            "bh78-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-acf7fb2b783a"
+            },
+            "bh78-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-a9b8075fb223"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When testing whether a gene's mutations are enriched in one subgroup of a small cohort, what are standard ways to account for differences in per-sample mutation burden (for example, burden-weighted permutation)? ANSWER: NOT VERIFIED FROM THE WEB: the gateway was unavailable. Standard approaches: (1) burden-weighted permutation, which reassigns each gene's mutations to samples with probability proportional to each sample's total mutation count and compares the observed count in the subgroup with that null; (2) logistic regression of mutated status on subgroup, with log total mutation burden as a covariate; (3) a Poisson-binomial test with sample-specific mutation probabilities (the DISCOVER approach, Canisius et al. 2016); (4) background-rate-aware methods such as MutSigCV or dNdScv. With one mutant sample per gene, none of these has meaningful power, so the label has to rest on the published biology. HOW SURE: medium for the methods, which are standard; low for the citations, which were not checked. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh78-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh78-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh78-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh78-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh78-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 56.09148616704624,
+      "cost_usd": 0.1749988,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 35.28990379197057,
+      "cost_usd": 0.1317032,
+      "error": null
+    },
+    {
+      "agent": "bh78-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 35.57880512496922,
+      "cost_usd": 0.1380018,
+      "error": null
+    },
+    {
+      "agent": "bh78-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 33.63786645804066,
+      "cost_usd": 0.14162160000000001,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 44.432657000026666,
+      "cost_usd": 0.23467359999999998,
+      "error": null
+    },
+    {
+      "agent": "bh78-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 72.29486595804337,
+      "cost_usd": 0.1423124,
+      "error": null
+    },
+    {
+      "agent": "bh78-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 53.9324123339029,
+      "cost_usd": 0.2139412,
+      "error": null
+    },
+    {
+      "agent": "bh78-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 60.020665082964115,
+      "cost_usd": 0.25667979999999996,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

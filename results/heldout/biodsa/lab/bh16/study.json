@@ -1,0 +1,319 @@
+{
+  "study": "bh16",
+  "status": "replicated",
+  "final": {
+    "agent": "bh16-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh16/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh16-library": "opus",
+    "bh16-team-a": "opus",
+    "bh16-team-b": "opus",
+    "bh16-team-c": "opus",
+    "bh16-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh16-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh16/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh16-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh16/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh16-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh16/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh16-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh16/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh16-team-a",
+        "bh16-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh16-team-a",
+        "bh16-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "A tumour-normal somatic MAF normally has germline variants filtered out (normal alt reads ~0), so counting pathogenic variants in data_mutations.txt measures somatic prevalence, not germline carrier prevalence. Tabulate n_alt_count/n_ref_count and Mutation_Status first. If germline calls are not deposited, do not treat the somatic count as a germline rate. Under the benchmark convention a hypothesis about this cohort's germline findings gets True or False, not Not verifiable, even when germline calls are missing; decide it from the study design and established biology, and say which kind of evidence decided the label.",
+      "from": [
+        "sl-lab-682482afd191"
+      ],
+      "reason": "This is the main trap. A naive count of the MAF would give a misleadingly low 'germline' rate, and missing germline data could wrongly push the team toward Not verifiable.",
+      "fact_ids": {
+        "team-a": "sl-lab-a6d8084101a5"
+      }
+    },
+    {
+      "text": "If you try to identify germline variants, use allele counts in the matched normal (e.g. normal VAF > 0.2 = germline evidence). Tumour VAF near 0.5 or 1.0 is not proof of germline status, because LOH and high purity produce the same pattern.",
+      "from": [
+        "sl-lab-8eca19fb1ac3"
+      ],
+      "reason": "Without this, the team might call germline carriers from tumour VAF, which misclassifies somatic variants.",
+      "fact_ids": {
+        "team-a": "sl-lab-5de150ac3381"
+      }
+    },
+    {
+      "text": "Germline prevalence depends on the definition: count only Pathogenic/Likely pathogenic variants (ACMG/AMP) in a standard cancer-predisposition gene list (e.g. ACMG-59 or ~100 predisposition genes) and exclude VUS. Adding VUS inflates the rate; using only a few genes deflates it. State the gene list and classification you used.",
+      "from": [
+        "sl-lab-30109a47727d"
+      ],
+      "reason": "The 5% threshold is sensitive to the definition, so it must be explicit.",
+      "fact_ids": {
+        "team-a": "sl-lab-a0c296c95df3"
+      }
+    },
+    {
+      "text": "Compute prevalence per patient: carriers divided by all unique sequenced patients with matched normals (the library reports ~500 samples, all SOMATIC_STATUS=Matched; verify this). Do not use only the patients who appear in the variant file as the denominator.",
+      "from": [
+        "sl-lab-d1525dbcbf56"
+      ],
+      "reason": "A wrong denominator shifts a rate measured against a 5% threshold.",
+      "fact_ids": {
+        "team-a": "sl-lab-3a6d9c83dab4"
+      }
+    },
+    {
+      "text": "Reference values from established literature: in large studies of patients with advanced or metastatic cancer sequenced with matched normals, P/LP germline variants in cancer-predisposition genes are reported in about 8-17% of patients (Huang 2018 Cell PanCanAtlas ~8%; Mandelker 2017 JAMA ~17.5%; Schrader 2016 JAMA Oncol ~16%). Confirm the cohort type (cancer types, SAMPLE_TYPE, SOMATIC_STATUS) before applying these values. If the tables cannot count germline variants directly, use them as the established-biology benchmark. The library cited these from memory and did not verify them.",
+      "from": [
+        "sl-lab-d1037cbfdd51"
+      ],
+      "reason": "If germline calls are absent, the team needs an external benchmark for the established-biology route the task allows.",
+      "fact_ids": {
+        "team-a": "sl-lab-1b896ffd5e89"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 4,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed the deposited MAF is somatic-only (normal VAF scan, empty Mutation_Status). From that they concluded the label must come from recall of the source study's reported germline rate (~12%). Neither tested whether that recalled figure uses the same denominator (all 500 cases vs a subset) and the same variant definition ('putative pathogenic' vs strictly P/LP) as the hypothesis.",
+      "Both assumed the hypothesis is about this study (a metastatic pan-cancer cohort with matched normals) rather than one attached from another publication."
+    ],
+    "unused_evidence": [
+      "data_clinical_patient.txt column 'Other Cancer History': about 25 patients have prior or multiple cancers, including one 'Bilateral Retinoblastoma', a classic hereditary presentation. This is a phenotypic proxy for germline predisposition that neither team tabulated.",
+      "In predisposition genes, the MAF columns Freq_ExAC, dbSNP_RS and n_alt_count/n_ref_count were only screened with a high normal-VAF cutoff. Neither team looked for indirect germline-linked signals, such as somatic second hits or LOH in BRCA1/2, RB1 or TP53 in patients with multiple cancers.",
+      "data_cna_hg19.seg (LOH at predisposition loci) and data_sv.txt were not used."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weakest point: the label rests on recalling the published germline rate. Both only reported it, and neither looked for any in-data corroboration, however indirect."
+    ],
+    "second_readings": [
+      "'Putative pathogenic germline variants' could mean a broader putative class or a strict P/LP set. The reported percentage depends on the definition, though the plausible readings of the source finding both exceed 5%.",
+      "'Cases' could mean all 500 sequenced patients or only those with germline analysis. A different denominator would shift the percentage."
+    ],
+    "verdict": "High trust in 'False'. The hypothesis plainly concerns this matched-normal metastatic cohort. Both teams correctly found that the tables hold no germline calls, and the study's published germline rate (about 12%) is well above 5%. The only weakness is that both teams rest on the same recalled figure, with no corroboration from the data.",
+    "questions": [
+      {
+        "to": "bh16-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate the 'Other Cancer History' column in data_clinical_patient.txt: how many of the 500 patients report a prior or second cancer, and of which types (e.g. bilateral retinoblastoma)? Does this phenotypic proxy for hereditary predisposition give in-data evidence for or against your recalled germline rate, and does it change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-b21937591c36"
+      },
+      {
+        "to": "bh16-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For patients with multiple cancers, check data_mutations.txt and data_cna_hg19.seg for somatic hits or LOH in classic predisposition genes (BRCA1/2, RB1, TP53, MMR genes). Does the result change how you weigh literature recall against the data?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-00759fcbb169"
+      },
+      {
+        "to": "bh16-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate the 'Other Cancer History' column in data_clinical_patient.txt and count patients with prior or second cancers, including the bilateral retinoblastoma case. Does this indirect evidence of predisposition fit the ~12% figure you recalled, and does it change your method?",
+        "from": [
+          "sl-lab-27f6f2613c5e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-875fad3d44c2"
+      },
+      {
+        "to": "bh16-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Is your recalled figure a share of all 500 cases or of a subset, and does it count 'putative pathogenic' or only P/LP variants? Check the cohort size in the clinical tables against that denominator, and say whether a different denominator or definition could bring the rate below 5%.",
+        "from": [
+          "sl-lab-27f6f2613c5e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-e140b13c8f0c"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In large pan-cancer germline studies of metastatic tumours sequenced with matched normals, what proportion of patients typically carry pathogenic or likely pathogenic germline variants in cancer-predisposition genes, and how much does this depend on the size of the gene list?",
+          "why": "Both teams' label rests on recalling one figure. An independent check of the typical range would show whether a rate below 5% is plausible under any common definition.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": false,
+      "error": "ConnectionError: [Errno 8] nodename nor servname provided, or not known",
+      "findings": []
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh16-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh16-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh16-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh16-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh16-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 60.88137166702654,
+      "cost_usd": 0.1820058,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 31.467530374997295,
+      "cost_usd": 0.2074062,
+      "error": null
+    },
+    {
+      "agent": "bh16-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 44.15781150001567,
+      "cost_usd": 0.15750160000000002,
+      "error": null
+    },
+    {
+      "agent": "bh16-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 33.312848999979906,
+      "cost_usd": 0.14360879999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 96.23113433306571,
+      "cost_usd": 0.29819799999999996,
+      "error": null
+    },
+    {
+      "agent": "bh16-library",
+      "phase": "research",
+      "ok": false,
+      "seconds": 0.782829761505127,
+      "cost_usd": null,
+      "error": "ConnectionError: [Errno 8] nodename nor servname provided, or not known"
+    },
+    {
+      "agent": "bh16-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 34.311077416990884,
+      "cost_usd": 0.1311654,
+      "error": null
+    },
+    {
+      "agent": "bh16-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 57.53145208302885,
+      "cost_usd": 0.268008,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

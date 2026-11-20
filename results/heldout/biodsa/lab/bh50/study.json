@@ -1,0 +1,384 @@
+{
+  "study": "bh50",
+  "status": "replicated",
+  "final": {
+    "agent": "bh50-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh50/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh50-library": "opus",
+    "bh50-team-a": "opus",
+    "bh50-team-b": "opus",
+    "bh50-team-c": "opus",
+    "bh50-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh50-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh50/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh50-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh50/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh50-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh50/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh50-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh50/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh50-team-a",
+        "bh50-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh50-team-a",
+        "bh50-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The clinical tables have no tumour-grade column, but every sample is a bladder urothelial carcinoma from the study's own cohort (MSKCC BLCA targeted panel). Check that all samples are BLCA. If they are, treat the whole cohort as the high-grade cohort the claim refers to. A missing grade variable is not a reason to answer Not verifiable.",
+      "from": [
+        "sl-lab-807c975c0ea9"
+      ],
+      "reason": "This stops the team from answering Not verifiable just because there is no grade column, which the benchmark's labelling convention would mark wrong.",
+      "fact_ids": {
+        "team-a": "sl-lab-bddd6bd7fa11"
+      }
+    },
+    {
+      "text": "Wild-type tumours have no rows in data_mutations.txt. The denominator for an 'actionable fraction' must therefore be every sample profiled in data_gene_panel_matrix.txt (about 97-98 samples), not only the samples that appear in the mutation file.",
+      "from": [
+        "sl-lab-97cec9897f09"
+      ],
+      "reason": "Using the wrong denominator inflates the fraction and could flip the comparison with 61%.",
+      "fact_ids": {
+        "team-a": "sl-lab-9589c406927a"
+      }
+    },
+    {
+      "text": "The actionable fraction depends heavily on which genes count as actionable. Non-druggable drivers such as TP53 and RB1 should not count. Druggable pathway genes should count: PI3K/AKT/mTOR (PIK3CA, PIK3R1, PTEN, TSC1, TSC2, AKT1, AKT3, MTOR), RTK/RAS/RAF (FGFR3, ERBB2, ERBB3, KRAS, HRAS, NRAS, BRAF), and possibly CDKN2A. State the gene list you use, and run sensitivity variants (for example with and without CDKN2A) to show whether the conclusion survives. Only count non-silent mutations.",
+      "from": [
+        "sl-lab-8d21189923b5"
+      ],
+      "reason": "The definition of actionable is the main thing that decides whether the computed fraction matches 61%. Teams should choose the list on purpose and test how robust the result is to that choice.",
+      "fact_ids": {
+        "team-a": "sl-lab-d5c0fc8ad69b"
+      }
+    },
+    {
+      "text": "No copy-number table is deposited, yet published actionability counts in bladder cancer usually include amplifications and deletions (for example ERBB2, CCND1, MDM2 or E2F3 amplification, and CDKN2A or PTEN deletion). A mutation-only count is therefore a lower bound. If you want an upper bound, you may use mRNA z-scores from the diploid-reference file as a rough proxy for amplification or loss. Missing CNA data does not make the claim Not verifiable.",
+      "from": [
+        "sl-lab-bb6bf4235e9c"
+      ],
+      "reason": "Without this caveat a team might judge a mutation-only shortfall below 61% as clear contradiction, or wrongly answer Not verifiable.",
+      "fact_ids": {
+        "team-a": "sl-lab-67c05f17c6ac"
+      }
+    },
+    {
+      "text": "With about 97 samples, the 95% confidence interval for a proportion near 60% is roughly +/-10 percentage points. Report a Wilson CI for the actionable fraction under each definition you use, and judge whether 61% agrees with the data in light of that uncertainty and the definition sensitivity, rather than by exact equality.",
+      "from": [
+        "sl-lab-4a74b8d8e40e"
+      ],
+      "reason": "Sampling uncertainty is large at this cohort size. Teams need to weigh it before treating a small gap from 61% as support or contradiction.",
+      "fact_ids": {
+        "team-a": "sl-lab-9856af872ab4"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed the 41% mutation-only fraction is a lower bound that copy-number events would raise to about 61%. Neither team tested how much copy-number events could add, apart from team A's expression proxy, which covered 58 of 97 samples.",
+      "Both teams assumed that all 97 BLCA samples make up the 'high-grade' cohort the claim refers to. No grade column exists, so this rests on the cohort's identity, not on data.",
+      "Both teams counted samples (per-sample denominator = 97 panel-profiled) and assumed one sample per patient. They also assumed that samples with no mutation rows were truly unaltered, rather than not covered for some genes.",
+      "Both teams assumed their own list of 'actionable' genes matches the study's definition. The mutation table contains about 12 genes, so it is a small targeted panel. Including or excluding TP53, RB1, CDKN2A, PTEN or PIK3R1 changes the count."
+    ],
+    "unused_evidence": [
+      "data_methylation_hm27.txt: neither team used it. It could show silencing events (e.g., CDKN2A/PTEN), if the study counted those as alterations.",
+      "data_mrna_agilent_microarray.txt (raw expression, 59 columns): only team A used expression, and only the diploid-reference z-scores. The 'all samples' z-score file, and how much the choice of reference matters, went unexamined.",
+      "Clinical OS/DFS: neither team used them. They are not needed for a prevalence claim, but they show which samples have clinical follow-up.",
+      "Mutation columns such as Validation_Status (all Valid) and HGVSp: these allow hotspot-level actionability (e.g., FGFR3 S249C, PIK3CA E545K, AKT1 E17K) instead of gene-level counting. Only gene-level counting was reported."
+    ],
+    "unresolved_weak_points": [
+      "Team A: the label depends on an mRNA z-score proxy for copy-number change. It covers only 58/97 samples and has not been validated, e.g. against known amplicons such as ERBB2 or CCND1 showing high, co-expressed z-scores. The 55% figure comes from a different denominator than 61%.",
+      "Team B: reported that 61% cannot be reproduced and decided from 'study context' alone. It ran no sensitivity analysis on its gene definition and no check on what copy-number events could plausibly add.",
+      "Both teams: the mutation-only estimate has a Wilson CI of about 31-51%, which excludes 61%. Neither team showed that the gap can be explained, rather than assuming it can."
+    ],
+    "second_readings": [
+      "'Potentially actionable' could mean mutations plus amplifications/deletions in druggable pathways, which the study's panel likely covered. It could also mean mutations only, which is all the deposited data hold. Under the second reading, 41% contradicts 61%.",
+      "The figure might be per patient or per tumor sample. It might also be a subset of the deposited samples, e.g. only those with high-grade pathology or with enough DNA, so the denominator may not be all 97.",
+      "The benchmark may have created a reversed version of the study's finding by changing the percentage. Agreement with 'the study's own finding' therefore depends on 61% being the study's number. Neither team can verify that from the data."
+    ],
+    "verdict": "Moderate trust. The cohort clearly matches the claim, but both teams' direct evidence (about 41%, CI excluding 61%) points away from the figure. The 'True' label rests on an untested assumption that unmeasured copy-number events close the gap, plus an unvalidated expression proxy.",
+    "questions": [
+      {
+        "to": "bh50-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Validate your expression-based copy-number proxy before relying on it. For known amplified/deleted genes (ERBB2, CCND1, MDM2, EGFR, CDKN2A), does |z|>2 in the diploid-reference file agree with the all-samples z-score file? Does the actionable fraction on the same 58 samples move by more than a few points when you change the threshold (|z|>1.5, 2, 2.5)? If it does, does the label still hold?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-06c3ddab19c2"
+      },
+      {
+        "to": "bh50-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Restrict to the 58 samples that have both mutation and expression data. What is the mutation-only fraction in that subset, and how many samples does the proxy add? Is the 55% vs 61% comparison made on matching denominators, and does that change the method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-e297c0150cfb"
+      },
+      {
+        "to": "bh50-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Recount using HGVSp hotspot-level actionability (known activating hotspots in FGFR3/PIK3CA/AKT1/KRAS/BRAF, plus truncating TSC1/PTEN), compared with any non-silent mutation in the gene. How far does the count move, and does that change which definition you report?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-7a4ad698ca7f"
+      },
+      {
+        "to": "bh50-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your mutation-only 40/97 has a 95% CI that excludes 61%. Using the expression z-score files, estimate how many mutation-negative samples show amplification-like or deletion-like expression of actionable genes. Can copy-number events plausibly close a 20-point gap? Does the answer change your reliance on 'study context'?",
+        "from": [
+          "sl-lab-3e9471bc60c5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-48f68ec4a1b4"
+      },
+      {
+        "to": "bh50-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate which genes produce the 40/97, then recompute with and without TP53, RB1, CDKN2A, PTEN and PIK3R1, and at hotspot level vs any non-silent change. Report the range. Does the conclusion depend on one gene-definition choice?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-84d157e9a8e2"
+      },
+      {
+        "to": "bh50-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check the denominator. Are all 97 panel samples mutation-profiled, with 33 having zero calls? Are any samples missing from the clinical, expression or panel files? Would a different but reasonable denominator (e.g., samples with any data) move the fraction meaningfully?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-eb8c7ff5235c"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In targeted-sequencing studies of urothelial bladder cancer, how is 'potentially actionable genomic alteration' usually defined? Specifically, are gene amplifications/deletions (e.g., ERBB2, CCND1, MDM2, CDKN2A) and tumor-suppressor losses (TSC1, PTEN) usually counted, and is TP53 usually excluded?",
+          "why": "Whether copy-number events are part of the definition decides whether a mutation-only count is a valid lower bound or a direct test of the claim.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How well do mRNA expression z-scores (|z|>2 relative to diploid samples) agree with DNA copy-number amplification or homozygous deletion calls for commonly amplified oncogenes in carcinomas?",
+          "why": "One team's label rests on expression serving as a proxy for copy-number change; its sensitivity and specificity decide whether that proxy is valid.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In targeted-sequencing studies of urothelial bladder cancer, how is 'potentially actionable genomic alteration' usually defined? Specifically, are gene amplifications/deletions (e.g., ERBB2, CCND1, MDM2, CDKN2A) and tumor-suppressor losses (TSC1, PTEN) usually counted, and is TP53 usually excluded?",
+          "answer": "The web did not settle this: both research calls failed with HTTP 502 (the provider returned 403), so no pages were read. From domain knowledge only, published bladder-cancer actionability counts usually include copy-number events: ERBB2, CCND1, MDM2 and E2F3 amplifications and CDKN2A deletion. They also count loss-of-function in TSC1 and PTEN, as targets for mTOR or PI3K inhibitors, alongside mutations in genes such as PIK3CA, FGFR3, ERBB2, KRAS and BRAF. TP53 and RB1 are usually left out because no drug targets them directly. A mutation-only count is therefore a lower bound, not a direct test of the 61% figure.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh50-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-4dd2b89e386d"
+            },
+            "bh50-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-25f335d4b749"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In targeted-sequencing studies of urothelial bladder cancer, how is 'potentially actionable genomic alteration' usually defined? Specifically, are gene amplifications/deletions (e.g., ERBB2, CCND1, MDM2, CDKN2A) and tumor-suppressor losses (TSC1, PTEN) usually counted, and is TP53 usually excluded? ANSWER: The web did not settle this: both research calls failed with HTTP 502 (the provider returned 403), so no pages were read. From domain knowledge only, published bladder-cancer actionability counts usually include copy-number events: ERBB2, CCND1, MDM2 and E2F3 amplifications and CDKN2A deletion. They also count loss-of-function in TSC1 and PTEN, as targets for mTOR or PI3K inhibitors, alongside mutations in genes such as PIK3CA, FGFR3, ERBB2, KRAS and BRAF. TP53 and RB1 are usually left out because no drug targets them directly. A mutation-only count is therefore a lower bound, not a direct test of the 61% figure. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "How well do mRNA expression z-scores (|z|>2 relative to diploid samples) agree with DNA copy-number amplification or homozygous deletion calls for commonly amplified oncogenes in carcinomas?",
+          "answer": "The web did not settle this: both research calls failed with HTTP 502 (the provider returned 403), so no pages were read. From domain knowledge only: for high-level focal amplifications (ERBB2, CCND1, MDM2, EGFR), z>2 is fairly specific, but it misses some amplified tumours and also flags tumours that are not amplified. Agreement is poor for low-level gains. For homozygous deletions it is also poor: CDKN2A can be silenced by promoter methylation, so z<-2 does not specifically indicate deletion. An expression proxy is rough and should not be treated as an equivalent of copy-number calls.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh50-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-eb58964f3215"
+            },
+            "bh50-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-673dbd833b89"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How well do mRNA expression z-scores (|z|>2 relative to diploid samples) agree with DNA copy-number amplification or homozygous deletion calls for commonly amplified oncogenes in carcinomas? ANSWER: The web did not settle this: both research calls failed with HTTP 502 (the provider returned 403), so no pages were read. From domain knowledge only: for high-level focal amplifications (ERBB2, CCND1, MDM2, EGFR), z>2 is fairly specific, but it misses some amplified tumours and also flags tumours that are not amplified. Agreement is poor for low-level gains. For homozygous deletions it is also poor: CDKN2A can be silenced by promoter methylation, so z<-2 does not specifically indicate deletion. An expression proxy is rough and should not be treated as an equivalent of copy-number calls. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh50-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh50-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh50-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh50-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh50-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 66.70235649996903,
+      "cost_usd": 0.23593219999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 40.48195595794823,
+      "cost_usd": 0.1398298,
+      "error": null
+    },
+    {
+      "agent": "bh50-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 40.71499445801601,
+      "cost_usd": 0.1631484,
+      "error": null
+    },
+    {
+      "agent": "bh50-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 45.40850058302749,
+      "cost_usd": 0.1908992,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 55.48339008400217,
+      "cost_usd": 0.3439868,
+      "error": null
+    },
+    {
+      "agent": "bh50-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 45.69575887499377,
+      "cost_usd": 0.1435358,
+      "error": null
+    },
+    {
+      "agent": "bh50-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 59.739348832983524,
+      "cost_usd": 0.259851,
+      "error": null
+    },
+    {
+      "agent": "bh50-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 97.22743820794858,
+      "cost_usd": 0.4308940000000001,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

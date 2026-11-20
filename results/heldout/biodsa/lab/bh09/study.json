@@ -1,0 +1,417 @@
+{
+  "study": "bh09",
+  "status": "replicated",
+  "final": {
+    "agent": "bh09-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh09/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh09-library": "opus",
+    "bh09-team-a": "opus",
+    "bh09-team-b": "opus",
+    "bh09-team-c": "opus",
+    "bh09-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "bh09-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh09/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh09-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh09/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh09-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh09/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh09-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh09/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh09-team-a",
+        "bh09-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh09-team-a",
+        "bh09-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Tumour histology (Thymoma vs Thymic Carcinoma) is not in data_clinical_sample.txt, where CANCER_TYPE_DETAILED is 'Thymic Epithelial Tumor' for every sample. It is in data_clinical_patient.txt as DIAGNOSIS (Thymoma / Thymic Carcinoma), with WHO_CLASS (A, AB, B1-B3, TC subtypes). Join samples to patients on PATIENT_ID and use DIAGNOSIS as the grouping variable. The hypothesis concerns this study's own cohort, so a 'Not verifiable' label based only on the sample table would be wrong.",
+      "from": [
+        "sl-lab-11abdcedbc90"
+      ],
+      "reason": "Without this, a team may miss the group variable and wrongly answer 'Not verifiable'.",
+      "fact_ids": {
+        "team-a": "sl-lab-719c63a30e67"
+      }
+    },
+    {
+      "text": "About 3 samples were profiled only by RNASeq (GENE_PANEL='RNASeq') and were never exome-sequenced, yet they show TMB_NONSYNONYMOUS=0. Check GENE_PANEL against TMB, data_gene_panel_matrix.txt and the '#sequenced_samples' line in data_mutations.txt. Restrict the mutation-burden comparison to WXS-sequenced samples, and treat unsequenced samples as missing, not as zero.",
+      "from": [
+        "sl-lab-ed07fe466f3d"
+      ],
+      "reason": "False zeros would distort the burden of whichever group these samples belong to.",
+      "fact_ids": {
+        "team-a": "sl-lab-b154a98dff1a"
+      }
+    },
+    {
+      "text": "Group sizes are small, and per-sample mutation burden is skewed and may contain zeros, so a single hypermutated tumour can dominate a mean or a t-test. Compare groups with a Wilcoxon/Mann-Whitney test, report medians and n for each group, check for outliers, and state the direction of the difference even if p>0.05.",
+      "from": [
+        "sl-lab-7533e11e1ff3"
+      ],
+      "reason": "This sets the right statistical method and makes sure a direction is reported even when the test is underpowered.",
+      "fact_ids": {
+        "team-a": "sl-lab-c4fb712b322b"
+      }
+    },
+    {
+      "text": "Thymomas usually have low tumour purity because of abundant non-neoplastic thymocytes. Their variant allele fractions are therefore low, and somatic mutations may be under-called, which biases thymoma mutation counts downward. Inspect VAF = t_alt_count/(t_ref_count+t_alt_count) by DIAGNOSIS, and take this bias into account when interpreting the burden comparison.",
+      "from": [
+        "sl-lab-deb9c6740e13"
+      ],
+      "reason": "This is a known technical bias in the variable being compared, and it affects how far the observed difference can be trusted.",
+      "fact_ids": {
+        "team-a": "sl-lab-1fe34bd7441a"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat sample-ID prefix cohorts (P-Thy, N-Thy, Padua, CMPC11) as one homogeneous exome dataset. Most thymic carcinomas come from the N-Thy/Padua/CMPC11 series and most thymomas from the P-Thy series, so histology may be confounded with sequencing centre, capture, depth and calling pipeline. Neither team tested whether the burden difference holds within one series.",
+      "Both teams assume the sample table's GENE_PANEL field defines who was exome-sequenced. data_gene_panel_matrix.txt lists every sample, including the RNASeq-only samples and cell lines, as WXS for mutations and SVs. The MAF '#sequenced_samples' header lists 28. Neither team said which source defines the denominator, or how zero-mutation sequenced samples would be counted.",
+      "Both teams treat each sample as an independent tumour of a single histology. Neither checked sample-to-patient mapping beyond the count of duplicate IDs."
+    ],
+    "unused_evidence": [
+      "TISSUE_SOURCE_SITE: two thymic carcinomas (CMPC11-3103, CMPC11-3104) are FFPE, two samples are cell lines and the rest are frozen. FFPE deamination artefacts can inflate counts, and FFPE dropout can deflate them. Neither team stratified by it.",
+      "WHO_CLASS: thymomas span A/AB/B1/B2/B3, and B3 thymomas such as N-Thy008 behave closer to carcinoma. Neither team looked at burden by WHO subtype or tested whether the B3 subset drives the overlap.",
+      "GTF2I_MUTATION_STATUS was not used. It marks the indolent type A/AB thymoma subgroup, which could explain a low thymoma burden through subtype mix.",
+      "data_sv.txt (fusions) was not considered, in case 'number of mutations' is read to include structural events.",
+      "Sample P-Thy009 appears in the sample table and in the gene-panel matrix but has no patient row and no diagnosis. Neither team reported it."
+    ],
+    "unresolved_weak_points": [
+      "Team A named tumour purity as unassessable and argued it could only push the result in one direction. That argument was not tested. If centre or pipeline differs between the groups, the bias need not be one-directional.",
+      "Both teams named small n (11 vs 17) as their weakest point but only reported it. Neither ran a sensitivity check such as leave-one-centre-out, excluding FFPE, or excluding the B3 outlier."
+    ],
+    "second_readings": [
+      "'Number of mutations' could mean all somatic calls, including silent ones, rather than nonsynonymous TMB per Mb. Team B checked both; Team A reported TMB and nonsynonymous counts only.",
+      "'Thymomas' could mean all WHO types or be compared by subtype (e.g. type A/AB vs carcinoma). The direction could be checked under both readings."
+    ],
+    "verdict": "I trust the agreed direction fairly well: it matches established biology and both teams agree on the TMB and MAF counts. But histology appears confounded with sample series, sequencing centre and FFPE status, and neither team tested this. Neither team ran a sensitivity check, so the agreement is less independent than it looks.",
+    "questions": [
+      {
+        "to": "bh09-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate DIAGNOSIS against sample-ID series (P-Thy / N-Thy / Padua / CMPC11) and repeat the burden comparison within the P-Thy series alone, where both histologies occur. Does the direction hold within a single series, and does this change your method or your claim that the purity bias is one-directional?",
+        "from": [
+          "sl-lab-6facb2ece948"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-781277a26cfa"
+      },
+      {
+        "to": "bh09-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Two carcinomas are FFPE (TISSUE_SOURCE_SITE). Rerun the comparison without them and look at their C>T fraction against frozen samples. Does excluding them change your result or method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-355dba5d4f84"
+      },
+      {
+        "to": "bh09-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: data_gene_panel_matrix.txt marks all samples as WXS for mutations, while your denominator came from the sample GENE_PANEL field. Which source did you treat as authoritative, how did you handle P-Thy009 (no diagnosis), and would counting any panel-listed sample without MAF rows as zero change the comparison?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-5a4301b4c9de"
+      },
+      {
+        "to": "bh09-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate mutation counts by WHO_CLASS (A, AB, B1-B3, and carcinoma subtypes). Does the thymoma-vs-carcinoma difference depend on the subtype mix (e.g. hold against B3 thymomas alone), and does that change how you state the conclusion?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-c0b6dd8f9304"
+      },
+      {
+        "to": "bh09-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate DIAGNOSIS against sample-ID series (P-Thy / N-Thy / Padua / CMPC11) and repeat the burden comparison within the P-Thy series alone. Does the direction survive when sequencing centre and pipeline are held constant, and does this change your method?",
+        "from": [
+          "sl-lab-34f3e5182f38"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-37d40a990675"
+      },
+      {
+        "to": "bh09-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your record lists no pitfalls checked. Did you check TISSUE_SOURCE_SITE (two FFPE carcinomas) and tumour purity via t_alt_count/t_ref_count? Rerun without the FFPE samples. Does the result or the method change?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-f4bc2ad9499f"
+      },
+      {
+        "to": "bh09-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: data_gene_panel_matrix.txt lists every sample as WXS, while your WXS set came from the MAF header (28). Reconcile the two sources and account for P-Thy009, which has no diagnosis. Does the choice of denominator change the comparison?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-aa26ec8e8daa"
+      },
+      {
+        "to": "bh09-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Compare burden by WHO_CLASS and by GTF2I_MUTATION_STATUS within thymomas. Is the thymoma-carcinoma gap driven by low-burden GTF2I-mutant A/AB thymomas, and does that change how you test or state the hypothesis?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-c38c85707d71"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In multi-centre whole-exome studies that pool tumours sequenced at different sites, what are the standard ways to check whether a between-group difference in somatic mutation count reflects batch or centre effects rather than biology?",
+          "why": "Histology may be confounded with sample series or centre here. Neither team knew how to test for this.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How do formalin-fixed paraffin-embedded (FFPE) samples typically bias somatic SNV counts from exome sequencing compared with fresh-frozen tissue, and in which direction?",
+          "why": "Some samples in one group are FFPE. Whether FFPE inflates or deflates counts determines whether those samples could distort the comparison.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In cBioPortal-format studies, what does data_gene_panel_matrix indicate about which samples were profiled for mutations, and how should a profiled sample with no MAF rows be treated when counting mutations?",
+          "why": "The panel matrix and the clinical GENE_PANEL field disagree. That changes the denominator and which samples count as zero.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In multi-centre whole-exome studies that pool tumours sequenced at different sites, what are the standard ways to check whether a between-group difference in somatic mutation count reflects batch or centre effects rather than biology?",
+          "answer": "NOT SETTLED BY WEB: the research gateway returned HTTP 502/403 on all 3 calls made. From background knowledge only, not checked against any source: put centre/series into the model alongside histology (e.g. regression or a stratified Wilcoxon/van Elteren test), repeat the comparison within a single centre, and compare coverage, VAF distributions and mutational signatures across centres. If histology and centre are fully confounded, the data cannot separate the two.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh09-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-b87b8578dd92"
+            },
+            "bh09-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-a3b0b52c7acf"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In multi-centre whole-exome studies that pool tumours sequenced at different sites, what are the standard ways to check whether a between-group difference in somatic mutation count reflects batch or centre effects rather than biology? ANSWER: NOT SETTLED BY WEB: the research gateway returned HTTP 502/403 on all 3 calls made. From background knowledge only, not checked against any source: put centre/series into the model alongside histology (e.g. regression or a stratified Wilcoxon/van Elteren test), repeat the comparison within a single centre, and compare coverage, VAF distributions and mutational signatures across centres. If histology and centre are fully confounded, the data cannot separate the two. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "How do formalin-fixed paraffin-embedded (FFPE) samples typically bias somatic SNV counts from exome sequencing compared with fresh-frozen tissue, and in which direction?",
+          "answer": "NOT SETTLED BY WEB: gateway errors (HTTP 502/403). From background knowledge only, not checked against any source: FFPE usually inflates SNV counts. Formalin-induced cytosine deamination produces artefactual C>T/G>A calls, enriched at low allele fraction, so unfiltered FFPE samples tend to show higher apparent TMB than fresh-frozen tissue. Lower coverage or DNA quality can push the other way, but inflation is the main effect.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh09-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-e96ff8c2668e"
+            },
+            "bh09-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-8095112425e2"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How do formalin-fixed paraffin-embedded (FFPE) samples typically bias somatic SNV counts from exome sequencing compared with fresh-frozen tissue, and in which direction? ANSWER: NOT SETTLED BY WEB: gateway errors (HTTP 502/403). From background knowledge only, not checked against any source: FFPE usually inflates SNV counts. Formalin-induced cytosine deamination produces artefactual C>T/G>A calls, enriched at low allele fraction, so unfiltered FFPE samples tend to show higher apparent TMB than fresh-frozen tissue. Lower coverage or DNA quality can push the other way, but inflation is the main effect. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "In cBioPortal-format studies, what does data_gene_panel_matrix indicate about which samples were profiled for mutations, and how should a profiled sample with no MAF rows be treated when counting mutations?",
+          "answer": "NOT SETTLED BY WEB: the cBioPortal file-formats page could not be fetched (gateway HTTP 502/403). From background knowledge, not checked against any source: the gene panel matrix gives, per sample and per genetic profile (e.g. mutations), the panel or WXS it was profiled with; NA (or absence) means not profiled. A sample profiled for mutations that has no MAF rows has 0 mutations and belongs in the denominator. Unprofiled samples are missing, not zero. cBioPortal uses the matrix (or the MAF #sequenced_samples header) rather than the clinical GENE_PANEL attribute to decide profiled status.",
+          "sources": [
+            "https://docs.cbioportal.org/file-formats/ (attempted, fetch failed)"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bh09-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-79adaecb5801"
+            },
+            "bh09-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-53fa608e0b72"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cBioPortal-format studies, what does data_gene_panel_matrix indicate about which samples were profiled for mutations, and how should a profiled sample with no MAF rows be treated when counting mutations? ANSWER: NOT SETTLED BY WEB: the cBioPortal file-formats page could not be fetched (gateway HTTP 502/403). From background knowledge, not checked against any source: the gene panel matrix gives, per sample and per genetic profile (e.g. mutations), the panel or WXS it was profiled with; NA (or absence) means not profiled. A sample profiled for mutations that has no MAF rows has 0 mutations and belongs in the denominator. Unprofiled samples are missing, not zero. cBioPortal uses the matrix (or the MAF #sequenced_samples header) rather than the clinical GENE_PANEL attribute to decide profiled status. HOW SURE: medium. SOURCES: https://docs.cbioportal.org/file-formats/ (attempted, fetch failed)."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh09-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh09-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh09-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh09-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh09-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 54.1426674160175,
+      "cost_usd": 0.18897039999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 28.59824170905631,
+      "cost_usd": 0.1828578,
+      "error": null
+    },
+    {
+      "agent": "bh09-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 34.84354083391372,
+      "cost_usd": 0.1637924,
+      "error": null
+    },
+    {
+      "agent": "bh09-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 42.41481595800724,
+      "cost_usd": 0.18937959999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 62.90657070907764,
+      "cost_usd": 0.3266992,
+      "error": null
+    },
+    {
+      "agent": "bh09-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 60.96255062497221,
+      "cost_usd": 0.16427400000000003,
+      "error": null
+    },
+    {
+      "agent": "bh09-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 57.077701499918476,
+      "cost_usd": 0.30624019999999996,
+      "error": null
+    },
+    {
+      "agent": "bh09-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 48.58132270909846,
+      "cost_usd": 0.2811168,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

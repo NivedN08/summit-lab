@@ -1,0 +1,386 @@
+{
+  "study": "bh11",
+  "status": "replicated",
+  "final": {
+    "agent": "bh11-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh11/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh11-library": "opus",
+    "bh11-team-a": "opus",
+    "bh11-team-b": "opus",
+    "bh11-team-c": "opus",
+    "bh11-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh11-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh11/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh11-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh11/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh11-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh11/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh11-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh11/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh11-team-a",
+        "bh11-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh11-team-a",
+        "bh11-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Check the scope first. The clinical tables should show melanoma patients treated with anti-PD-1 (pembrolizumab), with response labels (CR/PR/PD, durable clinical benefit) and an RNA-seq matrix. If they do, the hypothesis is about this study's own signature (IPRES), and under the benchmark convention the label must be True or False. A missing precomputed IPRES score column is not a reason to answer Not verifiable. Build a score from the RNA genes, and fall back on established biology where the data are thin.",
+      "from": [
+        "sl-lab-e39c4d76c5c8"
+      ],
+      "reason": "The likeliest way to get this task wrong is to answer Not verifiable because the tables have no IPRES column.",
+      "fact_ids": {
+        "team-a": "sl-lab-d2421c42eecf"
+      }
+    },
+    {
+      "text": "Innate resistance means non-responders (PD) compared with responders (CR+PR), using pre-treatment biopsies. Tabulate the response and biopsy-time columns in data_clinical_sample.txt. Keep only pre-treatment samples that have RNA-seq, keep one sample per patient, and decide explicitly how to handle SD. Record prior MAPK-inhibitor treatment and rerun without MAPKi-pretreated patients, because MAPKi therapy itself induces mesenchymal, IPRES-like expression.",
+      "from": [
+        "sl-lab-3a28404fdfac",
+        "sl-lab-f624ffb5de03"
+      ],
+      "reason": "How the groups are defined decides the contrast. The MAPKi confounder could fake or inflate a mesenchymal difference.",
+      "fact_ids": {
+        "team-a": "sl-lab-0d4bcc0ca3a0"
+      }
+    },
+    {
+      "text": "IPRES was defined (from memory, not web-verified, low-to-medium confidence) as co-enrichment of about 26 gene sets: MAPKi-induced EMT/mesenchymal genes, cell adhesion, ECM remodeling, angiogenesis, wound healing and hypoxia. Example genes are AXL, ROR2, WNT5A, LOXL2, TWIST2, TAGLN, FAP, VEGFA, VEGFC, CCL2/7/8/13 and IL10. Each gene set was scored per tumour with GSVA, and the scores were z-scored across samples. A tumour counted as co-enriched when its mean z-score across the sets was above about 0.35. Score at the gene-set level (GSVA, ssGSEA or the mean z-score per set), report the direction for each set, and test the score against response with a Wilcoxon test. With about 27 samples, per-gene tests that do not survive FDR correction are not evidence of absence. A few hand-picked genes are only a rough proxy.",
+      "from": [
+        "sl-lab-35206985a981",
+        "sl-lab-6ca094913d5f",
+        "sl-lab-98bcf7f42388"
+      ],
+      "reason": "This tells the teams how to build the closest available stand-in for the signature, and warns them against underpowered single-gene tests.",
+      "fact_ids": {
+        "team-a": "sl-lab-ed4556c9a1fb"
+      }
+    },
+    {
+      "text": "The RPKM values are non-integer and heavily right-skewed, and one sample (Pt2) has very large values for some genes. Use log2(RPKM+1) and filter out low-expressed genes. If you run GSVA, use kcdf='Gaussian', not the Poisson kernel. Alternatively, average the per-gene z-scores from the provided z-score files. Plot per-sample scores by group, and check robustness with a leave-one-out analysis and a rerun without the outlier sample.",
+      "from": [
+        "sl-lab-68e460392ef7",
+        "sl-lab-ceb049557007",
+        "sl-lab-f624ffb5de03"
+      ],
+      "reason": "Scoring the raw data, or letting one outlier sample drive the result, can distort the signature score and flip the conclusion.",
+      "fact_ids": {
+        "team-a": "sl-lab-e658f8fca0cc"
+      }
+    },
+    {
+      "text": "The hypothesis is worded as a negation: innately resistant tumours do NOT show IPRES up-expression. Before choosing a label, state explicitly which way the data point (mean score in PD minus mean score in CR/PR). Then map that direction onto the negated claim carefully. A higher IPRES score in non-responders contradicts the hypothesis, and no difference or a lower score is consistent with it. If the trend in about 27 samples is weak, say whether the label was decided by the data or by established biology.",
+      "from": [
+        "sl-lab-eb37ab2bbba9"
+      ],
+      "reason": "With negated wording it is easy to find the expected pattern and still pick the reversed label.",
+      "fact_ids": {
+        "team-a": "sl-lab-175fc68d0231"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat a hand-picked mean-z proxy of a few dozen IPRES genes as equivalent to the published multi-gene-set IPRES signature, and neither tests how sensitive the direction is to which genes are in the list.",
+      "Both define 'innately resistant' from one response field (team A: PD vs CR/PR; team B: TREATMENT_RESPONSE), and they report different non-responder counts (13 vs 14 with RNA). Neither checked whether the two definitions agree sample by sample.",
+      "Both treat the ~27 RNA samples as independent pre-treatment tumours and z-score genes within this cohort, so every score is relative to this cohort's mix of responders and non-responders."
+    ],
+    "unused_evidence": [
+      "The two precomputed z-score matrices (relative to all samples and to diploid samples). Both teams rebuilt z-scores from RPKM, and neither checked that the direction holds on the deposited matrices.",
+      "BIOPSY_TIME. Team A excluded the on-treatment sample, but team B lists the on-treatment restriction as found without changing its method, so it is unclear whether team B's primary contrast includes it.",
+      "CNA and mutation tables (e.g., NF1/BRAF/NRAS status, mutation load), which could confound mesenchymal/IPRES-like expression. Neither team used them. They are probably not decisive for the label."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the proxy gene list as their weakest point and only reported it. Neither ran a sensitivity check with an alternative or larger IPRES-like list.",
+      "Team B found that the score correlates rho=0.85 with STROMAL_SCORE and that the effect is lost after adjustment (p=0.24). It argued this away as over-adjustment but did not resolve it, e.g. by checking tumour-intrinsic IPRES genes separately.",
+      "The MAPKi-naive subset is not significant in either team (p=0.094). The teams agree only on its direction."
+    ],
+    "second_readings": [
+      "'Innately resistant' could mean PD by RECIST or no durable clinical benefit (TREATMENT_RESPONSE). The two fields may classify some patients differently.",
+      "'Do not exhibit' could be read as no group-level difference or as no tumour-level co-enrichment (the fraction of resistant tumours above an enrichment threshold). Team A tested both, team B only the group mean. Under either reading, the label hinges on the direction in resistant versus responding tumours."
+    ],
+    "verdict": "I trust the agreed direction (IPRES-like expression higher in non-responders, so the negated hypothesis is False) fairly well. It agrees with the source study's reported finding and holds across both teams' sensitivity checks. The remaining risks are the proxy gene list and the stromal confound, which could weaken the effect but are unlikely to reverse its direction.",
+    "questions": [
+      {
+        "to": "bh11-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your NR count differs from team B's (14 vs 13 with RNA). Cross-tabulate DURABLE_CLINICAL_BENEFIT against TREATMENT_RESPONSE for the RNA samples. Do any discordant patients change the direction or the >0.35 enrichment counts if you switch definitions?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-7f90fc3a6f5f"
+      },
+      {
+        "to": "bh11-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Recompute your four functional-set scores from the deposited z-score matrix (relative to all samples) instead of your own log2 RPKM z-scores. Does the NR-versus-R direction of any set flip?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-44c8668d4b02"
+      },
+      {
+        "to": "bh11-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You named the hand-picked gene subset as your weakest point. Run a leave-one-set-out check (drop each functional set in turn). Does the composite direction hold, or does one set carry it?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-801a686b2762"
+      },
+      {
+        "to": "bh11-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Does your primary 27-sample contrast include the on-treatment biopsy (BIOPSY_TIME)? Rerun it on pre-treatment samples only and report whether the direction and effect size change.",
+        "from": [
+          "sl-lab-1315d35e76ae"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-ec5d5eeafa61"
+      },
+      {
+        "to": "bh11-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Given rho=0.85 with STROMAL_SCORE, score separately the IPRES genes known to be expressed by melanoma cells and the stromal/angiogenic genes. Is the NR-versus-R direction present in the tumour-intrinsic subset, and does that change how you weigh the adjusted result?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-9ff8d7400ca8"
+      },
+      {
+        "to": "bh11-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Recompute your proxy score from the deposited z-score matrices (all-sample and diploid reference). Does the direction of the NR-versus-R contrast agree with your own log2 RPKM z-scores?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-e0f6a7ac5793"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In GSVA-based gene-set scoring, how is a sample-level 'co-enrichment' call usually made across many gene sets (thresholding the mean z-score of the set scores, the number of sets enriched, or something else)?",
+          "why": "It decides whether the hypothesis should be read as a group-mean difference or a tumour-level co-enrichment frequency, and only team A tested the latter.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In immunotherapy cohort studies of melanoma, is response usually defined by best RECIST response (PD vs CR/PR) or by a durable-clinical-benefit field, and how are patients with stable disease handled?",
+          "why": "The two teams used different response fields and got different non-responder counts.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In GSVA-based gene-set scoring, how is a sample-level 'co-enrichment' call usually made across many gene sets (thresholding the mean z-score of the set scores, the number of sets enriched, or something else)?",
+          "answer": "I could not check this on the web: the research gateway returned HTTP 403 on all 3 attempted calls. From prior knowledge: each gene set's GSVA score is z-scored across samples, and a tumour is called co-enriched when its mean z-score across the sets is above a cutoff. For IPRES, Hugo et al. (Cell 2016) used a cutoff of about 0.35. A group-mean comparison and a comparison of how often tumours are co-enriched should point the same way. Either reading is defensible.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh11-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-5bfd9cb68826"
+            },
+            "bh11-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-3fc520893a54"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In GSVA-based gene-set scoring, how is a sample-level 'co-enrichment' call usually made across many gene sets (thresholding the mean z-score of the set scores, the number of sets enriched, or something else)? ANSWER: I could not check this on the web: the research gateway returned HTTP 403 on all 3 attempted calls. From prior knowledge: each gene set's GSVA score is z-scored across samples, and a tumour is called co-enriched when its mean z-score across the sets is above a cutoff. For IPRES, Hugo et al. (Cell 2016) used a cutoff of about 0.35. A group-mean comparison and a comparison of how often tumours are co-enriched should point the same way. Either reading is defensible. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "In immunotherapy cohort studies of melanoma, is response usually defined by best RECIST response (PD vs CR/PR) or by a durable-clinical-benefit field, and how are patients with stable disease handled?",
+          "answer": "I could not check this on the web: the gateway returned HTTP 403. From prior knowledge, studies differ. Hugo et al. (Cell 2016, anti-PD-1) counted CR, PR and SD (irRECIST) as responders and only PD as non-responders. Van Allen et al. (2015) used clinical benefit versus no benefit. Riaz et al. (2017) used best RECIST response. How stable-disease patients are grouped is the likely reason the teams got different non-responder counts. If this dataset comes from a study that grouped PD versus CR/PR/SD, follow that grouping.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh11-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-00ea4db94c7a"
+            },
+            "bh11-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-498cd626f3ad"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In immunotherapy cohort studies of melanoma, is response usually defined by best RECIST response (PD vs CR/PR) or by a durable-clinical-benefit field, and how are patients with stable disease handled? ANSWER: I could not check this on the web: the gateway returned HTTP 403. From prior knowledge, studies differ. Hugo et al. (Cell 2016, anti-PD-1) counted CR, PR and SD (irRECIST) as responders and only PD as non-responders. Van Allen et al. (2015) used clinical benefit versus no benefit. Riaz et al. (2017) used best RECIST response. How stable-disease patients are grouped is the likely reason the teams got different non-responder counts. If this dataset comes from a study that grouped PD versus CR/PR/SD, follow that grouping. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh11-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh11-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh11-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh11-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh11-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 62.1077762079658,
+      "cost_usd": 0.23320459999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 61.65807016706094,
+      "cost_usd": 0.25736780000000004,
+      "error": null
+    },
+    {
+      "agent": "bh11-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 67.87217554193921,
+      "cost_usd": 0.21829180000000004,
+      "error": null
+    },
+    {
+      "agent": "bh11-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 64.22387783310842,
+      "cost_usd": 0.23700539999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 75.84295783296693,
+      "cost_usd": 0.304367,
+      "error": null
+    },
+    {
+      "agent": "bh11-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 42.18538754200563,
+      "cost_usd": 0.136575,
+      "error": null
+    },
+    {
+      "agent": "bh11-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 46.60658241703641,
+      "cost_usd": 0.2074862,
+      "error": null
+    },
+    {
+      "agent": "bh11-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 67.89984924998134,
+      "cost_usd": 0.2840436,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

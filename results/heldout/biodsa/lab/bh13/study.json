@@ -1,0 +1,380 @@
+{
+  "study": "bh13",
+  "status": "replicated",
+  "final": {
+    "agent": "bh13-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh13/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh13-library": "opus",
+    "bh13-team-a": "opus",
+    "bh13-team-b": "opus",
+    "bh13-team-c": "opus",
+    "bh13-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh13-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh13/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh13-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh13/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh13-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh13/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh13-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh13/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh13-team-a",
+        "bh13-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh13-team-a",
+        "bh13-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Many key cholangiocarcinoma targets are not point mutations. FGFR2 fusions are in data_sv.txt, and ERBB2/MDM2/CDK4 amplifications are in data_cna.txt. Build each patient's alteration status as the union of mutations, somatic SVs (in-frame or functional FGFR2/NTRK fusions) and CNAs. In the CNA table, count only GISTIC values 2 (amplification) and -2 (deep deletion), and ignore +1/-1.",
+      "from": [
+        "sl-lab-7397d34baf31"
+      ],
+      "reason": "If teams use only the mutation table, they will undercount actionable alterations. If they count shallow CNA values, they will overcount.",
+      "fact_ids": {
+        "team-a": "sl-lab-d9485f76dd10"
+      }
+    },
+    {
+      "text": "data_mutations.txt has no OncoKB or oncogenicity annotation. Do not count every variant in a targetable gene as actionable. Keep known hotspots (e.g. IDH1 R132, IDH2 R140/R172, BRAF V600E, PIK3CA E542/E545/H1047, KRAS G12C) and truncating mutations in tumour suppressors such as BRCA1/2. Drop silent, intronic and other non-functional variant classes.",
+      "from": [
+        "sl-lab-7042c802eeb2"
+      ],
+      "reason": "Without this restriction, VUS and passenger variants inflate the actionable fraction.",
+      "fact_ids": {
+        "team-a": "sl-lab-65d375fd85b3"
+      }
+    },
+    {
+      "text": "'Potential therapeutic implications' has no single definition. Compute the actionable fraction under a narrow definition (OncoKB level 1-2 / FDA-approved: IDH1 R132, FGFR2 fusions, BRAF V600E, ERBB2 amplification, NTRK fusions, MSI-H/TMB-high). Also compute it under a broad definition that adds investigational levels 3-4 (e.g. PIK3CA hotspots, KRAS G12C, BRCA1/2, CDKN2A loss, MDM2/CDK4 amplification, other FGFR1-3 alterations, IDH2). Report which definition gives which value.",
+      "from": [
+        "sl-lab-6550d26beb0a"
+      ],
+      "reason": "The percentage depends on the definition used, so a figure from one definition can be misleading.",
+      "fact_ids": {
+        "team-a": "sl-lab-46bca3b2d5f6"
+      }
+    },
+    {
+      "text": "Restrict mutations and SVs to somatic calls. Check the MSI and TMB columns in data_clinical_sample.txt (e.g. MSI_TYPE = Instable, TMB_NONSYNONYMOUS). MSI-H and TMB-high tumours count as actionable because immunotherapy is approved tumour-agnostically.",
+      "from": [
+        "sl-lab-e1967012f8b0"
+      ],
+      "reason": "Including germline calls or leaving out MSI-H/TMB-high patients changes the actionable fraction.",
+      "fact_ids": {
+        "team-a": "sl-lab-50dee0ef6914"
+      }
+    },
+    {
+      "text": "The cohort has 195 samples (about 158 intrahepatic and 37 extrahepatic CCA), and some patients have more than one sample (e.g. P-0000114 T01 and T02). Collapse to unique PATIENT_ID: a patient is altered if any of their samples is. Report the proportion over unique patients.",
+      "from": [
+        "sl-lab-dd958d42f538"
+      ],
+      "reason": "The claim is about the percentage of patients, so a sample-level denominator gives the wrong figure.",
+      "fact_ids": {
+        "team-a": "sl-lab-b81c744ecab4"
+      }
+    },
+    {
+      "text": "Samples were sequenced on IMPACT341 (about 54) or IMPACT410 (about 141). Use data_gene_panel_matrix.txt to confirm that each actionable gene was profiled on each sample's panel. Check that the mutation, CNA and SV profiling denominators match. Treat an unprofiled gene as missing, not wild-type, or note the bias.",
+      "from": [
+        "sl-lab-5669813a7565"
+      ],
+      "reason": "Treating unprofiled genes as wild-type biases the actionable proportion.",
+      "fact_ids": {
+        "team-a": "sl-lab-298ee0b5c698"
+      }
+    },
+    {
+      "text": "Actionable alterations are distributed differently in the two subtypes: IDH1/2 and FGFR2 fusions are concentrated in intrahepatic CCA, and KRAS/ERBB2 alterations are more common in extrahepatic CCA. Tabulate the fraction by CANCER_TYPE_DETAILED and pooled. Judge the claim against the pooled cohort figure, because the claim names no subtype.",
+      "from": [
+        "sl-lab-2f7957e298c9"
+      ],
+      "reason": "This makes clear which figure the claim should be compared against, so a subtype-specific number is not used by mistake.",
+      "fact_ids": {
+        "team-a": "sl-lab-4af158904cc2"
+      }
+    },
+    {
+      "text": "Do not judge a '20%' claim by exact equality or under a single definition. Compute a 95% Wilson confidence interval for the patient-level proportion under both the narrow and the broad definition. Then judge whether 20% is consistent with the observed values across reasonable definitions.",
+      "from": [
+        "sl-lab-249dec516c9a"
+      ],
+      "reason": "This gives a principled way to compare an observed proportion with a stated percentage.",
+      "fact_ids": {
+        "team-a": "sl-lab-f6750b78872b"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams read 'genetic alterations with potential therapeutic implications' as a genomic actionability fraction (IDH1/2, FGFR2 fusion, ERBB2 amp, BRAF V600E, MSI-H) and not as, say, the share of patients who received matched or targeted therapy or entered trials.",
+      "Both treat IDH1 R132 alone as enough to exceed 20%, which assumes IDH1 counts as 'therapeutically implicated'. The evidence-level convention (standard of care vs investigational) was never fixed.",
+      "Both count a patient as altered from any of their samples, assume IMPACT341 and IMPACT410 cover the target genes equally, and assume every SV row labelled FGFR2 is a real fusion."
+    ],
+    "unused_evidence": [
+      "data_clinical_patient SYSTEMIC_TREATMENT (regimen text) and POD_FIRST_LINE: neither team looked at whether any patients got targeted or matched therapy, which a second reading of the claim would need.",
+      "data_cna_hg19.seg: not used to confirm ERBB2/MET/FGFR2 amplifications called from discrete GISTIC values.",
+      "data_gene_panel_matrix (54 IMPACT341 vs 141 IMPACT410): neither team checked whether any counted target gene is missing from the smaller panel.",
+      "SV columns Site2_Effect_On_Frame, Event_Info and Class: Team A noted 3 questionable FGFR2 rows but did not exclude them. Team B did not report any frame filtering."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the subjective definition of 'therapeutic implications' as their weakest point. Each partly answered it by noting that IDH1 alone (about 24-27%) exceeds 20%. That margin is small: if IDH1 counted only in a narrower evidence tier, or only from one panel or subtype, the figure could approach 20%.",
+      "Team A reported the out-of-frame and intergenic FGFR2 SV rows but did not remove them. The effect is small (under 2 points), so this point is close to resolved.",
+      "Team A found the extrahepatic narrow fraction at 18.9%, close to 20%. It judged on the pooled figure, which is reasonable since the claim names no subtype."
+    ],
+    "second_readings": [
+      "The quantity could be the share of patients with alterations that are actionable at a high evidence level (FDA-approved or standard care at the time of the study), not any potentially targetable alteration. That share could be much lower than the broad figure.",
+      "The quantity could be the share who actually received genotype-matched therapy or entered a matched trial, a common secondary figure in such papers. That would need SYSTEMIC_TREATMENT.",
+      "The group could be intrahepatic patients only, or patients at the sample level rather than the patient level. Neither change seems likely to bring 40-60% down to 20%."
+    ],
+    "verdict": "I trust the agreed answer (the claimed 20% is contradicted) fairly well. Both teams independently found actionable fractions well above 20% (about 44% narrow, 59% broad for Team A), and IDH1 alone already exceeds 20%. The remaining risk is a second reading of the quantity: a stricter evidence tier, or the share who actually got matched therapy. Neither team checked this against SYSTEMIC_TREATMENT.",
+    "questions": [
+      {
+        "to": "bh13-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Recompute the narrow fraction after dropping the FGFR2 SV rows whose Site2_Effect_On_Frame or Event_Info does not show an in-frame protein fusion, and with IDH1 counted only as R132 missense. Does the pooled figure, or its lower Wilson bound, move near 20%, and does that change the label?",
+        "from": [
+          "sl-lab-7235bc94a5c9"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-e18a712c6b77"
+      },
+      {
+        "to": "bh13-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-check data_gene_panel_matrix against each gene in your narrow list, and tabulate the narrow fraction separately for IMPACT341 and IMPACT410 patients. Is any target gene uncovered on the smaller panel, and does the per-panel fraction change your conclusion?",
+        "from": [
+          "sl-lab-8f1c75e02cd0"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-953dc16af0aa"
+      },
+      {
+        "to": "bh13-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate SYSTEMIC_TREATMENT for regimens that look targeted or trial-based, such as IDH or FGFR inhibitors or 'trial'. Could that fraction be what a '20%' claim refers to, and if so, does it change how you read the hypothesis?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-a7357b02c658"
+      },
+      {
+        "to": "bh13-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Report the count of patients behind each alteration class (IDH1, IDH2, FGFR2 fusion, ERBB2 amp, BRAF V600E, MSI-H) and the union under your narrowest list, with a 95% CI. Does the lower bound stay clearly above 20%?",
+        "from": [
+          "sl-lab-eba5186680b8"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-30ccddcf826e"
+      },
+      {
+        "to": "bh13-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check the FGFR2 rows in data_sv.txt for Site2_Effect_On_Frame and partner genes, and check data_gene_panel_matrix for IMPACT341 coverage of your target genes. Does excluding non-fusion FGFR2 events or uncovered genes change your count?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-f46593d74705"
+      },
+      {
+        "to": "bh13-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate SYSTEMIC_TREATMENT for targeted or matched-therapy regimens. Is there a reading of 'therapeutic implications' (for example, patients who received matched therapy) under which the figure would be near 20%, and does that affect your label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-bfc329732dca"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In clinical tumour-sequencing studies, how do OncoKB or similar evidence tiers (Level 1-4) map onto the phrases 'actionable' and 'potential therapeutic implications', and which alterations in biliary tract cancer (IDH1, FGFR2 fusions, ERBB2 amplification, BRAF V600E, MSI-H) fell into which level around 2016-2018?",
+          "why": "Both teams' weakest point is the definition. Knowing the conventional tiering would show whether a narrow-tier reading could bring the fraction down to around 20%.",
+          "passed": false,
+          "reasons": [
+            "names something that identifies this task's source"
+          ]
+        },
+        {
+          "question": "In targeted-panel cohort studies, how is the share of patients 'with potential therapeutic implications' usually distinguished from the share 'who received matched targeted therapy or trial enrolment'?",
+          "why": "This settles which quantity a stated percentage like this usually refers to, and so whether the treatment column should be checked.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": false,
+      "error": "ConnectionError: [Errno 8] nodename nor servname provided, or not known",
+      "findings": []
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh13-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh13-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh13-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh13-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh13-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 60.00733541708905,
+      "cost_usd": 0.2012084,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 51.60728870809544,
+      "cost_usd": 0.27970999999999996,
+      "error": null
+    },
+    {
+      "agent": "bh13-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 37.28416416607797,
+      "cost_usd": 0.1412446,
+      "error": null
+    },
+    {
+      "agent": "bh13-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 54.57644229091238,
+      "cost_usd": 0.2546312,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 64.4207824160112,
+      "cost_usd": 0.25178239999999996,
+      "error": null
+    },
+    {
+      "agent": "bh13-library",
+      "phase": "research",
+      "ok": false,
+      "seconds": 0.7221167087554932,
+      "cost_usd": null,
+      "error": "ConnectionError: [Errno 8] nodename nor servname provided, or not known"
+    },
+    {
+      "agent": "bh13-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 45.99223750003148,
+      "cost_usd": 0.1973584,
+      "error": null
+    },
+    {
+      "agent": "bh13-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 57.75423724995926,
+      "cost_usd": 0.29392860000000004,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

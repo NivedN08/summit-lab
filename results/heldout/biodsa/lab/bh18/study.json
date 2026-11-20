@@ -1,0 +1,357 @@
+{
+  "study": "bh18",
+  "status": "replicated",
+  "final": {
+    "agent": "bh18-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh18/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh18-library": "opus",
+    "bh18-team-a": "opus",
+    "bh18-team-b": "opus",
+    "bh18-team-c": "opus",
+    "bh18-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh18-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh18/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh18-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh18/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh18-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh18/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh18-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh18/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh18-team-a",
+        "bh18-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh18-team-a",
+        "bh18-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Clinical files have 4 '#' description lines before the header, and the 'Overall Survival ' column name may carry a trailing space. Survival statuses are strings such as '1:DECEASED' or '1:Progression'; parse the event as int(status.split(':')[0]) and drop rows with missing/NA months. Check value counts of PATIENT_SUBGROUP and AGE_CATEGORY (expected Adult/Pediatric); unclassified or NA subgroup samples should be excluded or kept as their own level, never merged into IC-BL or DGG-BL.",
+      "from": [
+        "sl-lab-8cdd6d057a10"
+      ],
+      "reason": "Wrong parsing of headers, event codes or unclassified subgroups silently corrupts every survival result.",
+      "fact_ids": {
+        "team-a": "sl-lab-5b408c5ccbfb"
+      }
+    },
+    {
+      "text": "The hypothesis concerns two subgroups (IC-BL and DGG-BL) and 'patient outcomes', so test both overall survival and progression-free survival, and for each subgroup compare it against the other subgroups (one vs rest) separately within the adult (aBL) and pediatric (pBL) cohorts. Account for multiple testing, but report effect sizes too.",
+      "from": [
+        "sl-lab-cafc47f2a420"
+      ],
+      "reason": "Testing only OS or only one contrast can miss a cohort-specific association the claim is about.",
+      "fact_ids": {
+        "team-a": "sl-lab-000e9058af1b"
+      }
+    },
+    {
+      "text": "Whether an association 'differs between cohorts' should not be judged by p<0.05 in one cohort and p>0.05 in the other (difference-in-significance fallacy). Fit Cox models with a subgroup x AGE_CATEGORY interaction (OS and PFS) and also report per-cohort hazard ratios with confidence intervals for IC-BL and DGG-BL; judge on the interaction and on the direction and size of the per-cohort HRs.",
+      "from": [
+        "sl-lab-2e71b1de76ba"
+      ],
+      "reason": "This is the core statistical comparison the hypothesis requires; the naive approach gives misleading conclusions.",
+      "fact_ids": {
+        "team-a": "sl-lab-c50debe1d22d"
+      }
+    },
+    {
+      "text": "Subgroup-by-cohort cells are small with few events, so Cox estimates can be unstable (infinite HRs) and interaction tests are underpowered. Tabulate n and events per PATIENT_SUBGROUP x AGE_CATEGORY cell and flag cells with <5 events; use log-rank within each cohort and Firth-penalised Cox where needed. A non-significant interaction means 'not detected', not proof of no difference, so look at whether the hazard direction for IC-BL or DGG-BL changes between Adult and Pediatric rather than relying on the interaction p-value alone. Benchmark hypotheses are often a published finding stated in reversed form.",
+      "from": [
+        "sl-lab-22a95115a825",
+        "sl-lab-61c6ddd5e860"
+      ],
+      "reason": "With ~200 patients, an underpowered null could be wrongly read as support for a 'no difference' claim; teams need to weigh direction and effect size.",
+      "fact_ids": {
+        "team-a": "sl-lab-b9a3ffef0bc2"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treated AGE_CATEGORY (Adult 22-90 vs Pediatric 1-20) as the aBL/pBL split and dropped the 27 patients with no age category, who also have no numeric AGE (22 of them from the National Cancer Institute). Neither team asked whether these missing patients are a non-random subset.",
+      "Both treated the two cohorts as comparable apart from age. The data show they are not: pediatric patients come mostly from Ugandan centres and are mostly EBV-positive, and 50 of 133 adults are HIV-positive against 6 pediatric patients. A cohort-by-subgroup interaction could reflect HIV, EBV or treatment setting instead of adult vs pediatric disease.",
+      "Both assumed the 'differing association' shows up in the IC-BL hazard ratio against a reference group. The answer depends on that reference: all other subgroups, including the DLBCL-labelled subgroups, or BL-only."
+    ],
+    "unused_evidence": [
+      "CANCER_TYPE_DETAILED: 43 samples are Diffuse Large B-Cell Lymphoma, and the DLBCL-A/B/C subgroups exist. Team A's one-vs-rest reference may include non-BL patients, although the hypothesis is about the aBL and pBL cohorts.",
+      "HIV_STATUS and EBV_GENOME_STATUS: these are strongly unbalanced between cohorts and plausibly prognostic. Neither team adjusted for them or stratified by them.",
+      "SOURCE (treating centre or country) in the sample table: a proxy for treatment regimen and resource setting. Neither team checked it as a confounder."
+    ],
+    "unresolved_weak_points": [
+      "Both teams reported that no interaction reaches p<0.05 (IC-BL OS p about 0.08) and that adult IC-BL has only 4 deaths. Neither resolved this; both fell back on the presumed published finding.",
+      "The direction in the data (adult IC-BL lower hazard) seems to run against the library's untested prior (IC-BL worse in aBL). Neither team reconciled the two, so the 'published finding' they lean on was not checked against what the data show.",
+      "Team B reported that the adult IC-BL result changes with the reference group (p=0.04 vs BL-only). Team A did not report the BL-only reference."
+    ],
+    "second_readings": [
+      "Reading 1: 'differ between aBL and pBL' means the association of a subgroup with outcome is modified by cohort, which calls for an interaction test. Reading 2: the subgroups are prognostic in one cohort and not in the other, which calls for per-cohort significance. These readings can give different labels.",
+      "'Patient outcomes' could mean OS, PFS or both. 'IC-BL and DGG-BL subgroups' could mean each one against the rest, or IC-BL against DGG-BL directly."
+    ],
+    "verdict": "Moderate trust in False. Both teams see a direction difference for IC-BL between cohorts, but no test is significant, cohort is confounded with HIV, EBV and centre, and both labels rest on an unchecked assumption about the published direction.",
+    "questions": [
+      {
+        "to": "bh18-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Restrict to CANCER_TYPE_DETAILED == Burkitt Lymphoma, so that DLBCL samples and DLBCL-A/B/C subgroups leave the reference group, and refit the per-cohort IC-BL and DGG-BL Cox models and the interaction. Do the direction and the interaction p change, and does that change your method?",
+        "from": [
+          "sl-lab-8dc0dde4cf3a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-6a13cd0de7c0"
+      },
+      {
+        "to": "bh18-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Add HIV_STATUS and EBV_GENOME_STATUS as covariates, or stratify on them, in the subgroup x AGE_CATEGORY interaction model, given that 50 of 133 adults are HIV-positive and pediatric cases are mostly EBV-positive. Does the cohort difference in the IC-BL hazard ratio survive, and does that change your method?",
+        "from": [
+          "sl-lab-1f09fff516b5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-c6d7d3963b6e"
+      },
+      {
+        "to": "bh18-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate the 27 patients with missing AGE_CATEGORY by SOURCE, subgroup and outcome. Does assigning them to either cohort (sensitivity both ways) change the interaction estimate, and does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-bd51cdd09053"
+      },
+      {
+        "to": "bh18-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your label rests partly on a presumed published direction. Check whether the observed per-cohort hazard ratio directions for IC-BL and DGG-BL on OS and PFS are consistent with that presumed finding. If they are not, does that change how you weigh the data against the convention?",
+        "from": [
+          "sl-lab-8dc0dde4cf3a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-f82bbc485d58"
+      },
+      {
+        "to": "bh18-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Add HIV_STATUS, EBV_GENOME_STATUS and SOURCE (centre) as covariates or strata in your subgroup x age-category Cox model. Does the IC-BL interaction (HR 0.34, p=0.08) and the adult BL-only log-rank p=0.04 hold, and does that change your method?",
+        "from": [
+          "sl-lab-8e3e185116a3"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-6d922edc129b"
+      },
+      {
+        "to": "bh18-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Report events per cell (deaths and progressions for IC-BL and DGG-BL in each cohort) and refit the interaction with a penalised or Firth-type Cox model. Is the adult p=0.04 robust to the small event count, and does that change your method?",
+        "from": [
+          "sl-lab-8e3e185116a3"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-0ecc8ca31e38"
+      },
+      {
+        "to": "bh18-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Test DGG-BL on PFS as well as OS, and IC-BL vs DGG-BL directly, within each cohort, with a multiple-testing correction across all the contrasts you ran. Does any cohort-specific association remain, and does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-278658b727a9"
+      },
+      {
+        "to": "bh18-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check whether the 24-27 patients with missing age category (mostly from one centre) differ in subgroup mix or outcome. Does assigning them to either cohort change the interaction result, and does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-b4446209f3a5"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In survival analysis, when an effect-modifier variable such as age group is strongly confounded with other prognostic factors such as HIV or EBV status and treatment centre, what is the standard way to test whether a biomarker-subgroup hazard ratio truly differs between groups (interaction test with adjustment, stratified Cox), and how should a non-significant interaction be interpreted?",
+          "why": "Both teams decided 'differs between cohorts' from unadjusted interaction p about 0.08, while the cohorts differ sharply in HIV, EBV and centre.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "With very few events (about 4-6) in a subgroup, how reliable are Cox hazard ratios and log-rank p-values, and is Firth-penalised Cox the recommended remedy?",
+          "why": "Adult IC-BL has 4 deaths. One team's p=0.04 and both teams' direction-based reasoning depend on these sparse cells.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": false,
+      "error": "ConnectionError: [Errno 8] nodename nor servname provided, or not known",
+      "findings": []
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh18-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh18-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh18-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh18-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh18-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 55.1770231659757,
+      "cost_usd": 0.17270580000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 38.31840737501625,
+      "cost_usd": 0.13979599999999998,
+      "error": null
+    },
+    {
+      "agent": "bh18-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 48.05396916705649,
+      "cost_usd": 0.16353020000000001,
+      "error": null
+    },
+    {
+      "agent": "bh18-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 68.17535520798992,
+      "cost_usd": 0.2745482,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 65.3618018750567,
+      "cost_usd": 0.2464558,
+      "error": null
+    },
+    {
+      "agent": "bh18-library",
+      "phase": "research",
+      "ok": false,
+      "seconds": 0.7268979549407959,
+      "cost_usd": null,
+      "error": "ConnectionError: [Errno 8] nodename nor servname provided, or not known"
+    },
+    {
+      "agent": "bh18-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 84.81949216604698,
+      "cost_usd": 0.33661759999999996,
+      "error": null
+    },
+    {
+      "agent": "bh18-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 72.41361558297649,
+      "cost_usd": 0.3060004,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

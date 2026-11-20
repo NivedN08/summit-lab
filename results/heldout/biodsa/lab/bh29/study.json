@@ -1,0 +1,347 @@
+{
+  "study": "bh29",
+  "status": "replicated",
+  "final": {
+    "agent": "bh29-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh29/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh29-library": "opus",
+    "bh29-team-a": "opus",
+    "bh29-team-b": "opus",
+    "bh29-team-c": "opus",
+    "bh29-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh29-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh29/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh29-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh29/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh29-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh29/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh29-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh29/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh29-team-a",
+        "bh29-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh29-team-a",
+        "bh29-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Before choosing a label, check which cancer type this cohort covers (ONCOTREE_CODE / CANCER_TYPE_DETAILED in data_clinical_sample.txt). The benchmark reserves 'Not verifiable' for hypotheses about a disease or cohort the tables do not cover. If the cohort is chromophobe RCC, a missing structural-variant table does not make the claim Not verifiable: the label must be True or False. Test the expression part with the tables. If the rearrangement part cannot be measured directly, decide it from established biology and say that biology, not a direct test, decided it.",
+      "from": [
+        "sl-lab-b5e9f523eaa0"
+      ],
+      "reason": "The commonest wrong answer here is 'Not verifiable' because there is no SV table. The convention rules that out when the study covers this cancer type.",
+      "fact_ids": {
+        "team-a": "sl-lab-7e52b67e9fd6"
+      }
+    },
+    {
+      "text": "TERT rearrangements are structural variants and are often copy-neutral, so TERT copy number (data_cna.txt, GISTIC at 5p15.33) is not a proxy for them. If no TERT amplification is found, that does not argue against rearrangement. The closest available signal is a segment breakpoint near TERT (hg19 chr5:~1,253,000-1,300,000) in data_cna_hg19.seg, checked in the tumours with the highest TERT expression.",
+      "from": [
+        "sl-lab-f7b00de30db7"
+      ],
+      "reason": "This stops the team from refuting the rearrangement claim with the wrong variable and points it to the best indirect evidence in the data.",
+      "fact_ids": {
+        "team-a": "sl-lab-008f615073dc"
+      }
+    },
+    {
+      "text": "TERT is a very low-abundance transcript. In data_mrna_seq_v2_rsem.txt most samples may be near zero, with a few outliers. Work on log2(RSEM+1), count the zero or near-zero samples, and report how many tumours show clearly elevated TERT, not just a mean. Elevation that is confined to a subset of tumours is still a relevant pattern.",
+      "from": [
+        "sl-lab-3d8174a9bff6"
+      ],
+      "reason": "A skewed, zero-inflated distribution can make mean-based summaries misleading in either direction.",
+      "fact_ids": {
+        "team-a": "sl-lab-2f506372a0b2"
+      }
+    },
+    {
+      "text": "Z-score files (ref_all_samples / ref_diploid_samples) only rank tumours against each other. They cannot show that TERT is elevated relative to normal kidney. For that, use data_RNA_Seq_v2_expression_median_normals.txt (median normal values) or a tumour-vs-normal comparison of TERT.",
+      "from": [
+        "sl-lab-c00fd3cc106d"
+      ],
+      "reason": "'Highly elevated' implies a comparison with normal tissue, which z-scores cannot provide.",
+      "fact_ids": {
+        "team-a": "sl-lab-6ac3ec3c1815"
+      }
+    },
+    {
+      "text": "Methylation of the TERT upstream region (THOR) is also linked to TERT expression. If you want to see whether expression could have another driver, correlate the TERT probes in data_methylation_hm450.txt with TERT expression. If methylation explains some high-TERT tumours, that does not by itself contradict a rearrangement mechanism.",
+      "from": [
+        "sl-lab-cac594047c8c"
+      ],
+      "reason": "This confounder affects how expression is attributed to a mechanism. Without it the team might over-read or under-read the evidence.",
+      "fact_ids": {
+        "team-a": "sl-lab-39b8cca2fdea"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat a copy-number segment boundary within ~0.2-0.5 Mb of TERT in data_cna_hg19.seg as a stand-in for a genomic rearrangement. Neither checked how often segment boundaries fall in other windows of the same size, so they do not know how unusual 3 breakpoints at TERT are.",
+      "Both treat the RSEM tumour file and the normal-kidney file as being on the same scale (normalized RSEM, not log2). The normal file holds about 25 per-sample adjacent normals, mostly from the same patients as tumours, not one median. Neither team used the tumour/normal pairing.",
+      "Both read 'highly elevated in ChRCC' as elevation in a subset. Neither tested whether TERT is elevated at the cohort level, since the median tumour value is 0, the same as normal."
+    ],
+    "unused_evidence": [
+      "Matched tumour/normal pairs (normal sample barcodes ending -11 share patient IDs with tumours). A paired comparison could show whether the cohort-level elevation claim holds or depends on a few outliers.",
+      "data_linear_cna.txt and data_mrna_seq_v2_rsem_zscores_ref_diploid_samples.txt were not used. These would show whether the TERT-high, breakpoint-positive tumours have a real copy-number step at TERT or only segmentation noise.",
+      "Clinical subtype and stage fields (e.g. ICD_O_3_HISTOLOGY, pathologic stage, OS) were not used. If the 3 TERT-high tumours were metastatic or atypical cases, the claim might apply to a narrower group.",
+      "data_methylation_hm450.txt has no TERT row (director fact sl-lab-2dd600eee009), so TERT upstream hypermethylation (THOR) cannot be tested. This leaves non-rearrangement causes of high TERT open."
+    ],
+    "unresolved_weak_points": [
+      "Team A said methylation was not checked and that seg breakpoints are indirect. Only the indirectness was reported; neither point was resolved.",
+      "Team B's breakpoint evidence rests on 3 samples. No test against chance (a permutation over genomic windows, or Fisher's test of breakpoint vs TERT-high) was reported.",
+      "Neither team checked how many TERT-high tumours (above the normal maximum) have no breakpoint. Team A counts 15 such tumours but only 3 with breakpoints, so most elevation may not be explained by rearrangement."
+    ],
+    "second_readings": [
+      "Cohort-wide reading: 'TERT expression is highly elevated in ChRCC' as a property of the tumour type (median tumour vs normal), against a subset reading (a minority of tumours). Under the cohort-wide reading the data (median 0 in tumours) could be read as contradicting the claim.",
+      "Causal reading: 'due to genomic rearrangements' may require that rearrangement explains the elevation in general, not only in the 3 highest expressors."
+    ],
+    "verdict": "I have moderate-to-high trust in True. Both teams found the 3 top TERT expressors are exactly the samples with breakpoints at TERT, which fits what the source study is reported to have described. But the evidence is 3 samples with no comparison against background, and the cohort-wide reading of 'highly elevated' is untested.",
+    "questions": [
+      {
+        "to": "bh29-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Of the 15 tumours above the normal maximum, how many have a seg breakpoint near TERT? If you slide a window of the same width across chr5p (or the genome), how often do 3 of 66 samples have a breakpoint in a random window? Does that change how strongly the breakpoints support 'due to genomic rearrangements'?",
+        "from": [
+          "sl-lab-08df36a835ee"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-5d6db61a51da"
+      },
+      {
+        "to": "bh29-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The normal-kidney file has per-sample adjacent normals whose patient IDs match tumours. In a paired tumour-minus-normal comparison of TERT over the matched patients, is the cohort-level difference meaningful or driven by a few samples? Does that change whether you read the claim at cohort or subset level?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-ac534e8a20cb"
+      },
+      {
+        "to": "bh29-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: In data_linear_cna.txt, and in the segment means of the 3 breakpoint tumours, is there a real copy-number step across TERT (|delta log2| and segment probe count)? Or are the boundaries short or low-amplitude segments that could be segmentation noise? Does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-240461a617ee"
+      },
+      {
+        "to": "bh29-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: What do breakpoint presence and TERT-high status look like as a 2x2 table, with an exact test? How often do segment boundaries fall in equal-width windows elsewhere on chr5p? Does the 3-sample association stand out from background?",
+        "from": [
+          "sl-lab-0c79925a5f94"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-32bc83d2a6cd"
+      },
+      {
+        "to": "bh29-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You report that copy-loss (-1) cases have higher TERT than diploid ones. When the 3 breakpoint samples and the deep-deletion sample are removed, does that still hold? Does the result change whether CNA calls add independent support?",
+        "from": [
+          "sl-lab-0c79925a5f94"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-301b80fcbbba"
+      },
+      {
+        "to": "bh29-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Are the RSEM tumour file and the normal file on the same scale (both linear normalized RSEM)? In a paired comparison over patients with both a tumour and an adjacent normal, how many tumours exceed their own normal? Does that change whether 'highly elevated in ChRCC' holds cohort-wide or only in a subset?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-26d05ea0d972"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In whole-genome studies of chromophobe renal cell carcinoma, how were TERT promoter structural rearrangements detected, and in what fraction of tumours were they linked to high TERT expression?",
+          "why": "This settles whether the claim refers to a subset with rearrangements or to the tumour type as a whole, which decides between the two readings of the wording.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How reliably do segment boundaries from SNP-array circular binary segmentation mark structural-variant breakpoints, including balanced or copy-neutral rearrangements?",
+          "why": "Both teams use seg-file breakpoints as their only rearrangement evidence and have not shown how sensitive or specific that proxy is.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": false,
+      "error": "ConnectionError: [Errno 8] nodename nor servname provided, or not known",
+      "findings": []
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh29-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh29-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh29-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh29-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh29-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 51.06375962495804,
+      "cost_usd": 0.1650794,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 34.508184292004444,
+      "cost_usd": 0.2027934,
+      "error": null
+    },
+    {
+      "agent": "bh29-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 38.26498899993021,
+      "cost_usd": 0.1493836,
+      "error": null
+    },
+    {
+      "agent": "bh29-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 41.81639562500641,
+      "cost_usd": 0.1757536,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 49.10965395893436,
+      "cost_usd": 0.213625,
+      "error": null
+    },
+    {
+      "agent": "bh29-library",
+      "phase": "research",
+      "ok": false,
+      "seconds": 0.7376978397369385,
+      "cost_usd": null,
+      "error": "ConnectionError: [Errno 8] nodename nor servname provided, or not known"
+    },
+    {
+      "agent": "bh29-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 60.39386741700582,
+      "cost_usd": 0.24886880000000003,
+      "error": null
+    },
+    {
+      "agent": "bh29-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 67.46694962494075,
+      "cost_usd": 0.2618708,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

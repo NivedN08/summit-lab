@@ -1,5 +1,5 @@
 {
-  "about": "Every number published in README.md's headline and tables, the M-11, M-13 and M-14 counts it cites, and the M-16 loop outcomes, with how to recompute it from the committed results/ files. Checked by verify_results.py.",
+  "about": "Every number published in README.md's headline and tables, the M-11, M-13 and M-14 counts it cites, the M-16 loop outcomes and the M-19 held-out test, with how to recompute it from the committed results/ files. Checked by verify_results.py.",
   "claims": [
     {
       "id": "gb.tasks",
@@ -1376,6 +1376,181 @@
       },
       "expr": "run.m['cost']['overall']['baseline']['dollars']",
       "round": 2
+    },
+    {
+      "id": "heldout.primary.passed",
+      "text": "M-19: of the 96 held-out tasks, the lab passed 89 and the same-cost vote 87",
+      "value": [
+        89,
+        87
+      ],
+      "sources": {
+        "run": "results/heldout/biodsa/lab"
+      },
+      "expr": "[heldout_report(run)['passed']['biodsa']['lab'] + heldout_report(run)['passed']['planted']['lab'], heldout_report(run)['passed']['biodsa']['vote'] + heldout_report(run)['passed']['planted']['vote']]"
+    },
+    {
+      "id": "heldout.primary.discordant",
+      "text": "M-19: the lab against the vote: 2 wins (pf13, pf14) and no losses",
+      "value": [
+        [
+          "planted/pf13",
+          "planted/pf14"
+        ],
+        []
+      ],
+      "sources": {
+        "run": "results/heldout/biodsa/lab"
+      },
+      "expr": "[heldout_report(run)['primary']['wins'], heldout_report(run)['primary']['losses']]"
+    },
+    {
+      "id": "heldout.primary.p",
+      "text": "M-19: one-sided sign test p = 0.25; not significant at 0.05",
+      "value": [
+        0.25,
+        false
+      ],
+      "sources": {
+        "run": "results/heldout/biodsa/lab"
+      },
+      "expr": "[heldout_report(run)['primary']['p_one_sided'], heldout_report(run)['primary']['significant']]",
+      "round": 4
+    },
+    {
+      "id": "heldout.primary.interval",
+      "text": "M-19: the lab's share of discordant wins, exact 95% interval 0.16 to 1",
+      "value": [
+        0.16,
+        1.0
+      ],
+      "sources": {
+        "run": "results/heldout/biodsa/lab"
+      },
+      "expr": "heldout_report(run)['primary']['win_share_95']",
+      "round": 2
+    },
+    {
+      "id": "heldout.passed.biodsa",
+      "text": "M-19: BioDSA held-out passes of 80: lab 74, vote 74, Opus 74, self-challenge 69, Fable 76, Opus without the convention 47",
+      "value": {
+        "lab": 74,
+        "vote": 74,
+        "opus": 74,
+        "self": 69,
+        "fable": 76,
+        "opus-plain": 47
+      },
+      "sources": {
+        "run": "results/heldout/biodsa/lab"
+      },
+      "expr": "heldout_report(run)['passed']['biodsa']"
+    },
+    {
+      "id": "heldout.passed.planted",
+      "text": "M-19: planted held-out passes of 16: lab 15, vote 13, Opus 13, self-challenge 13, Fable 15",
+      "value": {
+        "lab": 15,
+        "vote": 13,
+        "opus": 13,
+        "self": 13,
+        "fable": 15
+      },
+      "sources": {
+        "run": "results/heldout/biodsa/lab"
+      },
+      "expr": "heldout_report(run)['passed']['planted']"
+    },
+    {
+      "id": "heldout.biodsa.same_failures",
+      "text": "M-19: the lab, the vote and Opus alone failed the same 6 BioDSA tasks",
+      "value": [
+        "bh34",
+        "bh45",
+        "bh48",
+        "bh60",
+        "bh63",
+        "bh71"
+      ],
+      "sources": {
+        "lab": "results/heldout/biodsa/lab",
+        "vote": "results/heldout/biodsa/vote",
+        "opus": "results/heldout/biodsa/opus"
+      },
+      "expr": "heldout_failed(lab) if heldout_failed(lab) == heldout_failed(vote) == heldout_failed(opus) else None"
+    },
+    {
+      "id": "heldout.fable.failed",
+      "text": "M-19: Fable alone failed 4 BioDSA tasks and 1 planted task",
+      "value": [
+        [
+          "bh34",
+          "bh60",
+          "bh63",
+          "bh71"
+        ],
+        [
+          "pf14"
+        ]
+      ],
+      "sources": {
+        "b": "results/heldout/biodsa/fable",
+        "p": "results/heldout/planted/fable"
+      },
+      "expr": "[heldout_failed(b), heldout_failed(p)]"
+    },
+    {
+      "id": "heldout.lab.planted_failed",
+      "text": "M-19: the lab failed 1 planted task, pf16",
+      "value": [
+        "pf16"
+      ],
+      "sources": {
+        "run": "results/heldout/planted/lab"
+      },
+      "expr": "heldout_failed(run)"
+    },
+    {
+      "id": "heldout.convention",
+      "text": "M-19: Opus alone passed 74 of 80 with the convention note and 47 of 80 without (28 tasks gained, 1 lost)",
+      "value": [
+        74,
+        47,
+        28,
+        1
+      ],
+      "sources": {
+        "run": "results/heldout/biodsa/lab"
+      },
+      "expr": "[heldout_report(run)['passed']['biodsa']['opus'], heldout_report(run)['passed']['biodsa']['opus-plain'], len(heldout_report(run)['secondary']['convention note: opus vs opus-plain, biodsa']['wins']), len(heldout_report(run)['secondary']['convention note: opus vs opus-plain, biodsa']['losses'])]"
+    },
+    {
+      "id": "heldout.self.unanswered",
+      "text": "M-19: the BioDSA self-challenge arm has no graded answer for 6 tasks (it stopped on its cap)",
+      "value": [
+        "bh71",
+        "bh74",
+        "bh77",
+        "bh78",
+        "bh79",
+        "bh80"
+      ],
+      "sources": {
+        "run": "results/heldout/biodsa/self"
+      },
+      "expr": "heldout_unanswered(run)"
+    },
+    {
+      "id": "heldout.lab.answered",
+      "text": "M-19: the BioDSA lab gave a graded answer on all 80 tasks after two resumes",
+      "value": [
+        80,
+        80
+      ],
+      "sources": {
+        "run": "results/heldout/biodsa/lab"
+      },
+      "expr": "[80 - len(heldout_unanswered(run)), 80]"
     }
   ]
 }

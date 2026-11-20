@@ -37,7 +37,7 @@ ROOT = pathlib.Path(__file__).resolve().parent
 CLAIMS = ROOT / "claims.json"
 sys.path.insert(0, str(ROOT))
 
-from lab import ledger, measures, prereg  # noqa: E402  (needs ROOT on the path when run as a script)
+from lab import heldout, ledger, measures, prereg  # noqa: E402  (needs ROOT on the path when run as a script)
 
 
 class Source:
@@ -157,9 +157,36 @@ def wall_minutes(run: Source) -> float:
     return (max(finals) - min(starts)).total_seconds() / 60
 
 
+HELDOUT_SPECS = ("prereg/heldout-biodsa.json", "prereg/heldout-planted.json")
+
+
+def heldout_tasks() -> dict:
+    """The registered held-out task ids per benchmark, from the frozen specs."""
+    return {b: json.loads((ROOT / s).read_text())["studies"] for b, s in zip(heldout.BENCHMARKS, HELDOUT_SPECS)}
+
+
+def heldout_report(run: Source) -> dict:
+    """The frozen held-out analysis (lab.heldout) on the committed batch that holds this run folder."""
+    return heldout.analyse(run.path.parents[1], heldout_tasks())
+
+
+def heldout_failed(run: Source) -> list:
+    """Registered tasks this held-out arm did not pass (a task with no graded answer counts as failed)."""
+    bench, arm = run.path.parent.name, run.path.name
+    return sorted(t for t, ok in heldout.passes(run.path, arm, heldout_tasks()[bench]).items() if not ok)
+
+
+def heldout_unanswered(run: Source) -> list:
+    """Registered tasks this held-out arm has no graded answer for."""
+    bench, arm = run.path.parent.name, run.path.name
+    graded = heldout.graded(run.path, arm)
+    return sorted(t for t in heldout_tasks()[bench] if not graded.get(t))
+
+
 HELPERS = {f.__name__: f for f in (nof, pct, studies_with_a_passing_attempt, first_answers_passed, failed_every_arm,
                                    single_passes_at_least_half, all_or_nothing, lab_only, other_labels_passed,
-                                   rescues_and_damage, wall_minutes)}
+                                   rescues_and_damage, wall_minutes, heldout_report,
+                                   heldout_failed, heldout_unanswered)}
 BUILTINS = {f.__name__: f for f in (len, sum, round, min, max, abs, any, all, sorted, set, list, dict)}
 
 

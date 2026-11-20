@@ -127,3 +127,7 @@ The Fable runs are 2 a task: 192 runs at the medium size. They should start at t
 2. **Task text:** the convention note for every arm on BioDSA, plus the plain-text Opus-alone arm.
 3. **Lab director: Opus,** as measured on dev.
 4. **Timing:** start the paid batch as soon as the prep steps, the smoke test and the pilot are done. If the Fable arm hits a weekly limit, it is resumed with the same command.
+
+## Result (Nov 20)
+
+Ran Nov 19-20; M-19 in `explanation.md`, records in `results/heldout/`. The lab passed 89 of 96, the same-cost vote 87, Opus alone 87, the self-challenge arm 82, Fable alone 91. Primary endpoint: 2 lab wins (pf13, pf14), 0 losses, p = 0.25, not significant. Deviations, all in the ledger: the BioDSA lab's cap was raised from $145 to $205 and then $220 after a network outage (entries 78, 79); the planted lab's past.dev audiences were deleted so the BioDSA lab could start (I-17).

@@ -1,0 +1,389 @@
+{
+  "study": "bh55",
+  "status": "replicated",
+  "final": {
+    "agent": "bh55-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh55/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh55-library": "opus",
+    "bh55-team-a": "opus",
+    "bh55-team-b": "opus",
+    "bh55-team-c": "opus",
+    "bh55-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh55-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh55/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh55-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh55/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh55-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh55/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh55-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh55/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh55-team-a",
+        "bh55-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh55-team-a",
+        "bh55-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The cohort may be a TRK-fusion-selected series (clinical columns such as POS_ARCHER, POS_IMPACT, ANY_LINE_NTRK point that way), so there may be few or no fusion-negative samples to compare against. Count samples with and without a confirmed NTRK1/2/3 fusion, using data_sv.txt and the POS_* columns. The study is about TRK fusions and holds a TMB variable, so under the benchmark convention a missing internal comparator does not make the hypothesis Not verifiable. If no negatives exist, decide True/False by comparing the cohort's TMB with known pan-cancer fusion-negative TMB levels and established biology on kinase-fusion-driven tumours, and say which kind of evidence decided the label.",
+      "from": [
+        "sl-lab-13ce742398b5"
+      ],
+      "reason": "Stops a wrong 'Not verifiable' when there is no internal comparator, and names the fallback evidence.",
+      "fact_ids": {
+        "team-a": "sl-lab-892a90f908c8"
+      }
+    },
+    {
+      "text": "TMB_NONSYNONYMOUS cannot be compared across assays. Samples with the -AS suffix (Archer RNA fusion panel) have no DNA mutation calls. MSK-IMPACT versions (IM3/IM5/IM6/IM7) cover different numbers of megabases, and the panel matrix may wrongly label everything WXS. Group TMB by sample-ID suffix and panel. Treat TMB for Archer-only samples as missing, not zero, and use per-Mb (panel-normalised) values instead of raw mutation counts.",
+      "from": [
+        "sl-lab-e6753c8eea01"
+      ],
+      "reason": "Counting RNA-only samples as zero TMB, or using raw counts across panels, would bias any comparison.",
+      "fact_ids": {
+        "team-a": "sl-lab-ef4b5383dad1"
+      }
+    },
+    {
+      "text": "Some patients have more than one sample (e.g. T01 and T02). Count SAMPLE_ID per PATIENT_ID and keep one DNA (IMPACT) sample per patient before comparing groups.",
+      "from": [
+        "sl-lab-304377ea9a40"
+      ],
+      "reason": "Prevents pseudoreplication that inflates n.",
+      "fact_ids": {
+        "team-a": "sl-lab-e3cb1c580210"
+      }
+    },
+    {
+      "text": "Not every NTRK structural variant is a functional TRK fusion. Out-of-frame events, events that lose the 3' kinase domain, and intragenic rearrangements (e.g. an NTRK2-STRN deletion with unknown frame) may not be oncogenic, and data_sv.txt may disagree with the clinical POS_* fields. Define fusion status mainly from the study's clinical confirmation columns, and run a sensitivity analysis using SV-derived status.",
+      "from": [
+        "sl-lab-93134ad37685"
+      ],
+      "reason": "How fusion-positive is defined decides who sits in each group.",
+      "fact_ids": {
+        "team-a": "sl-lab-5cfbdf6a07ff"
+      }
+    },
+    {
+      "text": "TMB is very right-skewed. A few MSI-high or hypermutated tumours can dominate means and push a group's average up; colorectal NTRK-fusion cancers are notably enriched for MSI-H/MLH1 silencing. Flag samples with TMB>20 mut/Mb and colorectal/MSI cases. Use medians and Mann-Whitney or log-TMB, and report results with and without these outliers.",
+      "from": [
+        "sl-lab-1b854e80b947"
+      ],
+      "reason": "Outliers can flip the direction of a mean-based comparison.",
+      "fact_ids": {
+        "team-a": "sl-lab-0750332ad8c1"
+      }
+    },
+    {
+      "text": "Cancer type confounds TMB: melanoma and lung are high, while sarcoma, thyroid, salivary and paediatric tumours are low. TRK fusions are enriched in rare, typically low-TMB histologies such as secretory carcinoma, infantile fibrosarcoma and papillary thyroid carcinoma. Cross-tabulate fusion status by CANCER_TYPE and age, and compare within cancer type (stratified test, or regression of log TMB with a cancer-type term) as well as pooled.",
+      "from": [
+        "sl-lab-a4fd2ba6c08e"
+      ],
+      "reason": "A pooled comparison can reflect histology mix rather than fusion status.",
+      "fact_ids": {
+        "team-a": "sl-lab-a638c9e2c0c7"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams read TMB_NONSYNONYMOUS as mutations per megabase on the usual clinical scale. The values are all multiples of 1/30 (0.0333, 0.0667, ...), which suggests a mutation count divided by 30 Mb (an exome-sized denominator) applied to targeted-panel samples. If so, the deposited values understate per-Mb TMB by roughly 25-30x, and the 'very low TMB' description (median ~0, max 2.3) may be a scaling artifact.",
+      "Both teams assumed that, with no fusion-negative group in the tables, the comparison must be made against an external pan-cancer reference. They also assumed that comparing a deposited score on an unknown scale with literature mut/Mb values is valid.",
+      "Both treated the cohort as one group. The hypothesis may hold or fail by histology, for example colorectal fusion-positive tumours versus the rest."
+    ],
+    "unused_evidence": [
+      "data_mutations.txt: neither team recounted nonsynonymous mutations per sample to check what TMB_NONSYNONYMOUS was computed from, or to rebuild per-Mb TMB with the correct panel size. The IM3/IM5/IM6 suffixes in the sample IDs mark different panel versions, each with its own footprint.",
+      "data_gene_panel_matrix.txt labels every sample 'WXS' even though the IDs are IMPACT panel samples. This conflicts with the sample IDs and bears directly on the denominator.",
+      "Neither team derived MSI or hypermutator status, for example by checking MLH1/MSH2/MSH6/PMS2/POLE alterations in the mutation and CNA files for the highest-TMB colorectal samples.",
+      "The timeline and patient tables (immunotherapy lines, best response) were not used. They are probably irrelevant to TMB direction."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the unclear TMB scale as a weak point, and neither resolved it. Their 'False' rests partly on how low the absolute values look.",
+      "Both teams named the missing fusion-negative comparator. They reported it but answered it only with a qualitative appeal to biology. Neither stated which reference TMB values were used or on what scale."
+    ],
+    "second_readings": [
+      "Reading 1: fusion-positive cancers as a whole have higher TMB than fusion-negative cancers. Reading 2: within a histology (e.g. colorectal), fusion-positive tumours have higher TMB. Colorectal TRK-fusion tumours are often MSI-high, so the two readings could point in different directions.",
+      "'Higher' could mean the median or the mean. A few hypermutated samples could make the mean high while the median stays low."
+    ],
+    "verdict": "Moderate trust in 'False'. Fusion-positive tumours with a quiet genome background is plausible biology, and the label probably holds. But both teams leaned on absolute TMB values that look mis-scaled (count/30 Mb on panel data), and neither addressed a possible MSI-high colorectal subgroup. The reasoning needs these checks before release.",
+    "questions": [
+      {
+        "to": "bh55-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Recount nonsynonymous mutations per sample from data_mutations.txt and compare them with TMB_NONSYNONYMOUS. Is the score equal to count/30? If so, re-express TMB per Mb using each sample's panel size (IM3/IM5/IM6). Does your claim that the TMB is 'very low' relative to the external reference still hold on the corrected scale?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-af6efd718ec7"
+      },
+      {
+        "to": "bh55-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For the colorectal samples with the highest TMB, check for mismatch-repair or POLE alterations in the mutation and CNA files. If they are hypermutated, does your label depend on reading the hypothesis pan-cancer rather than within histology? State which reading you used and why.",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-ddd3a07deae8"
+      },
+      {
+        "to": "bh55-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Name the exact external reference TMB values (per histology, with units) you compared against. Are they on the same scale as the deposited score after the rescaling check?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-944d09769e41"
+      },
+      {
+        "to": "bh55-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: TMB_NONSYNONYMOUS takes only multiples of 1/30. Recount mutations per sample from data_mutations.txt and test whether the score is count divided by 30 Mb. If so, and you recompute TMB per Mb with the panel footprint (IM3/IM5/IM6), are melanoma and NSCLC still 'near 0', and does your comparison with typical histology TMB change?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-753cc6cd8df1"
+      },
+      {
+        "to": "bh55-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: data_gene_panel_matrix.txt labels all samples 'WXS', but the IDs are IMPACT panel samples. Which denominator did you assume, and does the conflict change how you interpret the absolute TMB values?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-ef0ad963811c"
+      },
+      {
+        "to": "bh55-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check the high-TMB colorectal samples for MMR/POLE alterations, and report the TMB distribution with and without them. Does a hypermutated colorectal subgroup change your label under either a pan-cancer or a within-histology reading of the hypothesis?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-ecc6c3011c42"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "How is TMB (nonsynonymous) computed and normalised in public cancer-genomics portal study files for targeted-panel samples? Specifically, is a fixed 30 Mb denominator ever applied regardless of panel size?",
+          "why": "The deposited values are exact multiples of 1/30. Whether the score is per-Mb or count/30 decides whether the cohort's TMB is truly low.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In published pan-cancer analyses of NTRK fusion-positive tumours, how does TMB compare with fusion-negative tumours, overall and within colorectal cancer, and how common is MSI-high in NTRK fusion-positive colorectal cancer?",
+          "why": "There is no internal comparator, so the label depends on established biology, and the colorectal/MSI subgroup could reverse the direction under a within-histology reading.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "How is TMB (nonsynonymous) computed and normalised in public cancer-genomics portal study files for targeted-panel samples? Is a fixed 30 Mb denominator ever applied regardless of panel size?",
+          "answer": "UNVERIFIED (web research tool returned HTTP 403 on every call; answer from domain knowledge). cBioPortal TMB (nonsynonymous) = nonsynonymous somatic mutation count / profiled size in Mb from the sample's gene panel. If a sample is labelled WES/WXS or has no panel size, a default ~30 Mb exome denominator is used. Values that are exact multiples of 1/30 therefore indicate count/30, regardless of the real panel size (~0.9-1.2 Mb for MSK-IMPACT). This keeps ranks within a panel but understates true mut/Mb by ~25-30x. So 'low' absolute values partly reflect the denominator, and comparisons should use ranks or counts.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bh55-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-e6e2db006086"
+            },
+            "bh55-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-c359811e9d31"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How is TMB (nonsynonymous) computed and normalised in public cancer-genomics portal study files for targeted-panel samples? Is a fixed 30 Mb denominator ever applied regardless of panel size? ANSWER: UNVERIFIED (web research tool returned HTTP 403 on every call; answer from domain knowledge). cBioPortal TMB (nonsynonymous) = nonsynonymous somatic mutation count / profiled size in Mb from the sample's gene panel. If a sample is labelled WES/WXS or has no panel size, a default ~30 Mb exome denominator is used. Values that are exact multiples of 1/30 therefore indicate count/30, regardless of the real panel size (~0.9-1.2 Mb for MSK-IMPACT). This keeps ranks within a panel but understates true mut/Mb by ~25-30x. So 'low' absolute values partly reflect the denominator, and comparisons should use ranks or counts. HOW SURE: medium. SOURCES: none given."
+        },
+        {
+          "question": "In published pan-cancer analyses of NTRK fusion-positive tumours, how does TMB compare with fusion-negative tumours, overall and within colorectal cancer, and how common is MSI-high in NTRK fusion-positive colorectal cancer?",
+          "answer": "UNVERIFIED (research tool down; recalled literature, not read). Pan-cancer (e.g. Rosen et al., Clin Cancer Res 2020, MSK-IMPACT): TRK fusion-positive tumours generally have lower TMB than fusion-negative tumours and lack canonical drivers, which contradicts the hypothesis. Colorectal cancer is the exception: NTRK fusion-positive CRCs are strongly enriched for MSI-high/MLH1 promoter hypermethylation (in most series, most of these cases are MSI-H; cf. Cocco et al. Ann Oncol 2019; Pietrantonio et al. JNCI 2017). Within CRC, their TMB is therefore higher than in fusion-negative CRC. The established pan-cancer direction supports 'False'.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bh55-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-e6fd21435476"
+            },
+            "bh55-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-450e5d308fe3"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In published pan-cancer analyses of NTRK fusion-positive tumours, how does TMB compare with fusion-negative tumours, overall and within colorectal cancer, and how common is MSI-high in NTRK fusion-positive colorectal cancer? ANSWER: UNVERIFIED (research tool down; recalled literature, not read). Pan-cancer (e.g. Rosen et al., Clin Cancer Res 2020, MSK-IMPACT): TRK fusion-positive tumours generally have lower TMB than fusion-negative tumours and lack canonical drivers, which contradicts the hypothesis. Colorectal cancer is the exception: NTRK fusion-positive CRCs are strongly enriched for MSI-high/MLH1 promoter hypermethylation (in most series, most of these cases are MSI-H; cf. Cocco et al. Ann Oncol 2019; Pietrantonio et al. JNCI 2017). Within CRC, their TMB is therefore higher than in fusion-negative CRC. The established pan-cancer direction supports 'False'. HOW SURE: medium. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh55-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh55-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh55-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh55-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh55-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 56.93896425003186,
+      "cost_usd": 0.19399460000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 35.260149415931664,
+      "cost_usd": 0.2510766,
+      "error": null
+    },
+    {
+      "agent": "bh55-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 47.237175291986205,
+      "cost_usd": 0.20295539999999998,
+      "error": null
+    },
+    {
+      "agent": "bh55-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 40.28144820907619,
+      "cost_usd": 0.17218680000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 52.34919287497178,
+      "cost_usd": 0.222237,
+      "error": null
+    },
+    {
+      "agent": "bh55-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 59.24186804203782,
+      "cost_usd": 0.1337202,
+      "error": null
+    },
+    {
+      "agent": "bh55-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 54.062828958034515,
+      "cost_usd": 0.2261416,
+      "error": null
+    },
+    {
+      "agent": "bh55-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 62.64649120904505,
+      "cost_usd": 0.3176358,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

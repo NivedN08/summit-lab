@@ -1,0 +1,372 @@
+{
+  "study": "bh72",
+  "status": "replicated",
+  "final": {
+    "agent": "bh72-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh72/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh72-library": "opus",
+    "bh72-team-a": "opus",
+    "bh72-team-b": "opus",
+    "bh72-team-c": "opus",
+    "bh72-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh72-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh72/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh72-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh72/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh72-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh72/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh72-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh72/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh72-team-a",
+        "bh72-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh72-team-a",
+        "bh72-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Clonality can only be tested directly in patients with two or more component samples. Tabulate ALLEN_AND_LISA_TYPE against TUMOR_SAMPLES in data_clinical_patient and count samples per patient. Separate-type patients have independently sampled HCC and ICC nodules. Some Combined-type patients have laser-microdissected paired H and I samples, while others, and Mixed-type tumours, have only one whole-tumour T sample. Assess clonality per patient only where paired samples exist. A single T sample cannot show multiclonality, so do not count it as evidence either way. Conclusions about groups that only have single samples have to rest on the paired cases plus established biology, and the reasoning should say which kind of evidence was used.",
+      "from": [
+        "sl-lab-72df9b69119a"
+      ],
+      "reason": "This sets which patients and groups can actually be tested, and it stops the team from treating missing pairs as evidence.",
+      "fact_ids": {
+        "team-a": "sl-lab-ab3e21ac0cd4"
+      }
+    },
+    {
+      "text": "Match mutations between the components of a patient on the exact variant: Chromosome + Start_Position + Reference_Allele + Tumor_Seq_Allele2. Do not match on gene name or protein change. Different variants in the same driver gene (for example TP53) point to convergent, independent events, not to a shared origin.",
+      "from": [
+        "sl-lab-6ef948870429"
+      ],
+      "reason": "Matching on gene names inflates sharing and would turn independent tumours into false monoclonal calls.",
+      "fact_ids": {
+        "team-a": "sl-lab-26af2755f1f6"
+      }
+    },
+    {
+      "text": "Do not call a pair clonally related because of one shared mutation. Recurrent hotspots (TERT promoter, TP53 R249S), germline leakage or artefacts can be shared by independent tumours. Calibrate against background: count the variants shared by sample pairs from different patients, which should be about zero. Call a pair monoclonal when it has several shared truncal mutations well above that background. Call it multiclonal (a collision tumour) when the overlap is zero or near zero. Branching evolution means a few private mutations do not by themselves imply multiclonality.",
+      "from": [
+        "sl-lab-29aad060ee0e"
+      ],
+      "reason": "This gives an objective threshold for the mono- versus multiclonal call that the hypothesis depends on.",
+      "fact_ids": {
+        "team-a": "sl-lab-3c00190bf558"
+      }
+    },
+    {
+      "text": "Some Separate-type patients have several nodules (sample codes such as C1H, C1I, C2H, C2I, CH, CI, H). List every sample ID per Separate patient and compare all nodule pairs, rather than one H/I pair or merged nodules. Report clonality per nodule pair, because one patient can contain both related and unrelated nodules.",
+      "from": [
+        "sl-lab-f4bfcb3ee403"
+      ],
+      "reason": "Comparing only one pair, or merging nodules, can hide whether the Separate type includes both origins.",
+      "fact_ids": {
+        "team-a": "sl-lab-9cd0549ca53a"
+      }
+    },
+    {
+      "text": "A mutation that is private to one component may still be present below the calling threshold in the other, for example because of low purity or low DNA input after laser microdissection. Check t_alt_count/t_ref_count, VAF and depth, and compare per-sample mutation counts. Treat pairs that involve low-VAF or low-depth samples as uncertain rather than multiclonal, and base calls mainly on high-VAF (clonal) mutations.",
+      "from": [
+        "sl-lab-fe051574efd9"
+      ],
+      "reason": "Without this check, a monoclonal pair can be misread as multiclonal.",
+      "fact_ids": {
+        "team-a": "sl-lab-edfedd5e4e75"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat zero exact-variant overlap between two samples of one Separate patient as proof of independent (multiclonal) origin. The whole 'Separate has both origins' result rests on two patients (Sep_02, Sep_04), and neither team tested whether those zero overlaps survive looser matching or low-input or FFPE artefacts.",
+      "Both teams assume each Separate patient's samples are one HCC component and one ICC component. In the sample table Sep_04 has Sep_04C ('Mixed component') and Sep_04H, not an ICC sample, while the patient table lists TUMOR_SAMPLES 'H&I' for it. Sep_03 has CH, CI and H. So in some 'Separate' comparisons the samples are not HCC vs ICC.",
+      "Both teams assume the Allen-Lisa type in the patient table is the right unit for the hypothesis, and that a patient counts as monoclonal or multiclonal as a whole. A multi-nodule patient (Sep_05, Sep_06 with C1/C2) could be monoclonal within a nodule but multiclonal between nodules."
+    ],
+    "unused_evidence": [
+      "data_sv.txt (fusion and intragenic events, many with RNA_Support=Yes) covers Sep_, Com_ and Mix_ samples. Neither team checked whether paired components share structural variants. This is an independent marker of clonality for the zero-overlap pairs (Sep_02, Sep_04, Com_35).",
+      "TERT_PROMOTER_MUT in the patient table, and the Hotspot, t_depth and n_depth columns in the mutation file, were not used to check shared truncal drivers or call quality in the zero-overlap pairs.",
+      "LCM and TISSUE_TYPE (FFPE vs Fresh Frozen) in the sample table. Sep_05 and Sep_06 have C1 as FFPE and C2 as Fresh Frozen, and Sep_02 and Sep_04 are FFPE. Artefact-driven private calls or missed shared calls could depend on these, and neither team stratified by them.",
+      "The difference between TUMOR_SAMPLES in the patient table and the actual sample IDs (Sep_04 'H&I' vs Sep_04C/Sep_04H)."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named Mixed-type clonality as untestable (59 single-T patients) and resolved it only by appeal to the study's report and biology. This was reported but not resolved.",
+      "Team A noted that VAF is unavailable (t_alt_count empty). Team B did not check depth or VAF at all. Neither team showed that the zero-overlap Separate pairs have enough callable depth for shared variants to have been detected.",
+      "Team B's count for Separate monoclonal sharing (22-136) differs from Team A's (51-136). Neither team reconciled this, which suggests the pair or nodule definitions differ.",
+      "Com_35 was excluded as uninformative by both teams. Neither team used another data source (SV) to try to resolve it, although one multiclonal Combined case would satisfy the second clause of the hypothesis."
+    ],
+    "second_readings": [
+      "'Not all monoclonal' for Combined and Mixed could be read as 'at least one case is not shown to be monoclonal', which would include the untestable single-T cases and Com_35. The teams read it as 'at least one case is demonstrably multiclonal'.",
+      "The hypothesis is a conjunction of two negated claims. It could be judged by whether either clause holds, or whether both hold. The label depends on whether contradicting one clause is enough to call it False, and the teams should state this explicitly."
+    ],
+    "verdict": "I moderately trust the agreed answer. Both teams found a split within Separate (4 related, 2 unrelated) and shared variants in nearly all paired Combined cases, which matches the established view. But the multiclonal side rests on only two patients, one of whose samples is a 'Mixed component' rather than an ICC component, and neither team checked depth, tissue type or the SV table for those zero-overlap pairs.",
+    "questions": [
+      {
+        "to": "bh72-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Sep_04's two samples are Sep_04C ('Mixed component') and Sep_04H, not an H/I pair, although the patient table says 'H&I'. List the HISTOLOGY_COMPONENT of every sample in each Separate-patient pair you scored. Does treating Sep_04 as a mixed-vs-HCC nodule comparison change whether it counts as multiclonal Separate evidence?",
+        "from": [
+          "sl-lab-2854e2e3c3c7"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-94c81294a6c7"
+      },
+      {
+        "to": "bh72-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For Sep_02, Sep_04 and Com_35, check data_sv.txt for fusions or intragenic SVs present in both samples of the patient, and check t_depth/n_depth and the Hotspot column for the private mutations. Does any shared SV or low-depth pattern change a multiclonal or uncertain call?",
+        "from": [
+          "sl-lab-cc768593514b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-848e02c61b2a"
+      },
+      {
+        "to": "bh72-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For Sep_05 and Sep_06, report sharing separately for within-nodule pairs (C1H-C1I, C2H-C2I) and between-nodule pairs (C1 vs C2), stratified by TISSUE_TYPE (FFPE vs Fresh Frozen). Is any between-nodule pair at background level, and does that change how many Separate patients you call multiclonal?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-bfbe580afd19"
+      },
+      {
+        "to": "bh72-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your monoclonal Separate range (22-136 shared) has a lower minimum than another analysis of the same pairs found. Which exact pair gives 22, and does your count require the variant in all samples of a patient? Recompute pairwise exact-variant sharing against a cross-patient background. Does any call change?",
+        "from": [
+          "sl-lab-f460d8c2c98d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-fd4f2552ae78"
+      },
+      {
+        "to": "bh72-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Sep_04's samples are Sep_04C ('Mixed component') and Sep_04H, not HCC and ICC. Check HISTOLOGY_COMPONENT for every sample you compared. Does the Sep_04 zero-overlap result still count as a multiclonal Separate case under your method?",
+        "from": [
+          "sl-lab-24d3bc345b7f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-1edce3db3e28"
+      },
+      {
+        "to": "bh72-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You ran no depth or call-quality check. For the zero-overlap pairs (Sep_02, Sep_04, Com_35), tabulate t_depth and n_depth of the private variants, and check data_sv.txt and TERT_PROMOTER_MUT for shared events. Does any of this turn a zero-overlap pair into a related pair, or the reverse?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-f04f4a939dea"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In multi-region whole-exome studies of tumours that combine two histologies, what minimum number of shared somatic variants (and what background rate between unrelated tumours) is conventionally used to call two lesions clonally related versus independent (collision) tumours?",
+          "why": "The multiclonal calls rest on zero overlap in two patients. A defined threshold and background convention would show whether the teams' calibration is standard.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How does FFPE fixation or laser-capture microdissection with low DNA input affect sensitivity for detecting truly shared clonal mutations between paired samples in exome sequencing?",
+          "why": "The zero-overlap pairs are FFPE or LCM samples. Loss of sensitivity could produce false 'no shared mutations' results.",
+          "passed": false,
+          "reasons": [
+            "contains another team's value for \"label\""
+          ]
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In multi-region whole-exome studies of tumours that combine two histologies, what minimum number of shared somatic variants (and what background rate between unrelated tumours) is conventionally used to call two lesions clonally related versus independent (collision) tumours?",
+          "answer": "Not settled from the web: the research gateway returned HTTP 403 on all 3 attempts (2 searches, 1 contents fetch), so no page was read. From prior knowledge only (unverified): no universal fixed count threshold exists. Typical practice calls lesions clonally related when they share exact-coordinate somatic variants (often >=1 to a few non-hotspot truncal SNVs) well above the inter-patient background, which is ~0 shared private variants between unrelated tumours apart from recurrent hotspots and artefacts. Lesions with zero shared variants and adequate coverage/purity are called independent (collision). Formal statistical tests (Ostrovnaya & Begg, the Clonality R package) are used instead of a fixed count. Zero overlap in a patient, compared against an inter-patient background of ~0, is consistent with this convention, provided low purity or low depth is ruled out.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh72-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-0634559f913c"
+            },
+            "bh72-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-1332cf486358"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In multi-region whole-exome studies of tumours that combine two histologies, what minimum number of shared somatic variants (and what background rate between unrelated tumours) is conventionally used to call two lesions clonally related versus independent (collision) tumours? ANSWER: Not settled from the web: the research gateway returned HTTP 403 on all 3 attempts (2 searches, 1 contents fetch), so no page was read. From prior knowledge only (unverified): no universal fixed count threshold exists. Typical practice calls lesions clonally related when they share exact-coordinate somatic variants (often >=1 to a few non-hotspot truncal SNVs) well above the inter-patient background, which is ~0 shared private variants between unrelated tumours apart from recurrent hotspots and artefacts. Lesions with zero shared variants and adequate coverage/purity are called independent (collision). Formal statistical tests (Ostrovnaya & Begg, the Clonality R package) are used instead of a fixed count. Zero overlap in a patient, compared against an inter-patient background of ~0, is consistent with this convention, provided low purity or low depth is ruled out. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh72-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh72-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh72-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh72-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh72-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 57.235358875012025,
+      "cost_usd": 0.1862608,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 44.485246957978234,
+      "cost_usd": 0.1550122,
+      "error": null
+    },
+    {
+      "agent": "bh72-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 40.06114204204641,
+      "cost_usd": 0.1712882,
+      "error": null
+    },
+    {
+      "agent": "bh72-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 51.84884508291725,
+      "cost_usd": 0.23129660000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 82.77788845798932,
+      "cost_usd": 0.2956166,
+      "error": null
+    },
+    {
+      "agent": "bh72-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 72.91024374996778,
+      "cost_usd": 0.10540260000000001,
+      "error": null
+    },
+    {
+      "agent": "bh72-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 45.25239570904523,
+      "cost_usd": 0.2529654,
+      "error": null
+    },
+    {
+      "agent": "bh72-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 62.00731666700449,
+      "cost_usd": 0.2898946,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}
