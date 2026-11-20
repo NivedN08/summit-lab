@@ -33,6 +33,7 @@ memory), `run.json` (what was run), one folder per study, `baseline/`, `arms/`, 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import pathlib
 import re
@@ -255,14 +256,25 @@ def brief_teams(text: str) -> tuple:
     return teams
 
 
+def memory_namespace(log, run_dir: pathlib.Path) -> str:
+    """The run's past.dev namespace: "sl-<folder name>-<8 hex of the folder's full path>", at most 31
+    characters, so two run folders with the same name never share identities or audiences. A resumed run
+    keeps the namespace its memory was first set up under (runs from before this rule used "sl-<name>")."""
+    for e in log.events("memory.setup") + log.events("memory.attach"):
+        if e.get("namespace"):
+            return e["namespace"]
+    slug = re.sub(r"[^a-z0-9]+", "-", run_dir.name.lower()).strip("-")
+    digest = hashlib.sha1(str(run_dir.resolve()).encode()).hexdigest()[:8]
+    return f"{('sl-' + slug)[:22].rstrip('-')}-{digest}"
+
+
 def make_memory(kind: str, log, run_dir: pathlib.Path):
     if kind == "local":
         from lab.memory_local import LocalMemory
         return LocalMemory(log, run_dir / "memory.jsonl")
     if kind == "past":
         from lab.memory_past import PastMemory
-        slug = re.sub(r"[^a-z0-9]+", "-", run_dir.name.lower()).strip("-")
-        return PastMemory(log, ("sl-" + slug)[:31].rstrip("-"))
+        return PastMemory(log, memory_namespace(log, run_dir))
     raise SystemExit(f"unknown memory {kind!r}")
 
 

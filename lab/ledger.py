@@ -140,7 +140,9 @@ def verify_chain(path: pathlib.Path | str | None = None) -> list[str]:
 def record_grading(run_dir: pathlib.Path, results: dict, path: pathlib.Path | str | None = None) -> list[dict]:
     """After `grade`: one batch.graded entry with the pass counts, then one failure entry per study
     whose final answer failed (the lab's final answer; the vote over attempts for a study with no lab
-    answer), with the adapter's outcome kind when it gives one. Returns the entries written."""
+    answer), then one per failed answer of a control arm (the same-cost vote, the self-challenge arm's
+    final answer, or "no answer" when it has none), with the adapter's outcome kind when it gives one.
+    A study missing from `results` entirely is not recorded. Returns the entries written."""
     run_dir = pathlib.Path(run_dir)
     written = [append("batch.graded", {"run_dir": str(run_dir), "benchmark": results.get("benchmark"),
                                        "totals": results.get("totals")}, path)]
@@ -154,11 +156,32 @@ def record_grading(run_dir: pathlib.Path, results: dict, path: pathlib.Path | st
             row = next((r for r in rows if r.get("kind") == "vote"), {})
         else:
             continue
-        if grade.get("passed"):
-            continue
-        data = {"run_dir": str(run_dir), "study": sid, "arm": arm,
-                "outcome_kind": row.get("outcome_kind", grade.get("kind"))}
-        if arm == "lab":
-            data["status"] = entry["lab"].get("status")
-        written.append(append("failure", data, path))
+        if not grade.get("passed"):
+            data = {"run_dir": str(run_dir), "study": sid, "arm": arm,
+                    "outcome_kind": row.get("outcome_kind", grade.get("kind"))}
+            if arm == "lab":
+                data["status"] = entry["lab"].get("status")
+            written.append(append("failure", data, path))
+    for sid, entry in sorted((results.get("studies") or {}).items()):
+        rows = entry.get("candidates") or []
+        for arm, grade, row_id in arm_answers(entry):
+            if grade.get("passed"):
+                continue
+            row = next((r for r in rows if r.get("id") == row_id), {})
+            data = {"run_dir": str(run_dir), "study": sid, "arm": arm,
+                    "outcome_kind": row.get("outcome_kind", grade.get("kind") or ("no answer" if not grade else None))}
+            if arm == "self":
+                data["status"] = entry["self"].get("status")
+            written.append(append("failure", data, path))
     return written
+
+
+def arm_answers(entry: dict) -> list[tuple[str, dict, str]]:
+    """The control arms' graded answers in one study's results entry: (arm, grade, its candidate row id).
+    An arm with no final answer has an empty grade, which counts as a failure."""
+    out = []
+    if "vote_arm" in entry:
+        out.append(("vote-arm", entry["vote_arm"].get("vote") or {}, "vote-arm"))
+    if "self" in entry:
+        out.append(("self", entry["self"].get("final") or {}, "self-final"))
+    return out

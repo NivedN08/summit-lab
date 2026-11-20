@@ -121,3 +121,20 @@ def test_record_grading_uses_the_vote_without_a_lab_answer_and_keeps_outcome_kin
     failures = [e["data"] for e in written if e["kind"] == "failure"]
     assert [(f["study"], f["arm"], f["outcome_kind"]) for f in failures] == [("t1", "vote", "wrong label"),
                                                                            ("t2", "lab", "too low")]
+
+
+def test_record_grading_records_failures_of_the_vote_and_self_challenge_arms(tmp_path):
+    """The held-out planted vote and self-challenge arms failed 3 tasks each and the ledger had none of them."""
+    results = {"benchmark": "x", "totals": {},
+               "studies": {"t1": {"vote_arm": {"attempts": {}, "vote": {"passed": False, "kind": "wrong label"}},
+                                  "candidates": [{"id": "vote-arm", "kind": "vote", "outcome_kind": "wrong label"}]},
+                           "t2": {"vote_arm": {"attempts": {}, "vote": {"passed": True}}, "candidates": []},
+                           "t3": {"self": {"status": "kept", "final": {"passed": False, "kind": "too low"}},
+                                  "candidates": [{"id": "self-final", "kind": "self", "outcome_kind": "too low"}]},
+                           "t4": {"self": {"status": "stopped", "final": {}}, "candidates": []},
+                           "t5": {"self": {"status": "kept", "final": {"passed": True}}, "candidates": []}}}
+    written = ledger.record_grading(tmp_path / "r", results, tmp_path / "l.jsonl")
+    failures = [e["data"] for e in written if e["kind"] == "failure"]
+    assert [(f["study"], f["arm"], f["outcome_kind"]) for f in failures] == [
+        ("t1", "vote-arm", "wrong label"), ("t3", "self", "too low"), ("t4", "self", "no answer")]
+    assert [f.get("status") for f in failures] == [None, "kept", "stopped"]
