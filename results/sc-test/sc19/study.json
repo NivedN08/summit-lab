@@ -1,0 +1,504 @@
+{
+  "study": "sc19",
+  "status": "replicated",
+  "final": {
+    "agent": "sc19-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc19/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc19-library": "opus",
+    "sc19-team-a": "opus",
+    "sc19-team-b": "opus",
+    "sc19-team-c": "opus",
+    "sc19-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc19-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc19/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_clusters": 18
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc19-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc19/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_clusters": 18
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc19-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc19/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_clusters": 18
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc19-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc19/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_clusters": 18
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc19-team-a",
+        "sc19-team-b"
+      ],
+      "fields": {
+        "n_clusters": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc19-team-a",
+        "sc19-team-b"
+      ],
+      "fields": {
+        "n_clusters": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Verify the matrix before trusting it, and never use the stored obs metadata. The library reports the DRG h5ad as 19,259 nuclei x 32,227 mouse genes (samples 3M, 21M1, 21M2) with X stored as float32 CSR, no layers and no .raw, plus precomputed obs columns total_counts, n_genes and n_genes_raw of unknown provenance; barcodes have no sample suffix, so obs names may repeat. CHECK: confirm every value in X.data is a non-negative integer (X.data == round(X.data)) and note the max; recompute total_umi and n_genes from X and compare with the obs columns; count genes matching ^mt- / ^MT- (0 is plausible for nuclei data and is not an error); check obs_names uniqueness. IF FOUND: use values recomputed from X, never the obs columns, for the n_genes > 1000 filter and CP10K; if obs names repeat, make them unique rather than dropping duplicates; if X is not integer, stop and say raw counts are unavailable instead of clustering normalised data.",
+      "from": [
+        "sl-sc-test-192ccbf3513d"
+      ],
+      "reason": "The n_genes > 1000 filter and CP10K normalisation decide which nuclei enter the graph; if they come from stale obs columns or a non-count matrix, every later step and the cluster count are wrong.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-f9119f121b17"
+      }
+    },
+    {
+      "text": "The task's listed steps are the whole pipeline; tutorial habits add steps that change the result. Do not clip when scaling (no sc.pp.scale(max_value=10) / Seurat scale.max=10: clipping changes PCA). sc.pp.normalize_total uses the MEDIAN total unless target_sum=1e4 is passed. sc.pp.filter_cells(min_genes=1000) keeps n_genes >= 1000, but the task says strictly > 1000. Do not add mito, doublet or min_cells gene filters, regress_out, or batch integration across the three samples; pct_mito is computed only, not filtered on. By contrast, ddof=1 vs ddof=0 in the scaling step only rescales all genes by one constant and does not change neighbours. CHECK: no clipping (max abs scaled value may exceed 10), target_sum=1e4, count nuclei with n_genes exactly 1000 and confirm they are dropped, and confirm the gene and cell sets were not otherwise reduced. IF FOUND: remove the extra step and rerun.",
+      "from": [
+        "sl-sc-test-e93db252489a"
+      ],
+      "reason": "Each of these default or habitual steps silently changes the cell set, the PCA or the graph, and therefore the number of clusters.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-3e00cbb411b3"
+      }
+    },
+    {
+      "text": "Do not substitute sc.pp.highly_variable_genes for the task's HVG rule; it selects a different gene set. scanpy flavor='seurat' applies expm1 first, uses log(var/mean) and log1p(mean), bins by EQUAL-WIDTH pd.cut, sets single-gene bins to normalised dispersion 1, and applies min_mean=0.0125, max_mean=3, min_disp=0.5 cutoffs; flavor='cell_ranger' uses percentile bins but median/MAD. The task wants variance/(mean+1e-8) computed directly on log1p(CP10K), 20 equal-frequency bins by mean, within-bin z-score of dispersion, z > 1.5, no mean cutoffs. CHECK: implement by hand; mean and variance must include the zeros of the sparse matrix; confirm each bin holds about n_genes/20 genes. IF FOUND (a library HVG call was used or bins are unequal): replace with a hand implementation using rank-based equal-frequency bins.",
+      "from": [
+        "sl-sc-test-a23175936db5"
+      ],
+      "reason": "The HVG set defines the PCA input; using a library HVG function instead of the specified rule gives a different feature set and can give a different cluster count.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-a462eb2d57c6"
+      }
+    },
+    {
+      "text": "In the hand-written equal-frequency HVG step, unstated conventions move genes across the z > 1.5 threshold. (1) Genes with zero counts in all kept nuclei have mean 0 and dispersion 0, are tied in mean and can fill whole low bins, giving zero within-bin std (NaN/inf z-scores) and shifting every other bin edge; no gene filtering has been applied to the 32,227-gene matrix, so many such genes are expected. (2) pd.qcut fails or merges bins on tied means unless ranks are used (e.g. qcut on rank(method='first')). (3) ddof=0 vs ddof=1 for the per-gene variance and for the within-bin std of dispersion. CHECK: count all-zero genes after the nucleus filter; count HVGs under ddof 0 vs 1 and with vs without all-zero genes in the binning; confirm no NaN/inf z-scores are selected; check whether n_clusters changes across these variants. IF FOUND (HVG set or n_clusters changes): follow the task literally (all genes in the matrix are binned, no extra gene filter, NaN z treated as not selected), state the convention used, and report the range of n_clusters across conventions.",
+      "from": [
+        "sl-sc-test-2953d72128bd"
+      ],
+      "reason": "Tied zero-mean genes and the ddof choice change which genes pass z > 1.5, and the team needs a stated, literal convention plus a sensitivity check instead of an accidental one.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-e0a06562146d"
+      }
+    },
+    {
+      "text": "PCA is a hidden source of non-determinism that propagates to the cluster count. sklearn's randomized solver is not reproducible across platforms; even svd_solver='arpack' has given different coordinates across CPU counts/architectures and on float32 input, and tiny coordinate differences change kNN ties and then Leiden. 'PCA with 50 PCs, graph on PCs 1..30' means fit 50 components and use the first 30 columns (e.g. sc.pp.neighbors(n_pcs=30)), not all 50 and not a separately fitted 30-component PCA. Component sign flips do not matter for Euclidean distances. CHECK: run PCA on the dense scaled HVG matrix in float64 with svd_solver='arpack' (random_state=0) and with a full SVD; compare the first 30 PCs up to sign and compare n_clusters; confirm the neighbour step used exactly 30 columns. IF FOUND (results differ by solver/dtype): use float64 with arpack or full SVD, fix the thread count, and report n_clusters under both solvers.",
+      "from": [
+        "sl-sc-test-6e08236ce047"
+      ],
+      "reason": "The task demands a deterministic result; solver, dtype and the 50-vs-30 component reading all alter the PC coordinates that feed the kNN graph.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-7c3a7e0c29d2"
+      }
+    },
+    {
+      "text": "The kNN search can silently become approximate. In the installed scanpy 1.10.4, sc.pp.neighbors uses exact brute-force search only when n_obs < 8192 (Euclidean) and otherwise switches to PyNNDescent approximate search, whose result depends on random_state, cell order and thread count; small neighbour differences snowball into different Leiden partitions. The file has 19,259 nuclei before filtering, so this likely applies. CHECK: count nuclei after the n_genes > 1000 filter; build the k=20 graph both with scanpy's default and with an exact search (sc.pp.neighbors(..., transformer='sklearn') or sklearn NearestNeighbors(algorithm='brute')) and compare neighbour sets and resulting n_clusters. IF FOUND (n_obs >= 8192 or the two disagree): treat the exact kNN as the deterministic reference, always pass random_state=0, and report whether n_clusters is the same under both; if not, say so.",
+      "from": [
+        "sl-sc-test-46c3044f69ff"
+      ],
+      "reason": "An approximate neighbour search breaks the 'deterministic' requirement and can change the cluster count; the team must know when scanpy switches and how to force exact search.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-49907c426c61"
+      }
+    },
+    {
+      "text": "'k=20, symmetric graph' has several incompatible readings that change the Leiden output. (a) scanpy's n_neighbors counts the cell itself, so n_neighbors=20 gives 19 other neighbours per row of obsp['distances'], whereas sklearn kneighbors_graph(n_neighbors=20, include_self=False) gives 20 others. (b) scanpy clusters on obsp['connectivities'], a UMAP fuzzy-union WEIGHTED graph with variable nonzeros per row, not a binary kNN graph; a hand-built graph may be binary union (A or A.T), mutual (A and A.T) or SNN/Jaccard. Mutual kNN drops many edges and inflates the cluster count, and resolutions do not carry over between graph types. (c) scanpy's leidenalg path treats the symmetric matrix as a directed graph with both edge directions, which differs from passing each undirected edge once with summed weights. CHECK: print per-row nonzero counts, whether the graph equals its transpose, and whether weights are all 1; compute n_clusters for scanpy connectivities vs binary union kNN. IF FOUND (they differ): use a union-symmetrised graph (never mutual-only), prefer the standard sc.pp.neighbors(n_neighbors=20, n_pcs=30, metric='euclidean') connectivities as primary (with exact search, per the approximate-kNN item), and report the binary-union count as sensitivity.",
+      "from": [
+        "sl-sc-test-5cf836673bdc"
+      ],
+      "reason": "The graph construction is the most ambiguous step in the task text; the team needs to choose a reading deliberately, avoid mutual-only kNN, and report how the count moves across readings.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-47a5b07744c8"
+      }
+    },
+    {
+      "text": "'Leiden, resolution=0.6, seed=0' is not one algorithm: backend, objective and iteration count change the number of clusters. In the installed scanpy 1.10.4, sc.tl.leiden defaults to flavor='leidenalg', RBConfigurationVertexPartition (modularity with resolution), n_iterations=-1 (run to convergence), directed=True, use_weights=True. flavor='igraph' with n_iterations=2 gives different labels; calling igraph's community_leiden directly defaults to objective_function='CPM', where resolution 0.6 means something entirely different and yields a wildly different cluster count; leidenalg.find_partition itself defaults to n_iterations=2, not -1. CHECK: write down flavor, objective, n_iterations, weights and directedness explicitly; run the modularity-type objective (RBConfiguration, resolution_parameter=0.6, seed=0) and compare n_clusters between n_iterations=-1 and 2, and between leidenalg and igraph(objective_function='modularity'). IF FOUND (counts differ): never use CPM; report the conventional scanpy default call (leidenalg, RBConfiguration, n_iterations=-1, random_state=0) as the primary answer and state the variants' counts as sensitivity.",
+      "from": [
+        "sl-sc-test-f8ae1244b4ff"
+      ],
+      "reason": "The reported number is the direct output of this step, and an unnoticed default (CPM objective, 2 iterations, igraph flavour) gives a different count for the same resolution and seed.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ec5a05caa97e"
+      }
+    },
+    {
+      "text": "n_clusters from Leiden is a fragile integer: one tiny or singleton community (isolated nuclei, duplicated cells with tied distances, a small disconnected component) shifts the answer by 1, and the count depends on library versions (installed: scanpy 1.10.4, leidenalg 0.10.2, igraph 0.11.8, pynndescent 0.7.0, umap-learn 0.5.7, scikit-learn 1.5.2). CHECK: print the cluster-size table and the number of connected components of the graph; count clusters as the number of distinct labels over all kept nuclei, including very small ones; rerun the identical script twice in fresh processes to confirm the same count; record the package versions. IF FOUND (clusters with only a few nuclei, or run-to-run differences): do not merge or drop small clusters, report the literal count from the primary pipeline, and name the unstable step and the alternative counts in the notes.",
+      "from": [
+        "sl-sc-test-b82101512244"
+      ],
+      "reason": "It tells the team how to count (all distinct labels, no merging of small clusters) and to prove reproducibility by rerunning, which directly determines the integer they report.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ba42ee3db84c"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams read step 8 ('kNN graph, k=20, Euclidean, symmetric') as scanpy's UMAP fuzzy-union weighted connectivities with n_neighbors=20. Both saw that a plain binary union-symmetrised kNN graph gives a different count (17) and both kept the scanpy graph on the strength of the same library note, not on the task text.",
+      "Both teams took scanpy's n_neighbors=20 convention (the cell itself counts, so 19 other neighbours per row) as the meaning of 'k=20'. Neither reports the count with 20 other neighbours.",
+      "Both teams assumed that their two pipelines are the same pipeline because the final count is the same. They are not: team A has 2331 HVGs (within-bin z with ddof 0) and an exact kNN search; team B has 2330 HVGs and, as far as its notes show, scanpy's default search made to run by a monkeypatch (approximate above 8192 nuclei). Team A found that the 2330-gene variant with exact kNN gives 19, not 18. Team A's igraph-modularity Leiden gives 16 while team B's igraph Leiden gives 18. So the agreement on 18 is reached by different routes and may be coincidental.",
+      "Both teams binned genes by mean with the 2536 all-zero genes left in. Team A used rank-based bins (ties among zero-mean genes broken by gene order) and tested only 'exclude zero genes'. Neither reports binning by quantile edges of the mean, where tied edges at zero collapse bins and the zero genes share a bin with low-expressed genes.",
+      "Both teams assumed arithmetic precision is harmless. X is stored as float32 and one gene sits close enough to the z=1.5 cutoff that the ddof choice flips it; whether float32 versus float64 statistics also flip it was not checked.",
+      "Both teams used Leiden as called by scanpy's leidenalg path (RBConfiguration, n_iterations=-1, directed, weighted) as the meaning of 'Leiden, resolution 0.6, seed 0'."
+    ],
+    "unused_evidence": [
+      "obs column 'sample' (3M: 11518 nuclei, 21M1: 5130, 21M2: 2611) and 'age_group' (Adult 11518, Aged 7741). The task names age_group but the recipe does not use it and names no batch step, so ignoring both is consistent with the instructions; it cannot change the count under the literal recipe.",
+      "pct_mito (13 mito genes present) is computed in step 1 but the recipe filters only on n_genes > 1000. Both teams computed it and did not filter on it, which matches the text.",
+      "obs columns 'n_genes' and 'n_genes_raw' (identical in the rows inspected) and 'total_counts' are stored; team A and team B both checked that the stored values match the matrix. The n_genes filter removes no nuclei (minimum is above 1000), so the data is pre-filtered.",
+      "X is float32 with integer values; there is no layers or raw slot, so there is only one candidate for 'the raw UMI count matrix'."
+    ],
+    "unresolved_weak_points": [
+      "Team A: the within-bin z-score ddof flips one HVG and moves the count from 18 to 19. Reported, not resolved: the margin of the flipping gene from the cutoff, which cluster splits, and how large it is are not recorded, and the choice of ddof 0 rests on a library default rather than on the task text.",
+      "Team B: weighted scanpy connectivities versus binary symmetric kNN moves the count from 18 to 17. Reported, not resolved. Team B's pitfalls_checked list is empty: no exact-versus-approximate kNN check, no ddof check, no zero-gene/binning check, no cluster-size table, no fresh-process rerun, and no check that the getnnz monkeypatch leaves the graph unchanged.",
+      "Across both teams, single unstated conventions give 16, 17, 18 and 19 clusters. No team tabulated the variants jointly or identified which nuclei move between them."
+    ],
+    "second_readings": [
+      "Step 8, 'symmetric graph': a binary kNN adjacency made symmetric by union (A or A-transpose), with unit weights, is at least as literal a reading as scanpy's weighted fuzzy-union connectivities. Both teams found it gives a different count.",
+      "Step 8, 'k=20': 20 neighbours other than the cell itself (scikit-learn convention) versus 19 others plus self (scanpy convention).",
+      "Step 5, '20 equal-frequency bins by mean': rank-based equal-count split versus quantile-edge binning. With 2536 tied zero-mean genes (more than one bin's worth) the two give different bin memberships for low-expressed genes, and quantile-edge binning may yield fewer than 20 bins.",
+      "Step 5, 'z-score of dispersion': population (ddof 0) versus sample (ddof 1) standard deviation within the bin; and how a bin with zero spread (NaN z) is treated.",
+      "Step 9, 'Leiden with resolution=0.6 and seed=0': leidenalg RBConfiguration run to convergence versus two iterations versus igraph's modularity Leiden; team A's own variants differ (18 versus 16)."
+    ],
+    "verdict": "Low to moderate trust. The two teams agree on 18 but reach it with different HVG sets (2331 versus 2330 genes) and probably different neighbour searches, team A's own check shows the other team's HVG count gives 19 on an exact graph, and single unstated conventions (z-score ddof, graph weighting, Leiden backend) give 16, 17, 18 and 19; neither named weak point was resolved, and the binning of tied zero-mean genes and the 19-versus-20 neighbour reading are untested.",
+    "questions": [
+      {
+        "to": "sc19-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you report 2331 HVGs and the other team reports 2330, and you found that your 2330-gene variant (within-bin z with ddof 1) gives 19 clusters on your exact kNN graph, yet the other team reports 18 from a 2330-gene set. So the two teams reach the same count by different routes. Name the gene or genes that flip, print their z under each ddof and their distance from the 1.5 cutoff, and check whether computing the per-gene mean and variance in float32 instead of float64 also flips anything at the cutoff. Then cross-tabulate your 18-cluster and 19-cluster labellings: which cluster splits, how many nuclei are in each part, and is the rest of the partition unchanged? Does a count that turns on one gene at the cutoff change your method or your confidence?",
+        "from": [
+          "sl-sc-test-0149320196bf",
+          "sl-sc-test-706df8d485ce"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-d32fb83f73a1"
+      },
+      {
+        "to": "sc19-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you binned genes by rank over all 32227 genes, so the 2536 tied zero-mean genes are split across two bins by gene order, and your only alternative was to exclude them. A third reading of '20 equal-frequency bins by mean' cuts at the quantile edges of the mean, where the tied edges at zero collapse and the zero genes share a bin with low-expressed genes. Run that binning: print the number of bins it yields, the bin sizes, the HVG count, the overlap with your 2331 genes and the resulting number of clusters. Does the result change your method?",
+        "from": [
+          "sl-sc-test-3609bdfb9154"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-71bd99e7d52a"
+      },
+      {
+        "to": "sc19-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your notes say 'exact sklearn kNN, scanpy n_neighbors=20' but do not say how many neighbours other than the cell itself each row holds. Print the per-row nonzero count of your distance matrix, and compute the number of clusters with 19 other neighbours and with 20 other neighbours, each with the weighted connectivities and with the binary union graph. Record which of the four your reported count comes from. Does the result change your method?",
+        "from": [
+          "sl-sc-test-47a5b07744c8",
+          "sl-sc-test-4f2a86b88e78"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-feaf56d9f0e7"
+      },
+      {
+        "to": "sc19-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your own variants give 16 (igraph modularity), 17 (binary union graph), 18 (primary) and 19 (ddof 1), and you named the ddof as your weakest point without resolving it. Also, your igraph run gave 16 while the other team's igraph run gave 18. Build one table of the count over the unstated conventions taken jointly (z ddof, graph weighting, Leiden backend and iteration setting), with the cluster-size table for each, and mark which nuclei change cluster between rows: is it always the same one or two small groups? Then read steps 5, 8 and 9 of the task again and write down, for each convention, which words of the task pick your choice, if any. Does the table or the wording change your method or your confidence?",
+        "from": [
+          "sl-sc-test-0149320196bf",
+          "sl-sc-test-4f2a86b88e78",
+          "sl-sc-test-eb5ff9804136"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-a26a147a37e6"
+      },
+      {
+        "to": "sc19-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you report 2330 HVGs and the other team reports 2331 with a within-bin z-score using ddof 0; the other team found that ddof 1 gives 2330 genes and, on an exact kNN graph, 19 clusters rather than 18. Record which ddof your z-score used (and which function computed it), how your bins treat the 2536 all-zero genes and the tied means, and how a bin with zero spread is handled. Then compute the HVG set and the cluster count under both ddof values and list the genes that differ. Does the result change your method?",
+        "from": [
+          "sl-sc-test-706df8d485ce",
+          "sl-sc-test-0149320196bf"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-16dd0fc19343"
+      },
+      {
+        "to": "sc19-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: with 19259 nuclei, scanpy's default neighbour search is approximate, and you ran it through a getnnz monkeypatch that you say has no effect on the math, with no check listed to support that. Build the same graph a second way that does not pass through the patched code, with an exact brute-force Euclidean search on PCs 1..30, and compare: neighbours per row, share of identical neighbour sets, symmetry of the connectivities, and the number of clusters from the same Leiden call. Also rerun your script in a fresh process and confirm the count. Do the two graphs agree, and does the result change your method?",
+        "from": [
+          "sl-sc-test-2bdc1dfee64c",
+          "sl-sc-test-46c3044f69ff"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-9d2fe858c66c"
+      },
+      {
+        "to": "sc19-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you report 18 clusters from both igraph and leidenalg, while the other team's igraph modularity run gave 16 and its leidenalg run gave 18. Write down for each of your Leiden calls the objective function, the number of iterations, whether the graph was passed as directed, whether weights were used and how the seed was passed. Print the cluster-size table for your primary result and for your 17-cluster binary-graph result, and cross-tabulate the two: which clusters merge, and how many nuclei are involved? Does the result change your method or your confidence?",
+        "from": [
+          "sl-sc-test-eb5ff9804136",
+          "sl-sc-test-4f2a86b88e78"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-b45871590836"
+      },
+      {
+        "to": "sc19-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you named graph construction as your weakest point and reported it without resolving it. Two parts of step 8 were left open: whether 'k=20' means 20 neighbours other than the cell itself or 19 others plus the cell, and whether 'a symmetric graph' means a union-symmetrised kNN adjacency or the weighted fuzzy connectivities. Print the per-row nonzero count of your distance matrix, compute the count for the four combinations, and write down which words of step 8, as opposed to a tool's default, pick the combination you reported. Does the result change your method?",
+        "from": [
+          "sl-sc-test-2bdc1dfee64c",
+          "sl-sc-test-5cf836673bdc"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-dbf427ef7aa9"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In scanpy's highly_variable_genes with the dispersion-based flavors, when dispersions are normalised within mean-expression bins, which degrees-of-freedom convention does the within-bin standard deviation use (sample or population), how are genes binned by mean (equal-width cut or quantile cut, and how are tied bin edges handled), and how is a bin with a single gene or zero spread treated?",
+          "why": "The cluster count turns on one gene at the z-score cutoff depending on the ddof, and on how tied zero-mean genes are binned. Knowing the convention used by the most common implementation of binned dispersion z-scores tells the teams which reading a recipe written in these words most likely follows.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When an analysis recipe says to build a k-nearest-neighbour graph with a given k using Euclidean distance and 'a symmetric graph' before Leiden clustering, what constructions do common single-cell toolkits use by default (binary union adjacency, mutual kNN, shared-nearest-neighbour Jaccard weights, or UMAP fuzzy-union connectivities), and does the stated k include the cell itself in each of them?",
+          "why": "Both teams chose one toolkit's weighted graph and self-inclusive k on the basis of the same note; the alternative constructions change the cluster count by one, so the definition of the conventional construction could settle the reading of that step.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "For a fixed graph, resolution and seed, does the Leiden algorithm give the same partition in leidenalg (RBConfigurationVertexPartition, run to convergence) and in python-igraph's community_leiden with the modularity objective, and what differences in defaults (iteration count, directed versus undirected input, handling of edge weights, resolution scaling by total edge weight) explain different cluster counts between the two?",
+          "why": "One team saw the two backends agree and the other saw them differ on what should be the same recipe; knowing which default differences matter tells the teams whether the discrepancy comes from the backend settings or from their upstream graphs.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In scanpy's highly_variable_genes with the dispersion-based flavors, when dispersions are normalised within mean-expression bins, which degrees-of-freedom convention does the within-bin standard deviation use (sample or population), how are genes binned by mean (equal-width cut or quantile cut, and how are tied bin edges handled), and how is a bin with a single gene or zero spread treated?",
+          "answer": "Within-bin SD is the pandas groupby std, i.e. sample SD with ddof=1 (the 1.8.x code calls disp_grouped.std(ddof=1); current scanpy/rapids code uses agg(avg='mean', dev='std'), which has the same default). flavor='seurat' bins by EQUAL-WIDTH pd.cut(means, bins=n_bins=20), not quantiles. flavor='cell_ranger' uses percentile edges np.r_[-inf, np.percentile(means, arange(10,105,5)), inf] passed to pd.cut and normalises with median/MAD. Tied percentile edges (e.g. many zero-mean genes) raise 'ValueError: Bin edges must be unique' (issue 509); they are not dropped or rank-broken. In a single-gene bin the std is NaN, so scanpy sets dev=avg and avg=0, which makes that gene's normalised dispersion exactly 1. A bin with zero spread but more than one gene is not special-cased, so the division by 0 gives inf/NaN. In seurat flavor zero dispersions are set to NaN before the log, and zero means are set to 1e-12. So scanpy has no equal-frequency precedent for the task's rule; the only convention it supplies is ddof=1 for the within-bin SD.",
+          "sources": [
+            "https://raw.githubusercontent.com/theislab/scanpy/1.8.x/scanpy/preprocessing/_deprecated/highly_variable_genes.py",
+            "https://raw.githubusercontent.com/scverse/rapids_singlecell/81167a7c/src/rapids_singlecell/preprocessing/_hvg.py",
+            "https://github.com/scverse/scanpy/issues/509"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc19-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-c35c4f9ebbe3"
+            },
+            "sc19-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-86a0dfd65633"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In scanpy's highly_variable_genes with the dispersion-based flavors, when dispersions are normalised within mean-expression bins, which degrees-of-freedom convention does the within-bin standard deviation use (sample or population), how are genes binned by mean (equal-width cut or quantile cut, and how are tied bin edges handled), and how is a bin with a single gene or zero spread treated? ANSWER: Within-bin SD is the pandas groupby std, i.e. sample SD with ddof=1 (the 1.8.x code calls disp_grouped.std(ddof=1); current scanpy/rapids code uses agg(avg='mean', dev='std'), which has the same default). flavor='seurat' bins by EQUAL-WIDTH pd.cut(means, bins=n_bins=20), not quantiles. flavor='cell_ranger' uses percentile edges np.r_[-inf, np.percentile(means, arange(10,105,5)), inf] passed to pd.cut and normalises with median/MAD. Tied percentile edges (e.g. many zero-mean genes) raise 'ValueError: Bin edges must be unique' (issue 509); they are not dropped or rank-broken. In a single-gene bin the std is NaN, so scanpy sets dev=avg and avg=0, which makes that gene's normalised dispersion exactly 1. A bin with zero spread but more than one gene is not special-cased, so the division by 0 gives inf/NaN. In seurat flavor zero dispersions are set to NaN before the log, and zero means are set to 1e-12. So scanpy has no equal-frequency precedent for the task's rule; the only convention it supplies is ddof=1 for the within-bin SD. HOW SURE: high. SOURCES: https://raw.githubusercontent.com/theislab/scanpy/1.8.x/scanpy/preprocessing/_deprecated/highly_variable_genes.py, https://raw.githubusercontent.com/scverse/rapids_singlecell/81167a7c/src/rapids_singlecell/preprocessing/_hvg.py, https://github.com/scverse/scanpy/issues/509."
+        },
+        {
+          "question": "When an analysis recipe says to build a k-nearest-neighbour graph with a given k using Euclidean distance and 'a symmetric graph' before Leiden clustering, what constructions do common single-cell toolkits use by default (binary union adjacency, mutual kNN, shared-nearest-neighbour Jaccard weights, or UMAP fuzzy-union connectivities), and does the stated k include the cell itself in each of them?",
+          "answer": "scanpy sc.pp.neighbors defaults to method='umap': a weighted, symmetric UMAP fuzzy-union connectivities graph whose rows have variable nonzero counts, and Leiden runs on it. 'jaccard' (PhenoGraph) and 'gauss' kernels are options. scanpy's n_neighbors includes the cell itself: obsp['distances'] has n_neighbors-1 nonzeros per row, with the self-distance of 0 discarded (doc text and maintainer comment in issue 2587). Seurat FindNeighbors defaults to k.param=20, annoy with euclidean metric, and compute.SNN, which gives a Jaccard-weighted shared-nearest-neighbour graph pruned at prune.SNN=1/15. Seurat is generally understood to count self within k.param, but the reference page I read does not say so. sklearn's kneighbors_graph excludes self by default (seen only in a snippet). None of the pages defines 'symmetric graph' as binary union, and none uses mutual kNN as a default. The conventional reading, scanpy, is the self-inclusive weighted fuzzy-union graph; a binary union of k others is a plain-language alternative.",
+          "sources": [
+            "https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.neighbors.html",
+            "https://github.com/scverse/scanpy/issues/2587",
+            "https://satijalab.org/seurat/reference/findneighbors"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc19-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-9ade7196f544"
+            },
+            "sc19-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-b4e58ca154de"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When an analysis recipe says to build a k-nearest-neighbour graph with a given k using Euclidean distance and 'a symmetric graph' before Leiden clustering, what constructions do common single-cell toolkits use by default (binary union adjacency, mutual kNN, shared-nearest-neighbour Jaccard weights, or UMAP fuzzy-union connectivities), and does the stated k include the cell itself in each of them? ANSWER: scanpy sc.pp.neighbors defaults to method='umap': a weighted, symmetric UMAP fuzzy-union connectivities graph whose rows have variable nonzero counts, and Leiden runs on it. 'jaccard' (PhenoGraph) and 'gauss' kernels are options. scanpy's n_neighbors includes the cell itself: obsp['distances'] has n_neighbors-1 nonzeros per row, with the self-distance of 0 discarded (doc text and maintainer comment in issue 2587). Seurat FindNeighbors defaults to k.param=20, annoy with euclidean metric, and compute.SNN, which gives a Jaccard-weighted shared-nearest-neighbour graph pruned at prune.SNN=1/15. Seurat is generally understood to count self within k.param, but the reference page I read does not say so. sklearn's kneighbors_graph excludes self by default (seen only in a snippet). None of the pages defines 'symmetric graph' as binary union, and none uses mutual kNN as a default. The conventional reading, scanpy, is the self-inclusive weighted fuzzy-union graph; a binary union of k others is a plain-language alternative. HOW SURE: medium. SOURCES: https://scanpy.readthedocs.io/en/stable/api/generated/scanpy.pp.neighbors.html, https://github.com/scverse/scanpy/issues/2587, https://satijalab.org/seurat/reference/findneighbors."
+        },
+        {
+          "question": "For a fixed graph, resolution and seed, does the Leiden algorithm give the same partition in leidenalg (RBConfigurationVertexPartition, run to convergence) and in python-igraph's community_leiden with the modularity objective, and what differences in defaults (iteration count, directed versus undirected input, handling of edge weights, resolution scaling by total edge weight) explain different cluster counts between the two?",
+          "answer": "The documentation does not guarantee identical partitions. They are separate implementations with their own random number generators, so the same seed does not give the same run; no page I read shows they match label for label. Default differences: (1) iterations: leidenalg.find_partition and igraph community_leiden both default to n_iterations=2; scanpy sc.tl.leiden sets -1 (run until no improvement) for either flavor unless overridden, and its FutureWarning recommends flavor='igraph' with n_iterations=2. (2) Objective: igraph defaults to objective_function='CPM'. With 'modularity' it uses degrees as node weights and divides resolution by 2m, so it matches RB-configuration modularity; CPM at 0.6 is a different model. (3) Direction: igraph's Leiden requires an undirected graph (scanpy raises an error if directed), while scanpy's leidenalg path builds a directed graph by default with both edge directions. For a symmetric matrix the modularity objective should be equivalent, though that equivalence is my inference, not read on a page. (4) Weights: scanpy passes connectivity weights (use_weights=True); igraph uses weights only if they are passed or a 'weight' attribute exists. Unweighted vs weighted changes the result. igraph also has beta=0.01 refinement randomness. Recommendation: run both with modularity, the same weights and the same iteration count (-1, or a fixed large number). Any remaining difference is then implementation/RNG noise, not the upstream graph. If counts differ under settings that do not match, the settings are the likely cause.",
+          "sources": [
+            "https://leidenalg.readthedocs.io/en/stable/reference.html",
+            "https://r.igraph.org/reference/cluster_leiden.html",
+            "https://scanpy.readthedocs.io/en/stable/generated/scanpy.tl.leiden.html",
+            "https://raw.githubusercontent.com/scverse/scanpy/1.10.x/src/scanpy/tools/_leiden.py",
+            "https://github.com/scverse/scanpy/issues/2865"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc19-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-49b4cf70d833"
+            },
+            "sc19-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-eba45932dca8"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: For a fixed graph, resolution and seed, does the Leiden algorithm give the same partition in leidenalg (RBConfigurationVertexPartition, run to convergence) and in python-igraph's community_leiden with the modularity objective, and what differences in defaults (iteration count, directed versus undirected input, handling of edge weights, resolution scaling by total edge weight) explain different cluster counts between the two? ANSWER: The documentation does not guarantee identical partitions. They are separate implementations with their own random number generators, so the same seed does not give the same run; no page I read shows they match label for label. Default differences: (1) iterations: leidenalg.find_partition and igraph community_leiden both default to n_iterations=2; scanpy sc.tl.leiden sets -1 (run until no improvement) for either flavor unless overridden, and its FutureWarning recommends flavor='igraph' with n_iterations=2. (2) Objective: igraph defaults to objective_function='CPM'. With 'modularity' it uses degrees as node weights and divides resolution by 2m, so it matches RB-configuration modularity; CPM at 0.6 is a different model. (3) Direction: igraph's Leiden requires an undirected graph (scanpy raises an error if directed), while scanpy's leidenalg path builds a directed graph by default with both edge directions. For a symmetric matrix the modularity objective should be equivalent, though that equivalence is my inference, not read on a page. (4) Weights: scanpy passes connectivity weights (use_weights=True); igraph uses weights only if they are passed or a 'weight' attribute exists. Unweighted vs weighted changes the result. igraph also has beta=0.01 refinement randomness. Recommendation: run both with modularity, the same weights and the same iteration count (-1, or a fixed large number). Any remaining difference is then implementation/RNG noise, not the upstream graph. If counts differ under settings that do not match, the settings are the likely cause. HOW SURE: medium. SOURCES: https://leidenalg.readthedocs.io/en/stable/reference.html, https://r.igraph.org/reference/cluster_leiden.html, https://scanpy.readthedocs.io/en/stable/generated/scanpy.tl.leiden.html, https://raw.githubusercontent.com/scverse/scanpy/1.10.x/src/scanpy/tools/_leiden.py, https://github.com/scverse/scanpy/issues/2865."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc19-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc19-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc19-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc19-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc19-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 35.06082512496505,
+      "cost_usd": 0.1512632,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 134.88970874994993,
+      "cost_usd": 0.1822706,
+      "error": null
+    },
+    {
+      "agent": "sc19-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 239.6319041249808,
+      "cost_usd": 0.1947896,
+      "error": null
+    },
+    {
+      "agent": "sc19-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 413.77764350001235,
+      "cost_usd": 0.28555659999999994,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 128.03243995807134,
+      "cost_usd": 0.2482111,
+      "error": null
+    },
+    {
+      "agent": "sc19-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 153.14274275000207,
+      "cost_usd": 0.7157332,
+      "error": null
+    },
+    {
+      "agent": "sc19-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 265.67717070900835,
+      "cost_usd": 0.5146120000000001,
+      "error": null
+    },
+    {
+      "agent": "sc19-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 443.4444489160087,
+      "cost_usd": 0.4717526,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

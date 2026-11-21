@@ -1,0 +1,394 @@
+{
+  "study": "pf02",
+  "status": "replicated",
+  "final": {
+    "agent": "pf02-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/planted/lab/pf02/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "pf02-library": "opus",
+    "pf02-team-a": "opus",
+    "pf02-team-b": "opus",
+    "pf02-team-c": "opus",
+    "pf02-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "pf02-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/planted/lab/pf02/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "pf02-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/planted/lab/pf02/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "pf02-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/planted/lab/pf02/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "pf02-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/planted/lab/pf02/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "pf02-team-a",
+        "pf02-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "pf02-team-a",
+        "pf02-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The library reports that SMOKING_HISTORY in data_clinical_supplement.txt may be inverse-coded (1 = never smoker, 0 = current or former smoker). Before any comparison, read the '#' description line for that column and cross-tabulate SMOKING_HISTORY against PACK_YEARS, since never smokers should have PACK_YEARS = 0. Then build an explicit ever_smoker variable that matches what the data actually show, and report the effect as ever minus never. If the codes and PACK_YEARS disagree for some patients, report how many and run the analysis under both definitions.",
+      "from": [
+        "sl-lab-6346e1c83b6b"
+      ],
+      "reason": "If the exposure is read the wrong way round, the effect's direction flips, and so does the True/False label.",
+      "fact_ids": {
+        "team-a": "sl-lab-805e5225fc22"
+      }
+    },
+    {
+      "text": "Smoking is recorded per patient, but STROMAL_SCORE is per sample, and a patient may have several samples (e.g. a primary and a metastasis). Count samples per PATIENT_ID and look at SAMPLE_TYPE by smoking group. If there are repeats, analyse one sample per patient (e.g. primary only) or average per patient, and/or adjust for SAMPLE_TYPE, and report the other choices as sensitivity analyses. When joining the patient, sample and supplement tables on PATIENT_ID, give row counts before and after each merge. Do not impute missing smoking status, and state the n you actually analysed.",
+      "from": [
+        "sl-lab-824829d630fa",
+        "sl-lab-325532c2c237"
+      ],
+      "reason": "Treating repeated samples as independent inflates n and significance, and mixes tissue types whose stroma differs. Bad joins can silently drop or duplicate patients.",
+      "fact_ids": {
+        "team-a": "sl-lab-5c8a02137be3"
+      }
+    },
+    {
+      "text": "SITE (hospital) and PROCESSING_BATCH can each be linked both to how many smokers there are and to STROMAL_SCORE, through assay or tissue handling. Tabulate ever_smoker by SITE and by batch, and STROMAL_SCORE by each. If either is unbalanced, compare within strata or fit a regression with SITE and batch as covariates. Check whether the smoking effect keeps the same sign within strata as in the pooled data.",
+      "from": [
+        "sl-lab-b1a6534a7d7f",
+        "sl-lab-c70ebb4bf36c"
+      ],
+      "reason": "This is a classic Simpson's-paradox setup: a pooled difference can appear, disappear or reverse once site or batch is accounted for, and that can change the label.",
+      "fact_ids": {
+        "team-a": "sl-lab-2415695dd14e"
+      }
+    },
+    {
+      "text": "Stromal score is mechanically tied to tumour purity: the stroma fraction is roughly 1 minus purity. Correlate STROMAL_SCORE with TUMOR_PURITY and compare purity between ever and never smokers. Keep the unadjusted comparison as the primary test of the hypothesis as stated. Also fit STROMAL_SCORE ~ ever_smoker + TUMOR_PURITY as a secondary model and report whether the direction changes. Purity is partly the same quantity as the outcome, so do not let the purity-adjusted model alone decide the label.",
+      "from": [
+        "sl-lab-d40bea421b70"
+      ],
+      "reason": "This shows whether a smoking difference is just a difference in how pure the sampled tissue was. It also stops anyone over-adjusting away the very quantity the hypothesis is about.",
+      "fact_ids": {
+        "team-a": "sl-lab-f88e7d8a771f"
+      }
+    },
+    {
+      "text": "Check STROMAL_SCORE for skew, outliers and sentinel codes (e.g. -999 or NA strings) in each group. Set sentinels to missing, run a Mann-Whitney test alongside the t-test or regression, and report the effect size with a confidence interval.",
+      "from": [
+        "sl-lab-7d29ee35a32f"
+      ],
+      "reason": "A few extreme or placeholder values can drive a test on means and produce a spurious result.",
+      "fact_ids": {
+        "team-a": "sl-lab-6501aa910aba"
+      }
+    },
+    {
+      "text": "Choosing the label: SMOKING_HISTORY and STROMAL_SCORE are expected to be in the data, so confirm they are there and usable. If they are, the hypothesis can be tested, and 'Not verifiable' should be used only if the variables are really missing. The hypothesis has a direction (ever > never). A clear difference in the opposite direction contradicts it. A null or non-significant result is not support for it. Base the decision on the direction, CI and p-value of the properly handled analysis.",
+      "from": [
+        "sl-lab-53b167ceff91"
+      ],
+      "reason": "This prevents the common mistake of labelling a testable but null or reversed result as 'Not verifiable'.",
+      "fact_ids": {
+        "team-a": "sl-lab-40e12fb9199d"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat SMOKING_HISTORY as a binary ever/never exposure and pool current and former smokers; neither checked whether that pooling hides a difference between the two subgroups (the data have no current/former split, only PACK_YEARS).",
+      "Both teams treat PROCESSING_BATCH as a confounder that shifts stromal score additively; neither tested whether batch acts on scale (different spread per batch), which would make an additive adjustment and a pooled mean difference less suitable than a within-batch standardized comparison.",
+      "Both teams treat one sample per patient as independent across 270 patients, and pool Primary (192) and Metastasis (78) samples as measuring the same stromal quantity."
+    ],
+    "unused_evidence": [
+      "Patient-level covariates AGE, SEX, ECOG_PS, BMI, SERUM_CREATININE, SERUM_CALCIUM, TOTAL_CHOLESTEROL and FOLLOW_UP_MONTHS: neither team reports checking whether these are imbalanced between ever and never smokers (sex and age in particular often go with smoking).",
+      "SAMPLE_TYPE: team-a adjusted for it; team-b's notes do not say whether it was in its 'other covariates' or whether the smoker share differs between primary and metastatic samples.",
+      "SITE: team-b's notes mention batch adjustment but not site, and neither team reports whether site and batch are nested or crossed."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named residual confounding beyond site/batch as the weakest point and only reported it; neither ran a balance table of the remaining patient covariates or a model including them.",
+      "The batch effect is large (batch means about 77-130) compared with the reported effect (about 14); both teams adjusted for it but did not report whether within-batch variances differ or whether the effect is stable when the score is standardized within batch."
+    ],
+    "second_readings": [
+      "'Current or former smokers' could be read as two groups, each compared with never smokers, rather than one pooled group; the data only allow the pooled reading unless pack-years is used as a proxy.",
+      "'Stromal score' is a sample-level measurement; if the claim concerns primary tumours, the metastatic samples might be out of scope. Restricting to Primary samples is a second reasonable reading of which samples count."
+    ],
+    "verdict": "I trust the agreed answer fairly well: both teams found and fixed the reversed smoking coding, checked it against pack-years, and adjusted for the large batch effect, with a consistent effect within every batch. The remaining risks are confounding by unexamined patient covariates and the mixing of primary and metastatic samples, and both are cheap to check.",
+    "questions": [
+      {
+        "to": "pf02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Make a balance table of AGE, SEX, ECOG_PS, BMI and the serum measures by ever vs never smoking. Are any imbalanced, and does adding them to your site+batch+sample-type model change the sign or size of the effect enough to change your method?",
+        "from": [
+          "sl-lab-dd98bc4b4eee"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-d3e11b911926"
+      },
+      {
+        "to": "pf02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Compare the spread (SD) of STROMAL_SCORE within each PROCESSING_BATCH. If spreads differ, does a comparison on within-batch standardized scores give the same direction as your additive OLS adjustment?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-56b09750b245"
+      },
+      {
+        "to": "pf02-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Re-run the ever-vs-never comparison restricted to SAMPLE_TYPE == Primary, and separately in Metastasis. Does the conclusion hold in both, and does either result change how you scope the claim?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-2c3b92fcf78c"
+      },
+      {
+        "to": "pf02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Make a balance table of AGE, SEX, ECOG_PS, BMI and the serum measures by ever vs never smoking. Are any imbalanced, and does adding them to your batch-adjusted model change the sign or size of the effect enough to change your method?",
+        "from": [
+          "sl-lab-2b62449a9650"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-5bfd95515c76"
+      },
+      {
+        "to": "pf02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate smoking group by SAMPLE_TYPE and by SITE, and say whether your 'fully adjusted' model included both. Does the effect hold when restricted to Primary samples only?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-d3775d5d5240"
+      },
+      {
+        "to": "pf02-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Compare the spread (SD) of STROMAL_SCORE within each PROCESSING_BATCH. If spreads differ, does a comparison on within-batch standardized scores give the same direction as your additive adjustment?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-dcccb006274c"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "When a continuous assay score shows strong laboratory batch effects, what are the recommended ways to compare two groups: batch as a fixed effect in regression, within-batch standardization, or stratified (e.g., van Elteren) tests, and when do they disagree?",
+          "why": "Both teams used additive batch adjustment without checking whether batch also changes the spread of the score.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Do expression-based stromal signature scores (e.g., ESTIMATE-type stromal scores) differ systematically between primary tumours and metastatic samples, and should the two sample types be analysed separately?",
+          "why": "The cohort mixes primary and metastatic samples, and only one team says it adjusted for sample type.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When a continuous assay score shows strong laboratory batch effects, what are the recommended ways to compare two groups: batch as a fixed effect in regression, within-batch standardization, or stratified (e.g., van Elteren) tests, and when do they disagree?",
+          "answer": "NOT SETTLED BY THE WEB: the research gateway returned HTTP 502 (Exa 403) on all three calls, so no page was read. Background knowledge only: batch fixed effects and stratified tests such as van Elteren adjust only for location shifts. Within-batch standardization (z-scoring, or ComBat-style location/scale adjustment, Johnson et al. 2007) also equalizes the spread. The methods can disagree when the score's variance differs by batch or when the groups are unevenly spread across batches. Z-scoring within batch can then shrink or remove real group differences. Suggested checks: compare the score's SD in each batch, test within each batch, and see whether the direction agrees across methods.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "pf02-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-b390581899a0"
+            },
+            "pf02-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-b88ea65901fb"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a continuous assay score shows strong laboratory batch effects, what are the recommended ways to compare two groups: batch as a fixed effect in regression, within-batch standardization, or stratified (e.g., van Elteren) tests, and when do they disagree? ANSWER: NOT SETTLED BY THE WEB: the research gateway returned HTTP 502 (Exa 403) on all three calls, so no page was read. Background knowledge only: batch fixed effects and stratified tests such as van Elteren adjust only for location shifts. Within-batch standardization (z-scoring, or ComBat-style location/scale adjustment, Johnson et al. 2007) also equalizes the spread. The methods can disagree when the score's variance differs by batch or when the groups are unevenly spread across batches. Z-scoring within batch can then shrink or remove real group differences. Suggested checks: compare the score's SD in each batch, test within each batch, and see whether the direction agrees across methods. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "Do expression-based stromal signature scores (e.g., ESTIMATE-type stromal scores) differ systematically between primary tumours and metastatic samples, and should the two sample types be analysed separately?",
+          "answer": "NOT SETTLED BY THE WEB: the research gateway returned HTTP 502 (Exa 403), so no page was read. Background knowledge only: ESTIMATE stromal scores reflect the tissue that was sampled. Metastatic sites such as lymph node or liver often differ systematically from primaries in stromal content. Suggested approach: tabulate the stromal score by sample type, adjust for sample type, and repeat the analysis on primaries only (or one sample per patient) as a sensitivity check.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "pf02-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-4873836800e4"
+            },
+            "pf02-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-af15fdf86684"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Do expression-based stromal signature scores (e.g., ESTIMATE-type stromal scores) differ systematically between primary tumours and metastatic samples, and should the two sample types be analysed separately? ANSWER: NOT SETTLED BY THE WEB: the research gateway returned HTTP 502 (Exa 403), so no page was read. Background knowledge only: ESTIMATE stromal scores reflect the tissue that was sampled. Metastatic sites such as lymph node or liver often differ systematically from primaries in stromal content. Suggested approach: tabulate the stromal score by sample type, adjust for sample type, and repeat the analysis on primaries only (or one sample per patient) as a sensitivity check. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "pf02-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "pf02-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "pf02-team-b",
+      "round": "challenge",
+      "reason": "agreed with pf02-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "pf02-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 51.130458874977194,
+      "cost_usd": 0.15947120000000004,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 36.8406611669343,
+      "cost_usd": 0.24398399999999998,
+      "error": null
+    },
+    {
+      "agent": "pf02-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 37.62117004103493,
+      "cost_usd": 0.1655278,
+      "error": null
+    },
+    {
+      "agent": "pf02-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 47.19151554093696,
+      "cost_usd": 0.189335,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 42.34643220901489,
+      "cost_usd": 0.1853554,
+      "error": null
+    },
+    {
+      "agent": "pf02-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 41.32411716703791,
+      "cost_usd": 0.12991399999999997,
+      "error": null
+    },
+    {
+      "agent": "pf02-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 49.6237139160512,
+      "cost_usd": 0.2253954,
+      "error": null
+    },
+    {
+      "agent": "pf02-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 54.39168879110366,
+      "cost_usd": 0.274571,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

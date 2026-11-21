@@ -1,0 +1,467 @@
+{
+  "study": "bd26",
+  "status": "replicated",
+  "final": {
+    "agent": "bd26-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd26/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd26-library": "fable",
+    "bd26-team-a": "fable",
+    "bd26-team-b": "fable",
+    "bd26-team-c": "fable",
+    "bd26-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd26-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd26/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd26-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd26/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd26-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd26/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd26-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd26/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd26-team-a",
+        "bd26-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd26-team-a",
+        "bd26-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "First step: decide whether the outcome of the hypothesis is measured at all. A claim about chemotherapy sensitivity of engrafted (in-mouse) tumoroids can only be tested with a functional response measurement: tumour volume or growth under drug versus vehicle in mice, or a derived metric (TGI, mRECIST category, AUC, endoluminal tumour size, survival). Inventory ALL six files, not just the clinical tables: print every header, read the '#' description rows, and print the distinct values of every string column. Search column names AND cell values for response-like terms: response, sensit, resist, AUC, IC50, viab, volume, growth, TGI, RECIST, TRG, regression, pCR, xenograft, engraft, mouse, treated, vehicle. A header read by the library (verify it yourself) described data_clinical_patient.txt as PATIENT_ID and SEX only; data_clinical_sample.txt as 27 columns (derivation age, prior therapy, derivation site, sample type/class, gene panel, purity, MSI, TMB, cancer type); data_mutations.txt as a standard 46-column MAF; data_cna.txt as a gene-by-sample discrete copy-number matrix of about 610 genes; data_cna_hg19.seg as ID, chrom, loc.start, loc.end, num.mark, seg.mean; data_gene_panel_matrix.txt as SAMPLE_ID, mutations, cna. State in your reasoning which variables you searched for and whether each was found. Then choose the label strictly by the task's own definitions of 'True', 'False' and 'Not verifiable', applied to what your inventory actually shows; do not test a stand-in variable and report that as the answer.",
+      "from": [
+        "sl-biodsa-test-d0c8188a8405",
+        "sl-biodsa-test-8323d0a7ecc9"
+      ],
+      "reason": "The most common failure on this kind of task is drifting into testing something other than the stated outcome. The team needs a concrete definition of what a relevant variable looks like, a search procedure covering all six files, and the library's header read as a lead to confirm.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-ae640ac0a52d"
+      }
+    },
+    {
+      "text": "The hypothesis has two arms: (a) engrafted tumoroids respond uniformly to chemotherapy, and (b) this differs from clinical observations. Testing it needs two separate readouts: a per-model in-vivo response and a per-patient clinical response (RECIST, tumour regression grade, pathologic or clinical complete response). Look for each arm separately in the patient and sample tables and record which, if any, is present. Do not fill a missing arm from textbook knowledge that rectal cancer response in patients is heterogeneous; that is context, not data analysis, and must not decide the label. If an arm is absent, say which one.",
+      "from": [
+        "sl-biodsa-test-bd2631662e9f"
+      ],
+      "reason": "Teams often test one arm only, or supply the clinical arm from general knowledge. Knowing that both arms must come from the tables changes what the team looks for and how it justifies the label.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-73ed2886e032"
+      }
+    },
+    {
+      "text": "SAMPLE_CLASS, SAMPLE_TYPE and sample-ID suffixes describe WHAT was sequenced, not the result of a treatment experiment. Sample IDs in this study carry undocumented infixes and suffixes (for example -pt, -tm, TNT, PR, RC, SP, VR, MC, PC, MP, P2m/P7m/P9m) that are tempting to read as response or treatment codes ('PR' as partial response, 'TNT' as treated). Tabulate SAMPLE_CLASS, SAMPLE_TYPE, TISSUE_SITE_OF_DERIVATION and the suffix patterns, and check whether the '#' description rows define any of them. If the files do not define a code, do not interpret it as a response category. An ex-vivo tumoroid culture is also not an 'engrafted' tumoroid: the hypothesis is about behaviour in mice. A sequenced sample labelled as xenograft or passage shows only that engraftment happened and was sequenced; it says nothing about uniform or variable drug sensitivity.",
+      "from": [
+        "sl-biodsa-test-1ae6c15b6a59"
+      ],
+      "reason": "Misreading ID codes or sample-class labels as response data would produce a confident but unfounded answer in either direction.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-0d4841d51690"
+      }
+    },
+    {
+      "text": "A prior-therapy column such as THERAPY_PRIOR_TO_DERIVATION records which regimens the PATIENT received before the tumoroid was derived (for example 'FOLFOX, FOLFIRI, SCRT and FUDR'). It is a treatment-exposure history, not a measure of how the patient's tumour or the engrafted tumoroid responded. Read its distinct values: do they name drugs or regimens only, or do they state an outcome (responder, progression, complete response)? Does any value refer to treatment given to mice? If the field only lists regimens, do not use it as a sensitivity variable: 'pre-treated versus naive' or 'more lines received' is confounded by indication, and variety or sameness of prior regimens is not heterogeneous or uniform sensitivity. Use it only as a descriptor or covariate.",
+      "from": [
+        "sl-biodsa-test-d65c32a1dde3"
+      ],
+      "reason": "This is the one column in the data that mentions chemotherapy, so it is the most likely to be misused as the outcome.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-52277e4dd623"
+      }
+    },
+    {
+      "text": "Do not infer uniform or heterogeneous chemotherapy sensitivity from genomic diversity (mutations, copy number, MSI, TMB). There is no validated genomic predictor of 5-FU, oxaliplatin or irinotecan response in colorectal cancer; genomically diverse models can respond alike and similar models can respond differently. Ask of any planned analysis whether the dependent variable is a measured drug response or a genomic feature being read as response. Genomic comparisons may describe the cohort but must be reported as descriptive only and must not decide True or False. Also note that the genomic matrices mix the study samples (RC-MSK-*-pt tumours and -tm tumoroids) with what look like clinical MSK-IMPACT samples (P-00xxxxx-T0x-IM3/IM5/IM6) sequenced on different panel versions (IMPACT341/410/468). Those samples are sequenced tumours, not clinical response observations, so they are not the 'clinical observations' arm. If you run descriptive genomic contrasts, treat genes absent from a panel and blank CNA cells as not profiled rather than wild-type, and remember that TMB and CNA burden depend on panel size, matched-normal availability and purity.",
+      "from": [
+        "sl-biodsa-test-a0dfedb2df71",
+        "sl-biodsa-test-c9ad42ebd84a"
+      ],
+      "reason": "The files are rich in genomic data, which invites using genomic heterogeneity as a surrogate for drug response or treating the IMPACT cohort as the clinical comparison. Either would change the label without measuring the outcome.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-b7c8fc349cd8"
+      }
+    },
+    {
+      "text": "Base the label only on what the supplied tables can show, not on what you believe a publication on tumoroid or xenograft models reported. In the final reasoning, name the exact file and column that supplies (1) the response measurement and (2) the grouping or comparison. If either slot is filled by 'known from the literature' or by an assumption, flag that and do not let it decide the label. Keep any outside knowledge to one clearly marked context sentence.",
+      "from": [
+        "sl-biodsa-test-13fcf88de613"
+      ],
+      "reason": "This study type is recognisable, and a label taken from memory of a paper rather than from the tables is not a data analysis result. The file-and-column check gives the team a concrete test of its own reasoning.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-ebf72511ab45"
+      }
+    },
+    {
+      "text": "Applies only if you do find a genuine response variable. (1) The unit of inference is the patient or model, not the sample or the mouse. This study has several derived samples per patient (matched '-pt' tumour and '-tm' tumoroid pairs, and sibling lines or passages such as 012/012RC/012SP/012VR or 025/025TNT-P2m/P7m/P9m). Count samples per PATIENT_ID, collapse to one value per model or fit a mixed model with random effects, and report n as independent patients or models. (2) 'Uniform sensitivity' is a null-type claim. A non-significant difference between a few models is absence of evidence, not evidence of uniformity, and nonzero spread is not automatically heterogeneity because replicates of one model also vary. Compare between-model variance with within-model replicate variance, with a confidence interval. Support 'uniform' only if between-model spread is demonstrably smaller than a pre-stated margin; reject it if between-model variance clearly exceeds replicate noise or models fall into different response categories; if n is too small for either, say the data cannot settle it. (3) Judge response against a vehicle control of the same model, and check that the between-model pattern is stable across at least two response metrics, because binary responder calls depend on arbitrary cut-offs.",
+      "from": [
+        "sl-biodsa-test-c69228bdebc7",
+        "sl-biodsa-test-eee9e41bbbe0",
+        "sl-biodsa-test-45e8363c9ee7"
+      ],
+      "reason": "If a response variable exists, pseudoreplication from sibling samples and misreading a non-significant test as 'uniform' are the errors most likely to flip the label. Kept conditional so it is used only when it applies.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-30d3b229d625"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 7,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treated the uniform value SAMPLE_CLASS='Tumor' as evidence that no engrafted or model-derived sample is in the tables. But the same column is also 'Tumor' for every '-tm' tumoroid sample, so it does not even separate ex-vivo tumoroids from patient tissue; its uniformity carries no information about engraftment either way. Neither team tested sample origin by any other route.",
+      "Both teams assumed that a response variable, if present, would appear under a recognisable word (response, sensitivity, volume, xenograft, ...) and relied on a keyword/regex scan. A scan of that kind cannot find information that is carried by the structure of the samples (several samples of one patient taken before and after a named regimen) or by undefined ID codes.",
+      "Both teams read the label rule the same way: 'relevant variable' = a directly measured in-mouse drug response. Neither wrote down what counts as 'relevant' when the hypothesis's group, exposure and outcome are identifiable to different degrees, and both admit this is a judgement, not a result.",
+      "Both teams treated the hypothesis as requiring both arms (in-mouse response and clinical response) to be present before anything could be said, and stopped once the first arm was found missing; the clinical arm was declared absent by the same keyword scan rather than examined on its own."
+    ],
+    "unused_evidence": [
+      "Serial samples of the same patient across therapy: e.g. patient 022 has a baseline tumoroid ('none'), then 022MC and 022PC ('FOLFOX', derivation age one year later), then 022TNT ('FOLFOX + CRT'); patient 025 has a baseline ('CRT') and three 025TNT-P2m/P7m/P9m samples ('CRT + FOLFOX'); 034 and 034MP (before/after pembrolizumab); 001 and 001PR; 012, 012RC, 012SP, 012VR. Team A noticed the sibling samples differ and stopped at 'exposure history'; team B did not mention them. Nobody asked what these repeated derivations are for or whether tumour that could still be sampled after a named regimen is a per-patient clinical observation.",
+      "The undefined sample-ID codes (MC, PC, MP, VR, RC, SP, PR, TNT, P2m/P7m/P9m). Team A tabulated them and left them uninterpreted; team B's notes do not report them. No one compared these samples' mutation calls, allele counts or segment profiles with the same patient's baseline '-tm' and '-pt' samples to learn what they are (independent later patient biopsies versus re-samplings or passages of one line).",
+      "AGE_AT_DERIVATION, TISSUE_SITE_OF_DERIVATION and SPECIMEN_PRESERVATION_TYPE (Fresh/FFPE), which together date and place each derivation relative to therapy, and the SAMPLE_TYPE value 'Unknown_Tumor' that appears only on six '-tm' samples. Neither team used them to work out sample provenance.",
+      "t_ref_count/t_alt_count in the mutation table and seg.mean amplitudes in the seg file for '-tm' versus '-pt' pairs. These can show whether a '-tm' sample is a purified culture and whether a coded sample is the same line as the baseline. They were inventoried but not used; they bear on what the samples are, not on drug response.",
+      "The 287 clinical-sequencing samples (three panel versions) with MSI and TMB columns. Both teams correctly judged these are sequenced tumours, not response observations; I see no route by which they change the label."
+    ],
+    "unresolved_weak_points": [
+      "Team A's weakest point (the verdict rests on absence, and on a judgement that prior-therapy history and genomic diversity are not 'relevant variables') was reported, not resolved: no check was run that could have shown the judgement wrong.",
+      "Team B's weakest point is the same judgement, also only reported. Team B additionally records that no pitfalls reached it ('pitfalls_checked' is empty), so its inventory was not checked against the two-arm and suffix pitfalls that team A worked through; its notes do not show a suffix tabulation or a per-arm record of what is missing.",
+      "Team B's remark that a grader using the publication would choose a different label is not a data check and should not move the label in either direction; it remains an open worry rather than something tested."
+    ],
+    "second_readings": [
+      "'Engrafted RC tumoroids in murine models' can be read as naming a group (the tumoroid lines of this study, which were the ones engrafted) rather than requiring a column that flags engraftment. Under that reading the group is identifiable ('-tm' samples) and only the outcome is missing; under the teams' reading neither group nor outcome is identifiable. The label rule ('can identify the relevant variables' versus 'no relevant variables') may be applied differently in the two cases, and the teams should say which case they are in.",
+      "'Unlike clinical observations' can be read (a) as a comparison that itself needs a per-patient clinical response variable in the tables, or (b) as background framing, with the testable claim being only 'uniform sensitivity'. Both teams took (a) plus a required mouse readout. Under (b) the clinical arm is not needed at all, and the only question is whether the uniformity claim has any observable.",
+      "'Sensitivity to chemotherapy' was read by both as in-mouse tumour growth under drug. A second reading is any recorded evidence of how the tumour or its derived model behaved after chemotherapy, which would bring the pre/post-therapy serial derivations into scope as observations (of the patient, not of the mouse). The teams should state why that is or is not within the wording.",
+      "'Uniform' is a null-type claim about spread across models; one contradicting model would suffice, whereas support would need all models measured. Neither team stated what the minimum contradicting observation would look like in this dataset, so it is not shown that none exists."
+    ],
+    "verdict": "Fairly high trust in the agreed answer: my own read of the six headers and of the tumoroid-cohort rows confirms there is no column that measures drug response in mice or in patients, and both teams avoided the genomic-proxy trap. What is not yet shown is (1) that the undefined sample codes and before/after-therapy serial derivations carry no response or engraftment information, since both teams leaned on a SAMPLE_CLASS column that cannot distinguish sample origin, and (2) that the label follows from the task's definitions under each reading of the wording rather than from a shared judgement; the questions target those two gaps.",
+    "questions": [
+      {
+        "to": "bd26-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You used SAMPLE_CLASS='Tumor' for all 339 samples as evidence that no engrafted sample exists, but that column is also 'Tumor' for every '-tm' tumoroid, so it does not separate even ex-vivo tumoroids from patient tissue. Run this check: for each '-tm' sample with an undefined code (022MC, 022PC, 022TNT, 025TNT-P2m/P7m/P9m, 012VR, 012RC, 034MP, 001PR), compare it with the same patient's baseline '-tm' and '-pt' samples on AGE_AT_DERIVATION, TISSUE_SITE_OF_DERIVATION, the mutation list with t_alt_count/t_ref_count allele fractions, and the seg profile. Report whether each coded sample looks like an independent later patient biopsy or a re-sampling/passage of the same line, and whether P2m/P7m/P9m behave like time points or passages. Does the result change your statement that the tables identify no model-derived or engrafted sample, and does it change your method?",
+        "from": [
+          "sl-biodsa-test-9d53a94c3c5d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-e587d9413458"
+      },
+      {
+        "to": "bd26-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You noted that sibling samples of one patient carry different THERAPY_PRIOR_TO_DERIVATION values and stopped at 'exposure history'. Run this check: build one row per patient of the 20-patient tumoroid cohort listing every sample in order of AGE_AT_DERIVATION with its therapy string and derivation site, and count the patients who have a sample derived after a named chemotherapy regimen and the patients with both a pre-therapy and a post-therapy sample. State, for the clinical arm and the in-mouse arm separately, whether these serial derivations are an observation of response, and of whom (patient or model). Does the result change which arm you record as absent, or your method?",
+        "from": [
+          "sl-biodsa-test-9d53a94c3c5d",
+          "sl-biodsa-test-73ed2886e032"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-305e8e180cc7"
+      },
+      {
+        "to": "bd26-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your weakest point is a judgement about what counts as a 'relevant variable', and it was reported but not tested. Run this check: split the hypothesis into its components (the group 'engrafted tumoroids', the exposure 'chemotherapy', the outcome 'sensitivity', the comparator 'clinical observations') and for each one name the single file and column that comes closest and say whether it identifies that component fully, partly or not at all. Then write down, before re-reading your answer, what observation in these six files would have counted as contradicting 'uniform' (one discordant model would be enough for a null-type claim) and confirm by listing, not by keyword, that no such observation exists. Does the component table, read against the task's own definitions of the three labels, change your method or leave it as it is?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-5259cbaaa786"
+      },
+      {
+        "to": "bd26-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your notes say the 52 study samples are '-pt' tumours and '-tm' tumoroids, but they do not report the other codes in the sample IDs, and SAMPLE_CLASS is 'Tumor' even for the '-tm' tumoroids, so that column cannot show whether any sample is model-derived. Run this check: tabulate every ID code in the tumoroid cohort (MC, PC, MP, VR, RC, SP, PR, TNT, P2m/P7m/P9m) against AGE_AT_DERIVATION, THERAPY_PRIOR_TO_DERIVATION, TISSUE_SITE_OF_DERIVATION, SAMPLE_TYPE (including the six 'Unknown_Tumor' rows) and SPECIMEN_PRESERVATION_TYPE, and compare each coded sample's mutation list, allele fractions (t_alt_count/t_ref_count) and seg profile with the same patient's baseline samples. Report what each code most plausibly denotes and how sure you are. Does the result change your statement that the data contain no xenograft-related sample, and does it change your method?",
+        "from": [
+          "sl-biodsa-test-12ccdfa4fbf7"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-c2a92a41a78c"
+      },
+      {
+        "to": "bd26-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You refused THERAPY_PRIOR_TO_DERIVATION as a proxy without examining its structure. Run this check: for each of the 20 tumoroid-cohort patients, list the samples in order of AGE_AT_DERIVATION with their therapy strings, and count patients with a sample derived after a named chemotherapy regimen and patients with both a pre-therapy and a post-therapy sample. Record separately for the two arms of the hypothesis (per-model in-mouse response; per-patient clinical response) which, if either, these serial derivations inform, and name the arm that is absent. Does the result change your method or your statement that neither arm is measured?",
+        "from": [
+          "sl-biodsa-test-12ccdfa4fbf7"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-8ed5b277777b"
+      },
+      {
+        "to": "bd26-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your keyword scan can only find a variable that is named with an expected word, and you found that 651 mutation rows of the tumoroid cohort come from a different pipeline (Center='.'). Run this check: print the distinct values, split by tumoroid cohort versus clinical cohort, of every column that the keyword scan would pass over silently - the normally empty MAF fields (Mutation_Status, Validation_Status, Sequencing_Phase, Sequence_Source, Validation_Method, Score, BAM_File, REDACTION_SOURCE, Matched_Norm_Sample_Barcode) and the sample-table columns TISSUE_SITE, MSI_COMMENT, ARCHER and SOMATIC_STATUS. Report whether any value encodes a treatment arm, a model type or an outcome. Does the result change your method?",
+        "from": [
+          "sl-biodsa-test-b5727cc048ac"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-2804da0d2c02"
+      },
+      {
+        "to": "bd26-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your weakest point mentions what a grader relying on the publication might expect; that is not evidence from the tables and must not move the label either way. Run this check instead: split the hypothesis into group ('engrafted tumoroids'), exposure ('chemotherapy'), outcome ('sensitivity') and comparator ('clinical observations'), name for each the closest file and column and whether it identifies the component fully, partly or not at all, and state which reading of 'unlike clinical observations' you used (a comparison needing its own variable, or background framing). Does applying the task's own definitions of the three labels to that table, under each reading, change your method or leave it as it is?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-97f10504ca98"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In cBioPortal-format clinical sample files, how is the SAMPLE_CLASS attribute defined and populated in practice: is it reliably set to a distinct value for organoid-, cell-line- or xenograft-derived samples, or is it commonly left at the default 'Tumor' for all samples of a study regardless of origin?",
+          "why": "Both teams used a uniform SAMPLE_CLASS value as evidence that no model-derived sample is present; if the field is routinely left at a default, that inference has no weight and sample origin must be established another way.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "From targeted-panel sequencing output alone (variant allele fractions from tumour read counts, and copy-number log-ratio segment amplitudes), what are the accepted signs that a sample is a purified culture or model-derived specimen (organoid, cell line, xenograft) rather than bulk patient tumour tissue, and what are the accepted ways to tell an independent later biopsy of a patient from a later passage of the same culture?",
+          "why": "The teams are being asked to work out what undefined sample codes denote by comparing serial samples of one patient; they need the standard criteria for this so the comparison is read correctly and not over-interpreted.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In rectal cancer treatment records, what do the abbreviations TNT, CRT and SCRT conventionally stand for, and is the presence of sampleable residual tumour after such neoadjuvant treatment itself a recognised clinical response observation (for example incomplete response versus complete response), or is a formal graded measure always required?",
+          "why": "Whether tumour derived after a named regimen counts as a per-patient clinical observation decides if the clinical arm of the claim is partly present in the tables or wholly absent, which neither team examined.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In cBioPortal-format clinical sample files, how is the SAMPLE_CLASS attribute defined and populated in practice: is it reliably set to a distinct value for organoid-, cell-line- or xenograft-derived samples, or is it commonly left at the default 'Tumor' for all samples of a study regardless of origin?",
+          "answer": "SAMPLE_CLASS is an optional, free-text sample attribute that a cBioPortal developer defined only as 'the type of sample' and said is not used in page logic. cBioPortal states that clinical data are free-form, follow no ontology (cancer type excepted) and are organised as the study authors chose, so nothing validates the field against a sample's real origin. The public datahub curation guide normalises SAMPLE_CLASS to exactly three values: 'Tumor', 'Cell Line', 'Xenograft'. There is no 'Organoid' value. So curated studies can mark cell lines and xenografts, but an organoid/tumoroid has no dedicated class and no rule forces any model-derived sample to be flagged. The web did not settle how often the field is left as 'Tumor' for model-derived samples: no audit or count was found. What is settled is that a uniform SAMPLE_CLASS of 'Tumor' is weak evidence and cannot by itself show that no organoid- or xenograft-derived sample is present; origin has to be established from other columns or declared undetermined. Limits of the reading: the file-formats page was only partly retrievable, so the statement that only PATIENT_ID and SAMPLE_ID are required columns rests on a search excerpt of that page, not a full read.",
+          "sources": [
+            "https://github.com/cBioPortal/datahub/blob/master/docs/curation-process.md",
+            "https://groups.google.com/g/cbioportal/c/dTU5QKXT24E",
+            "https://docs.cbioportal.org/supported-data-types/",
+            "https://docs.cbioportal.org/file-formats/"
+          ],
+          "confidence": "medium (high for the definition and the three allowed values; low for how often the field is left at 'Tumor' in practice, which the web did not settle)",
+          "deliveries": {
+            "bd26-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-87d5442a01b6"
+            },
+            "bd26-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-c470a2418d41"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cBioPortal-format clinical sample files, how is the SAMPLE_CLASS attribute defined and populated in practice: is it reliably set to a distinct value for organoid-, cell-line- or xenograft-derived samples, or is it commonly left at the default 'Tumor' for all samples of a study regardless of origin? ANSWER: SAMPLE_CLASS is an optional, free-text sample attribute that a cBioPortal developer defined only as 'the type of sample' and said is not used in page logic. cBioPortal states that clinical data are free-form, follow no ontology (cancer type excepted) and are organised as the study authors chose, so nothing validates the field against a sample's real origin. The public datahub curation guide normalises SAMPLE_CLASS to exactly three values: 'Tumor', 'Cell Line', 'Xenograft'. There is no 'Organoid' value. So curated studies can mark cell lines and xenografts, but an organoid/tumoroid has no dedicated class and no rule forces any model-derived sample to be flagged. The web did not settle how often the field is left as 'Tumor' for model-derived samples: no audit or count was found. What is settled is that a uniform SAMPLE_CLASS of 'Tumor' is weak evidence and cannot by itself show that no organoid- or xenograft-derived sample is present; origin has to be established from other columns or declared undetermined. Limits of the reading: the file-formats page was only partly retrievable, so the statement that only PATIENT_ID and SAMPLE_ID are required columns rests on a search excerpt of that page, not a full read. HOW SURE: medium (high for the definition and the three allowed values; low for how often the field is left at 'Tumor' in practice, which the web did not settle). SOURCES: https://github.com/cBioPortal/datahub/blob/master/docs/curation-process.md, https://groups.google.com/g/cbioportal/c/dTU5QKXT24E, https://docs.cbioportal.org/supported-data-types/, https://docs.cbioportal.org/file-formats/."
+        },
+        {
+          "question": "From targeted-panel sequencing output alone (variant allele fractions from tumour read counts, and copy-number log-ratio segment amplitudes), what are the accepted signs that a sample is a purified culture or model-derived specimen (organoid, cell line, xenograft) rather than bulk patient tumour tissue, and what are the accepted ways to tell an independent later biopsy of a patient from a later passage of the same culture?",
+          "answer": "The web does not settle this. No accepted, validated criterion was found for calling a sample culture- or model-derived from panel VAFs and log-ratio amplitudes alone, and none for separating an independent later biopsy from a later passage of one culture. Any such call is suggestive only. What the sources read do support: (1) Tumour purity is the cancer-cell fraction and is what VAF reflects, so a stroma-free culture is expected to show clonal VAFs and log-ratio amplitudes near their full-purity values. A high-purity patient tumour looks the same, so high purity is necessary but not sufficient. That expectation is an inference from the definition of purity, not a published classification rule. (2) A xenograft is not a pure sample: human stroma is quickly replaced by mouse stroma, PDX purity mimics patient tumours of the same cancer type and stays stable across passages, and mouse reads have to be separated from human reads. (3) Organoids keep the parent tumour's point mutations and copy-number alterations, but sampling bias and clonal selection reshape subclonal composition at establishment and during passaging. (4) In 1,451 PDX and matched patient samples from 509 models, copy-number alterations were strongly conserved from patient tumour through late passage, and patient-versus-PDX differences were comparable to multiregion differences within one patient. The size of genomic divergence between two serial samples therefore cannot discriminate a new biopsy from a later passage. Comparing serial samples can show shared truncal alterations (same patient and lineage), but not what an undefined sample code denotes; that needs metadata. Limits of the reading: only abstracts and introductions were retrievable for most of these papers, and the claim that subclonal change is largest at induction and early passages rests on a search excerpt.",
+          "sources": [
+            "https://aacrjournals.org/cancerrescommun/article/2/5/353/696472/Tumor-Purity-in-Preclinical-Mouse-Tumor",
+            "https://www.nature.com/articles/s41588-020-00750-6",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6604205/",
+            "https://www.j-organoid.org/journal/view.php?number=95",
+            "https://www.nature.com/articles/s41467-018-05190-9"
+          ],
+          "confidence": "low (medium that no accepted criterion exists and that divergence size cannot separate biopsy from passage; low on any specific sign)",
+          "deliveries": {
+            "bd26-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-a6f5674d5ec3"
+            },
+            "bd26-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-9a8e091dda1d"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: From targeted-panel sequencing output alone (variant allele fractions from tumour read counts, and copy-number log-ratio segment amplitudes), what are the accepted signs that a sample is a purified culture or model-derived specimen (organoid, cell line, xenograft) rather than bulk patient tumour tissue, and what are the accepted ways to tell an independent later biopsy of a patient from a later passage of the same culture? ANSWER: The web does not settle this. No accepted, validated criterion was found for calling a sample culture- or model-derived from panel VAFs and log-ratio amplitudes alone, and none for separating an independent later biopsy from a later passage of one culture. Any such call is suggestive only. What the sources read do support: (1) Tumour purity is the cancer-cell fraction and is what VAF reflects, so a stroma-free culture is expected to show clonal VAFs and log-ratio amplitudes near their full-purity values. A high-purity patient tumour looks the same, so high purity is necessary but not sufficient. That expectation is an inference from the definition of purity, not a published classification rule. (2) A xenograft is not a pure sample: human stroma is quickly replaced by mouse stroma, PDX purity mimics patient tumours of the same cancer type and stays stable across passages, and mouse reads have to be separated from human reads. (3) Organoids keep the parent tumour's point mutations and copy-number alterations, but sampling bias and clonal selection reshape subclonal composition at establishment and during passaging. (4) In 1,451 PDX and matched patient samples from 509 models, copy-number alterations were strongly conserved from patient tumour through late passage, and patient-versus-PDX differences were comparable to multiregion differences within one patient. The size of genomic divergence between two serial samples therefore cannot discriminate a new biopsy from a later passage. Comparing serial samples can show shared truncal alterations (same patient and lineage), but not what an undefined sample code denotes; that needs metadata. Limits of the reading: only abstracts and introductions were retrievable for most of these papers, and the claim that subclonal change is largest at induction and early passages rests on a search excerpt. HOW SURE: low (medium that no accepted criterion exists and that divergence size cannot separate biopsy from passage; low on any specific sign). SOURCES: https://aacrjournals.org/cancerrescommun/article/2/5/353/696472/Tumor-Purity-in-Preclinical-Mouse-Tumor, https://www.nature.com/articles/s41588-020-00750-6, https://pmc.ncbi.nlm.nih.gov/articles/PMC6604205/, https://www.j-organoid.org/journal/view.php?number=95, https://www.nature.com/articles/s41467-018-05190-9."
+        },
+        {
+          "question": "In rectal cancer treatment records, what do the abbreviations TNT, CRT and SCRT conventionally stand for, and is the presence of sampleable residual tumour after such neoadjuvant treatment itself a recognised clinical response observation (for example incomplete response versus complete response), or is a formal graded measure always required?",
+          "answer": "TNT is total neoadjuvant therapy: a full course of systemic chemotherapy given before surgery in addition to SCRT or CRT, as induction or consolidation. CRT is chemoradiotherapy (chemoradiation): long-course radiotherapy with concurrent fluoropyrimidine. SCRT is short-course radiotherapy, 5 x 5 Gy (25 Gy), which is radiation without concurrent chemotherapy. All three name treatment regimens, not responses. A numeric grade is not always required: clinical response is a recognised categorical observation. Complete clinical response is defined as the absence of clinical evidence of residual tumour, and the three-tier MSK/OPRA schema classes visible tumour on endoscopy or a palpable tumour nodule as incomplete clinical response, with near-complete response between the two. Clinically evident residual tumour after TNT, CRT or SCRT therefore does correspond to a recognised 'not complete response' category. However, that category is assigned by a structured assessment (digital rectal examination, endoscopy and MRI, at about 8 +/- 4 weeks after TNT in OPRA) and recorded as such. A record that a specimen was derived after a named regimen is not that assessment. It supports at most the inference that viable tumour existed somewhere at that time; it does not separate near-complete from incomplete response, does not show the sampled lesion was the treated rectal primary, and reflects combined chemotherapy plus radiation (radiation only for SCRT), not chemotherapy sensitivity alone. Whether that inference counts as a per-patient clinical observation in the task's sense is a judgement for the director; the sources do not decide it. Limits of the reading: the 25 Gy in five fractions figure and the concurrent-fluoropyrimidine detail for CRT come partly from search excerpts of the ESMO guideline and a Thieme review that were not opened; pathological tumour regression grading was not read in this session.",
+          "sources": [
+            "https://www.ctro.science/article/S2405-6308(26)00149-7/pdf",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC10705332/",
+            "https://www.mskcc.org/clinical-updates/rectal-cancer-response-to-total-neoadjuvant-therapy-predicts-organ-preservation-and-survival-outcomes",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC9851947/"
+          ],
+          "confidence": "high for the abbreviations; medium for the response-category part",
+          "deliveries": {
+            "bd26-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-c0f49074d176"
+            },
+            "bd26-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-eafbfa23a34b"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In rectal cancer treatment records, what do the abbreviations TNT, CRT and SCRT conventionally stand for, and is the presence of sampleable residual tumour after such neoadjuvant treatment itself a recognised clinical response observation (for example incomplete response versus complete response), or is a formal graded measure always required? ANSWER: TNT is total neoadjuvant therapy: a full course of systemic chemotherapy given before surgery in addition to SCRT or CRT, as induction or consolidation. CRT is chemoradiotherapy (chemoradiation): long-course radiotherapy with concurrent fluoropyrimidine. SCRT is short-course radiotherapy, 5 x 5 Gy (25 Gy), which is radiation without concurrent chemotherapy. All three name treatment regimens, not responses. A numeric grade is not always required: clinical response is a recognised categorical observation. Complete clinical response is defined as the absence of clinical evidence of residual tumour, and the three-tier MSK/OPRA schema classes visible tumour on endoscopy or a palpable tumour nodule as incomplete clinical response, with near-complete response between the two. Clinically evident residual tumour after TNT, CRT or SCRT therefore does correspond to a recognised 'not complete response' category. However, that category is assigned by a structured assessment (digital rectal examination, endoscopy and MRI, at about 8 +/- 4 weeks after TNT in OPRA) and recorded as such. A record that a specimen was derived after a named regimen is not that assessment. It supports at most the inference that viable tumour existed somewhere at that time; it does not separate near-complete from incomplete response, does not show the sampled lesion was the treated rectal primary, and reflects combined chemotherapy plus radiation (radiation only for SCRT), not chemotherapy sensitivity alone. Whether that inference counts as a per-patient clinical observation in the task's sense is a judgement for the director; the sources do not decide it. Limits of the reading: the 25 Gy in five fractions figure and the concurrent-fluoropyrimidine detail for CRT come partly from search excerpts of the ESMO guideline and a Thieme review that were not opened; pathological tumour regression grading was not read in this session. HOW SURE: high for the abbreviations; medium for the response-category part. SOURCES: https://www.ctro.science/article/S2405-6308(26)00149-7/pdf, https://pmc.ncbi.nlm.nih.gov/articles/PMC10705332/, https://www.mskcc.org/clinical-updates/rectal-cancer-response-to-total-neoadjuvant-therapy-predicts-organ-preservation-and-survival-outcomes, https://pmc.ncbi.nlm.nih.gov/articles/PMC9851947/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd26-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd26-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd26-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd26-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd26-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 110.81196254189126,
+      "cost_usd": 0.2031169,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 104.01298650004901,
+      "cost_usd": 0.1545955,
+      "error": null
+    },
+    {
+      "agent": "bd26-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 88.633161917096,
+      "cost_usd": 0.17493389999999998,
+      "error": null
+    },
+    {
+      "agent": "bd26-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 95.1682499590097,
+      "cost_usd": 0.19819850000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 159.93392691691406,
+      "cost_usd": 0.3272178,
+      "error": null
+    },
+    {
+      "agent": "bd26-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 203.71285416698083,
+      "cost_usd": 0.5192081,
+      "error": null
+    },
+    {
+      "agent": "bd26-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 176.18125004100148,
+      "cost_usd": 0.38358639999999994,
+      "error": null
+    },
+    {
+      "agent": "bd26-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 229.76282604201697,
+      "cost_usd": 0.4678589,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

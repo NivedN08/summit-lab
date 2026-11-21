@@ -1,0 +1,196 @@
+{
+  "study": "bd11",
+  "status": "replicated",
+  "final": {
+    "agent": "bd11-team-a",
+    "team": "team-a",
+    "round": "analysis",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd11/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd11-library": "opus",
+    "bd11-team-a": "opus",
+    "bd11-team-b": "opus",
+    "bd11-team-c": "opus",
+    "bd11-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd11-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd11/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd11-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd11/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd11-team-a",
+        "bd11-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Before any ITH analysis, confirm the dataset actually contains the disease named in the hypothesis (clear cell renal cell carcinoma). Tabulate CANCER_TYPE, CANCER_TYPE_DETAILED and ONCOTREE_CODE in data_clinical_sample.txt and count rows matching renal / ccRCC / CCRCC. The library's header inspection suggested the samples may be colorectal/small-bowel cancers rather than renal; verify this yourself. Results from a different cancer type must not be used as a stand-in for ccRCC.",
+      "from": [
+        "sl-dev-panel-noise-lab2-96547cbcb53c"
+      ],
+      "reason": "Whether any ccRCC samples exist determines whether the hypothesis can be addressed at all; substituting another tumour type's heterogeneity would answer a different question.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-cd8f9668c377"
+      }
+    },
+    {
+      "text": "Intratumor heterogeneity is established by multi-region sampling of the same tumour; a single bulk sample per tumour underestimates subclones (illusion of clonality). Count samples per PATIENT_ID and check whether any extra samples are separate regions of the same primary tumour. If the data have mostly one sample per tumour, consider carefully what they can and cannot say about a claim that ITH is present in ALL tumours.",
+      "from": [
+        "sl-dev-panel-noise-lab2-e383aedcf2b0"
+      ],
+      "reason": "The hypothesis is a universal claim about ITH; the sampling design decides whether the data can test it.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-776719a43d16"
+      }
+    },
+    {
+      "text": "For patients with more than one sample, read SAMPLE_TYPE (Primary / Metastasis / Local Recurrence). Differences between a primary and a metastasis or recurrence are inter-lesion heterogeneity, not intratumour heterogeneity within one primary tumour, and should not be counted as ITH.",
+      "from": [
+        "sl-dev-panel-noise-lab2-6e16ee699958"
+      ],
+      "reason": "Prevents mislabelling multi-lesion differences as evidence of ITH.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-5b36f354779a"
+      }
+    },
+    {
+      "text": "Do not call mutations subclonal from raw VAF alone: low VAF often reflects low tumour purity or copy-number gains. If assessing clonality, compute cancer cell fraction corrected for purity (e.g. TUMOR_PURITY if present) and local copy number, or avoid clonality calls.",
+      "from": [
+        "sl-dev-panel-noise-lab2-9afb88389cc6"
+      ],
+      "reason": "Raw-VAF subclonality calls would produce spurious ITH evidence.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-d0fa9f793ad8"
+      }
+    },
+    {
+      "text": "Targeted panels such as FoundationOne cover only a few hundred genes, so each sample has too few mutations to reconstruct subclonal architecture. Check GENE_PANEL per sample in data_gene_panel_matrix.txt and mutations per sample; do not infer subclonal structure from a handful of panel mutations, and restrict cross-panel comparisons to commonly covered genes.",
+      "from": [
+        "sl-dev-panel-noise-lab2-60cf087f18d9"
+      ],
+      "reason": "The data include a FoundationOne panel; panel sequencing limits what can be inferred about heterogeneity.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-4d019b0739dc"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 0,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed the hypothesis can be checked only in ccRCC tumours, so ITH seen in other cancers is out of scope. The hypothesis is explicitly about ccRCC, so this assumption is justified."
+    ],
+    "unused_evidence": [
+      "Neither team used the mutations, CNA, seg or SV files for an ITH analysis. Every sample is intestinal or anal adenocarcinoma (COAD/READ/SBC/ADNOS/MACR/SRCCR), so these files say nothing about ccRCC. Ignoring them cannot change the label.",
+      "The 3 'Cancer of Unknown Primary' (ADNOS) samples could have hidden a renal case. Their PRIMARY_SITE is Ileum or Anus, so none is renal."
+    ],
+    "unresolved_weak_points": [
+      "Both teams' weak point was whether a generic ITH analysis would be expected. Both resolved it correctly: the claim names ccRCC, and no ccRCC tumour exists in any table."
+    ],
+    "second_readings": [
+      "I found no reasonable second reading. 'ITH is present in all ccRCCs' needs ccRCC tumours with multi-region or clonality data, and the data have no renal tumours."
+    ],
+    "verdict": "I trust the agreed 'Not verifiable' answer highly. I checked independently that all 180 samples are intestinal or anal cancers and that no file mentions renal, kidney or ccRCC. No check could produce data relevant to ccRCC, so I have no questions for either team.",
+    "questions": []
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd11-team-b",
+      "round": "analysis",
+      "reason": "agreed with bd11-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd11-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 55.480728375026956,
+      "cost_usd": 0.24038180000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 30.644705332932062,
+      "cost_usd": 0.1453586,
+      "error": null
+    },
+    {
+      "agent": "bd11-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 32.824193457956426,
+      "cost_usd": 0.1618804,
+      "error": null
+    },
+    {
+      "agent": "bd11-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 42.24671491701156,
+      "cost_usd": 0.17605800000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 38.196676291991025,
+      "cost_usd": 0.1832916,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

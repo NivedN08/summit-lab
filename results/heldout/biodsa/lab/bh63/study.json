@@ -1,0 +1,411 @@
+{
+  "study": "bh63",
+  "status": "replicated",
+  "final": {
+    "agent": "bh63-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh63/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh63-library": "opus",
+    "bh63-team-a": "opus",
+    "bh63-team-b": "opus",
+    "bh63-team-c": "opus",
+    "bh63-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh63-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh63/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh63-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh63/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh63-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh63/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh63-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh63/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh63-team-a",
+        "bh63-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh63-team-a",
+        "bh63-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Scope check before labelling: confirm in data_clinical_sample.txt that the cancer type is prostate and that data_mutations.txt supports per-gene sample frequencies. The library describes the data as a pooled prostate cancer exome (WXS) cohort of about 1000 primary and metastatic samples, with mutations, CNA and SV. If that is confirmed, a claim about the distribution of significantly mutated genes in prostate cancer concerns this study. Under the benchmark convention the label must then be True or False, decided by the analysis, and not Not verifiable.",
+      "from": [
+        "sl-lab-b1898734b074"
+      ],
+      "reason": "The task's grading treats a wrong Not verifiable as wrong. Teams need to decide scope correctly before they analyse.",
+      "fact_ids": {
+        "team-a": "sl-lab-8edad942c88b"
+      }
+    },
+    {
+      "text": "Make 'long tail' operational and quantitative; do not judge it by eye. In the sense used for cancer genes (Lawrence et al. 2014, Nature), a long tail means a few genes mutated at high frequency and many significant genes each mutated in only about 1-3% of tumours, which are detectable only in large cohorts. Compute the fraction of samples with a nonsynonymous mutation in each gene and rank-order the genes. Report how many candidate driver/significant genes are above 5%, how many are at 1-5% and how many are below 3%. Optionally, compare the fit of an exponential decay with a heavy-tailed or power-law fit.",
+      "from": [
+        "sl-lab-218673ca1dfa"
+      ],
+      "reason": "This defines the test of the hypothesis. Without an explicit definition, teams may reach arbitrary visual judgements.",
+      "fact_ids": {
+        "team-a": "sl-lab-499f498cfa9c"
+      }
+    },
+    {
+      "text": "Raw mutation frequency is not significance. Long genes (TTN, MUC16, CSMD3, LRP1B, olfactory-receptor genes) and late-replicating, low-expression genes are mutated by chance, and they swamp a raw frequency ranking. Use only nonsynonymous coding variants (Missense, Nonsense, Frame_Shift, Splice_Site, In_Frame indels). Normalise by gene length and background rate, or use a MutSigCV-like binomial test against the per-sample mutation rate, to pick the significant genes before you examine their frequency distribution. As a sanity check, compare the top genes with known prostate drivers (SPOP, TP53, FOXA1, PTEN, AR, KMT2C/D, CTNNB1, PIK3CA, ATM, BRCA2, APC, CDK12, RB1, ZMYM3). Do not count TTN-type genes as SMGs.",
+      "from": [
+        "sl-lab-1bf17ea54a84"
+      ],
+      "reason": "The hypothesis is about significantly mutated genes, not the most frequently mutated genes. Passenger long genes would distort the shape of the distribution.",
+      "fact_ids": {
+        "team-a": "sl-lab-b1aa26030ced"
+      }
+    },
+    {
+      "text": "A few hypermutated samples (MMR-deficient/MSI or POLE, common in metastatic CRPC, with TMB above about 10-20/Mb) can dominate per-gene counts and inflate the apparent set of SMGs. Inspect the per-sample nonsynonymous mutation count or the TMB column, and flag samples above about 10 times the median. Count each gene per sample (mutated yes/no), not per mutation. Repeat the distribution analysis with hypermutators excluded to check that its shape is robust.",
+      "from": [
+        "sl-lab-16c83d2886fd"
+      ],
+      "reason": "Hypermutators can change which genes look recurrent and how the frequencies are distributed.",
+      "fact_ids": {
+        "team-a": "sl-lab-228b56f628f6"
+      }
+    },
+    {
+      "text": "Prostate cancer is driven largely by copy-number changes and fusions (TMPRSS2-ERG, PTEN/RB1 deletions, AR amplification), but a claim about significantly mutated genes concerns point mutations and small indels. Base the SMG analysis on data_mutations.txt and use the CNA/SV tables only as context. Low point-mutation frequencies in genes whose main mode of alteration is copy-number change do not by themselves bear on the claim.",
+      "from": [
+        "sl-lab-c0a447fcb9c0"
+      ],
+      "reason": "This stops teams from mixing alteration types, which would change the per-gene frequency distribution being tested.",
+      "fact_ids": {
+        "team-a": "sl-lab-8023697bc2c2"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat the 1013 samples as one homogeneous cohort, but the patient table shows six pooled data sources (TCGA 457, PCF_SU2C 287, Broad/Cornell 106, AAPC 99, Nelson 36, NEPC 28) with possibly different capture kits, depth and callers; per-gene frequencies and the low-frequency tail could partly reflect source-specific calling.",
+      "Both teams use all 1013 samples as the denominator for every gene, assuming uniform exome coverage; neither checked coverage/purity, so low-purity samples could depress frequencies and inflate the apparent tail.",
+      "Both teams operationalise 'long tail' by binning frequencies (>5%, 1-5%, <3%) rather than by testing a distribution shape; neither fitted or compared a heavy-tailed form against an alternative.",
+      "Both teams pool primary (680) and metastatic (333) tumours, assuming the SMG frequency spectrum is the same in both."
+    ],
+    "unused_evidence": [
+      "PATIENT Data Source column (six source cohorts, incl. 28 NEPC neuroendocrine tumours with distinct biology) \u2014 not used to check whether tail genes are driven by one source.",
+      "SAMPLE Purity, Ploidy, Tumor/Normal Genome Coverage and TMB_NONSYNONYMOUS \u2014 not used to check detection power for low-frequency genes.",
+      "SAMPLE_TYPE (Primary vs Metastasis) \u2014 not used to check whether the tail shape holds in each group.",
+      "Mutation table Hotspot and Caller columns \u2014 not used to separate recurrent driver-like mutations from scattered passengers among tail genes.",
+      "data_cna.txt and data_sv.txt were used only as context (as advised), which is consistent with an SMG claim."
+    ],
+    "unresolved_weak_points": [
+      "Team A: the background model lacks gene length/covariates and still calls TTN, CSMD3, LRP1B; the team removed these by hand rather than fixing the model, so the 42 tail genes may contain further passengers. Only reported, not resolved.",
+      "Team B: no SMG calling at all; the tail is judged on a hand-picked literature list of 30 genes, which is circular (the list defines which genes are in the tail). Only reported, not resolved.",
+      "Denominator inconsistency: team A reports 1012 and team B 1011 samples in places, versus 1013 in the clinical table; neither explained the samples without mutations."
+    ],
+    "second_readings": [
+      "'Incidence of SMGs follows a long-tail distribution' could mean (a) per-gene mutation frequencies across SMGs are skewed with many rare SMGs (both teams' reading), or (b) the number of SMGs keeps rising as cohort size grows (discovery not saturated), which would be tested by subsampling the cohort.",
+      "It could also refer to per-patient incidence: most tumours carry few or no SMG mutations while a minority carry many."
+    ],
+    "verdict": "Fairly high trust: the claim concerns this prostate cohort and both teams find a few frequent genes plus many rare ones, robust to hypermutators. Residual risk is that team B's gene list is circular and team A's background model is crude, and neither checked pooling across six data sources, but these seem unlikely to reverse the label.",
+    "questions": [
+      {
+        "to": "bh63-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your background test still calls TTN, CSMD3 and LRP1B, which you removed by hand. Among your 42 significant genes in the 1-5% band, how many have nonsynonymous-to-synonymous ratios or hotspot/truncating patterns that distinguish them from those passengers, and does the head/tail split change if you keep only genes passing that check?",
+        "from": [
+          "sl-lab-6c0fff88a627"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-64d2e019e0d1"
+      },
+      {
+        "to": "bh63-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Stratify per-gene frequencies of your significant genes by the patient-table Data Source (six cohorts, including NEPC). Are any tail genes contributed mostly by one source, and does removing such genes change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-25378bd98834"
+      },
+      {
+        "to": "bh63-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Subsample the cohort (e.g. 25%, 50%, 75%, 100%) and rerun your significance test; does the count of significant genes keep rising with sample size, and does that bear on whether 'long tail' is the right reading of the claim?",
+        "from": [
+          "sl-lab-e150202a8757"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-4f697d97ebb0"
+      },
+      {
+        "to": "bh63-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your notes report 1012 samples while the clinical table lists 1013 matched samples; reconcile the denominator and check whether low-purity or low-coverage samples (Purity, Tumor_Genome_Coverage columns) depress tail-gene frequencies enough to change your bins.",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-3846a93780bd"
+      },
+      {
+        "to": "bh63-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your tail is judged on a 30-gene literature list, which fixes the answer in advance. Run any data-driven test that calls significant genes from this mutation table (e.g. against a synonymous or per-sample background) and report whether the frequency distribution of the genes it selects has the same shape.",
+        "from": [
+          "sl-lab-00294d9c3a47"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-58d95c2d0df8"
+      },
+      {
+        "to": "bh63-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Compute the frequencies of your SMGs separately for Primary (680) and Metastasis (333) samples and by Data Source; does the few-frequent/many-rare pattern hold in each stratum, or is it created by pooling?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-39d6eddc810c"
+      },
+      {
+        "to": "bh63-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You report 1011 samples in one place and 1013 in another. Reconcile the denominator, and check whether samples with low Purity or coverage lower the frequencies of tail genes enough to move genes across your 3% threshold.",
+        "from": [
+          "sl-lab-863c84bcaf7c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-7d4824d62a0b"
+      },
+      {
+        "to": "bh63-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Fit and compare a heavy-tailed form with a light-tailed alternative (e.g. exponential) on the rank-frequency curve of significant genes; does the comparison agree with your qualitative judgement?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-01568e18a6f8"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In cancer genomics, what is meant by the 'long tail' of significantly mutated genes, and is it defined by the per-gene frequency distribution among significant genes or by the non-saturation of gene discovery as cohort size increases?",
+          "why": "Both teams used the frequency-distribution reading only; the other reading would need a subsampling analysis.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Without gene lengths or covariates, what simple background models (e.g. synonymous-count scaling, dN/dS approaches) give acceptable control of false-positive significantly mutated genes, and what are their known biases for long genes?",
+          "why": "Team A's model leaks known passengers; knowing a better available approximation would make the tail count more trustworthy.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In cancer genomics, what is meant by the 'long tail' of significantly mutated genes, and is it defined by the per-gene frequency distribution among significant genes or by the non-saturation of gene discovery as cohort size increases?",
+          "answer": "In Lawrence et al. 2014, 'long tail' means both. It describes the observed frequency distribution: a few genes are mutated at high frequency and many significant genes at intermediate (2-20%) or low frequency. It also covers the inference that discovery is not saturated, since down-sampling showed SMG counts still rising with cohort size, so larger cohorts would find more low-frequency genes. The frequency-distribution reading is the main operational one; a subsampling curve is extra support, not a requirement. NOT web-verified: the research gateway returned HTTP 403 on every call, so this comes from prior knowledge.",
+          "sources": [
+            "https://www.nature.com/articles/nature12912 (not retrieved; gateway failed)"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bh63-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-cbaa25b084f9"
+            },
+            "bh63-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-926b543414ec"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cancer genomics, what is meant by the 'long tail' of significantly mutated genes, and is it defined by the per-gene frequency distribution among significant genes or by the non-saturation of gene discovery as cohort size increases? ANSWER: In Lawrence et al. 2014, 'long tail' means both. It describes the observed frequency distribution: a few genes are mutated at high frequency and many significant genes at intermediate (2-20%) or low frequency. It also covers the inference that discovery is not saturated, since down-sampling showed SMG counts still rising with cohort size, so larger cohorts would find more low-frequency genes. The frequency-distribution reading is the main operational one; a subsampling curve is extra support, not a requirement. NOT web-verified: the research gateway returned HTTP 403 on every call, so this comes from prior knowledge. HOW SURE: medium. SOURCES: https://www.nature.com/articles/nature12912 (not retrieved; gateway failed)."
+        },
+        {
+          "question": "Without gene lengths or covariates, what simple background models (e.g. synonymous-count scaling, dN/dS approaches) give acceptable control of false-positive significantly mutated genes, and what are their known biases for long genes?",
+          "answer": "Best simple option: a per-gene dN/dS-style test. Compare the nonsynonymous count to the gene's synonymous count scaled by the cohort-wide nonsyn:syn ratio (Poisson/binomial, or Fisher test of gene vs all other genes). Synonymous counts stand in for gene length and local mutation rate. Biases: per-gene synonymous counts are sparse, so the test is noisy and underpowered for short genes. Under a single global rate, long, late-replicating, lowly expressed genes (TTN, MUC16, CSMD3, LRP1B, RYR2, USH2A, OR genes) still pass, because their true background rate is higher than average (Lawrence 2013). Raw frequency ranking or a global-rate binomial gives many such false positives. dNdScv (Martincorena 2017: trinucleotide context plus a negative-binomial gene-rate model informed by synonymous counts) is the established approach with good false-positive control. Practical fallback: require significance under syn-scaling, use per-sample binary counts with hypermutators removed, and exclude a blacklist of known long or frequently mutated genes. NOT web-verified (gateway HTTP 403).",
+          "sources": [
+            "https://doi.org/10.1016/j.cell.2017.09.042 (not retrieved)",
+            "https://www.nature.com/articles/nature12213 (not retrieved)"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bh63-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-e7af584f82d3"
+            },
+            "bh63-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-d2071c47812f"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Without gene lengths or covariates, what simple background models (e.g. synonymous-count scaling, dN/dS approaches) give acceptable control of false-positive significantly mutated genes, and what are their known biases for long genes? ANSWER: Best simple option: a per-gene dN/dS-style test. Compare the nonsynonymous count to the gene's synonymous count scaled by the cohort-wide nonsyn:syn ratio (Poisson/binomial, or Fisher test of gene vs all other genes). Synonymous counts stand in for gene length and local mutation rate. Biases: per-gene synonymous counts are sparse, so the test is noisy and underpowered for short genes. Under a single global rate, long, late-replicating, lowly expressed genes (TTN, MUC16, CSMD3, LRP1B, RYR2, USH2A, OR genes) still pass, because their true background rate is higher than average (Lawrence 2013). Raw frequency ranking or a global-rate binomial gives many such false positives. dNdScv (Martincorena 2017: trinucleotide context plus a negative-binomial gene-rate model informed by synonymous counts) is the established approach with good false-positive control. Practical fallback: require significance under syn-scaling, use per-sample binary counts with hypermutators removed, and exclude a blacklist of known long or frequently mutated genes. NOT web-verified (gateway HTTP 403). HOW SURE: medium. SOURCES: https://doi.org/10.1016/j.cell.2017.09.042 (not retrieved), https://www.nature.com/articles/nature12213 (not retrieved)."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh63-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh63-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh63-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh63-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh63-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 53.44720112497453,
+      "cost_usd": 0.17611319999999997,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 30.732167374924757,
+      "cost_usd": 0.2082102,
+      "error": null
+    },
+    {
+      "agent": "bh63-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 39.59756487503182,
+      "cost_usd": 0.1636806,
+      "error": null
+    },
+    {
+      "agent": "bh63-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 50.829780541942455,
+      "cost_usd": 0.2168438,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 49.85378370794933,
+      "cost_usd": 0.2452378,
+      "error": null
+    },
+    {
+      "agent": "bh63-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 34.04823362501338,
+      "cost_usd": 0.1442806,
+      "error": null
+    },
+    {
+      "agent": "bh63-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 59.73351020901464,
+      "cost_usd": 0.30064219999999997,
+      "error": null
+    },
+    {
+      "agent": "bh63-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 102.70278491696808,
+      "cost_usd": 0.396216,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

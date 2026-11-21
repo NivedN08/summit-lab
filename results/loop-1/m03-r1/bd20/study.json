@@ -1,0 +1,428 @@
+{
+  "study": "bd20",
+  "status": "refereed",
+  "final": {
+    "agent": "bd20-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd20/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m03/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bd20-library": "opus",
+    "bd20-team-a": "opus",
+    "bd20-team-b": "opus",
+    "bd20-team-c": "opus",
+    "bd20-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd20-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd20/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd20-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd20/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd20-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd20/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd20-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd20/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd20-team-a",
+        "bd20-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd20-team-a",
+        "bd20-team-b"
+      ],
+      "fields": {
+        "label": false
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Sample IDs appear to encode lineage: SAxxxT is the patient tumour, X0/X1 the first engraftment passage, X2 and higher later serial passages, and letters (A-G) parallel or sibling xenografts. Parse SAMPLE_ID into patient, passage and branch, and find which patients have both a T sample and an earliest-passage (X0/X1) sample. The hypothesis concerns initial engraftment, so the core comparison is T against the earliest passage. Treat changes in later passages as serial-passage drift and analyse them separately.",
+      "from": [
+        "sl-m03-r1-de0bc30f6aaa"
+      ],
+      "reason": "Pooling later passages with first engraftment would test a different claim than the one stated.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-bde85581f514"
+      }
+    },
+    {
+      "text": "In data_mutations.txt, t_ref_count and t_alt_count look empty for every row, so VAF-based clonal clustering (PyClone-style) is probably not possible. Confirm this yourself. Missing read counts do not by themselves mean the question is untestable: within each patient, you can still compare tumour and xenograft for presence or absence of SNVs and for copy-number segments (data_cna_hg19.seg, data_log2_cna.txt). Decide for yourself whether that evidence is enough.",
+      "from": [
+        "sl-m03-r1-1c4889f10f1f"
+      ],
+      "reason": "Tells the team which data modalities can measure clonal shifts, so they do not drop a usable route or try a VAF method the data cannot support.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-2251aac37a32"
+      }
+    },
+    {
+      "text": "SOMATIC_STATUS may differ by sample class: patient tumours 'Unmatched' (no normal) and xenografts 'Matched'. If so, germline SNPs stay in the tumour calls and would show up as false 'mutations lost in the xenograft'. Tabulate SOMATIC_STATUS by SAMPLE_CLASS. Before calling a variant lost, remove likely germline variants (dbSNP IDs, population allele-frequency or FILTER fields), and give more weight to CNA and shared-variant evidence.",
+      "from": [
+        "sl-m03-r1-df78e451842e"
+      ],
+      "reason": "An asymmetric germline filter can manufacture apparent T-vs-X differences.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-f22dfe560328"
+      }
+    },
+    {
+      "text": "Compare tumour and xenograft only within the same sequencing type (check SEQUENCING_TYPE or the -targeted/-whole_genome ID suffixes and the gene panel matrix), and only at regions both assays cover. Otherwise mutations will appear gained or lost because of assay coverage, not biology.",
+      "from": [
+        "sl-m03-r1-3a6f85f02a8b"
+      ],
+      "reason": "Mixed assays are a direct source of artefactual differences.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-d128a77dfff8"
+      }
+    },
+    {
+      "text": "Mouse stroma in xenografts and human stroma in primary tumours change tumour purity, which scales log2 copy-number amplitudes across the whole genome. Tell genome-wide amplitude shifts (purity) apart from discrete events: new or lost breakpoints, arm-level or focal gains and losses. Count only the discrete events as clonal changes, or rescale for purity before comparing amplitudes.",
+      "from": [
+        "sl-m03-r1-05ef1c0e2e03"
+      ],
+      "reason": "Purity differences can look like copy-number changes.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-0f210bcc6ded"
+      }
+    },
+    {
+      "text": "Clonal selection means the clonal makeup shifts: some subclones expand and others are lost. A single missing variant does not show it, because depth and sampling noise also cause drop-outs. Summarise per patient whether T-vs-X differences are systematic (many co-occurring SNV and CNA changes) or a few isolated variants, and check whether the same changes recur in sibling xenografts (A/B/C). Report how many patients show each pattern, and judge the hypothesis on that summary.",
+      "from": [
+        "sl-m03-r1-5cdc4a608be9"
+      ],
+      "reason": "Sets the evidence standard: what counts as selection rather than noise, at patient level.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-2077366b961d"
+      }
+    },
+    {
+      "text": "The hypothesis names both primary and metastatic tumours. Look for any column or ID convention in data_clinical_sample.txt that marks whether the source tumour was primary or metastatic; one may not exist. If it does not, say in your reasoning that the two cannot be separated, and weigh that limitation against what the engraftment comparison over all patients shows.",
+      "from": [
+        "sl-m03-r1-98977b8bb0af"
+      ],
+      "reason": "The team needs to know about this possible gap in the variables and handle it openly when choosing a label.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-6c6786ce3f01"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat any bulk difference between the patient tumour (T) and a xenograft (X), whether in WGS SNV presence/absence or in CNA profile, as evidence of clonal selection. Neither set a noise baseline (e.g. the divergence between two xenografts of the same patient, or between parallel lineages) showing that T-vs-X differences go beyond technical or calling variation.",
+      "Both assume the 'earliest available WGS xenograft' stands for initial engraftment. For many patients the only WGS xenograft is a late passage (e.g. X3, X4, X5), so changes from engraftment are mixed up with drift during serial passaging.",
+      "Both assume that T and X calls can be compared at the same sensitivity, though tumours are SOMATIC_STATUS 'Unmatched' and xenografts 'Matched'. The asymmetric germline filtering and the possibility of mouse-read contamination could themselves create T-only and X-only variants.",
+      "Both judge the hypothesis over pooled patients even though it names 'primary and metastatic' tumours, and no column separates the two."
+    ],
+    "unused_evidence": [
+      "data_gene_panel_matrix.txt shows the targeted samples assigned the 'WGS' panel. This supports the teams' reading that the targeted rows are WGS positions genotyped everywhere. But the targeted rows also record the full passage and lineage tree (X1A\u2013X2E, etc.), and neither team used that tree to tell engraftment-time changes from later ones.",
+      "Some patients have two WGS xenografts (e.g. SA429 X2A and X5A, SA501 X1A and X5A). These could give an X-vs-X divergence baseline. Neither team used them as a control for how large a T-vs-X difference counts as selection.",
+      "Team B used only gene-level log2 CNA and Team A used only the segment file. Neither checked whether the two CNA sources agree on which T-X pairs diverge.",
+      "TMB_NONSYNONYMOUS differs between T and X WGS samples, but is constant across the targeted samples of each patient. Neither team commented on this."
+    ],
+    "unresolved_weak_points": [
+      "Team A: 'Only 3 of 7 first-passage pairs show discrete CNA changes' and purity slopes run from 0.95 to 3.7. Team A only reported this. It did not test whether those 3 changes exceed what purity or sampling noise would produce.",
+      "Team B: 'X-only mutations could come from calling-sensitivity differences.' Team B did not resolve this. No check stratified X-only variants by matched versus unmatched calling, or by mutation class.",
+      "Both: there is no primary/metastatic label. Neither team asked whether the claim about both source types can be judged at all, or what that means for the label."
+    ],
+    "second_readings": [
+      "'During the initial engraftment' may mean only the T\u2192first-passage step. Changes seen only at X3\u2013X5 would then not count, and the patients with a true first-passage WGS sample would form the relevant subset.",
+      "'Clonal selection occurs' can be read as generally or typically (in most engraftments) or as existentially (in at least some). With heterogeneous results (3/7 pairs; divergence from 0.002 to 0.36), the label may depend on which reading is taken.",
+      "'Primary and metastatic breast tumors' may require evidence in both groups. If the group identity cannot be recovered from the data, part of the claim may be untestable."
+    ],
+    "verdict": "Moderate trust. Both teams correctly found the informative data (WGS SNVs and CNA), but each one inferred selection from raw T-vs-X differences. Neither had a noise baseline or purity control, and both conflated late passages with initial engraftment, which is the same blind spot.",
+    "questions": [
+      {
+        "to": "bd20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For patients with two WGS xenografts (e.g. SA429 X2A vs X5A, SA501 X1A vs X5A), compute your purity-rescaled discrete-CNA bin count between the two xenografts, and between T and first passage. Do the 3 'changed' T-vs-first-passage pairs exceed this X-vs-X baseline, and does the answer change your method or label?",
+        "from": [
+          "sl-m03-r1-dff52f34366f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-911eabd6b7b7"
+      },
+      {
+        "to": "bd20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: List, for each of your 7 pairs, the passage number of the xenograft actually compared. If you restrict to pairs with a passage of X0/X1 only, how many show discrete changes? Does the T-vs-X1 count differ from the T-vs-late-passage count enough to place the changes at engraftment rather than serial passaging?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-d8f51da71768"
+      },
+      {
+        "to": "bd20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Re-run your discrete-CNA call with thresholds of 0.3 and 0.5 and with 2.5 Mb and 10 Mb bins. Does the number of pairs with changes stay stable? Does it track the purity slope (e.g. do only high-slope pairs show changes), and does that change how you weigh the CNA evidence?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-b074ed2eec38"
+      },
+      {
+        "to": "bd20-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Check whether any variable or sample-ID convention in the files can separate primary from metastatic sources. If none can, does your label rest on the claim being judged for both source types or for the pooled set, and is that defensible?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-4fac6e53edf4"
+      },
+      {
+        "to": "bd20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Compute your CNA divergence (fraction of genes with |diff|>0.5, and correlation) between two WGS xenografts of the same patient (SA429 X2A vs X5A, SA501 X1A vs X5A) as a noise baseline. How many T-vs-first-passage pairs exceed it, and does this change your method?",
+        "from": [
+          "sl-m03-r1-533f87d14fa6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-867a410e87b7"
+      },
+      {
+        "to": "bd20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate X-only and T-only WGS variant counts per pair against the xenograft's passage number and against the T-vs-X CNA divergence. If X-only counts are similar across pairs regardless of CNA divergence (consistent with a matched/unmatched calling artefact), does that change how much weight you give mutation differences?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-20b7bc2db576"
+      },
+      {
+        "to": "bd20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Recompute the divergent-gene fraction from data_cna_hg19.seg after correcting for differing tumour purity (e.g. scaling X to T by regression slope). Do the high-divergence pairs remain high, and does this change your conclusion that selection is strong in some engraftments?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-f2857da76779"
+      },
+      {
+        "to": "bd20-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Restrict to pairs where the WGS xenograft is truly the first passage (X0/X1). How many show divergence above your baseline? Does the label still hold for 'initial engraftment' as opposed to serial passaging?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-436ee7c79cde"
+      }
+    ]
+  },
+  "referee": {
+    "difference": "Both teams use the same data and pairs (tumour vs first-passage xenograft, WGS CNA after purity rescaling). They differ in the noise reference. Y counted residual divergence against sibling xenograft-vs-xenograft divergence and called T-to-X1 changes noise, so False. X compared against technical noise and found discrete contiguous CNA shifts at engraftment in a subset of patients, so True.",
+    "test": "test.py: 1 Mb bins from the seg file, regression of X on T (degree 1 and degree 3) to remove purity and nonlinear compression, then per-arm mean residuals compared with bin-level noise estimated from the MAD of adjacent-bin differences, which is insensitive to real step changes. An arm is flagged if |mean| > 0.25 and > 4 sigma. Run on 7 first-passage pairs, later passages and 2 X-vs-X pairs.",
+    "expected_if_x": "At least some first-passage pairs show whole-arm residual steps far above the bin-level noise floor, and the concordant pair shows none.",
+    "expected_if_y": "After purity correction, first-passage residuals are scattered noise with no arm-level steps beyond about 4 sigma.",
+    "outcome": "Linear fit: 6 of 7 first-passage pairs have 1-3 arm-level steps of 0.26-0.45 log2 against sigma 0.011-0.03 (SA493 15q -0.41, 19p -0.31; SA535 6p -0.39, 8p -0.45; SA536 17p/17q; SA533 9p; SA534 6p; SA531 13q). SA501 has 0. A cubic fit leaves the same calls. Later passages have 5-10 arms. X-vs-X pairs have 3-8 arms.",
+    "pick": "X",
+    "reason": "Discrete arm-level copy-number shifts at initial engraftment survive linear and nonlinear purity correction and lie far above technical noise. The method yields 0 for a concordant pair, so it does not flag every pair. Y's baseline (sibling xenograft divergence) is itself clonal evolution, not noise, so 'no larger than baseline' does not show absence of selection.",
+    "own_answer": null,
+    "picked_agent": "bd20-team-a",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "bd20-team-a",
+      "Y": "bd20-team-b"
+    }
+  },
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In patient-derived xenograft genomics, what standard approaches distinguish true clonal selection between a patient tumour and an early-passage xenograft from technical artefacts (tumour purity differences, mouse-read contamination, matched vs unmatched-normal calling) when only bulk presence/absence of variants and copy-number segments are available, without allele frequencies?",
+          "why": "Both teams flagged this artefact risk but neither resolved it. A standard control would show whether their T-vs-X differences count as evidence.",
+          "passed": false,
+          "reasons": [
+            "contains another team's value for \"label\""
+          ]
+        },
+        {
+          "question": "How is the magnitude of copy-number divergence between a tumour and its xenograft usually judged against baseline variability, e.g. by comparing replicate xenografts or parallel lineages, and what divergence levels are typically treated as meaningful?",
+          "why": "Neither team set a threshold or noise baseline, so the label depends on an arbitrary cut-off.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "How is the magnitude of copy-number divergence between a tumour and its xenograft usually judged against baseline variability, e.g. by comparing replicate xenografts or parallel lineages, and what divergence levels are typically treated as meaningful?",
+          "answer": "NOT SETTLED BY THE WEB: the research gateway returned HTTP 403 on all 3 calls (2 searches, 1 contents), so no page was read. Unverified domain knowledge: the usual baseline is the copy-number divergence between sibling/replicate xenografts or parallel lineages from the same tumour, and/or multi-region spatial heterogeneity within the primary. PDXNet-style analysis (Woo et al. 2021, Nat Genet) found PDX-vs-tumour CN correlation comparable to between-region correlation in the same tumour. Common metrics are Pearson correlation of gene- or segment-level log2 ratios, and the fraction of genome whose gain/loss state differs, with gain/loss called at about |log2| >= 0.2-0.3. Ben-David et al. 2017 (Nat Genet) treated arm-level or large events gained or lost after engraftment as real evolution. There is no standard numeric cut-off. A practical rule is that T-vs-X divergence counts as meaningful only if it clearly exceeds X-vs-X sibling divergence, is made of discrete events (new or lost segments or arms) rather than a genome-wide amplitude shift from purity, and recurs across sibling xenografts.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bd20-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-f5f5a6ca7110"
+            },
+            "bd20-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-89ae2140c153"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How is the magnitude of copy-number divergence between a tumour and its xenograft usually judged against baseline variability, e.g. by comparing replicate xenografts or parallel lineages, and what divergence levels are typically treated as meaningful? ANSWER: NOT SETTLED BY THE WEB: the research gateway returned HTTP 403 on all 3 calls (2 searches, 1 contents), so no page was read. Unverified domain knowledge: the usual baseline is the copy-number divergence between sibling/replicate xenografts or parallel lineages from the same tumour, and/or multi-region spatial heterogeneity within the primary. PDXNet-style analysis (Woo et al. 2021, Nat Genet) found PDX-vs-tumour CN correlation comparable to between-region correlation in the same tumour. Common metrics are Pearson correlation of gene- or segment-level log2 ratios, and the fraction of genome whose gain/loss state differs, with gain/loss called at about |log2| >= 0.2-0.3. Ben-David et al. 2017 (Nat Genet) treated arm-level or large events gained or lost after engraftment as real evolution. There is no standard numeric cut-off. A practical rule is that T-vs-X divergence counts as meaningful only if it clearly exceeds X-vs-X sibling divergence, is made of discrete events (new or lost segments or arms) rather than a genome-wide amplitude shift from purity, and recurs across sibling xenografts. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd20-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd20-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd20-team-b",
+      "round": "challenge",
+      "reason": "the referee's test supported the other answer: Discrete arm-level copy-number shifts at initial engraftment survive linear and nonlinear purity correction and lie far above technical noise. The method yields 0 for a concordant pair, so it does not flag every pair. Y's baseline (sibling xenograft divergence) is itself clonal evolution, not noise, so 'no larger than baseline' does not show absence of selection."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd20-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 80.14776137506124,
+      "cost_usd": 0.212917,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 54.90169887500815,
+      "cost_usd": 0.2261538,
+      "error": null
+    },
+    {
+      "agent": "bd20-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 111.64808754203841,
+      "cost_usd": 0.27251,
+      "error": null
+    },
+    {
+      "agent": "bd20-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 132.75523825001437,
+      "cost_usd": 0.39984899999999995,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 81.76696520892438,
+      "cost_usd": 0.29890479999999997,
+      "error": null
+    },
+    {
+      "agent": "bd20-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 43.81249154207762,
+      "cost_usd": 0.14578419999999997,
+      "error": null
+    },
+    {
+      "agent": "bd20-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 90.20190154202282,
+      "cost_usd": 0.3794192,
+      "error": null
+    },
+    {
+      "agent": "bd20-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 113.54543375002686,
+      "cost_usd": 0.40387219999999996,
+      "error": null
+    },
+    {
+      "agent": "bd20-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 72.72332866606303,
+      "cost_usd": 0.255263,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,446 @@
+{
+  "study": "bd24",
+  "status": "replicated",
+  "final": {
+    "agent": "bd24-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd24/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "checks": [
+      "recheck_on_agreed_nv"
+    ],
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m02/prompts",
+    "reuse_first_round": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1"
+  },
+  "models": {
+    "director": "opus",
+    "bd24-library": "opus",
+    "bd24-team-a": "opus",
+    "bd24-team-b": "opus",
+    "bd24-team-c": "opus",
+    "bd24-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd24-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd24/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd24-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd24/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd24-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd24/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd24-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd24/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd24-team-a",
+        "bd24-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd24-team-a",
+        "bd24-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The hypothesis has two parts: KIT mutation enrichment AND focal amplification enrichment in Triple_WT. Check the provided tables (column headers of all files) for any copy-number, CNA, segment or GISTIC field. Focal amplifications need segmented copy-number data; they cannot be inferred from point-mutation calls, and ABSOLUTE ploidy is a whole-genome measure, not a focal amplification. Do not use ploidy or mutation counts as a stand-in. In your reasoning, say which part of the claim the data can test and which it cannot, and choose the label by applying the task's label definitions to that.",
+      "from": [
+        "sl-dev-panel-noise-lab1-cba5557ac506"
+      ],
+      "reason": "The claim has two parts, and one part may not be testable with these files. Teams need to check this before they let a proxy variable answer that part.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-2ddb803581bd"
+      }
+    },
+    {
+      "text": "data_clinical_sample.txt already has subtype labels in MUTATION_TYPE (BRAF_Hotspot_Mutants ~150, RAS_Hotspot_Mutants ~92, NF1_Any_Mutants ~28, Triple_WT ~46, NA ~43). Use these labels instead of re-deriving subtypes. Drop NA samples from both groups. Test Triple_WT against all other labelled samples and also against each subtype separately. State which comparison group you used. KIT is reported as roughly mutually exclusive with BRAF/NRAS/NF1.",
+      "from": [
+        "sl-dev-panel-noise-lab1-85baf2ddeaf7"
+      ],
+      "reason": "If teams re-derive subtypes or keep the NA samples in the comparison group, the enrichment result changes.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-13d2932e8f8d"
+      }
+    },
+    {
+      "text": "data_mutations.txt (274 MB, WGS) contains non-coding and silent variants (Intron, IGR, UTR, Flank, RNA, Silent). When counting KIT mutations, keep only non-silent coding classes: Missense, Nonsense, Frame_Shift_Del/Ins, In_Frame_Del/Ins, Splice_Site, Translation_Start_Site, Nonstop. Count each sample at most once per gene. Read the file in chunks with usecols.",
+      "from": [
+        "sl-dev-panel-noise-lab1-8d83357e9aea"
+      ],
+      "reason": "Counting non-coding WGS calls inflates KIT frequencies in every subtype, and with a file this large the analysis needs to be run in chunks.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-6cf595c2701d"
+      }
+    },
+    {
+      "text": "Melanoma is UV-hypermutated, so many KIT calls are passenger mutations whose rate follows TMB. Driver KIT mutations cluster in hotspots: exon 11 (e.g. V559, L576P), exon 13 (K642E), exon 17 (D816, N822) and exon 9. Report two frequencies per subtype: any non-silent KIT, and KIT hotspot/driver. Compare TMB between subtypes. If TMB differs, also run a logistic regression of KIT status on subtype adjusted for log TMB.",
+      "from": [
+        "sl-dev-panel-noise-lab1-80b38e73b8fc"
+      ],
+      "reason": "TMB can confound KIT enrichment differently in different subtypes. Separating driver from passenger KIT calls changes how the result should be read.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-a318823efa8f"
+      }
+    },
+    {
+      "text": "The groups are small (Triple_WT ~46) and KIT mutations are rare, so use a two-sided Fisher exact test rather than chi-square. Report counts, percentages, the odds ratio with a CI, and the p-value. Correct for multiple testing (BH or Bonferroni) when you run several subtype comparisons. With small counts, a non-significant result means low power.",
+      "from": [
+        "sl-dev-panel-noise-lab1-808b3e699d0f"
+      ],
+      "reason": "The choice of test and the reading of the result matter when counts are this sparse.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-b026391b5503"
+      }
+    },
+    {
+      "text": "Check denominators. data_gene_panel_matrix.txt marks some samples (~13) as NA, meaning not sequenced for mutations. MAF Tumor_Sample_Barcode may not match the clinical SAMPLE_ID format (e.g. -01 vs -06 suffix), and some patients have more than one sample. A sample with no KIT row counts as wildtype only if it was sequenced. Count the overlap between the MAF and the clinical IDs, and use one sample per patient or report the duplicates.",
+      "from": [
+        "sl-dev-panel-noise-lab1-7fd9677d3f07"
+      ],
+      "reason": "ID mismatches and unsequenced samples give wrong mutation frequencies.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-daf91c9b3baf"
+      }
+    },
+    {
+      "text": "data_mutsig.txt holds MutSig significance statistics for the whole cohort, not results by subtype. A significant KIT q-value does not show enrichment in Triple_WT. Base the subtype test on the per-sample MAF joined to MUTATION_TYPE.",
+      "from": [
+        "sl-dev-panel-noise-lab1-03ac78f3f016"
+      ],
+      "reason": "It stops teams from taking cohort-wide significance as evidence of subtype enrichment.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-19f95682f4d4"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assume that a conjunctive claim ('KIT mutations AND focal amplifications') can be labelled True when only one conjunct is testable. Neither team set out a rule from the task's label definitions for a claim that is half untestable, and team A says a stricter reading gives Not verifiable.",
+      "Both take MUTATION_TYPE as given. Triple_WT is defined by having no BRAF/RAS/NF1 driver, and KIT drivers are largely mutually exclusive with those genes. So part of the 'enrichment against the other subtypes' may follow from how the groups are built. Neither team tested whether the result holds against a comparator that is not defined by competing drivers.",
+      "Both treat every non-silent KIT call as equivalent evidence (team B outright; team A also ran a hotspot-only test). In a UV-hypermutated cohort, team B's count of 6 KIT-mutant Triple_WT samples was not split into drivers and passengers.",
+      "Both assume the 43 samples with MUTATION_TYPE=NA are missing at random. If some are unclassified wild-type tumours, dropping them changes the Triple_WT denominator."
+    ],
+    "unused_evidence": [
+      "UV_SIGNATURE in data_clinical_patient.txt (264 'UV signature', 54 'not UV'). Triple_WT may be enriched for non-UV (acral or mucosal) tumours, where KIT is a known driver. Neither team looked at whether the KIT enrichment is tied to UV status or to site of primary.",
+      "SAMPLE_TYPE (266 metastasis, 67 primary) and REGIONAL_VS_PRIMARY. The subtypes may differ in their mix of primary and metastatic samples. Neither team checked this.",
+      "The MAF Hotspot column and the t_alt_count/t_ref_count columns (VAF). Team B did not use them to tell driver KIT calls from subclonal or passenger ones.",
+      "ABSOLUTE_EXTRACT_PLOIDY and the TCGAscape/Tumorscape_Amplification_Peaks MAF annotations. Both teams correctly rejected these as measures of focal amplification, but neither showed that it had inspected what the peak columns contain (for example whether KIT/4q12 is annotated as a peak gene) before rejecting them."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the untestable focal-amplification half of the claim as their weakest point and only reported it. Neither turned it into a documented rule for choosing between True and Not verifiable.",
+      "Team B ran no TMB adjustment and no hotspot-only analysis. Its result rests on 6 KIT-mutant Triple_WT samples, and it did not show how robust that is, for example under leave-one-out or with hotspot calls only.",
+      "Team A's TMB-adjusted logit: Triple_WT TMB is far lower than in the other groups, so adjusting means extrapolating across TMB ranges that barely overlap. Its sensitivity to that model form was not checked."
+    ],
+    "second_readings": [
+      "'Characterized by' could mean enrichment relative to the other subtypes, which both teams tested. It could also mean the feature is common or defining within Triple_WT, which is a question of absolute prevalence. A low absolute KIT rate could support the first reading and not the second.",
+      "'Focal amplifications' could mean focal amplifications in general (copy-number burden) or focal amplification of KIT/4q12 specifically. Either way it needs copy-number data, but the second reading ties the two parts of the claim together.",
+      "The claim is a conjunction. Under the label definitions, one reading is that the claim as a whole is Not verifiable when one required variable is absent. The other is that it is True when the testable part is supported. The answer depends on which reading is taken."
+    ],
+    "verdict": "I trust the KIT-enrichment finding moderately (team A checked it against hotspots and TMB; team B did not). I trust the agreed label less: half the conjunctive claim is untestable, and neither team resolved how the label definitions apply to that, so True versus Not verifiable is still open.",
+    "questions": [
+      {
+        "to": "bd24-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Write down, part by part, which variable in the files tests each half of the hypothesis (KIT mutation; focal amplification), then apply the task's three label definitions to that table. Does that written rule still give your current label, or does it give a different one?",
+        "from": [
+          "sl-m02-r1-2ddb803581bd"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-0feefbd8fcfb"
+      },
+      {
+        "to": "bd24-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate MUTATION_TYPE with UV_SIGNATURE (and with SAMPLE_TYPE), then rerun your Triple_WT vs other KIT comparison within UV-signature tumours only and with UV status as a covariate. Does the KIT enrichment survive, and does that change your method or your label?",
+        "from": [
+          "sl-m02-r1-a318823efa8f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-04cc701953ff"
+      },
+      {
+        "to": "bd24-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: How far do the TMB distributions of Triple_WT and the other subtypes overlap? Rerun the KIT comparison within a matched or shared TMB range, or with an exact or Firth logit, and say whether the adjusted result still holds without extrapolating.",
+        "from": [
+          "sl-m02-r1-a318823efa8f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-14b72941330f"
+      },
+      {
+        "to": "bd24-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Look at the 43 samples with MUTATION_TYPE=NA. How many carry BRAF/NRAS/HRAS/KRAS/NF1 mutations in the MAF, and how many KIT? If some look wild-type, does putting them in or leaving them out change the Triple_WT KIT frequency or the test?",
+        "from": [
+          "sl-m02-r1-13d2932e8f8d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-32e871bdfe91"
+      },
+      {
+        "to": "bd24-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: For each of the 6 KIT-mutant Triple_WT samples, list Variant_Classification, protein change, the MAF Hotspot flag, VAF and the sample's TMB. Rerun the Fisher test on hotspot/driver KIT calls only and with a TMB-adjusted model. Does the enrichment hold, and does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-84b74219b168"
+      },
+      {
+        "to": "bd24-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Write down, part by part, which variable in the files tests each half of the hypothesis (KIT mutation; focal amplification), then apply the task's three label definitions to that table. Does that written rule still give your current label, or does it give a different one?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-8fe3b613b8e6"
+      },
+      {
+        "to": "bd24-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate MUTATION_TYPE with UV_SIGNATURE and SAMPLE_TYPE, then repeat the KIT comparison within UV-signature tumours, or adjusted for UV status. Does the enrichment survive, and does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-6c44a32aed41"
+      },
+      {
+        "to": "bd24-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Run a leave-one-out check: drop each KIT-mutant Triple_WT sample in turn and recompute the Fisher p-value and odds ratio, and report the absolute KIT prevalence in Triple_WT with a 95% CI. Is the result robust enough to carry the label, given the 'characterized by' wording?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-2828b7a55eae"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "When a scientific claim joins two components with 'and', and the available data can test only one of them, how do benchmark or fact-checking conventions usually label the claim: supported, or not verifiable/insufficient evidence?",
+          "why": "Both teams' label depends on this convention, and neither team settled it.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In the genomic classification of cutaneous melanoma into BRAF, RAS, NF1 and triple-wild-type subtypes, are KIT alterations and focal amplifications described as features of the triple-wild-type group because of enrichment relative to other subtypes, or because of high absolute prevalence? And are triple-wild-type tumours over-represented among non-UV (acral/mucosal) sites?",
+          "why": "This decides which reading of 'characterized by' to test and whether UV status confounds the KIT comparison.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Do MAF annotation columns such as 'TCGAscape_Amplification_Peaks' or 'Tumorscape_Amplification_Peaks' (Oncotator) describe the copy-number status of the individual sample, or do they list whether the gene lies in a pan-cancer amplification peak?",
+          "why": "This confirms whether any per-sample focal-amplification information exists in the mutation file, which both teams assumed it does not.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When a scientific claim joins two components with 'and', and the available data can test only one of them, how do benchmark or fact-checking conventions usually label the claim: supported, or not verifiable/insufficient evidence?",
+          "answer": "Fact-verification benchmarks (FEVER, FEVEROUS) use SUPPORTED / REFUTED / NOTENOUGHINFO. A claim is NOTENOUGHINFO when the evidence cannot verify it, and FEVEROUS explicitly asks for partial evidence on NOTENOUGHINFO claims. So a claim where only some parts can be verified is labelled NEI, not Supported. If the testable part is contradicted, the claim is REFUTED. No page I read states an explicit rule for 'X and Y' claims. The task's own definition of 'Not verifiable' (the data hold no relevant variables) is narrower than NEI and should take precedence over the benchmark convention.",
+          "sources": [
+            "https://aclanthology.org/2021.fever-1.1.pdf",
+            "https://aclanthology.org/N18-1074.pdf"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd24-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-1e4a6fb946a4"
+            },
+            "bd24-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-9847e0cbfbcd"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a scientific claim joins two components with 'and', and the available data can test only one of them, how do benchmark or fact-checking conventions usually label the claim: supported, or not verifiable/insufficient evidence? ANSWER: Fact-verification benchmarks (FEVER, FEVEROUS) use SUPPORTED / REFUTED / NOTENOUGHINFO. A claim is NOTENOUGHINFO when the evidence cannot verify it, and FEVEROUS explicitly asks for partial evidence on NOTENOUGHINFO claims. So a claim where only some parts can be verified is labelled NEI, not Supported. If the testable part is contradicted, the claim is REFUTED. No page I read states an explicit rule for 'X and Y' claims. The task's own definition of 'Not verifiable' (the data hold no relevant variables) is narrower than NEI and should take precedence over the benchmark convention. HOW SURE: medium. SOURCES: https://aclanthology.org/2021.fever-1.1.pdf, https://aclanthology.org/N18-1074.pdf."
+        },
+        {
+          "question": "In the genomic classification of cutaneous melanoma into BRAF, RAS, NF1 and triple-wild-type subtypes, are KIT alterations and focal amplifications described as features of the triple-wild-type group because of enrichment relative to other subtypes, or because of high absolute prevalence? And are triple-wild-type tumours over-represented among non-UV (acral/mucosal) sites?",
+          "answer": "Enrichment. The TCGA paper says 'Integrative analysis reveals enrichment of KIT mutations and focal amplifications and complex structural rearrangements as a feature of the Triple-WT subtype', which is relative to the BRAF/RAS/NF1 subtypes, not high absolute prevalence. The TCGA cohort was cutaneous only, with all 67 primaries from non-glabrous skin, so acral/mucosal tumours were not part of that classification. Triple-WT tumours do carry the UV signature much less often: about 30%, against over 90% in the other subtypes. That figure comes from the Rajkumar & Watson 2016 review and I saw it only in a search snippet, because the page tool cut the text off before that section. UV status is therefore a plausible confounder.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4580370/",
+            "https://www.cell.com/cell/fulltext/S0092-8674(15)00634-0",
+            "https://gdc.cancer.gov/about-data/publications/skcm_2015",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4947706/"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd24-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-a5caf6a48a7a"
+            },
+            "bd24-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-4a8d0596259b"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In the genomic classification of cutaneous melanoma into BRAF, RAS, NF1 and triple-wild-type subtypes, are KIT alterations and focal amplifications described as features of the triple-wild-type group because of enrichment relative to other subtypes, or because of high absolute prevalence? And are triple-wild-type tumours over-represented among non-UV (acral/mucosal) sites? ANSWER: Enrichment. The TCGA paper says 'Integrative analysis reveals enrichment of KIT mutations and focal amplifications and complex structural rearrangements as a feature of the Triple-WT subtype', which is relative to the BRAF/RAS/NF1 subtypes, not high absolute prevalence. The TCGA cohort was cutaneous only, with all 67 primaries from non-glabrous skin, so acral/mucosal tumours were not part of that classification. Triple-WT tumours do carry the UV signature much less often: about 30%, against over 90% in the other subtypes. That figure comes from the Rajkumar & Watson 2016 review and I saw it only in a search snippet, because the page tool cut the text off before that section. UV status is therefore a plausible confounder. HOW SURE: high. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC4580370/, https://www.cell.com/cell/fulltext/S0092-8674(15)00634-0, https://gdc.cancer.gov/about-data/publications/skcm_2015, https://pmc.ncbi.nlm.nih.gov/articles/PMC4947706/."
+        },
+        {
+          "question": "Do MAF annotation columns such as 'TCGAscape_Amplification_Peaks' or 'Tumorscape_Amplification_Peaks' (Oncotator) describe the copy-number status of the individual sample, or do they list whether the gene lies in a pan-cancer amplification peak?",
+          "answer": "The pages I could read do not settle this. Oncotator adds gene-centric annotations drawn from public resources, and Tumorscape is a Broad portal of GISTIC peaks from thousands of pooled datasets. So these columns are almost certainly gene-level flags (whether the gene lies in a pan-cancer amplification peak), not per-sample copy number. Teams can check this directly: if a gene has the same value on every mutation row across samples, the column is gene-level and holds no per-sample focal-amplification information.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7350419/",
+            "https://www.oncotarget.com/article/6128/text/",
+            "https://atlasgeneticsoncology.org/deep-insight/20145/cancer-cytogenomics-resources"
+          ],
+          "confidence": "low",
+          "deliveries": {
+            "bd24-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-566b6914914f"
+            },
+            "bd24-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-3e818e5c155e"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Do MAF annotation columns such as 'TCGAscape_Amplification_Peaks' or 'Tumorscape_Amplification_Peaks' (Oncotator) describe the copy-number status of the individual sample, or do they list whether the gene lies in a pan-cancer amplification peak? ANSWER: The pages I could read do not settle this. Oncotator adds gene-centric annotations drawn from public resources, and Tumorscape is a Broad portal of GISTIC peaks from thousands of pooled datasets. So these columns are almost certainly gene-level flags (whether the gene lies in a pan-cancer amplification peak), not per-sample copy number. Teams can check this directly: if a gene has the same value on every mutation row across samples, the column is gene-level and holds no per-sample focal-amplification information. HOW SURE: low. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC7350419/, https://www.oncotarget.com/article/6128/text/, https://atlasgeneticsoncology.org/deep-insight/20145/cancer-cytogenomics-resources."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd24-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd24-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd24-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd24-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 62.479691416956484,
+      "cost_usd": 0.28400499999999995,
+      "error": null
+    },
+    {
+      "agent": "bd24-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 96.64250837499276,
+      "cost_usd": 0.424734,
+      "error": null
+    },
+    {
+      "agent": "bd24-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 72.80349550000392,
+      "cost_usd": 0.31817320000000004,
+      "error": null
+    },
+    {
+      "agent": "bd24-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 86.10584833391476,
+      "cost_usd": 0.37759999999999994,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": [],
+  "recheck": [],
+  "reused": {
+    "from": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1",
+    "memory_replayed": {
+      "writes": null,
+      "pass_downs": 7,
+      "note": "memory writes are replayed only with local memory"
+    },
+    "first_round_cost_usd": 0.937674,
+    "first_round_runs": 4
+  }
+}

@@ -1,0 +1,347 @@
+{
+  "study": "bh24",
+  "status": "replicated",
+  "final": {
+    "agent": "bh24-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh24/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh24-library": "opus",
+    "bh24-team-a": "opus",
+    "bh24-team-b": "opus",
+    "bh24-team-c": "opus",
+    "bh24-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "bh24-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh24/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh24-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh24/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh24-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh24/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh24-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh24/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh24-team-a",
+        "bh24-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh24-team-a",
+        "bh24-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The tables have no column literally named 'mutation rate'. TMB_NONSYNONYMOUS in data_clinical_sample.txt, and per-sample mutation counts derived from data_mutations.txt, are valid proxies for mutation rate; AGE is in data_clinical_patient.txt (join via PATIENT_ID). If the cohort is confirmed to be medulloblastoma, the hypothesis concerns this study's own cohort and measurements, so under the benchmark convention the label must be True or False, not Not verifiable. State whether the data or established biology decided the label.",
+      "from": [
+        "sl-lab-c76c282a704a"
+      ],
+      "reason": "Prevents a wrong 'Not verifiable' answer caused by the missing literal column name, which is graded as wrong.",
+      "fact_ids": {
+        "team-a": "sl-lab-e960652dd4a0"
+      }
+    },
+    {
+      "text": "Samples come from mixed sequencing platforms (the GENE_PANEL column separates WGS from exome/capture samples; IDs such as ICGC_MB* vs MB_Exm*). Raw per-sample counts from data_mutations.txt are not comparable across platforms, and platform may be confounded with age. Tabulate GENE_PANEL against age and TMB, use per-Mb TMB (TMB_NONSYNONYMOUS), and test age within each platform or adjust for platform. Do not correlate raw counts pooled across platforms.",
+      "from": [
+        "sl-lab-20e647452852"
+      ],
+      "reason": "Platform differences in sensitivity could create or hide an age association, so the choice of variable and stratification matters.",
+      "fact_ids": {
+        "team-a": "sl-lab-c7a6bfcc49dc"
+      }
+    },
+    {
+      "text": "Medulloblastoma subgroups (WNT, SHH, Group 3, Group 4) differ in age distribution (SHH is bimodal, infants and adults; Group 3 is mostly young children) and may differ in mutation burden, so a pooled age-mutation correlation can be confounded by subgroup. Check for a subgroup column (labels may be spelled inconsistently and need harmonising), report pooled and within-subgroup results or a model such as log(TMB) ~ age + subgroup (+ platform), and note whether the direction is consistent.",
+      "from": [
+        "sl-lab-fb8ffa3c46f7"
+      ],
+      "reason": "Subgroup confounding can distort the pooled correlation; the teams need to check that the direction holds after adjustment.",
+      "fact_ids": {
+        "team-a": "sl-lab-c95aa5e5fae2"
+      }
+    },
+    {
+      "text": "Hypermutated outliers, especially germline TP53 / Li-Fraumeni cases (sample IDs like LFS_MB*) and mismatch-repair-deficient tumours, can dominate a Pearson correlation of mutation burden against age. Use Spearman rank correlation as the primary test and report results with and without the LFS/hypermutator samples.",
+      "from": [
+        "sl-lab-2e9adea151ee"
+      ],
+      "reason": "A few extreme samples could drive or flip the result; a rank test and a sensitivity analysis guard against that.",
+      "fact_ids": {
+        "team-a": "sl-lab-2142a745de05"
+      }
+    },
+    {
+      "text": "Counting mutations per sample from data_mutations.txt misses sequenced samples with zero mutations and may include silent, non-coding or duplicate rows. Left-join counts onto the full sequenced-sample list (the '#sequenced samples' header line or SAMPLE_IDs in data_clinical_sample.txt), fill zeros only for samples that were sequenced, inspect Variant_Classification, and count consistently (all, or nonsynonymous only). Use the recomputed counts as a sensitivity check against TMB_NONSYNONYMOUS.",
+      "from": [
+        "sl-lab-f7d9ff5bcdc6"
+      ],
+      "reason": "Dropping zero-mutation samples or mixing variant classes biases the burden estimates that the correlation is computed from.",
+      "fact_ids": {
+        "team-a": "sl-lab-e5579f93d08f"
+      }
+    },
+    {
+      "text": "cBioPortal's TMB_NONSYNONYMOUS counts only nonsynonymous coding mutations per sample, divided by an assumed profiled size (about 30 Mb, exome-sized), so it is a subset of total somatic burden. Genome studies usually measure age dependence with all somatic SNVs per Mb, silent and non-coding included. A nonsynonymous-only measure has less power and more noise, so also compute a total-mutation measure from the MAF (within platform) and check that both measures give the same direction. (Low confidence: from unverified recall; web search was unavailable.)",
+      "from": [
+        "sl-lab-90a796a4e040",
+        "sl-lab-8b4c2ffe5080"
+      ],
+      "reason": "Which burden measure is used affects power and comparability with how the original study likely measured the association.",
+      "fact_ids": {
+        "team-a": "sl-lab-58e3379947b8"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 4,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat cBioPortal TMB_NONSYNONYMOUS as comparable 'mutation rate' across WGS, WXS and a small custom capture panel, and handle the difference only by stratifying or adjusting for platform. Neither checked whether platform tracks cohort (ICGC / MB_Exm / MBRep / LFS) and whether age differs by cohort.",
+      "Both treat AGE as years for every patient and do not check for infants coded on another scale.",
+      "Both treat each sample as an independent patient. The MBRep_ prefix could mean a replication cohort or repeat samples."
+    ],
+    "unused_evidence": [
+      "The MAF holds depth and allele-count columns. Neither team used them to see whether low-coverage or low-VAF calls differ by age group, for example lower tumour purity in older patients.",
+      "HISTOLOGY and the M stage columns were not used as covariates. This is unlikely to change the sign of the result."
+    ],
+    "unresolved_weak_points": [
+      "Team A: effects within subgroups are weak outside SHH. It reported this but did not test whether SHH alone (with its infant-adult age split) drives the pooled result.",
+      "Team B: the depth/VAF check was named but not run."
+    ],
+    "second_readings": [
+      "'Mutation rate' could mean all somatic SNVs per Mb across the genome (WGS only) rather than nonsynonymous TMB. Team A's WGS-only sensitivity analysis already covers this reading.",
+      "In the source study the claim may be about the whole cohort or about the discovery (WGS) cohort only. Both readings appear to agree in the teams' results."
+    ],
+    "verdict": "High trust in 'True'. Both teams' correlation stays positive within each platform, after subgroup adjustment and without the LFS hypermutators, which fits the expected age-related accumulation of mutations in a study that is clearly this cohort's own. The remaining checks are robustness checks, not likely reversals.",
+    "questions": [
+      {
+        "to": "bh24-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Does the age-TMB association survive when you exclude SHH, or when you exclude the infant SHH and the adult SHH patients in turn? If the pooled positive result depends on one subgroup, does that change how you word your reasoning or your label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-a8716decc1a5"
+      },
+      {
+        "to": "bh24-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate age against sample-ID cohort prefix (ICGC_, MB_Exm, MBRep_, LFS_). Is platform fully nested in cohort, and does the within-cohort correlation keep its sign?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-07d40a194d55"
+      },
+      {
+        "to": "bh24-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You named the depth/VAF check but did not run it. Does the median t_depth or tumour VAF per sample correlate with age? If it does, does restricting to well-covered calls change the age-mutation correlation?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-147589c657f8"
+      },
+      {
+        "to": "bh24-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Do any MBRep_ or other samples share a patient, or have identical mutation sets, that would make records non-independent? Does the AGE column hold any values that look like months rather than years? Does correcting either change rho?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-96449c9316a6"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "How does cBioPortal compute TMB_NONSYNONYMOUS for samples sequenced with WGS, WXS and a targeted gene panel, and which denominator (Mb) does it use for each?",
+          "why": "Neither team confirmed whether the value is comparable across platforms. Both relied on platform stratification instead.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "How does cBioPortal compute TMB_NONSYNONYMOUS for samples sequenced with WGS, WXS and a targeted gene panel, and which denominator (Mb) does it use for each?",
+          "answer": "The web did not settle this: the research gateway returned HTTP 403 on search and on contents (docs.cbioportal.org). This is unverified recall only. TMB_NONSYNONYMOUS = number of nonsynonymous coding mutations / profiled coding length in Mb. For targeted panels the length comes from the gene panel definition. For WXS a fixed exome size of about 30 Mb is used, and as far as recalled the same holds for WGS, since only coding nonsynonymous mutations are counted. Values are therefore nominally comparable per Mb across platforms, but panel-based estimates are noisy, so platform-stratified analysis is still advisable.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh24-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-c240ec70ddc9"
+            },
+            "bh24-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-009294319402"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How does cBioPortal compute TMB_NONSYNONYMOUS for samples sequenced with WGS, WXS and a targeted gene panel, and which denominator (Mb) does it use for each? ANSWER: The web did not settle this: the research gateway returned HTTP 403 on search and on contents (docs.cbioportal.org). This is unverified recall only. TMB_NONSYNONYMOUS = number of nonsynonymous coding mutations / profiled coding length in Mb. For targeted panels the length comes from the gene panel definition. For WXS a fixed exome size of about 30 Mb is used, and as far as recalled the same holds for WGS, since only coding nonsynonymous mutations are counted. Values are therefore nominally comparable per Mb across platforms, but panel-based estimates are noisy, so platform-stratified analysis is still advisable. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh24-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh24-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh24-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh24-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh24-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 56.90078195894603,
+      "cost_usd": 0.15804079999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 48.74484466610011,
+      "cost_usd": 0.2588814,
+      "error": null
+    },
+    {
+      "agent": "bh24-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 57.89459666691255,
+      "cost_usd": 0.2068346,
+      "error": null
+    },
+    {
+      "agent": "bh24-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 64.08885620802175,
+      "cost_usd": 0.22799499999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 51.29895937500987,
+      "cost_usd": 0.18591200000000002,
+      "error": null
+    },
+    {
+      "agent": "bh24-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 31.360194292035885,
+      "cost_usd": 0.1092906,
+      "error": null
+    },
+    {
+      "agent": "bh24-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 57.469863582984544,
+      "cost_usd": 0.24174,
+      "error": null
+    },
+    {
+      "agent": "bh24-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 73.8446910000639,
+      "cost_usd": 0.34200440000000004,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

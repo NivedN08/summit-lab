@@ -1,0 +1,438 @@
+{
+  "study": "pf05",
+  "status": "replicated",
+  "final": {
+    "agent": "pf05-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/planted/lab/pf05/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "pf05-library": "opus",
+    "pf05-team-a": "opus",
+    "pf05-team-b": "opus",
+    "pf05-team-c": "opus",
+    "pf05-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "pf05-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/planted/lab/pf05/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "pf05-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/planted/lab/pf05/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "pf05-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/planted/lab/pf05/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "pf05-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/planted/lab/pf05/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "pf05-team-a",
+        "pf05-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "pf05-team-a",
+        "pf05-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "TP53_STATUS in data_clinical_patient.txt is documented as 1 = wild type and 0 = mutant, the reverse of the usual coding. Confirm this against the column description and against TP53_VAF (VAF should be 0 when TP53_STATUS=1), recode to explicit 'WT'/'MUT' labels before any test, and state the direction of the effect as WT minus MUT.",
+      "from": [
+        "sl-lab-248b5a8f6f80"
+      ],
+      "reason": "Reading 1 as mutant flips the direction of the comparison and so flips the True/False label.",
+      "fact_ids": {
+        "team-a": "sl-lab-86fbd11f284d"
+      }
+    },
+    {
+      "text": "Expression-based immune infiltration scores depend on tumour purity: low-purity samples contain more non-tumour cells and so score higher. Correlate TUMOR_PURITY with IMMUNE_INFILTRATION_SCORE and compare purity between TP53 WT and mutant. If purity is related to both, base the conclusion on a regression of immune score on TP53 status plus purity (and batch/site), report the crude and adjusted estimates, and say whether the sign changes.",
+      "from": [
+        "sl-lab-6cd0fd4626d3"
+      ],
+      "reason": "A purity difference between TP53 groups can create, hide or reverse an apparent immune difference.",
+      "fact_ids": {
+        "team-a": "sl-lab-22f3cfc27920"
+      }
+    },
+    {
+      "text": "The expression assay was run in processing batches (PROCESSING_BATCH), and batch can shift signature scores. Cross-tabulate batch by TP53 status and look at mean immune score by batch; if they are unbalanced, include batch as a fixed effect or compare within batch, not with a pooled unadjusted test.",
+      "from": [
+        "sl-lab-b6c1c4e830c4"
+      ],
+      "reason": "Uneven spread of TP53 groups across batches can create or mask a difference.",
+      "fact_ids": {
+        "team-a": "sl-lab-9956c1b53680"
+      }
+    },
+    {
+      "text": "Enrolment SITE can differ in case mix and in TP53 mutation frequency. Compare WT vs mutant immune score within each site (and within each batch) and look for sign reversals relative to the pooled result; if found, treat the site-adjusted or stratified estimate as primary.",
+      "from": [
+        "sl-lab-d7cb2eb41c9c"
+      ],
+      "reason": "Pooling across sites can produce a Simpson's-paradox reversal of the effect direction.",
+      "fact_ids": {
+        "team-a": "sl-lab-423193a3c439"
+      }
+    },
+    {
+      "text": "The sample table may hold more than one sample per patient (e.g. primary and metastasis), and metastases can have a different immune context. Count samples per PATIENT_ID and tabulate SAMPLE_TYPE; if there are repeats, run the main analysis on one sample per patient (e.g. primary only) or with a patient random effect, and check whether the results agree.",
+      "from": [
+        "sl-lab-7da466cbe6ca"
+      ],
+      "reason": "Counting patients twice inflates n and significance, and mixing sample types can confound the comparison.",
+      "fact_ids": {
+        "team-a": "sl-lab-d88b440634f8"
+      }
+    },
+    {
+      "text": "TP53 status is in the patient table and the immune score is in the sample table, so they must be joined on PATIENT_ID. Report row counts before and after the merge, list unmatched IDs and missing TP53 or immune values, and handle missing data explicitly (complete case, stating how many were dropped per group).",
+      "from": [
+        "sl-lab-73ed413fe3c3"
+      ],
+      "reason": "A silent bad join changes the groups and the n.",
+      "fact_ids": {
+        "team-a": "sl-lab-3efd14ded48b"
+      }
+    },
+    {
+      "text": "Immune signature scores may be skewed or contain outliers. Inspect the distribution per group, run a Wilcoxon rank-sum test alongside the t-test (and a robust or rank-based model alongside OLS), and report whether parametric and nonparametric results agree.",
+      "from": [
+        "sl-lab-d6d8e2b19551"
+      ],
+      "reason": "A few outliers can drive a t-test result and the conclusion drawn from it.",
+      "fact_ids": {
+        "team-a": "sl-lab-44c7565a9284"
+      }
+    },
+    {
+      "text": "The hypothesis is directional (WT lower than mutant). Report the effect size with a 95% CI and its direction, not only a p-value. Support (True) needs WT to be lower after appropriate adjustment; a clear difference in the opposite direction, or an adjusted estimate near zero with a CI that rules out a meaningful difference, contradicts it (False). 'Not verifiable' is only for when the relevant variables are absent from the data. State what was decided and why.",
+      "from": [
+        "sl-lab-43c9ae0d7462"
+      ],
+      "reason": "This rule maps the statistical result to the three labels consistently and stops a null or reversed result from being mislabelled.",
+      "fact_ids": {
+        "team-a": "sl-lab-920c2799abb5"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat a null result (CI spanning zero, point estimate slightly the other way) as evidence that contradicts the hypothesis ('False'). Neither tested whether the data actually rule out a meaningful WT-lower difference, for example with a one-sided bound or an equivalence margin tied to the score's SD.",
+      "Both assume the TP53 effect is the same in every processing batch, site and sample type (additive OLS, no interaction terms). Neither tested TP53 x batch or TP53 x sample-type interactions, even though batch shifts the score by about 45 points and TP53 is unevenly split across batches.",
+      "Both assume PROCESSING_BATCH is purely a technical nuisance to adjust away, and not related to site or sample type in a way that makes the batch-adjusted model nearly collinear or overadjusted. Neither reported a batch x site or batch x sample-type crosstab with the per-cell TP53 counts.",
+      "Both treat TP53 as binary. VAF was used only to confirm the coding, not as a graded or clonal/subclonal exposure."
+    ],
+    "unused_evidence": [
+      "data_clinical_supplement.txt (ECOG_PS, BMI, FOLLOW_UP_MONTHS) was not used by either team. It is probably not a confounder of an assay score, but neither team checked whether it is balanced by TP53 status.",
+      "TP53_VAF as a continuous variable: neither team checked whether the immune score varies with VAF among mutants. A low-VAF/subclonal subgroup could dilute the contrast.",
+      "SAMPLE_TYPE: Team A dropped the 67 metastases and Team B pooled them with an adjustment term. Neither looked at whether the WT-vs-mutant difference has the same sign in primaries and in metastases separately. The crude estimates differ (+2.1 in primaries vs +4.0 overall).",
+      "PROLIFERATION_SCORE comes from the same expression assay. Only Team B used it, and only as a covariate. Its correlation with the immune score (r=0.66) could mean a shared assay or batch component that per-batch adjustment does not fully remove."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weakest point: the 'False' label rests on a non-significant estimate. Neither resolved it. Neither computed how large a WT-lower difference the data can exclude, nor stated a decision rule separating 'contradicts' from 'cannot settle'.",
+      "Team A ran a mixed model with a patient random effect, but the data hold exactly one sample per patient (229 samples, 229 patients, all suffix T1). That sensitivity analysis does not add the independent check it is presented as.",
+      "Team A's and Team B's batch-by-TP53 counts differ because one used primaries only and the other used all samples. Neither showed that the batch adjustment gives the same sign in both scopes with a batch-stratified (not pooled) estimate."
+    ],
+    "second_readings": [
+      "Scope: 'patients with TP53 wild-type tumours' may mean all patients (one sample each, primary or metastasis) or primary tumours only. The teams chose different scopes and did not show that the label holds under both.",
+      "Scale: 'immune infiltration score' could mean the raw assay value or a batch-corrected value. The hypothesis may concern the batch-corrected biological signal, which is what the adjusted models estimate, but the crude and adjusted answers should agree in label.",
+      "Label semantics: 'False' requires evidence that contradicts the claim. A reader could reasonably argue that a CI spanning zero with a small effect only fails to support it. The label depends on whether the CI rules out a WT-lower effect of meaningful size."
+    ],
+    "verdict": "Moderate trust. Both teams handled the reverse coding and the batch confounding correctly and agree that WT is not lower. But both call a null result 'False' without showing that the data exclude a meaningful WT-lower effect. They also did not check interactions with batch or sample type, so the boundary between False and Not verifiable/inconclusive is the main open risk.",
+    "questions": [
+      {
+        "to": "pf05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your adjusted lower bound is -2.8 on a score with SD ~21. Compute the one-sided 95% bound for WT minus MUT and state, before looking, what size of WT-lower difference you would count as meaningful. Does the bound exclude it? If not, does that change your label from False?",
+        "from": [
+          "sl-lab-1dafb1279e0e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-361fac9c764d"
+      },
+      {
+        "to": "pf05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Fit TP53 x PROCESSING_BATCH and TP53 x SITE interaction terms and report the per-stratum WT-minus-MUT estimates with their n. Is there any stratum with an adequate sample size where WT is clearly lower? Does that change the use of a single pooled adjusted estimate?",
+        "from": [
+          "sl-lab-ec2737987eff"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-15240ce03afb"
+      },
+      {
+        "to": "pf05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Each patient has exactly one sample, so your mixed model with a patient random effect is equivalent to OLS on all 229 samples. Repeat the batch-adjusted comparison in the 67 metastases alone. Does the sign agree with your primary-only result? Does excluding metastases change the label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-0ac771672f37"
+      },
+      {
+        "to": "pf05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Among mutants, regress immune score on TP53_VAF (with batch). Compare high-VAF mutants against WT separately. Does a graded or clonal definition of mutation change the direction or size of the difference?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-70438f228e68"
+      },
+      {
+        "to": "pf05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your batch-adjusted CI is -1.5 to 5.1. Compute the one-sided 95% bound for WT minus mutant and state, before looking, what size of WT-lower difference would be meaningful. Does the data exclude it? If not, is 'False' still the right label, rather than inconclusive?",
+        "from": [
+          "sl-lab-906248ffbe7c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-faa29991e6d4"
+      },
+      {
+        "to": "pf05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You pooled 162 primaries and 67 metastases. Run the batch-adjusted comparison separately in primaries and in metastases, and add a TP53 x SAMPLE_TYPE interaction. Do the two scopes agree in sign? Does the hypothesis's 'tumours' scope change your conclusion?",
+        "from": [
+          "sl-lab-14e7d12c7d13"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-5f8fbe39020f"
+      },
+      {
+        "to": "pf05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Crosstab PROCESSING_BATCH against SITE and SAMPLE_TYPE with TP53 counts per cell. Then fit TP53 x batch interactions. Is batch nearly collinear with any of these, or does the TP53 effect differ by batch in a way the additive model hides?",
+        "from": [
+          "sl-lab-14e7d12c7d13"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-0d7607c68b03"
+      },
+      {
+        "to": "pf05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Among mutants, check whether immune score varies with TP53_VAF (adjusting for batch). Does a high-VAF-only mutant group compared against WT change the direction or size of the difference?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-2c3d1e90ca3b"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In hypothesis-testing benchmarks and clinical reporting, when a directional hypothesis (group A lower than group B) yields a non-significant estimate whose point estimate lies in the opposite direction, what are the accepted conventions for calling it 'contradicted' versus 'not supported/inconclusive'? How are equivalence or non-inferiority margins (e.g. TOST) used to make that call?",
+          "why": "Both teams' label depends on treating a null as a contradiction, and neither showed it knows a formal criterion for that distinction.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When an expression-assay signature score is strongly shifted by processing batch and the exposure is unevenly split across batches, what is the recommended analysis: batch as a fixed effect in regression, per-batch standardisation of the score (e.g. ComBat or z-scoring within batch), or a batch-stratified estimate? Can these give different directions when exposure and batch are imbalanced?",
+          "why": "Both teams adjusted additively for batch only; whether a different standard batch-correction convention could change the sign is untested.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In hypothesis-testing benchmarks and clinical reporting, when a directional hypothesis (group A lower than group B) yields a non-significant estimate whose point estimate lies in the opposite direction, what are the accepted conventions for calling it 'contradicted' versus 'not supported/inconclusive'? How are equivalence or non-inferiority margins (e.g. TOST) used to make that call?",
+          "answer": "NOT SETTLED BY THE WEB: the research gateway returned HTTP 403 on every call (4 attempts), so no page was read. Unverified background knowledge: by convention a non-significant result is 'not supported/inconclusive', not 'contradicted', because absence of evidence is not evidence of absence. Calling the claim contradicted needs either (a) a statistically significant effect in the opposite direction, or (b) equivalence or non-inferiority shown against a pre-specified margin. With TOST that means both one-sided tests reject at \u00b1\u0394, i.e. the 90% CI lies within \u00b1\u0394. In one-sided non-inferiority logic, it means the CI excludes the hypothesised direction beyond the margin. A point estimate in the opposite direction with a CI that still includes the hypothesised direction is weak evidence only.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "pf05-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-fcd9f8c8ddad"
+            },
+            "pf05-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-521b4e7034e7"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In hypothesis-testing benchmarks and clinical reporting, when a directional hypothesis (group A lower than group B) yields a non-significant estimate whose point estimate lies in the opposite direction, what are the accepted conventions for calling it 'contradicted' versus 'not supported/inconclusive'? How are equivalence or non-inferiority margins (e.g. TOST) used to make that call? ANSWER: NOT SETTLED BY THE WEB: the research gateway returned HTTP 403 on every call (4 attempts), so no page was read. Unverified background knowledge: by convention a non-significant result is 'not supported/inconclusive', not 'contradicted', because absence of evidence is not evidence of absence. Calling the claim contradicted needs either (a) a statistically significant effect in the opposite direction, or (b) equivalence or non-inferiority shown against a pre-specified margin. With TOST that means both one-sided tests reject at \u00b1\u0394, i.e. the 90% CI lies within \u00b1\u0394. In one-sided non-inferiority logic, it means the CI excludes the hypothesised direction beyond the margin. A point estimate in the opposite direction with a CI that still includes the hypothesised direction is weak evidence only. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "When an expression-assay signature score is strongly shifted by processing batch and the exposure is unevenly split across batches, what is the recommended analysis: batch as a fixed effect in regression, per-batch standardisation of the score (e.g. ComBat or z-scoring within batch), or a batch-stratified estimate? Can these give different directions when exposure and batch are imbalanced?",
+          "answer": "NOT SETTLED BY THE WEB: the research gateway returned HTTP 403 on every call, so no page was read. Unverified background knowledge: when the design is unbalanced, the usual recommendation is to model batch directly, either as a covariate in the outcome regression or through a batch-stratified (pooled within-batch) estimate. Batch-correct the data first (ComBat or within-batch z-scoring) only if the exposure is kept as a protected covariate. Nygaard, R\u00f8dland & Hovig 2016 (Biostatistics) reported that removing batch effects in unbalanced designs can bias group differences and inflate significance. Within-batch z-scoring also rescales each batch and can shrink or distort the group effect. These methods can therefore differ in magnitude, and with strong imbalance or an exposure-by-batch interaction they can differ in sign. Check per-batch estimates for sign reversals.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "pf05-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-3f24128b8aaa"
+            },
+            "pf05-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-6ab925dca8ba"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When an expression-assay signature score is strongly shifted by processing batch and the exposure is unevenly split across batches, what is the recommended analysis: batch as a fixed effect in regression, per-batch standardisation of the score (e.g. ComBat or z-scoring within batch), or a batch-stratified estimate? Can these give different directions when exposure and batch are imbalanced? ANSWER: NOT SETTLED BY THE WEB: the research gateway returned HTTP 403 on every call, so no page was read. Unverified background knowledge: when the design is unbalanced, the usual recommendation is to model batch directly, either as a covariate in the outcome regression or through a batch-stratified (pooled within-batch) estimate. Batch-correct the data first (ComBat or within-batch z-scoring) only if the exposure is kept as a protected covariate. Nygaard, R\u00f8dland & Hovig 2016 (Biostatistics) reported that removing batch effects in unbalanced designs can bias group differences and inflate significance. Within-batch z-scoring also rescales each batch and can shrink or distort the group effect. These methods can therefore differ in magnitude, and with strong imbalance or an exposure-by-batch interaction they can differ in sign. Check per-batch estimates for sign reversals. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "pf05-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "pf05-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "pf05-team-b",
+      "round": "challenge",
+      "reason": "agreed with pf05-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "pf05-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 66.41203616699204,
+      "cost_usd": 0.2121056,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 41.06176341709215,
+      "cost_usd": 0.23832880000000004,
+      "error": null
+    },
+    {
+      "agent": "pf05-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 47.68634287500754,
+      "cost_usd": 0.2222136,
+      "error": null
+    },
+    {
+      "agent": "pf05-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 72.21100291609764,
+      "cost_usd": 0.2894838,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 60.91798287502024,
+      "cost_usd": 0.26879959999999997,
+      "error": null
+    },
+    {
+      "agent": "pf05-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 47.99026866699569,
+      "cost_usd": 0.1532942,
+      "error": null
+    },
+    {
+      "agent": "pf05-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 54.43422129191458,
+      "cost_usd": 0.2395348,
+      "error": null
+    },
+    {
+      "agent": "pf05-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 56.39250116702169,
+      "cost_usd": 0.28003500000000003,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

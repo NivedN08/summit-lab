@@ -1,0 +1,198 @@
+{
+  "study": "bd34",
+  "status": "replicated",
+  "final": {
+    "agent": "bd34-team-a",
+    "team": "team-a",
+    "round": "analysis",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd34/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd34-library": "opus",
+    "bd34-team-a": "opus",
+    "bd34-team-b": "opus",
+    "bd34-team-c": "opus",
+    "bd34-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "bd34-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd34/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd34-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd34/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd34-team-a",
+        "bd34-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The claim has six parts: each of miR-452, miR-766 and miR-1180 must be up in HCA vs normal liver and in HCC vs normal liver. Before any analysis, map every part to a concrete variable (a miRNA expression measurement) and a concrete comparator group (normal liver samples with that measurement) in the files. Do not substitute a related but different analysis, such as mutations, tumour mutational burden or HCA-vs-HCC contrasts, because those do not test the claim.",
+      "from": [
+        "sl-dev-panel-noise-lab2-e2328a2b2627"
+      ],
+      "reason": "Keeps the team from answering a different question with whatever variables happen to exist.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-653c68a5868d"
+      }
+    },
+    {
+      "text": "Find out what kind of data each file holds: list every file and search the headers and gene/Hugo_Symbol columns for MIR/miR, expression or RNA. Targeted DNA panels (e.g. MSK-IMPACT) capture exons of protein-coding cancer genes, and miRNA genes are not targets. If MIR452/MIR766/MIR1180 do not appear in the panel or gene lists, they were not measured, which is different from being unchanged. Lack of a measurement is not evidence against the claim. 'False' requires analysed data that contradicts it.",
+      "from": [
+        "sl-dev-panel-noise-lab2-d284b4e200b0",
+        "sl-dev-panel-noise-lab2-abde3ad137d3"
+      ],
+      "reason": "Decides whether the right outcome is a measured result or no testable variable, and stops the team from reading absence as contradiction.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-063a581c4755"
+      }
+    },
+    {
+      "text": "Check whether a normal-liver comparison group with measurements exists: tabulate SAMPLE_CLASS / CANCER_TYPE_DETAILED in data_clinical_sample.txt. Matched-normal barcodes in a MAF (e.g. *_N in Matched_Norm_Sample_Barcode) serve only for somatic variant calling. They are not normal-tissue expression samples. Do not build a 'vs normal' comparison from tumour-only data.",
+      "from": [
+        "sl-dev-panel-noise-lab2-44f15715a999"
+      ],
+      "reason": "The claim is a contrast with normal liver, so the team needs a real normal group before testing it.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-a2b36c46a4ce"
+      }
+    },
+    {
+      "text": "Do not use DNA copy-number gain at a miRNA locus (e.g. from data_cna_hg19.seg segments) as a stand-in for miRNA upregulation. miRNA copy-number/expression correlation is only moderate (mean Spearman ~0.44 in breast tumours, often weaker or negative), and amplification does not show overexpression. Off-target segment calls between panel genes also have low resolution. At most, report such a mapping as indirect context and not as an expression test.",
+      "from": [
+        "sl-dev-panel-noise-lab2-ad8bd1bb9c38"
+      ],
+      "reason": "This is the most tempting proxy in a DNA-only dataset, and using it would turn the wrong variable into a definite label.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-b7c373def394"
+      }
+    },
+    {
+      "text": "If a miRNA expression matrix and normal samples are found, test each miRNA separately in HCA vs normal and in HCC vs normal (Wilcoxon or limma), apply Benjamini-Hochberg correction and check the direction of each change. Results depend on normalization (reference miRNA vs global mean vs quantile), so state which one was used. Support needs all three miRNAs significantly up in both comparisons. If any is down, or not significant with adequate n, that counts against the claim.",
+      "from": [
+        "sl-dev-panel-noise-lab2-1e9662452b0b"
+      ],
+      "reason": "Sets the decision rule for the multi-part claim if testable data turn out to exist.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-85d5e3764e47"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 0,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed that 'upregulated' means miRNA expression, so DNA copy number at the miRNA loci does not count as a measure of it. The library's notes on CN-expression correlation back this up, and the hypothesis wording is about expression.",
+      "Both teams assumed that matched normals in the MAF (*_N barcodes) are blood or tissue used for somatic calling, not normal-liver expression samples. The clinical table's SOMATIC_STATUS=Matched and SAMPLE_CLASS=Tumor for all 19 rows agree with this."
+    ],
+    "unused_evidence": [
+      "data_cna_hg19.seg has off-target segments that could span the miRNA loci. Team A explicitly chose not to use it as a proxy, with good reason. Even if used, it measures DNA dosage in tumours only, with no normal-liver comparator, so it could not test 'vs normal liver'.",
+      "TMB_NONSYNONYMOUS and the specimen and preservation columns have nothing to do with miRNA expression."
+    ],
+    "unresolved_weak_points": [
+      "Both teams' weakest point is whether a CNA proxy was expected. Both addressed it by rejecting the proxy for a stated reason. Nothing is left open."
+    ],
+    "second_readings": [
+      "'Upregulated' could be read as copy-number gain rather than expression. Even on that reading there is no normal-liver group to compare with, so the comparison 'compared to normal liver' still cannot be made. I found no second reading of the group or scale that makes the claim testable."
+    ],
+    "verdict": "I trust the agreed 'Not verifiable' answer highly. The data are a 19-tumour targeted DNA panel with no miRNA or expression table and no normal-liver samples, so neither the measurement nor the comparator group in the hypothesis exists. I found no unused file, column or other reading of the task that changes this, so I have no questions for the teams.",
+    "questions": []
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd34-team-b",
+      "round": "analysis",
+      "reason": "agreed with bd34-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd34-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 60.02287312503904,
+      "cost_usd": 0.263752,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 36.4739034579834,
+      "cost_usd": 0.1273978,
+      "error": null
+    },
+    {
+      "agent": "bd34-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 30.832126041990705,
+      "cost_usd": 0.1327618,
+      "error": null
+    },
+    {
+      "agent": "bd34-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 34.001988833071664,
+      "cost_usd": 0.10793219999999999,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 31.851778791984543,
+      "cost_usd": 0.18383860000000002,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

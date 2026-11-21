@@ -1,4 +1,4 @@
-"""Department heads (D-22): who they are, what they can read, and what may reach a scientist.
+"""Department heads (D-23): who they are, what they can read, and what may reach a scientist.
 
 Same fakes as test_protocol: a fake adapter, LocalMemory, the real Gateway and a scripted backend,
 extended here with the heads' jobs.

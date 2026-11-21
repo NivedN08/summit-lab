@@ -1,0 +1,302 @@
+{
+  "study": "bd30",
+  "status": "replicated",
+  "final": {
+    "agent": "bd30-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd30/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd30-library": "opus",
+    "bd30-team-a": "opus",
+    "bd30-team-b": "opus",
+    "bd30-team-c": "opus",
+    "bd30-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd30-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd30/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd30-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd30/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd30-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd30/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd30-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd30/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd30-team-a",
+        "bd30-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd30-team-a",
+        "bd30-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Before any modelling, establish whether the data actually contain the variables this hypothesis needs: a VTE event indicator, VTE/follow-up time, and an anticoagulation exposure. Grep every column header and every '#' description line in all six files for terms such as VTE, thrombosis, embolism, anticoagulant, heparin, DOAC, apixaban, follow-up/time, and ctDNA. Do not build proxies for exposure or outcome from genomic files (mutation counts, TMB, cancer type, CNA); a proxy is not a measurement of VTE or anticoagulation.",
+      "from": [
+        "sl-dev-panel-noise-lab2-a7b3bb5a60ca"
+      ],
+      "reason": "Whether exposure and outcome are measured decides which label is possible at all. Without this check a team may run tests on proxy variables that cannot address the claim.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-513b91a0ae5e"
+      }
+    },
+    {
+      "text": "ctDNA status (ctDNA+ vs ctDNA-) may not exist as a column. In cfDNA panel data (e.g. MSK-ACCESS / ACCESS129 in data_gene_panel_matrix.txt), deriving it as 'has any somatic call in data_mutations' mixes up assay detection limits, clonal hematopoiesis and panel coverage. If ctDNA status can only be derived, treat it as a stratifier only. Being able to derive it does not make up for missing anticoagulation or VTE variables.",
+      "from": [
+        "sl-dev-panel-noise-lab2-61847add08b5"
+      ],
+      "reason": "This stops a team from treating a derived ctDNA flag as enough to test a treatment-by-ctDNA claim.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-0fef5ccc9097"
+      }
+    },
+    {
+      "text": "Patients can have several samples (suffixes such as -T02, -T03). Compare the number of unique PATIENT_ID values with the number of SAMPLE_ID values, and pick one sample per patient (e.g. the first draw) before any patient-level analysis.",
+      "from": [
+        "sl-dev-panel-noise-lab2-7e0e5fae2a8d"
+      ],
+      "reason": "Without this, patients are double-counted in any patient-level comparison.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-38139a89d52b"
+      }
+    },
+    {
+      "text": "If exposure and outcome are present: 'no benefit in ctDNA-' cannot be concluded from a non-significant result in the ctDNA- subgroup alone. ctDNA- patients have few VTE events, so that test has little power. Count events in each ctDNA x anticoagulation cell. Report the hazard ratio with its 95% CI. Formally test the anticoagulation-by-ctDNA interaction in one model, rather than comparing subgroup p-values. Supporting 'no benefit' needs a CI that excludes a meaningful benefit, or a clear interaction.",
+      "from": [
+        "sl-dev-panel-noise-lab2-bb3dd4c58ed4",
+        "sl-dev-panel-noise-lab2-518c74b66a9d"
+      ],
+      "reason": "This sets what counts as evidence for or against a 'does not benefit' claim, which a naive subgroup test gets wrong.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-a1f7e452fb32"
+      }
+    },
+    {
+      "text": "If time-to-event VTE and anticoagulation data are present, address three biases. (1) Death is a competing risk: tabulate deaths before VTE and use cumulative incidence / Fine-Gray rather than 1-KM. (2) Immortal time: if anticoagulation starts after cohort entry, model it as time-varying or use a landmark analysis. (3) Confounding by indication: compare cancer type, stage and prior VTE between treated and untreated patients, and adjust for them (multivariable or propensity/IPTW).",
+      "from": [
+        "sl-dev-panel-noise-lab2-89b522dfc6dc",
+        "sl-dev-panel-noise-lab2-6a298d823a19",
+        "sl-dev-panel-noise-lab2-da058be6c460"
+      ],
+      "reason": "Each of these biases can create or hide an apparent anticoagulation effect in observational data.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-c80d6de7ef0f"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 4,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assume that ctDNA status, anticoagulation exposure and VTE outcome must appear as explicit columns, and that their absence settles the label; neither confirmed that no free-text field (e.g. COMMENTS/Comments in the MAF, Annotation/Event_Info in the SV file) carries clinical annotation.",
+      "Both assume one sample per patient is the whole cohort; team A checked 5567 unique PATIENT_ID vs SAMPLE_ID but team B reports 5568 samples, so the cohort count is not reconciled between teams."
+    ],
+    "unused_evidence": [
+      "data_gene_panel_matrix.txt shows every sample is ACCESS129 (a plasma cfDNA panel) and every sample ID ends in -XS1; team B describes the samples as 'tumour tissue', which misreads the assay. Mutation calls with t_alt_count/t_depth could define a ctDNA-detected vs not-detected stratifier, but this only supplies the subgroup, not exposure or outcome.",
+      "data_cna.txt (gistic, ~700 genes) and data_sv.txt (223 somatic SVs) were not used by either team for anything beyond header search; they contain no clinical/treatment fields, so they cannot provide anticoagulation or VTE data.",
+      "Mutation-file columns n_alt_count/Matched_Norm_Sample_Barcode and FILTER (relevant to distinguishing clonal haematopoiesis from tumour-derived ctDNA) were not used; again relevant only to defining ctDNA status."
+    ],
+    "unresolved_weak_points": [
+      "Team A: possible hidden VTE/anticoagulation data under unusual names; it says it checked every header, which largely resolves it, but free-text value columns were not searched.",
+      "Team B: 'the data may be a reduced version of a study that measured ctDNA and VTE' is reported, not resolved; it is irrelevant to the label because the label concerns these tables only. Team B's 'tumour tissue' claim conflicts with the ACCESS129 panel and is unreconciled."
+    ],
+    "second_readings": [
+      "'ctDNA-' could be read as a derivable subgroup (no somatic call detected on the cfDNA panel), which makes one of the three needed variables partially available; but the hypothesis also needs anticoagulation exposure and VTE outcome, which are absent under any reading. No second reading I found makes the hypothesis testable."
+    ],
+    "verdict": "I trust the agreed 'Not verifiable' highly: the clinical tables hold only demographics, cancer type and TMB, and no file holds an anticoagulation exposure or VTE outcome, so the hypothesis cannot be tested whatever ctDNA status turns out to be. The only flaws are descriptive (team B calls the cfDNA samples tumour tissue; the sample counts differ by one), and neither affects the label.",
+    "questions": [
+      {
+        "to": "bd30-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You searched headers and '#' description lines; did you also search the cell values of free-text columns (MAF COMMENTS/Comments, SV Annotation/Event_Info/Comments) for terms like VTE, thromb, anticoag, heparin, and does any hit change your method?",
+        "from": [
+          "sl-dev-panel-noise-lab2-2699103f900e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-ee9f82f98532"
+      },
+      {
+        "to": "bd30-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your team counts 5567 samples while team B reports 5568; recount sample rows in data_clinical_sample.txt and data_gene_panel_matrix.txt excluding header/comment lines and state whether any sample lacks a panel assignment and whether that changes anything.",
+        "from": [
+          "sl-dev-panel-noise-lab2-2699103f900e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-16b6fe043880"
+      },
+      {
+        "to": "bd30-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your note says all 5568 samples are tumour tissue, yet data_gene_panel_matrix.txt assigns every sample to ACCESS129 and every SAMPLE_ID ends in -XS1; tabulate the panel per sample and the sample-ID suffixes, state what assay the samples come from, and say whether this changes how you judge the availability of a ctDNA-status variable (and whether that changes your label, given exposure and outcome).",
+        "from": [
+          "sl-dev-panel-noise-lab2-54a83d9cff0a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-cc2e3a22c7d0"
+      },
+      {
+        "to": "bd30-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Did your keyword search cover cell values of free-text columns (MAF COMMENTS/Comments, SV Annotation/Event_Info) as well as headers, and does a values-level search for VTE/thrombosis/anticoagulant terms return any hit that changes your method?",
+        "from": [
+          "sl-dev-panel-noise-lab2-54a83d9cff0a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-f0aeed72353c"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd30-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd30-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd30-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd30-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd30-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 63.74084474996198,
+      "cost_usd": 0.2925338,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 41.695042666979134,
+      "cost_usd": 0.1634694,
+      "error": null
+    },
+    {
+      "agent": "bd30-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 33.5980131670367,
+      "cost_usd": 0.1200466,
+      "error": null
+    },
+    {
+      "agent": "bd30-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 49.7670977920061,
+      "cost_usd": 0.2010998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 55.02017737494316,
+      "cost_usd": 0.290827,
+      "error": null
+    },
+    {
+      "agent": "bd30-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 42.812128708930686,
+      "cost_usd": 0.16965039999999998,
+      "error": null
+    },
+    {
+      "agent": "bd30-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 59.71767858299427,
+      "cost_usd": 0.210013,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,474 @@
+{
+  "study": "sc36",
+  "status": "replicated",
+  "final": {
+    "agent": "sc36-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc36/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc36-library": "opus",
+    "sc36-team-a": "opus",
+    "sc36-team-b": "opus",
+    "sc36-team-c": "opus",
+    "sc36-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc36-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc36/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "E"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc36-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc36/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "E"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc36-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc36/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "E"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc36-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc36/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "E"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc36-team-a",
+        "sc36-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc36-team-a",
+        "sc36-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "PITFALL - establish the treatment-to-well layout from the data before anything else; do not assume it. In split-pool (ParseBio/SPLiT-seq) data the round-1 well (bc1_well) acts as the sample barcode, so a treatment may sit in its own fixed wells (position and treatment nested/confounded, in which case no normalization can separate a position effect from a treatment effect) or may be spread over many wells. CHECK: crosstab cytokine x bc1_well and donor x bc1_well; count how many distinct wells each cytokine (and PBS) uses, whether any well holds more than one cytokine, and whether each treatment's wells cover both edge and interior positions; quantify the association (chi-square or Cramer's V on edge/interior x treatment). GUIDANCE: state the observed layout as a fact about the design, then judge separately whether any position effect is large enough to matter. Confounding alone does not settle whether a correction is warranted, and a balanced layout alone does not prove there is no position effect.",
+      "from": [
+        "sl-sc-test-df61879ee494"
+      ],
+      "reason": "Whether treatments are confounded with or spread across well positions is the first fork in this decision, and it can only be read off the cytokine x well crosstab; a team that assumes either layout will reason from the wrong design.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-9234dda94cd7"
+      }
+    },
+    {
+      "text": "PITFALL - judge the position effect by effect size at well level, not by a p-value at cell level. The experimental unit for cell recovery is the well; testing with each cell as an observation (e.g. chi-square over all cells) is pseudoreplication and will be 'significant' for trivially small effects. CHECK: aggregate to one row per bc1_well (cells per well, optionally per well x donor); confirm n in the test is the number of wells (<=96 per plate), not the number of cells; define edge (rows A/H or columns 1/12 of a 96-well plate) vs interior; fit cells_per_well ~ edge and ~ row + column; report R-squared and the edge-vs-interior percent difference in recovery, with its direction and consistency. GUIDANCE: rough yardsticks from plate-assay literature are that an R-squared near zero (about <0.02) with a small edge/interior difference is negligible, while R-squared above about 0.3 or consistently ~20-35% lower edge recovery is substantial. Report the measured numbers and let them decide; do not pick a conclusion before computing them.",
+      "from": [
+        "sl-sc-test-1b051e1b3943",
+        "sl-sc-test-9e32e220880d"
+      ],
+      "reason": "The decision depends on the measured size of the position effect, and the wrong unit of analysis (cells instead of wells) would make any effect look significant and mislead the conclusion.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-82d84a05b6a9"
+      }
+    },
+    {
+      "text": "PITFALL - a raw association between well position and cell count can be produced by treatment biology rather than plate bias: cytokines that kill or expand cells change per-well counts, so the association may only reflect which treatments happen to sit at the edge. CHECK: compare edge vs interior per-well cell counts within PBS control wells only (if PBS occupies both kinds of position), and/or remove per-cytokine means and re-test position on the residuals where cytokines span both edge and interior wells. GUIDANCE: only a position difference that survives holding treatment fixed is evidence of systematic plate bias; if it vanishes, the count differences are attributable to treatment.",
+      "from": [
+        "sl-sc-test-131b3a53fc52"
+      ],
+      "reason": "Without holding treatment fixed the team cannot tell plate bias from treatment-driven count differences, which leads to opposite conclusions about whether normalization is justified.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-afa76ed99991"
+      }
+    },
+    {
+      "text": "PITFALL - comparing 'variance in cell counts across positions' against 'variance across treatments' is circular when treatments map close to one-to-one onto wells, because the two groupings are then nearly the same partition and both variances measure the same differences. CHECK: count cytokines per well and wells per cytokine; if the mapping is near 1:1 the two decompositions are aliased. GUIDANCE: in that case do not use 'position variance exceeds treatment variance' as an argument either way; summarise position with a low-dimensional descriptor (edge vs interior, row, column) and use its R-squared instead.",
+      "from": [
+        "sl-sc-test-051f73dcc695"
+      ],
+      "reason": "A variance comparison is an obvious thing to compute here and is uninterpretable under an aliased layout; the team needs to know when it is invalid.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-1889125e430e"
+      }
+    },
+    {
+      "text": "PITFALL - edge vs interior is not the only possible spatial pattern; row or column gradients (pipetting order, multichannel loading) or second-ring effects can exist while the edge contrast looks null, and vice versa. CHECK: parse bc1_well into row letter and column number, view per-well cell counts as an 8x12 plate heatmap, and fit counts ~ row + column alongside counts ~ edge, comparing R-squared. GUIDANCE: describe the pattern actually present (edge, row, column, or none) and still decide on its effect size.",
+      "from": [
+        "sl-sc-test-d78ddee3a8bf"
+      ],
+      "reason": "Testing only an edge indicator could miss or mischaracterise a real positional pattern, changing how the position effect is quantified.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-16f9a84701ea"
+      }
+    },
+    {
+      "text": "PITFALL - inconsistent bc1_well strings (e.g. 'A1' vs 'A01') or several sublibraries/plates reusing the same well names will mislabel edge wells and pool physically different wells. CHECK: list the unique bc1_well values, verify they parse to rows A-H and columns 1-12, and inspect sample/sublibrary/plate columns for evidence of more than one plate. GUIDANCE: normalise the well names before defining edge wells; if more than one plate is present, analyse per plate or include plate as a factor.",
+      "from": [
+        "sl-sc-test-e844ab81f145"
+      ],
+      "reason": "Every position analysis depends on correctly parsed well coordinates; a parsing or plate-pooling error would silently corrupt the edge/interior assignment and the layout crosstab.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-6a5b8e5bcc55"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams took 'the position effect' to mean a single binary contrast, outer ring (rows A/H, columns 1/12) versus interior, and read the option thresholds against that one number. Neither tested whether the outer-ring contrast hides a one-directional effect (for example low counts at the left/right edge columns only, which team A's own heatmap note suggests: columns 1-2 and 12 lower than columns 5-9).",
+      "Both teams took total cells per well in a 100k-cell subsample as the outcome. The task is about differential abundance, which is computed on cell-type composition per sample; neither team measured a position effect on composition.",
+      "Both teams treated the row/column pattern (R2 0.53-0.76) as inseparable from treatment and then set it aside. Team B went further and attributed it to treatment because cytokine R2 on well counts is 0.96, but 90 of the 91 labels occupy a single well, so that R2 is close to guaranteed by the layout and is not evidence about cause.",
+      "Both teams used the same yardsticks (R2 below about 0.02 negligible, above about 0.3 substantial) and the same rule that confounding alone does not decide the matter. Both came from the same library notes passed to both teams, so the agreement on how to weigh confounding against effect size is not independent.",
+      "Both teams assumed that the round-1 barcoding well position is where a plate edge effect would physically arise, and that the 100k subsample keeps per-well counts proportional to recovery. Team B named the subsample as a concern but did not check it."
+    ],
+    "unused_evidence": [
+      "cell_type (18 labels): the quantity differential abundance is computed on. Neither team used it; a position effect on composition could exist with no effect on total counts, or the reverse.",
+      "The six PBS wells H7-H12 as within-treatment replicates: they hold the same treatment in six different columns (7 to 12, with H12 a corner well), each with 12 donors. Team A recorded that PBS cannot be tested within itself, which is true for edge versus interior but not for the column gradient or for well-to-well spread at fixed treatment.",
+      "bc2_well and bc3_well (192 wells each): later barcoding rounds where no treatment is assigned. They could show what a position R2 looks like when treatment is not aliased with position. Neither team used them.",
+      "Per-cell quality columns (pct_counts_MT, gene_count, mread_count): team B used transcript counts only; team A used none. Edge stress would be expected to show in these if present.",
+      "The data hold 91 cytokine labels including PBS (90 cytokines plus PBS, 1092 donor x cytokine samples), whereas the task text says 91 cytokines plus PBS. Neither team commented; it does not obviously change the answer."
+    ],
+    "unresolved_weak_points": [
+      "Team A: the row+column R2 of 0.76 (a column gradient) that the edge descriptor misses. Reported as a caveat, not resolved; the team wrote that its answer relies on the question being about the outer-ring edge contrast only.",
+      "Team B: the outer-ring edge definition is an assumption and was not varied; the subsampling to 100k cells was named and not checked; the row/column R2 was declared inseparable from treatment and then attributed to treatment anyway.",
+      "Team B: reported edge R2 0.013 with p about 1e-4 at sample level next to p = 0.71 at well level and did not reconcile them. Twelve samples share each well, so the sample-level p-value treats non-independent units as independent. Whether the effect is 'significant but small' or 'not significant' separates two of the 'No' options."
+    ],
+    "second_readings": [
+      "'Position effect' can mean the edge-versus-interior contrast (R2 about 0.0015 in both teams' hands) or well position by row and column (R2 0.53-0.76 in both teams' hands). The option thresholds give opposite readings under the two.",
+      "Several 'No' options differ only in the reason given: negligible R2 despite confounding, significant but small, or count differences driven by treatment rather than plate bias. Team B's stated reasoning (row/column variance is mostly treatment) is the wording of a different option from the one it chose, and its sample-level p-value fits a third.",
+      "'Warranted' can be read as 'is there a position effect large enough to matter' or as 'does the design make position a threat to the cytokine-versus-PBS comparison'. All PBS wells sit on one edge, so every interior cytokine is compared against an edge control; under the second reading the layout matters more than the plate-wide R2.",
+      "'Before performing differential abundance analysis' points at cell-type abundance per sample as the affected quantity, not total cell recovery per well."
+    ],
+    "verdict": "Moderate trust. Both teams measured the same outer-ring contrast on the same outcome with the same yardsticks from a shared library note, and both left a large row/column pattern unexplained; the within-PBS replicate wells, the cell-type composition and the unit of inference for significance were not examined, and each of these bears on which of the closely worded options the data support.",
+    "questions": [
+      {
+        "to": "sc36-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you recorded that PBS cannot be tested within itself, but the six PBS wells H7-H12 hold one treatment in six different columns (H12 is a corner well), each with 12 donors. Tabulate cells per PBS well x donor and check whether the column trend you saw plate-wide (columns 5-9 higher, 12 lower) appears among the PBS wells, and how the well-to-well spread among the six PBS wells compares with the spread among single-cytokine wells in the same columns of rows A-G. This is the one place where position varies with treatment held fixed. Does the result change what you conclude about the row/column pattern, and does it change your method?",
+        "from": [
+          "sl-sc-test-a7f1294f60e5",
+          "sl-sc-test-99cfffd91c98",
+          "sl-sc-test-afa76ed99991"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-c0e0bb318ffc"
+      },
+      {
+        "to": "sc36-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your heatmap note says columns 1-2 and 12 are lower than the middle columns, which is itself an edge-like pattern in one direction, yet your outer-ring contrast gives R2 = 0.0015. Split the edge descriptor and refit at well level: left/right edge columns (1, 12) alone, top/bottom edge rows (A, H) alone, corner wells, the two outer rings, and a continuous distance from the plate centre by row and by column. Report R2 and the percent difference with its direction for each. Does the outer-ring contrast average two patterns of opposite sign or unequal size? Does any definition move the effect across the thresholds you used, and does that change your method?",
+        "from": [
+          "sl-sc-test-99cfffd91c98",
+          "sl-sc-test-16f9a84701ea"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-823600945a74"
+      },
+      {
+        "to": "sc36-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: the task concerns differential abundance, which is computed on cell-type composition per sample, and your outcome was total cells per well. The cell_type column was not used. Compute cell-type proportions per well x donor and check how much of their variation the edge descriptor (and row and column) explains, including among the six PBS wells; set the edge-versus-interior difference in proportions beside the typical size of a cytokine-versus-PBS difference, given that every PBS well is an edge well. Is the position effect on composition of the same order as the one on total counts? Does that change your method?",
+        "from": [
+          "sl-sc-test-96e4aa85fcd6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-6fe659dde57d"
+      },
+      {
+        "to": "sc36-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your answer rests on reading 'position effect' as the outer-ring contrast, and your own row+column fit gives R2 = 0.76, which you named as your weakest point. That fit spends 18 parameters on 96 wells. Permute the well-to-count assignment many times and report the row+column R2 expected by chance, and separately the R2 of column alone and row alone with their permutation ranges. Then write down which words of the task and of the options select the edge indicator rather than row/column position as 'the position effect'. Does the result change your method or your confidence?",
+        "from": [
+          "sl-sc-test-99cfffd91c98",
+          "sl-sc-test-1889125e430e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-21246faae64e"
+      },
+      {
+        "to": "sc36-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you attributed the row/column variance (column R2 0.53, row R2 0.24) to treatment because cytokine R2 on well counts is 0.96. Ninety of the 91 labels occupy a single well, so that R2 is nearly fixed by the layout whatever the cause. The six PBS wells H7-H12 are the only place where treatment is constant and position varies. Compare the spread of cells per well among the six PBS wells (per donor and summed) with the spread among single-cytokine wells, and check whether the plate-wide column trend over columns 7-12 appears inside the PBS wells. Does the evidence support 'driven by treatment', 'driven by position', or neither, and which option's wording does your own reasoning match? Does that change your method?",
+        "from": [
+          "sl-sc-test-805f8bae47fa",
+          "sl-sc-test-051f73dcc695"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-0c510d3a2624"
+      },
+      {
+        "to": "sc36-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you report edge R2 = 0.013 with p about 1e-4 on per-sample counts and R2 = 0.0015 with p = 0.71 on per-well counts. The twelve samples in a well share that well, so the sample-level test does not have independent units. Redo the sample-level test with the well as the unit of inference (for example by permuting the edge label across the 96 wells, or with well-clustered errors, with donor adjusted). Is the edge effect then statistically significant or not? The 'No' options differ on exactly this point (negligible, versus significant but small). Does the result change which statement your numbers support, or your method?",
+        "from": [
+          "sl-sc-test-805f8bae47fa",
+          "sl-sc-test-9e32e220880d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-dd6fc72ea980"
+      },
+      {
+        "to": "sc36-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you named the outer-ring edge definition as an assumption and did not vary it. Refit at well level with other reasonable definitions: left/right edge columns (1, 12) alone, top/bottom edge rows (A, H) alone, corner wells, the two outer rings, and a continuous distance from the plate centre by row and by column. Report R2 and the direction of the difference for each. Does the outer-ring contrast hide an effect confined to one direction? Does any definition cross the thresholds you applied, and does that change your method?",
+        "from": [
+          "sl-sc-test-d9ba41becd05",
+          "sl-sc-test-d78ddee3a8bf"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-65fee7efc624"
+      },
+      {
+        "to": "sc36-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: the task concerns differential abundance, which works on cell-type composition per donor x cytokine sample, and the cell_type column was not used; you also flagged the 100k subsample without checking it. Check two things: whether cells per sample in this subsample behave like a proportional draw (so that per-well counts can stand for recovery at all), and how much of the variation in cell-type proportions per sample the edge descriptor explains, including among the six PBS wells and relative to the typical cytokine-versus-PBS difference, given that all PBS wells are edge wells. Does either result change your method or your confidence?",
+        "from": [
+          "sl-sc-test-d9ba41becd05",
+          "sl-sc-test-056570150875"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-af7d86083b5e"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In split-pool combinatorial barcoding single-cell RNA-seq workflows where the first-round barcoding plate well serves as the sample identifier, are cells cultured or treated in that plate, or are already fixed cells only loaded into it for barcoding? Are plate edge effects (for example evaporation-driven loss at outer wells) documented for the first-round barcoding plate, and if so how are they usually assessed?",
+          "why": "Both teams assumed that the round-1 well position is where an edge effect would arise. Whether that is physically plausible decides how much weight a small or absent edge contrast should carry and what pattern (outer ring, row, column) to look for.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In plate-based assays, how is an 'edge effect' conventionally defined and quantified when deciding whether to apply edge or positional normalization: outer ring only versus two outer rings, a binary edge indicator versus row and column terms, and what effect-size measure and cut-offs are used to call it negligible or substantial?",
+          "why": "The teams' edge-indicator R2 and their row+column R2 fall on opposite sides of the thresholds they used, so the conventional definition of the position effect decides which reading applies.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When each treatment occupies its own fixed plate wells and all control wells sit on one plate edge (treatment fully aliased with position), what do experimental-design and plate-normalization references recommend: is positional or edge normalization considered warranted, not estimable, or harmful in that situation, and what evidence is expected before applying it?",
+          "why": "Both teams relied on one shared library note saying that confounding alone does not settle the question. An independent statement of the convention would show whether full aliasing is itself treated as grounds for or against normalization.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In split-pool combinatorial barcoding scRNA-seq where the round-1 well is the sample ID, are cells cultured/treated in that plate or are fixed cells only loaded into it? Are edge effects documented for the round-1 plate and how are they assessed?",
+          "answer": "Cells are not cultured or treated there. In the Parse Evercode protocols, cells are fixed and permeabilized beforehand, then thawed and only loaded into the Round 1 plate (e.g. ~37,500 cells/well) for a short in situ reverse-transcription step in a thermocycler. Evaporation edge effects come from long incubations, e.g. 72 h at 37 C in culture, so they are not physically expected in this plate. The protocols I read document no Round 1 edge effect. Any position artefact would come from cell input at loading (pipetting, settling), so it would show as a row or column pattern rather than an outer ring. That is checked with an 8x12 heatmap and a row+column fit of cells per well. Whether the 91-cytokine treatment itself happened in some other plate is not settled by these sources.",
+          "sources": [
+            "https://support.parsebiosciences.com/hc/en-us/article_attachments/31841833600532",
+            "https://www.protocols.io/view/evercode-wt-mega-v2-2-1-cysrxwd6.pdf",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8024881/"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc36-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-22f337206d20"
+            },
+            "sc36-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-9dfbee047cb9"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In split-pool combinatorial barcoding scRNA-seq where the round-1 well is the sample ID, are cells cultured/treated in that plate or are fixed cells only loaded into it? Are edge effects documented for the round-1 plate and how are they assessed? ANSWER: Cells are not cultured or treated there. In the Parse Evercode protocols, cells are fixed and permeabilized beforehand, then thawed and only loaded into the Round 1 plate (e.g. ~37,500 cells/well) for a short in situ reverse-transcription step in a thermocycler. Evaporation edge effects come from long incubations, e.g. 72 h at 37 C in culture, so they are not physically expected in this plate. The protocols I read document no Round 1 edge effect. Any position artefact would come from cell input at loading (pipetting, settling), so it would show as a row or column pattern rather than an outer ring. That is checked with an 8x12 heatmap and a row+column fit of cells per well. Whether the 91-cytokine treatment itself happened in some other plate is not settled by these sources. HOW SURE: high. SOURCES: https://support.parsebiosciences.com/hc/en-us/article_attachments/31841833600532, https://www.protocols.io/view/evercode-wt-mega-v2-2-1-cysrxwd6.pdf, https://pmc.ncbi.nlm.nih.gov/articles/PMC8024881/."
+        },
+        {
+          "question": "How is a plate edge effect conventionally defined and quantified (outer ring vs two rings, binary edge vs row/column terms, effect-size measure and cut-offs)?",
+          "answer": "The edge effect is conventionally the outer ring of wells (rows A/H, columns 1/12). In culture plates it can reach rows 2-3: on VWR plates, outer wells were -35%, row 2 -25% and row 3 -10% versus centre wells; on Greiner plates the figures were -16%, -7% and -1%. HTS work models spatial bias with row and column terms (B-score/median polish, Loess) and treats the edge effect as a special case. Magnitude is reported as percent difference from centre wells, or as row/column bias compared with signal. I found no conventional R2 cut-off; thresholds such as 0.02 or 0.3 are analyst choices.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8024881/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4653387/",
+            "https://www.quantics.co.uk/blog/plate-layout/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4318693/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc36-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-b8974ca53ede"
+            },
+            "sc36-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-2ca9c4e3bcb6"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How is a plate edge effect conventionally defined and quantified (outer ring vs two rings, binary edge vs row/column terms, effect-size measure and cut-offs)? ANSWER: The edge effect is conventionally the outer ring of wells (rows A/H, columns 1/12). In culture plates it can reach rows 2-3: on VWR plates, outer wells were -35%, row 2 -25% and row 3 -10% versus centre wells; on Greiner plates the figures were -16%, -7% and -1%. HTS work models spatial bias with row and column terms (B-score/median polish, Loess) and treats the edge effect as a special case. Magnitude is reported as percent difference from centre wells, or as row/column bias compared with signal. I found no conventional R2 cut-off; thresholds such as 0.02 or 0.3 are analyst choices. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC8024881/, https://pmc.ncbi.nlm.nih.gov/articles/PMC4653387/, https://www.quantics.co.uk/blog/plate-layout/, https://pmc.ncbi.nlm.nih.gov/articles/PMC4318693/."
+        },
+        {
+          "question": "When treatment is fully aliased with well position and controls sit on one edge, is positional/edge normalization warranted, not estimable, or harmful, and what evidence is expected?",
+          "answer": "Partly settled. The sources warn that controls placed on edge columns are sensitive to edge effects and that control-based normalization can then add bias. Positional normalization breaks down when actives are dense or clustered: above about a 20% hit rate the B-score normalizes incorrectly. They recommend scattered or randomized layouts so that plate effects can be estimated. When treatment and position are fully aliased, a position correction cannot tell plate bias from treatment effect and risks removing real signal. In that case a position effect has to be estimated independently, from uniformity/blank plates or from the same condition repeated across positions, before any correction. None of the sources I read recommends normalizing anyway under full aliasing, though none states this exact case word for word.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4653387/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4318693/",
+            "https://doi.org/10.1016/j.ailsci.2023.100073",
+            "https://www.quantics.co.uk/blog/plate-layout/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc36-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-63c18c4a7b3d"
+            },
+            "sc36-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-282d85689632"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When treatment is fully aliased with well position and controls sit on one edge, is positional/edge normalization warranted, not estimable, or harmful, and what evidence is expected? ANSWER: Partly settled. The sources warn that controls placed on edge columns are sensitive to edge effects and that control-based normalization can then add bias. Positional normalization breaks down when actives are dense or clustered: above about a 20% hit rate the B-score normalizes incorrectly. They recommend scattered or randomized layouts so that plate effects can be estimated. When treatment and position are fully aliased, a position correction cannot tell plate bias from treatment effect and risks removing real signal. In that case a position effect has to be estimated independently, from uniformity/blank plates or from the same condition repeated across positions, before any correction. None of the sources I read recommends normalizing anyway under full aliasing, though none states this exact case word for word. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC4653387/, https://pmc.ncbi.nlm.nih.gov/articles/PMC4318693/, https://doi.org/10.1016/j.ailsci.2023.100073, https://www.quantics.co.uk/blog/plate-layout/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc36-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc36-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc36-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc36-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc36-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 84.74316029099282,
+      "cost_usd": 0.3480252,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 58.327667083009146,
+      "cost_usd": 0.09659170000000002,
+      "error": null
+    },
+    {
+      "agent": "sc36-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 62.8707503330661,
+      "cost_usd": 0.182807,
+      "error": null
+    },
+    {
+      "agent": "sc36-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 67.6183531669667,
+      "cost_usd": 0.20557040000000004,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 161.35496566607617,
+      "cost_usd": 0.29393040000000004,
+      "error": null
+    },
+    {
+      "agent": "sc36-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 89.60841762495693,
+      "cost_usd": 0.3860114,
+      "error": null
+    },
+    {
+      "agent": "sc36-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 92.13530175003689,
+      "cost_usd": 0.3930657999999999,
+      "error": null
+    },
+    {
+      "agent": "sc36-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 123.15620583307464,
+      "cost_usd": 0.4601732,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

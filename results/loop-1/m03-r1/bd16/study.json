@@ -1,0 +1,291 @@
+{
+  "study": "bd16",
+  "status": "replicated",
+  "final": {
+    "agent": "bd16-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd16/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m03/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bd16-library": "opus",
+    "bd16-team-a": "opus",
+    "bd16-team-b": "opus",
+    "bd16-team-c": "opus",
+    "bd16-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd16-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd16/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd16-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd16/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd16-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd16/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd16-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd16/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd16-team-a",
+        "bd16-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd16-team-a",
+        "bd16-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Find out whether TERT promoter mutation status is actually measured before you test anything. If the mutation calls come from whole-exome sequencing (check data_gene_panel_matrix.txt), the TERT promoter hotspots C228T and C250T (hg19 chr5:1,295,228 and chr5:1,295,250; they appear as G>A because TERT is on the minus strand) are usually not captured. Grep TERT in data_mutations.txt and tabulate Variant_Classification (5'Flank, 5'UTR, IGR, Promoter) and Start_Position near those coordinates. Also grep every clinical column header and value for TERT. A sample with no call has not been shown to be wild type. If no promoter-status variable exists anywhere, say so instead of assigning wild type to untested samples.",
+      "from": [
+        "sl-m03-r1-1d4750c91b21"
+      ],
+      "reason": "Whether the main exposure variable exists decides between a real test and Not verifiable. Treating samples with no call as wild type would produce a spurious comparison.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-b11d7608f4ff"
+      }
+    },
+    {
+      "text": "TERT coding or missense mutations, TERT copy-number gain (data_cna.txt, linear CNA, seg) and TERT expression are not substitutes for TERT promoter mutation status. Use a variant as a promoter mutation only if it sits at the -124/-146 promoter hotspots (or a clinical column explicitly records TERT promoter status).",
+      "from": [
+        "sl-m03-r1-d8d7f5514406"
+      ],
+      "reason": "Swapping in a proxy for the exposure would test a different hypothesis. Expression is the outcome, so it cannot also define the exposure.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-d3b15713081d"
+      }
+    },
+    {
+      "text": "Sample IDs may differ between files: TCGA barcodes of 12, 15 or more characters, recurrent tumours, duplicate aliquots. Map the mutation Tumor_Sample_Barcode values, any clinical TERT field and the expression column names to the 15-character SAMPLE_ID. Report how many samples overlap, keep primary tumours only (check SAMPLE_TYPE), and keep one sample per patient.",
+      "from": [
+        "sl-m03-r1-7b7868e47b07"
+      ],
+      "reason": "Joins that fail silently or duplicate samples change the group sizes and can bias the comparison.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-ada724324826"
+      }
+    },
+    {
+      "text": "TERT mRNA is low in RNA-seq, and many RSEM values may be at or near 0. Before testing, check TERT's distribution and count its zeros in data_mrna_seq_v2_rsem.txt. If the values are skewed or zero-inflated, use log2(RSEM+1) with a Mann-Whitney test. Report the group medians, an effect size and the fraction of samples expressing TERT in each group. Pick one expression file (raw RSEM or one z-score file) as the primary measure and use it throughout.",
+      "from": [
+        "sl-m03-r1-f3cecdc110aa"
+      ],
+      "reason": "A t-test on raw values, or on z-scores with outliers, can mislead for a low, zero-inflated transcript, and switching between expression files invites cherry-picking.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-7b61f1f29f4d"
+      }
+    },
+    {
+      "text": "IDH status confounds this comparison. IDH-mutant or G-CIMP gliomas rarely carry TERT promoter mutations, often use ATRX/ALT instead and have low TERT expression. If promoter status is available, tabulate it against IDH1_MUTATION and G_CIMP_METHYLATION (data_clinical_sample.txt) and against ATRX mutations. If the groups are unbalanced, repeat the test within IDH-wild-type samples only (or adjust for IDH) and report both the crude and the stratified results.",
+      "from": [
+        "sl-m03-r1-623c6d4d74f0"
+      ],
+      "reason": "A crude comparison could reflect IDH or ALT biology rather than an effect of the promoter mutation.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-c812be257fa1"
+      }
+    },
+    {
+      "text": "The hypothesis is a negative claim: no correlation. A non-significant p-value in a small or underpowered group does not support it. Report n per group, the effect size and its confidence interval. Answer True only if the data show a precise null, i.e. a narrow interval around no difference. A clear rise in expression in mutant tumours contradicts the hypothesis.",
+      "from": [
+        "sl-m03-r1-77ce96d2b8bf"
+      ],
+      "reason": "The label depends on reading a null result correctly. Absence of evidence in small groups is not evidence of no correlation.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-a779d4737df9"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 2,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed that if TERT promoter status is not in data_mutations.txt or a clinical column, it is absent from the study. Both teams searched those places, so this is a tested assumption, not a blind one.",
+      "Both teams assumed that the exome-based MAF says nothing about the promoter. The MAF does contain a few non-coding calls (9 5'Flank and 43 5'UTR in the whole file), so the call set is not strictly coding-only. That makes it worth confirming that none of these calls touch the TERT locus."
+    ],
+    "unused_evidence": [
+      "IDH1 Mutation, G-CIMP Methylation, Gene Expression Subtype and MGMT columns in data_clinical_sample.txt. These would only matter for a proxy-based argument, and the library rule forbids using a proxy. Team B named such a proxy and rejected it.",
+      "The Sample Type column (543 Primary, 34 NA) and the Hotspot column in the MAF. Neither could create a promoter-status variable, so ignoring them cannot change the label.",
+      "data_cna / data_linear_cna / seg for TERT. These are excluded by the standing rule that copy number is not a stand-in for promoter mutation."
+    ],
+    "unresolved_weak_points": [
+      "Team A's weak point is that the answer rests on absence of evidence. It was largely addressed: both teams scanned all clinical headers and values and searched the mutations by position. Neither team reported the genome-wide count of non-coding calls, which would show directly that the pipeline does not call flanking regions.",
+      "Team B's weak point is the possible ATRX/IDH proxy. It was resolved correctly by refusing to use the proxy."
+    ],
+    "second_readings": [
+      "One could read 'TERT promoter mutations' loosely as any TERT alteration (coding mutation or gain) and run the test that way. That reading is not reasonable, because the hypothesis names the promoter specifically, and the library rule forbids the substitution.",
+      "One could read the label rules so that a failure to find any correlation counts as support ('True'). But an untested group cannot be called wild type, so there is no comparison to run, and 'Not verifiable' remains the fitting label."
+    ],
+    "verdict": "I trust the agreed 'Not verifiable' answer highly. The mutation file is exome-based: it has only 9 5'Flank calls in total, and its only TERT call is coding (chr5:1279521). No clinical column records TERT promoter status, so the grouping variable is not in the data. Both teams checked this directly instead of assuming it.",
+    "questions": [
+      {
+        "to": "bd16-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your weakest point is absence of evidence. Tabulate every non-coding call in data_mutations.txt (5'Flank, 5'UTR, IGR, Intron, RNA) with gene and position, and report how many fall within 5 kb upstream of any gene's start. Does this show that the pipeline essentially never calls promoter regions, and does that change your method or only firm up the label?",
+        "from": [
+          "sl-m03-r1-1984c5304b29"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-f41ee86cba6b"
+      },
+      {
+        "to": "bd16-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check whether any column in data_clinical_sample.txt or data_clinical_patient.txt has values that encode TERT or telomere status without the word TERT in its header. List the distinct values of every categorical column, including Gene Expression Subtype, Methylation Status and therapy. If none encodes promoter status, does your conclusion stand unchanged?",
+        "from": [
+          "sl-m03-r1-4091b41d5b4e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-53949ca0a6e2"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd16-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd16-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd16-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd16-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd16-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 75.35926387505606,
+      "cost_usd": 0.216108,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 60.712378582917154,
+      "cost_usd": 0.1919324,
+      "error": null
+    },
+    {
+      "agent": "bd16-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 54.734304832993075,
+      "cost_usd": 0.144833,
+      "error": null
+    },
+    {
+      "agent": "bd16-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 58.328451749985106,
+      "cost_usd": 0.1492906,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 69.10030208295211,
+      "cost_usd": 0.22945,
+      "error": null
+    },
+    {
+      "agent": "bd16-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 41.49736120796297,
+      "cost_usd": 0.15144059999999998,
+      "error": null
+    },
+    {
+      "agent": "bd16-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 61.09550349996425,
+      "cost_usd": 0.11810480000000001,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,354 @@
+{
+  "study": "bd18",
+  "status": "replicated",
+  "final": {
+    "agent": "bd18-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd18/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "recheck": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m01/prompts",
+    "reuse_first_round": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1"
+  },
+  "models": {
+    "director": "opus",
+    "bd18-library": "opus",
+    "bd18-team-a": "opus",
+    "bd18-team-b": "opus",
+    "bd18-team-c": "opus",
+    "bd18-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd18-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd18/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd18-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd18/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd18-team-b",
+      "round": "recheck",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd18/candidates/team-b-recheck.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      },
+      "not_used": "the re-check's verdict kept the earlier answer: the answer is still 'Not verifiable'"
+    },
+    {
+      "team": "team-a",
+      "agent": "bd18-team-a",
+      "round": "recheck",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd18/candidates/team-a-recheck.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      },
+      "not_used": "the re-check's verdict kept the earlier answer: the answer is still 'Not verifiable'"
+    },
+    {
+      "team": "team-a",
+      "agent": "bd18-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd18/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd18-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd18/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd18-team-a",
+        "bd18-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd18-team-a",
+        "bd18-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "To test panel-vs-WES TMB correlation you need a WES-derived TMB (or WES mutation calls) for the same samples as the targeted-panel TMB. Before analysing, check whether such a variable exists: grep all clinical-table headers and '#' description lines for 'WES', 'exome', 'whole', and inspect data_gene_panel_matrix.txt and the mutation table's Center/Sequencer-type columns for any assay other than the MSK-IMPACT panels (IMPACT341/410/468). Do not construct a WES proxy from panel data; whether a genuine second assay is present decides whether the claim can be tested at all.",
+      "from": [
+        "sl-dev-panel-noise-lab1-974d84b435b5"
+      ],
+      "reason": "The key question is whether the comparison variable exists. Without this check a team could build a spurious comparison.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-cde402838e28"
+      }
+    },
+    {
+      "text": "MUTATION_RATE and TMB_NONSYNONYMOUS in data_clinical_sample.txt, and mutation counts recomputed from data_mutations.txt, all come from the same panel mutation calls (counts per panel Mb, with different filters or denominators). Correlating any of them with each other is circular and says nothing about panel-vs-WES concordance. To confirm, compute TMB_NONSYNONYMOUS/MUTATION_RATE per GENE_PANEL: a near-constant ratio shows they are rescalings of each other.",
+      "from": [
+        "sl-dev-panel-noise-lab1-bcbf45453a6c"
+      ],
+      "reason": "This is the most likely trap: a high correlation between two panel-derived TMB columns could be mistaken for evidence about WES.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-e2b5007890ec"
+      }
+    },
+    {
+      "text": "If genuinely paired panel and WES TMB values exist: use Spearman, or Pearson on log(TMB+1), because TMB is right-skewed and hypermutators dominate raw Pearson. Keep one sample per patient. Normalise per panel-specific Mb or stratify by IMPACT panel version. Keep correlation separate from agreement: panels can show systematic bias (for example higher TMB) and still correlate highly, and the hypothesis is about correlation only.",
+      "from": [
+        "sl-dev-panel-noise-lab1-f2da36bb1859",
+        "sl-dev-panel-noise-lab1-78ea14b907b2",
+        "sl-dev-panel-noise-lab1-8268f0689d1d",
+        "sl-dev-panel-noise-lab1-21b09980f9bc"
+      ],
+      "reason": "These choices decide whether a real correlation test is valid and read correctly, if such a test is possible.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-b331c601d2ed"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 4,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed that 'Not verifiable' is the right label whenever one side of the comparison (WES TMB) is absent, without considering whether any within-data surrogate of a larger-territory measurement (e.g., the same patient sequenced on panels of different size) could bear on panel-vs-broader concordance.",
+      "Both assumed the hypothesis requires per-sample paired WES values; neither discussed that a negative claim ('do not correlate') is still untestable, not supported, when the comparator is missing."
+    ],
+    "unused_evidence": [
+      "Panel version (IMPACT341/410/468) differs in genomic territory; neither team reported whether any patient has samples on more than one panel version, which is the only within-data comparison of TMB across assays of different size. Team A checked samples per patient but did not report the result.",
+      "Mutation-table validation fields (Validation_Method, Validation_Status, Verification_Status, Tumor_Validation_Allele*) are empty/Unknown; neither team stated this explicitly as evidence that no orthogonal (e.g., exome) validation is encoded.",
+      "Patient-level clinical columns (IRB, treatment) were not discussed as possible markers of a WES-sequenced sub-cohort."
+    ],
+    "unresolved_weak_points": [
+      "Team B's weakest point (WES data may exist in the source study but not here) was reported, not resolved; it does not change the label but should be stated as the reason.",
+      "Team A's weakest point (WES value under a non-obvious column name) was addressed by reviewing all clinical columns; mostly resolved."
+    ],
+    "second_readings": [
+      "'Targeted NGS vs WES' could be read loosely as 'smaller vs larger sequencing territory'; under that reading, cross-panel-version comparisons within patients would be relevant, though they are not WES and the reading is weak.",
+      "The claim is a negative ('do not correlate'); a reader could argue that lack of a comparator 'fails to support' it (True-ish/False-ish), but the task's definition maps missing variables to Not verifiable."
+    ],
+    "verdict": "I trust the agreed Not verifiable label highly: I confirmed every sample is MSK-IMPACT only, the mutation table carries no orthogonal validation, and no file mentions exome/WES, so the comparator variable is absent. The questions are confirmatory and unlikely to change the label.",
+    "questions": [
+      {
+        "to": "bd18-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You checked samples per patient but did not report the result. Do any patients have samples sequenced on two different panel versions (e.g., IMPACT341 and IMPACT468)? If so, does a within-patient comparison of TMB across assays of different territory have any bearing on the hypothesis, or does it remain irrelevant because neither assay is WES? Does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m01-r1-a996419be2a6"
+      },
+      {
+        "to": "bd18-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate the patient-level columns (IRB, TREATMENT_TYPE, LINES_OF_TX) and confirm none of them flags a sub-cohort that underwent exome sequencing or another orthogonal assay. Does this change your label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m01-r1-4d802b3dae26"
+      },
+      {
+        "to": "bd18-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Report the value counts of Validation_Method, Validation_Status, Verification_Status and Tumor_Validation_Allele1/2 in the mutation table. Are any mutations validated by an orthogonal (e.g., exome) platform? Does the result change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m01-r1-020f2509276a"
+      },
+      {
+        "to": "bd18-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check whether any patient has more than one sample, especially on different panel versions. If so, could a cross-panel TMB comparison be used as evidence about the hypothesis, or is it outside its scope because neither assay is WES? Does this change your method or label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m01-r1-cb0e19e4a676"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd18-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd18-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd18-team-b",
+      "round": "recheck",
+      "reason": "the re-check's verdict kept the earlier answer: the answer is still 'Not verifiable'"
+    },
+    {
+      "agent": "bd18-team-a",
+      "round": "recheck",
+      "reason": "the re-check's verdict kept the earlier answer: the answer is still 'Not verifiable'"
+    },
+    {
+      "agent": "bd18-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd18-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd18-team-b",
+      "phase": "recheck",
+      "ok": true,
+      "seconds": 33.11570495902561,
+      "cost_usd": 0.1332604,
+      "error": null
+    },
+    {
+      "agent": "bd18-team-a",
+      "phase": "recheck",
+      "ok": true,
+      "seconds": 38.049888333072886,
+      "cost_usd": 0.16211699999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 55.69850154093001,
+      "cost_usd": 0.1920484,
+      "error": null
+    },
+    {
+      "agent": "bd18-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 38.04179462499451,
+      "cost_usd": 0.1237084,
+      "error": null
+    },
+    {
+      "agent": "bd18-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 48.970023041940294,
+      "cost_usd": 0.1294048,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": [],
+  "recheck": [
+    {
+      "team": "team-b",
+      "before": "Not verifiable",
+      "after": "Not verifiable",
+      "accepted": false,
+      "reason": "the answer is still 'Not verifiable'",
+      "candidate": "team-b-recheck",
+      "test": {
+        "test": "none possible: searched all files for WES-derived TMB or exome calls; only panel TMB (data_clinical_sample.txt: TMB_NONSYNONYMOUS) exists; data_mutations.txt Sequencing_Phase/Sequencer/Sequence_Source are entirely empty; no file mentions exome/WES",
+        "variables": [
+          "data_clinical_sample.txt: TMB_NONSYNONYMOUS",
+          "data_clinical_sample.txt: GENE_PANEL",
+          "data_mutations.txt: Sequencing_Phase",
+          "data_mutations.txt: Sequencer",
+          "data_mutations.txt: Sequence_Source"
+        ],
+        "statistic": null,
+        "p_value": null,
+        "n": 0,
+        "direction": "not tested"
+      },
+      "in_use": "team-b-analysis"
+    },
+    {
+      "team": "team-a",
+      "before": "Not verifiable",
+      "after": "Not verifiable",
+      "accepted": false,
+      "reason": "the answer is still 'Not verifiable'",
+      "candidate": "team-a-recheck",
+      "test": {
+        "test": "none possible: searched all files for a whole-exome TMB or WES-derived variable to pair with panel TMB",
+        "variables": [
+          "data_clinical_sample.txt: TMB_NONSYNONYMOUS",
+          "data_clinical_sample.txt: GENE_PANEL",
+          "data_gene_panel_matrix.txt: mutations",
+          "data_mutations.txt: Sequencing_Phase",
+          "data_mutations.txt: Sequence_Source"
+        ],
+        "statistic": null,
+        "p_value": null,
+        "n": 0,
+        "direction": "none"
+      },
+      "in_use": "team-a-analysis"
+    }
+  ],
+  "reused": {
+    "from": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1",
+    "memory_replayed": {
+      "writes": null,
+      "pass_downs": 3,
+      "note": "memory writes are replayed only with local memory"
+    },
+    "first_round_cost_usd": 0.71205,
+    "first_round_runs": 4
+  }
+}

@@ -1,0 +1,373 @@
+{
+  "study": "pf12",
+  "status": "replicated",
+  "final": {
+    "agent": "pf12-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-pilot/lab-planted/pf12/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "pf12-library": "opus",
+    "pf12-team-a": "opus",
+    "pf12-team-b": "opus",
+    "pf12-team-c": "opus",
+    "pf12-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "pf12-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-pilot/lab-planted/pf12/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "pf12-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-pilot/lab-planted/pf12/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "pf12-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-pilot/lab-planted/pf12/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "pf12-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-pilot/lab-planted/pf12/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "pf12-team-a",
+        "pf12-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "pf12-team-a",
+        "pf12-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "STATIN_USE in data_clinical_patient.txt is reverse-coded according to its # column description: 1 = NOT taking statins, 0 = taking statins. Read the description line, cross-tab STATIN_USE against STATIN_DOSE_MG (users should have dose > 0, non-users dose 0), define statin user as STATIN_USE == 0 confirmed by dose, and report any discordant rows instead of silently choosing one column.",
+      "from": [
+        "sl-lab-planted-8da5bfc76c39"
+      ],
+      "reason": "Reading 1 as 'user' flips the sign of the comparison and so flips the direction of the conclusion.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-cf4ada9763b9"
+      }
+    },
+    {
+      "text": "data_clinical_sample.txt can contain several samples per patient (e.g. -T1/-T2, or a primary plus a metastasis). Count samples per PATIENT_ID after merging; if any patient has more than one, analyse one value per patient (e.g. the primary tumour or the patient mean) or fit a mixed model with a patient random intercept.",
+      "from": [
+        "sl-lab-planted-efc2d37d7e21"
+      ],
+      "reason": "Treating samples as independent inflates n and can give false significance.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-7528e49c1e8e"
+      }
+    },
+    {
+      "text": "Joining the sample and patient tables on PATIENT_ID can drop or duplicate rows, and missing PROLIFERATION_SCORE values may not be random. Count unmatched PATIENT_IDs on each side and missing scores by statin group, report the exclusions, and check the result holds without them.",
+      "from": [
+        "sl-lab-planted-cdb7d3973a90"
+      ],
+      "reason": "Silent row loss or duplication, or missingness that differs by group, can bias the group comparison.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-6609e3b3752d"
+      }
+    },
+    {
+      "text": "Bulk-expression proliferation scores are sensitive to TUMOR_PURITY, PROCESSING_BATCH, SAMPLE_TYPE (primary vs metastasis) and SITE, and any of these can be unevenly spread between statin groups. Correlate purity with the score and compare purity between groups; cross-tab statin status by batch, sample type and site and compare scores within each stratum. Adjust for these (covariates or fixed effects) or stratify, report crude and adjusted results, and check whether the direction within strata agrees with the pooled direction (Simpson's paradox); if it changes, trust the adjusted/stratified result.",
+      "from": [
+        "sl-lab-planted-143c0c0afa4f",
+        "sl-lab-planted-1488d849f28b",
+        "sl-lab-planted-e842fb04efd3",
+        "sl-lab-planted-46849c4d5765"
+      ],
+      "reason": "Technical and design factors can create, hide or reverse a statin difference in the pooled comparison.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-bd4f617920fc"
+      }
+    },
+    {
+      "text": "Statin users typically differ from non-users in AGE, FASTING_GLUCOSE/diabetes, BMI and ECOG_PS (found in data_clinical_supplement.txt). Compare these between groups and, alongside the crude test, run a patient-level multivariable regression of PROLIFERATION_SCORE on statin status plus these covariates and the technical/design variables (purity, batch, site, sample type).",
+      "from": [
+        "sl-lab-planted-37f5813a92c8"
+      ],
+      "reason": "Patient characteristics linked to statin use may also relate to tumour biology and confound the comparison.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-82d4dd272635"
+      }
+    },
+    {
+      "text": "Report the statin effect as an effect size with a 95% CI, not just a p-value, and examine the trend of PROLIFERATION_SCORE across STATIN_DOSE_MG among users, since the dose trend can tell a different story from the binary flag. Decision rule: the hypothesis is supported only if the adjusted, patient-level difference (users minus non-users) is clearly negative; if users are not lower (null or higher), that is evidence against the definite claim. 'Not verifiable' does not fit when the statin and proliferation variables exist.",
+      "from": [
+        "sl-lab-planted-50eee9be035a"
+      ],
+      "reason": "Prevents mislabelling a null or opposite result, and the dose trend is a consistency check on the main contrast.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-d9a27935247a"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat the blood-test covariates (glucose, calcium, haemoglobin) as being on one common scale across hospital sites, although the column description says each site ran its own blood tests; a site-specific unit or calibration would distort any model that adjusts for them.",
+      "Both teams assume PROCESSING_BATCH is a purely technical nuisance factor and adjust for it, without reporting whether batch is tied to SITE or to statin dose, which would make batch adjustment partly remove real exposure variation.",
+      "Both teams assume a linear additive OLS model for the score is adequate; the dose analysis assumes a linear dose slope."
+    ],
+    "unused_evidence": [
+      "STATIN_DOSE_MG was used only as a coding check and a secondary trend; neither team reported how dose is distributed across batches and sites, which is what would explain the crude positive dose-score correlation among users that disappears after adjustment.",
+      "SITE is described as the site that ran the blood tests; neither team reported checking per-site distributions of glucose, calcium and haemoglobin for unit or scale shifts before using them as covariates.",
+      "FOLLOW_UP_MONTHS was entered as a covariate by team b; it is measured after enrolment and may not be a suitable adjustment variable, though it is unlikely to reverse a within-batch difference."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the lack of a dose-response (crude rho 0.20 in the wrong direction) and residual confounding; both only reported the adjusted slope being null and did not explain why the crude slope is positive.",
+      "The earlier director questions on sentinels/outliers and on interactions/within-batch z-scores were answered by both teams with no change; these weak points look resolved."
+    ],
+    "second_readings": [
+      "'Lower proliferation score' could mean mean or median; both teams ran Welch and Mann-Whitney and got the same direction, so this reading does not seem to matter.",
+      "The population could be read as all samples or primary tumours only; team b ran primary-only with the same direction. The hypothesis states an association, not a causal effect, so the missing dose-response does not on its own make it unverifiable."
+    ],
+    "verdict": "Fairly high trust: both teams decoded the reversed statin coding against dose, adjusted and stratified by batch, and found users lower in every stratum, and the earlier challenges changed nothing. The remaining questions are about covariate scale by site and the unexplained dose pattern, and neither seems likely to reverse a within-batch difference this consistent.",
+    "questions": [
+      {
+        "to": "pf12-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate STATIN_DOSE_MG among users by PROCESSING_BATCH and by SITE, and redo the dose-score correlation within each batch. Does that explain the positive crude dose correlation, and does it change your method or label?",
+        "from": [
+          "sl-lab-planted-b67c0ce309ac"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-3ce0dfc9812c"
+      },
+      {
+        "to": "pf12-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate FASTING_GLUCOSE, SERUM_CALCIUM and HEMOGLOBIN by SITE to look for unit or scale shifts (for example glucose in mmol/L at one site), and rerun the adjusted model with corrected or site-standardised covariates. Does the statin estimate change?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-fab72124be88"
+      },
+      {
+        "to": "pf12-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate PROCESSING_BATCH by SITE by statin status. If batch and site are nearly collinear, or one cell holds most users, does the within-cell comparison still show the same direction, and does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-efe4e3740f51"
+      },
+      {
+        "to": "pf12-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate STATIN_DOSE_MG among users by PROCESSING_BATCH and by SITE, and redo the dose-score correlation within each batch. Does that explain the positive crude dose correlation, and does it change your method or label?",
+        "from": [
+          "sl-lab-planted-89e7c200f864"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-7b6f4cd32157"
+      },
+      {
+        "to": "pf12-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate FASTING_GLUCOSE, SERUM_CALCIUM and HEMOGLOBIN by SITE to look for unit or scale shifts, and rerun your fully adjusted model with corrected or site-standardised covariates and with FOLLOW_UP_MONTHS removed (it is measured after enrolment). Does the statin estimate change?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-517b07aa7951"
+      },
+      {
+        "to": "pf12-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate PROCESSING_BATCH by SITE by statin status. If batch and site are nearly collinear, or one cell holds most users, does the within-cell comparison still show the same direction, and does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-7a0ba0b3600d"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In observational studies, should a variable measured after exposure assignment (such as follow-up duration) be included as an adjustment covariate when estimating an association between a baseline exposure and a baseline biomarker, and what bias can it introduce?",
+          "why": "One team adjusted for follow-up time; whether this is valid affects how the adjusted estimate should be read.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In observational studies, should a variable measured after exposure assignment (such as follow-up duration) be included as an adjustment covariate when estimating an association between a baseline exposure and a baseline biomarker, and what bias can it introduce?",
+          "answer": "Generally no. Adjustment covariates should be pre-exposure variables that could confound the exposure-outcome relation. Follow-up duration is measured after baseline, so it cannot cause a baseline biomarker and is not a confounder. If exposure or outcome affects it (for example statin users or high-proliferation patients being followed for different lengths of time, or follow-up reflecting survival or censoring), conditioning on it can cause collider/selection bias or overadjustment bias (Schisterman et al. 2009). At best it adds noise. Treat the crude or pre-exposure-adjusted estimate as primary and the follow-up-adjusted estimate only as a sensitivity check; if the two disagree, trust the one without follow-up. CAVEAT: the web gateway returned HTTP 403 on all 3 calls (2 searches, 1 contents), so no page was opened. This answer comes from standard epidemiology knowledge and the web did not confirm it.",
+          "sources": [
+            "https://doi.org/10.1097/EDE.0b013e3181a819a1",
+            "https://doi.org/10.1097/01.ede.0000135174.63482.43"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "pf12-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-planted-44eec5fbaf3e"
+            },
+            "pf12-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-planted-17a8e7c54a87"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In observational studies, should a variable measured after exposure assignment (such as follow-up duration) be included as an adjustment covariate when estimating an association between a baseline exposure and a baseline biomarker, and what bias can it introduce? ANSWER: Generally no. Adjustment covariates should be pre-exposure variables that could confound the exposure-outcome relation. Follow-up duration is measured after baseline, so it cannot cause a baseline biomarker and is not a confounder. If exposure or outcome affects it (for example statin users or high-proliferation patients being followed for different lengths of time, or follow-up reflecting survival or censoring), conditioning on it can cause collider/selection bias or overadjustment bias (Schisterman et al. 2009). At best it adds noise. Treat the crude or pre-exposure-adjusted estimate as primary and the follow-up-adjusted estimate only as a sensitivity check; if the two disagree, trust the one without follow-up. CAVEAT: the web gateway returned HTTP 403 on all 3 calls (2 searches, 1 contents), so no page was opened. This answer comes from standard epidemiology knowledge and the web did not confirm it. HOW SURE: medium. SOURCES: https://doi.org/10.1097/EDE.0b013e3181a819a1, https://doi.org/10.1097/01.ede.0000135174.63482.43."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "pf12-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "pf12-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "pf12-team-b",
+      "round": "challenge",
+      "reason": "agreed with pf12-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "pf12-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 36.92789945797995,
+      "cost_usd": 0.1044626,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 71.78707766707521,
+      "cost_usd": 0.2363894,
+      "error": null
+    },
+    {
+      "agent": "pf12-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 58.188331500045024,
+      "cost_usd": 0.23048119999999997,
+      "error": null
+    },
+    {
+      "agent": "pf12-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 59.24935041705612,
+      "cost_usd": 0.24549880000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 51.23060024995357,
+      "cost_usd": 0.2006446,
+      "error": null
+    },
+    {
+      "agent": "pf12-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 39.188566665980034,
+      "cost_usd": 0.1199046,
+      "error": null
+    },
+    {
+      "agent": "pf12-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 68.77513362490572,
+      "cost_usd": 0.33149140000000005,
+      "error": null
+    },
+    {
+      "agent": "pf12-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 71.72500091604888,
+      "cost_usd": 0.30344200000000005,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

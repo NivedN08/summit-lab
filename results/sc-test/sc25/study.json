@@ -1,0 +1,211 @@
+{
+  "study": "sc25",
+  "status": "replicated",
+  "final": {
+    "agent": "sc25-team-a",
+    "team": "team-a",
+    "round": "analysis",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc25/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc25-library": "opus",
+    "sc25-team-a": "opus",
+    "sc25-team-b": "opus",
+    "sc25-team-c": "opus",
+    "sc25-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "sc25-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc25/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc25-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc25/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc25-team-a",
+        "sc25-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Reading the file: the library reports that 159007346.node is an AnnData HDF5 (h5ad-format) file with a non-standard .node extension (about 435 MB). scanpy's sc.read() picks its parser from the file extension and will fail or mis-parse it. Open it with anndata.read_h5ad('159007346.node') (backed='r' avoids loading the matrix; read_h5ad ignores the extension), or pass ext='h5ad'. Confirm adata.obs is a DataFrame and that age_group is present. If the read fails, fix the read; never guess the obs columns, and base the batch-key decision only on columns actually read from the file.",
+      "from": [
+        "sl-sc-test-f5480d417130"
+      ],
+      "reason": "A failed or wrong read is the first place this task can go off track: without the real obs table the team would be guessing which columns exist, and the whole answer depends on that.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-747a21168148"
+      }
+    },
+    {
+      "text": "Do not test for the 'sample' column with attribute access. pandas DataFrame has a built-in method called .sample, so hasattr(adata.obs, 'sample') is always True and getattr(adata.obs, 'sample', None) is always non-None, whether or not a column named sample exists. Test only with 'sample' in adata.obs.columns, print list(adata.obs.columns) next to the boolean so the decision is visible, and use bracket access adata.obs['sample'] if the column is used afterwards.",
+      "from": [
+        "sl-sc-test-b3350daa986e"
+      ],
+      "reason": "An attribute-style existence check gives the same result regardless of the data, so it would silently fix the answer to one branch of the rule instead of letting the data decide.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-5a8acf4cd380"
+      }
+    },
+    {
+      "text": "Apply the rule by exact string equality. Rule 1 is satisfied only by an obs column literally named 'sample' (case-sensitive, no extra whitespace). Near-miss names such as Sample, sample_id, orig.ident, batch, donor or library do not satisfy it; conversely, if a column named exactly 'sample' exists it must be used even if it looks unsuitable (few levels, nested inside age_group, non-categorical dtype). Print repr() of every obs column name and evaluate exact equality; do not use str.contains, lower() or startswith. Mention any near-miss or data-quality observation only as a note, not as a reason to pick the other key.",
+      "from": [
+        "sl-sc-test-7e3bdb791b9b"
+      ],
+      "reason": "Fuzzy or judgement-based matching can flip the branch of a rule the task defines as deterministic; the team needs to know that only the literal name counts, in both directions.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-2cdc1b49c633"
+      }
+    },
+    {
+      "text": "Only obs columns count, not the obs index, obs values or other slots. Decide from adata.obs.columns after anndata.read_h5ad. In pandas, 'x' in df tests column labels but 'x' in df['col'] tests the Series index, not its values. If inspecting the file with h5py instead, the obs group stores the index as its own dataset alongside the real columns, so a raw listing of f['obs'] keys mixes the two: use f['obs'].attrs['column-order'] for the columns and ignore the entry named by f['obs'].attrs['_index']. Also print adata.obs.index.name. A name that appears only as the index name, only in var/uns/raw, or only as a value inside another column is not an obs column.",
+      "from": [
+        "sl-sc-test-f81830ca1f8a"
+      ],
+      "reason": "Checking the wrong object (a raw HDF5 key listing, the index name, a Series, or another AnnData slot) can produce a false hit or a false miss for the column test, which directly changes the reported key.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-e23d87f4ec30"
+      }
+    },
+    {
+      "text": "Do not override the stated rule with integration reasoning. Arguments from batch-correction best practice (per-sample level is the usual batch key; using the biological condition Adult vs Aged as batch key would remove the biology of interest; samples are nested within age group so the two cannot be separated) are not grounds for choosing a different key than the rule gives. The task asks which key the deterministic rule selects, nothing more. If a sample column exists, pd.crosstab of it against age_group may be run purely to document nesting, and confirm age_group has only the levels Adult and Aged; whatever that shows, report the key the rule selects and put any methodological concern in a note.",
+      "from": [
+        "sl-sc-test-8b4166d0c933"
+      ],
+      "reason": "An analyst who knows integration practice may be tempted to 'correct' the choice on scientific grounds; that would depart from the instruction and change the answer.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-aebcba5cb301"
+      }
+    },
+    {
+      "text": "Answer format and error handling: eval_answer.json must contain only {\"answer\": \"<letter>\"}, where the value is the option letter (A means sample, B means age_group), not the key name, with no extra fields or prose. After deciding batch_key, map it with {'sample': 'A', 'age_group': 'B'}[batch_key], write the file, re-read it with json.load and assert the value is in {'A','B'} and agrees with the printed column list. Write it before calling submit. Do not wrap code in try/except: a swallowed read error would silently fall through to the else branch of the rule.",
+      "from": [
+        "sl-sc-test-7a7d3c940b52"
+      ],
+      "reason": "The answer is graded by exact match, so reporting the key name instead of the letter fails even with a correct decision; and a swallowed exception would turn a read failure into a confident but unfounded else-branch answer.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-e24d755a40b0"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 0,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed the rule is a literal, case-sensitive test for an obs column named exactly 'sample'. This is not untested: team A printed repr of the column names and team B read both the obs keys and the column-order attribute. My own read of the file header shows the obs column-order is sample, total_counts, n_genes, age_group, n_genes_raw, with no near-miss names and no stray whitespace, so the assumption holds.",
+      "Both teams assumed 'obs' means the obs dataframe of the single supplied AnnData file and not the index or another slot. The obs index is the barcode list and is unnamed, so there is no competing reading in the data."
+    ],
+    "unused_evidence": [
+      "Only one file is supplied and it has only X, obs, var (index only) and uns['_latch_key']; obsm, layers, obsp, varm and varp are empty. There is no data dictionary and no second obs-like table that could hold a different 'sample' column.",
+      "obs columns total_counts, n_genes and n_genes_raw, and uns['_latch_key'], were not used by either team. None of them bears on whether a column named 'sample' exists, so ignoring them cannot change the answer.",
+      "The levels of 'sample' (three, nested inside age_group, one sample for Adult) were recorded by both teams. The rule does not condition on the content of the column, so this is rightly a note and not a reason to change the key."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named no substantive weak point, and I found none they missed. The only thing each flagged (sample nested in age_group) is a downstream-integration concern that the task's rule does not consult; both recorded it and correctly left the answer alone.",
+      "Team B's notes do not record re-reading the written answer file, whereas team A's do. Since the lab already compared the two submitted answers and found them identical, this is not worth a question."
+    ],
+    "second_readings": [
+      "'Report which key was used' could be read as requiring the key to be used in some batch-aware step. The task names no such step and asks only for the letter, so this reading gives the same answer.",
+      "'A column named \"sample\"' could be read loosely (any sample-like column) or strictly (exact name). The file has an exact match and no near-miss names, so both readings give the same answer.",
+      "The fallback clause (rule 2) applies only when rule 1 fails; there is no reading of the two-step rule under which an existing 'sample' column yields the fallback."
+    ],
+    "verdict": "I trust the agreed answer fully. The task is a literal presence test for one obs column name, both teams checked it directly by different routes (anndata and raw h5py), and the file's obs header confirms what they read; no unused data, alternative wording or unresolved weak point could change the outcome, so I have no questions to ask.",
+    "questions": []
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "sc25-team-b",
+      "round": "analysis",
+      "reason": "agreed with sc25-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc25-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 32.49306050001178,
+      "cost_usd": 0.0990488,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 64.0132663330296,
+      "cost_usd": 0.1028271,
+      "error": null
+    },
+    {
+      "agent": "sc25-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 28.376617582980543,
+      "cost_usd": 0.10366299999999999,
+      "error": null
+    },
+    {
+      "agent": "sc25-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 33.274738208041526,
+      "cost_usd": 0.09586739999999999,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 60.59581241593696,
+      "cost_usd": 0.11317839999999998,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

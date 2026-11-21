@@ -1,0 +1,280 @@
+{
+  "study": "bh22",
+  "status": "replicated",
+  "final": {
+    "agent": "bh22-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh22/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh22-library": "opus",
+    "bh22-team-a": "opus",
+    "bh22-team-b": "opus",
+    "bh22-team-c": "opus",
+    "bh22-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh22-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh22/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh22-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh22/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh22-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh22/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh22-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh22/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh22-team-a",
+        "bh22-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh22-team-a",
+        "bh22-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Before considering 'Not verifiable', check whether data_clinical_sample.txt holds a per-sample TMB variable (e.g. TMB_NONSYNONYMOUS, nonsynonymous mutations per Mb) and what CANCER_TYPE the samples are. If a TMB variable exists and the cohort is cervical cancer, the hypothesis is about this study and the benchmark convention calls for True or False, decided from the TMB counts.",
+      "from": [
+        "sl-lab-50f5435affe6"
+      ],
+      "reason": "Calling a testable hypothesis 'Not verifiable' is graded as wrong, and the main risk is missing that the TMB column is there.",
+      "fact_ids": {
+        "team-a": "sl-lab-21a535c33cd1"
+      }
+    },
+    {
+      "text": "Use the provided per-Mb TMB column as the main evidence. If you recompute TMB from data_mutations.txt, count only nonsynonymous coding mutations and divide each sample by the size of its own gene panel (data_gene_panel_matrix.txt; MSK-IMPACT panels are about 0.98 Mb for IMPACT341, 1.06 Mb for IMPACT410 and 1.14 Mb for IMPACT468). Do not use an exome-size denominator or a single panel size for every sample. Compare the result with the provided column.",
+      "from": [
+        "sl-lab-a45974de1fd8"
+      ],
+      "reason": "A wrong denominator, or counting silent and intronic variants, shifts TMB values across the 10 mut/Mb cutoff.",
+      "fact_ids": {
+        "team-a": "sl-lab-012d97fc621b"
+      }
+    },
+    {
+      "text": "Report counts at both TMB >10 and TMB >=10 mut/Mb, since samples on the borderline can change the count. Check CANCER_TYPE_DETAILED and ONCOTREE_CODE for any TMB-high samples so that you know they are cervical tumours, and break the counts down by histology.",
+      "from": [
+        "sl-lab-8836498e8842"
+      ],
+      "reason": "The hypothesis uses a strict threshold, and every TMB-high sample has to be a cervical cancer before it counts.",
+      "fact_ids": {
+        "team-a": "sl-lab-7f124a75d0b6"
+      }
+    },
+    {
+      "text": "The hypothesis is about patients, not samples. Check for patients with more than one sample (e.g. primary plus metastasis), and give results at patient level (per-patient max, or one sample per patient) as well as at sample level.",
+      "from": [
+        "sl-lab-233d4b344599"
+      ],
+      "reason": "Repeated samples from one patient inflate the count of TMB-high cases.",
+      "fact_ids": {
+        "team-a": "sl-lab-505d028ff05b"
+      }
+    },
+    {
+      "text": "For any TMB-high sample, look at MSI_TYPE/MSI_SCORE, POLE and mismatch-repair gene mutations (MLH1, MSH2, MSH6, PMS2), TUMOR_PURITY, SAMPLE_COVERAGE and SOMATIC_STATUS (Matched vs Unmatched). Hypermutation explained by MSI/MMR deficiency, POLE or APOBEC is real biology, not an artefact; cervical cancer is known to include hypermutated, APOBEC-high tumours (TCGA 2017). Exclude a sample only for a clear QC failure. Unmatched (tumour-only) samples can have inflated TMB from germline variants, and low purity or coverage lowers TMB, so report these as sensitivity checks.",
+      "from": [
+        "sl-lab-132f43de2778",
+        "sl-lab-788fa38fde3f"
+      ],
+      "reason": "It shows which high-TMB values are trustworthy and stops teams from discarding real outliers or relying on artefactual ones.",
+      "fact_ids": {
+        "team-a": "sl-lab-c654884dc3fd"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 2,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat the deposited TMB_NONSYNONYMOUS column as the TMB the hypothesis refers to (panel-based nonsynonymous mutations per Mb), on the same scale as the 10 mut/Mb threshold.",
+      "Both treat every sample in the table as a cervical cancer patient in scope, including metastasis samples and rare histologies (e.g. gastric-type mucinous, neuroendocrine)."
+    ],
+    "unused_evidence": [
+      "SAMPLE_TYPE (Primary vs Metastasis): neither team reported whether TMB-high cases are confined to metastatic or pretreated samples; this cannot remove them from 'cervical cancer patients' but would describe them.",
+      "data_cna, data_cna_hg19.seg and data_sv were not used; they are irrelevant to a TMB existence claim and cannot change the count."
+    ],
+    "unresolved_weak_points": [
+      "Both named approximate panel Mb denominators as weakest point; this is resolved in practice because the deposited TMB column agrees with the recount (r=0.999) and 22 of 177 patients exceed 10.",
+      "Team A reported 4 TMB-high samples with MSI_TYPE 'Do not report' and low purity; low purity would bias TMB downward, so this does not threaten the count."
+    ],
+    "second_readings": [
+      "'Not present in any cervical cancer patients' could be read as 'TMB-high is not a feature of cervical cancer in general'; under either reading, 22/177 (~12%) patients above 10 mut/Mb contradicts it. No reading on another scale or time point changes the conclusion."
+    ],
+    "verdict": "High trust in the agreed 'False': both teams found 22 of 177 cervical cancer patients with deposited TMB >10, confirmed by independent recount, all matched-normal, and TMB-high cervical cancer is established biology; the only questions are descriptive robustness checks.",
+    "questions": [
+      {
+        "to": "bh22-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Break the 22 TMB>10 patients down by SAMPLE_TYPE (Primary vs Metastasis) and by CANCER_TYPE_DETAILED, and check how many remain if you keep only primary squamous/adeno cervical tumours; does any plausible restriction bring the count to zero and so change the method?",
+        "from": [
+          "sl-lab-6a6f3fc86514"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-9b2e99324c8f"
+      },
+      {
+        "to": "bh22-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: For the 22 TMB>10 samples, list SOMATIC_STATUS, TUMOR_PURITY and SAMPLE_COVERAGE and check whether any is Unmatched or low coverage (possible germline inflation); does the count of clearly valid TMB-high cases stay above zero, and does that change your method?",
+        "from": [
+          "sl-lab-3b4eddac7878"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-690c86579dba"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bh22-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh22-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh22-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh22-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh22-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 54.599113665986806,
+      "cost_usd": 0.1890366,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 28.713560624979436,
+      "cost_usd": 0.20908340000000003,
+      "error": null
+    },
+    {
+      "agent": "bh22-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 28.27136416605208,
+      "cost_usd": 0.13267700000000002,
+      "error": null
+    },
+    {
+      "agent": "bh22-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 33.10909124999307,
+      "cost_usd": 0.1559526,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 45.05390299996361,
+      "cost_usd": 0.164339,
+      "error": null
+    },
+    {
+      "agent": "bh22-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 34.001980291097425,
+      "cost_usd": 0.11640980000000001,
+      "error": null
+    },
+    {
+      "agent": "bh22-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 35.20079233299475,
+      "cost_usd": 0.1590546,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

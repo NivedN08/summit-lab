@@ -1,0 +1,48 @@
+{
+  "batch": "loop-2",
+  "status": "final",
+  "benchmark": "biodsa-convention",
+  "studies": [
+    "bd14",
+    "bd16",
+    "bd18",
+    "bd26",
+    "bd28",
+    "bd30",
+    "bd33",
+    "bd34",
+    "bd36",
+    "bd37",
+    "bd05",
+    "bd11",
+    "bd17",
+    "bd20",
+    "bd24",
+    "bd27",
+    "bd31",
+    "bd32",
+    "bd38",
+    "bd40"
+  ],
+  "arms": [
+    "incumbent: variant v3-opus (results/loop-1/variants/v3-opus, copied to runs/loop2/variants/v3-opus) run once on the panel with the convention task text: run dir runs/loop2/incumbent, --backend modal --memory past --parallel 8 --snapshot-first-round, --max-usd 55",
+    "single-model reference: Opus alone, 4 attempts per task, the same convention task text: run dir runs/loop2/opus-single, --backend modal --parallel 8, --max-usd 14",
+    "loop: seed moves from prereg/loop-2-seeds.json first, then the Opus proposer with --proposer-evidence; each move a variant of the incumbent run on the panel, reusing the incumbent's first round when the move leaves it alone; an accepted move is run a second time. Run root runs/loop2, --max-usd = 350 minus what the two runs above spent (rounded down to whole dollars), --move-max-usd 50"
+  ],
+  "config": {
+    "director_model": "opus",
+    "worker_model": "opus",
+    "recheck": false,
+    "guard": false,
+    "snapshot_first_round": true
+  },
+  "seeds": {
+    "seed_moves_file": "prereg/loop-2-seeds.json",
+    "seed_moves_sha256": "b56fc0d9b94c206b77b957d1cfc4e931bb36b5566d6e3ef02086a8633637ed28",
+    "referee_order": null
+  },
+  "max_usd": 350,
+  "primary_endpoint": "Which moves the code accepts: paired against the incumbent on the 20 tasks, a move is accepted only if rescued - damaged >= T = 3 (M-15), damaged <= 1, cost per task <= 1.25 x the incumbent's, and a second run of the move has net > 0. Reported with it, as description only: the incumbent's and Opus alone's pass counts under the convention text next to Phase 1's (10 of 20 and the Opus single attempts); these are not comparable with Phase 1 or the published benchmark, because the task text differs.",
+  "stop_rules": "Before the loop: if the incumbent run fails fewer than 3 panel tasks, no move can reach T = 3, so the loop does not run and the two runs are reported. The loop stops after 8 moves, 4 rejections in a row (--max-rejections 4), or when its cap is spent. A halt by a usage or spending limit, or a crash, is resumed with the same command (--resume-loop); nothing is re-planned. A run that stops without an error of its own is not restarted without the owner's go-ahead.",
+  "notes": "Option B of research/loop-2-plan.md. Every arm reads the same task text: task.md plus CONVENTION_NOTE in lab/adapters/biodsa.py (benchmark biodsa-convention), which states the benchmark's label convention from the paper's section 2.4 (True/False come from the dataset's own publication, Not verifiable from an unrelated one) and that a wrong Not verifiable counts as wrong; it says nothing about any one task. Labels and grading are unchanged (exact match). T = 3 was measured on the plain task text (Phase 1); the noise under the new text is not re-measured, so a borderline acceptance is read with that caveat. bd36 and bd38 flipped between two identical Phase 1 runs; a flip on them is reported as such, but the acceptance rule is not changed after the fact. The proposer now also sees, for each failed panel task (numbered, not named), each step's label and stated reasons, and the right/wrong count per label given (autoloop.failure_evidence); it never sees a task's right label. Moves may be bundles of 2 changes. The lab's literature search (library, team search, research) stays on as in v3, with the benchmark's source identifiers blocked; the single-model arm has no search. Dev tasks only; the held-out test (Phase 6) is separate."
+}

@@ -1,0 +1,430 @@
+{
+  "study": "bd27",
+  "status": "replicated",
+  "final": {
+    "agent": "bd27-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd27/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd27-library": "opus",
+    "bd27-team-a": "opus",
+    "bd27-team-b": "opus",
+    "bd27-team-c": "opus",
+    "bd27-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd27-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd27/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd27-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd27/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd27-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd27/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd27-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd27/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd27-team-a",
+        "bd27-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd27-team-a",
+        "bd27-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Do not filter the mutation file to coding or nonsynonymous Variant_Classification values when testing a promoter hypothesis. Promoter variants are labelled 5'Flank, 5'UTR or IGR (VEP Consequence upstream_gene_variant or 5_prime_UTR_variant), and coding-only filters used by maftools, TMB or cBioPortal-style pipelines drop them. Tabulate Variant_Classification and Consequence for every NFKBIE row with no class filter, and count 5'Flank, upstream and 5'UTR rows as candidate promoter mutations.",
+      "from": [
+        "sl-dev-panel-noise-lab2-6f44a4729ad7"
+      ],
+      "reason": "A coding-only filter, which is the default in many pipelines, would make promoter mutations look absent just because of how the data were processed.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-aa92b7248c8c"
+      }
+    },
+    {
+      "text": "vcf2maf annotates each variant against one transcript only. A variant in the NFKBIE promoter can therefore carry a neighbouring gene's Hugo_Symbol or be labelled IGR. Search by coordinates as well as by Hugo_Symbol: take the NFKBIE span from the file's own NFKBIE rows (GRCh37 chr6, around 44.2 Mb) and add a few kb on the upstream side. Also grep all annotation columns for NFKBIE. NFKBIE is on the minus strand, so its promoter lies at HIGHER genomic coordinates than the gene start. Check the strand and the 5'Flank/3'Flank labels in the file before you set the window.",
+      "from": [
+        "sl-dev-panel-noise-lab2-c7740ab05d9e",
+        "sl-dev-panel-noise-lab2-0861a94cf8bf"
+      ],
+      "reason": "Searching by gene symbol alone, or searching on the wrong side of the gene, can miss real promoter variants.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-1efaf5e8c246"
+      }
+    },
+    {
+      "text": "Exome capture covers GC-rich promoters poorly, so finding no promoter calls may reflect missing coverage rather than true absence. Check whether the mutation file contains any non-coding classes at all (5'Flank, IGR, Intron, etc.), and check sequencing type in the sample table (e.g. GENE_PANEL: exome vs whole genome). Absence is only informative if the promoter region was actually assayed.",
+      "from": [
+        "sl-dev-panel-noise-lab2-5bafe24a98e6"
+      ],
+      "reason": "This decides whether a lack of calls can count as evidence or whether the question cannot be settled.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-f06a647ebe18"
+      }
+    },
+    {
+      "text": "One credible somatic event is enough to refute a claim that a mutation is 'absent'; no significance test is needed. Zero events in n samples only bounds prevalence at about 3/n; it does not prove absence. Count distinct desmoplastic samples carrying an NFKBIE promoter variant, using unique Tumor_Sample_Barcode and removing duplicate rows, and note any recurrent positions.",
+      "from": [
+        "sl-dev-panel-noise-lab2-be27c89f035b"
+      ],
+      "reason": "Sets the right logic for testing an absence claim and prevents counting at the row level instead of the sample level.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-aaa0783bb048"
+      }
+    },
+    {
+      "text": "Check that each candidate promoter call is credible as a somatic mutation. For matched tumour-normal samples, the normal alt count (n_alt_count) should be about 0 and the tumour should have reasonable t_alt_count support. Recurrence of the same position with a UV-type C>T or CC>TT change, as in melanoma promoter hotspots at ETS/TTCCG motifs, supports a call being real.",
+      "from": [
+        "sl-dev-panel-noise-lab2-d6344853c6aa"
+      ],
+      "reason": "Germline or artefactual calls should not decide an absence claim either way.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-d9b9908a0293"
+      }
+    },
+    {
+      "text": "Define the desmoplastic cohort carefully. Both 'Pure' and 'Mixed' samples in DETAILED_SAMPLE_HISTOLOGY_CATEGORY are desmoplastic melanoma, so check ONCOTREE_CODE and CANCER_TYPE_DETAILED. Confirm that every Tumor_Sample_Barcode in the mutation file joins to a SAMPLE_ID. Keep both categories, and report results for each one as a sensitivity check.",
+      "from": [
+        "sl-dev-panel-noise-lab2-cdcebe3eeafc"
+      ],
+      "reason": "Restricting the cohort wrongly, or joining samples incorrectly, changes which tumours are counted.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-0ff6cc6e2df9"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat a variant as a 'promoter mutation' if any one transcript in all_effects calls it upstream_gene_variant, even though the canonical NFKBIE transcript (ENST00000275015, NM_004556) calls the same base coding exon 1 (c.101G>A, p.G34E). Neither team checked what kind of transcript ENST00000477930 is (protein-coding, processed transcript, retained intron), where its start lies, or how far the hotspot is from the canonical TSS.",
+      "Both teams assume that 'upstream_gene_variant' means 'promoter'. VEP's upstream window is a fixed distance and has nothing to do with promoter annotation. The same all_effects string also calls the site upstream of TMEM151B, so the site could be read as lying in a shared or bidirectional regulatory region, or as a coding site in NFKBIE.",
+      "Both teams treat the hotspot calls as credible somatic events, even though read counts are empty and FILTER and Hotspot were not reported. A low-complexity (seg) GC-rich exon-1 region is a known artefact-prone context."
+    ],
+    "unused_evidence": [
+      "The DISTANCE, BIOTYPE, CANONICAL, FILTER, Hotspot, HIGH_INF_POS and DOMAINS (Low_complexity seg) columns for the NFKBIE rows. DISTANCE and BIOTYPE together decide whether the site is credibly a promoter for the alternative transcript.",
+      "SAMPLE: GENE_PANEL says 'Exome, Whole Genome' and PLATFORM differs between cohorts (Agilent 1Mil vs Exome CN Inference). Neither team asked whether any sample had genome-wide coverage of the NFKBIE upstream region, or whether that coverage differs between the M and Au samples. This matters if the 'absent' versus 'present' call depends on coverage.",
+      "The genome-wide 5'Flank/5'UTR calls (about 1-7 per sample in every sample). Neither team used them to judge whether the NFKBIE upstream region could have been detected at all, which separates 'absent' from 'not assessable'.",
+      "Sample 12M carries adjacent C>T changes at 44233400 and 44233401 (CC>TT). Neither team showed whether this is one dinucleotide event or two, or whether it changes the unique-sample count."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weakest point: the hotspot is a promoter variant only under an alternative isoform. Both reported it and neither resolved it. Both still counted the hotspot as a promoter mutation, and Team B itself says the strict reading points to True or Not verifiable.",
+      "Team A named missing read support as a limit and relied on matched-normal status and recurrence. That was not tested further, for example with FILTER values or by checking whether the same site recurs in unrelated genes or artefact contexts."
+    ],
+    "second_readings": [
+      "'NFKBIE promoter mutations' may mean variants in the 5' non-coding regulatory region upstream of the canonical NFKBIE TSS. Under that reading, a canonical-coding missense in exon 1 may not qualify. The answer would then depend on whether any true 5'Flank/upstream NFKBIE variant exists, which could point to True or to Not verifiable.",
+      "'Absent' could be read as 'no sample carries one' (refuted by a single credible event) or as 'not recurrent or characteristic of the disease'. The teams used the first reading without stating it.",
+      "'Desmoplastic melanoma' may mean all DESM samples or only the 'Pure' histology category. The hotspot samples include both categories, so it is worth confirming that this reading does not change the answer."
+    ],
+    "verdict": "I trust the agreed 'False' only moderately. Both teams rest it on reclassifying a canonical exon-1 missense hotspot as a promoter variant through one alternative transcript. Neither checked that transcript's biotype or its distance from the TSS, or the call quality, so a shared annotation choice may be carrying the answer.",
+    "questions": [
+      {
+        "to": "bd27-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For the chr6:44233400 rows, report BIOTYPE and DISTANCE for ENST00000477930, and how far the site is from the canonical NFKBIE (ENST00000275015) transcription start. Does the result support calling it a promoter variant, or does it stay a canonical exon-1 coding change, and does that change your label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-fe1f0d15ebe4"
+      },
+      {
+        "to": "bd27-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate FILTER, Hotspot and Mutation_Status for every NFKBIE row, and check whether other low-complexity GC-rich exon-1 sites in the MAF show similar unexplained C>T recurrence. Does this affect how much weight the 4-sample hotspot can carry?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-edc9cdd3eeec"
+      },
+      {
+        "to": "bd27-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Suppose only variants upstream of the canonical NFKBIE TSS (5'Flank/upstream of the canonical transcript) count as promoter mutations. Given how 5'Flank calls are distributed in each sample and the Exome/Whole Genome platform field, can the data still separate 'absent' from 'not assessed', and which label follows?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-b835bd971f90"
+      },
+      {
+        "to": "bd27-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: The all_effects string for the hotspot also calls it upstream of TMEM151B, and coding exon 1 under the canonical NFKBIE transcript. Check BIOTYPE/DISTANCE for ENST00000477930 and the canonical TSS position. Does the evidence justify 'promoter' rather than 'coding', and does your label survive the canonical-only reading you named as your weakest point?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-17e8549c7c2d"
+      },
+      {
+        "to": "bd27-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check FILTER, Hotspot and the 12M adjacent 44233400/44233401 pair (one dinucleotide event or two). Also check whether the four carriers differ systematically by cohort or PLATFORM. Does any of this change the count of samples you treat as credible carriers?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-2118dce5df01"
+      },
+      {
+        "to": "bd27-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your notes list no pitfalls checked. Does restricting to the 'Pure' DETAILED_SAMPLE_HISTOLOGY_CATEGORY, or using only canonical-transcript Variant_Classification, change your label? If either does, how do you justify the reading you chose?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-1c10b92633c7"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In Ensembl VEP, what defines an 'upstream_gene_variant' (the default distance window), and is it intended to mark promoter regions?",
+          "why": "Both teams treat an upstream_gene_variant call on one alternative transcript as a promoter mutation. Whether VEP's label means 'promoter' decides whether the hotspot counts.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In cancer genomics, how are 'promoter mutations' conventionally defined when a recurrent variant is coding under the canonical transcript but lies upstream of an alternative or non-coding isoform's start?",
+          "why": "This sets which reading of 'promoter mutation' the hypothesis most plausibly uses, and so whether a canonical-coding hotspot can refute 'absent'.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How well do standard whole-exome capture kits cover sequence immediately upstream of first coding exons in GC-rich promoters, and how are recurrent C>T calls in low-complexity GC-rich regions usually checked for artefacts?",
+          "why": "This decides whether the absence of upstream calls can be read as true absence, and how credible a recurrent C>T call is when the file has no read counts.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In Ensembl VEP, what defines an 'upstream_gene_variant' (the default distance window), and is it intended to mark promoter regions?",
+          "answer": "upstream_gene_variant (SO:0001631) means only 'a sequence variant located 5' of a gene'. It is a child of intergenic_variant with IMPACT MODIFIER. By default VEP reports upstream/downstream consequences for variants within 5 kb of a transcript (--distance), and it assigns them per transcript, so one variant can be upstream of one isoform and coding in another. The label is positional and does not mark a promoter or regulatory region. An upstream_gene_variant on a single alternative transcript is not, by itself, evidence of a promoter mutation.",
+          "sources": [
+            "https://useast.ensembl.org/info/genome/variation/prediction/predicted_data.html",
+            "http://www.sequenceontology.org/browser/current_release/term/SO:0001631",
+            "https://www.biostars.org/p/242635/"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd27-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-2e3330928804"
+            },
+            "bd27-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-81e2096b20c6"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In Ensembl VEP, what defines an 'upstream_gene_variant' (the default distance window), and is it intended to mark promoter regions? ANSWER: upstream_gene_variant (SO:0001631) means only 'a sequence variant located 5' of a gene'. It is a child of intergenic_variant with IMPACT MODIFIER. By default VEP reports upstream/downstream consequences for variants within 5 kb of a transcript (--distance), and it assigns them per transcript, so one variant can be upstream of one isoform and coding in another. The label is positional and does not mark a promoter or regulatory region. An upstream_gene_variant on a single alternative transcript is not, by itself, evidence of a promoter mutation. HOW SURE: high. SOURCES: https://useast.ensembl.org/info/genome/variation/prediction/predicted_data.html, http://www.sequenceontology.org/browser/current_release/term/SO:0001631, https://www.biostars.org/p/242635/."
+        },
+        {
+          "question": "In cancer genomics, how are 'promoter mutations' conventionally defined when a recurrent variant is coding under the canonical transcript but lies upstream of an alternative or non-coding isoform's start?",
+          "answer": "Studies define promoter mutations as non-coding variants inside a fixed window around an annotated TSS. Examples: -1 kb/+500 bp around the TSS of canonical GENCODE v19 transcripts (the 2024 promoter-paucity preprint, matching PCAWG); -2 kb/+250 bp around protein-coding TSSs; -2 kb/+200 bp around refTSS-supported TSSs in a melanoma study. The standard examples (TERT C228T/C250T, SDHD) are non-coding. Under canonical-transcript definitions, a recurrent variant that is coding under the canonical transcript would normally be reported as a coding mutation, not a promoter mutation. Only definitions that include every annotated TSS could also count it as a promoter variant of an alternative isoform. No source I read deals with this edge case directly. The exact windows come from search snippets, because the methods text did not come through in the pages I opened.",
+          "sources": [
+            "https://www.biorxiv.org/content/10.1101/2024.06.03.597231v1.full",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4217527/",
+            "https://www.nature.com/articles/s41467-023-36535-8",
+            "https://doi.org/10.1038/s41416-024-02870-w"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd27-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-602ca68e97d6"
+            },
+            "bd27-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-35d6585f686f"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cancer genomics, how are 'promoter mutations' conventionally defined when a recurrent variant is coding under the canonical transcript but lies upstream of an alternative or non-coding isoform's start? ANSWER: Studies define promoter mutations as non-coding variants inside a fixed window around an annotated TSS. Examples: -1 kb/+500 bp around the TSS of canonical GENCODE v19 transcripts (the 2024 promoter-paucity preprint, matching PCAWG); -2 kb/+250 bp around protein-coding TSSs; -2 kb/+200 bp around refTSS-supported TSSs in a melanoma study. The standard examples (TERT C228T/C250T, SDHD) are non-coding. Under canonical-transcript definitions, a recurrent variant that is coding under the canonical transcript would normally be reported as a coding mutation, not a promoter mutation. Only definitions that include every annotated TSS could also count it as a promoter variant of an alternative isoform. No source I read deals with this edge case directly. The exact windows come from search snippets, because the methods text did not come through in the pages I opened. HOW SURE: medium. SOURCES: https://www.biorxiv.org/content/10.1101/2024.06.03.597231v1.full, https://pmc.ncbi.nlm.nih.gov/articles/PMC4217527/, https://www.nature.com/articles/s41467-023-36535-8, https://doi.org/10.1038/s41416-024-02870-w."
+        },
+        {
+          "question": "How well do standard whole-exome capture kits cover sequence immediately upstream of first coding exons in GC-rich promoters, and how are recurrent C>T calls in low-complexity GC-rich regions usually checked for artefacts?",
+          "answer": "Coverage is poor. GC-rich promoters near the TSS are systematically under-sampled even in whole cancer genomes (PCAWG coverage analysis). WES covers them badly: the TERT promoter is described as 'poorly covered by the WES' and needed separate targeted sequencing, and GC-rich exome regions are recurrent cold-spots. So the absence of upstream calls in exome data cannot be read as true absence. For artefacts, the usual checks on recurrent C>T calls are: matched-normal and panel-of-normals filtering; strand or read-orientation bias, since FFPE deamination produces C>T/G>A; read depth and alt-read support/VAF; manual IGV review following the somatic variant refinement SOP; and orthogonal validation. Without read counts, a call cannot be checked this way, so it should be treated as unverified, not as confirmed or refuted. The coverage part rests on pages I read. The artefact-check part rests on search snippets only, because the call limit was reached before I could open those pages.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC13136893/",
+            "https://aacrjournals.org/mcr/article/17/1/177/182222/Mutational-Landscape-of-Ovarian-Adult-Granulosa",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4247168/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7586657/",
+            "https://www.gimjournal.org/article/S1098-3600(21)00974-6/fulltext"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd27-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-304e90140705"
+            },
+            "bd27-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-11c4f0fe96c6"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How well do standard whole-exome capture kits cover sequence immediately upstream of first coding exons in GC-rich promoters, and how are recurrent C>T calls in low-complexity GC-rich regions usually checked for artefacts? ANSWER: Coverage is poor. GC-rich promoters near the TSS are systematically under-sampled even in whole cancer genomes (PCAWG coverage analysis). WES covers them badly: the TERT promoter is described as 'poorly covered by the WES' and needed separate targeted sequencing, and GC-rich exome regions are recurrent cold-spots. So the absence of upstream calls in exome data cannot be read as true absence. For artefacts, the usual checks on recurrent C>T calls are: matched-normal and panel-of-normals filtering; strand or read-orientation bias, since FFPE deamination produces C>T/G>A; read depth and alt-read support/VAF; manual IGV review following the somatic variant refinement SOP; and orthogonal validation. Without read counts, a call cannot be checked this way, so it should be treated as unverified, not as confirmed or refuted. The coverage part rests on pages I read. The artefact-check part rests on search snippets only, because the call limit was reached before I could open those pages. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC13136893/, https://aacrjournals.org/mcr/article/17/1/177/182222/Mutational-Landscape-of-Ovarian-Adult-Granulosa, https://pmc.ncbi.nlm.nih.gov/articles/PMC4247168/, https://pmc.ncbi.nlm.nih.gov/articles/PMC7586657/, https://www.gimjournal.org/article/S1098-3600(21)00974-6/fulltext."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd27-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd27-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd27-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd27-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd27-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 79.2274084999226,
+      "cost_usd": 0.3260890000000001,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 38.008983874926344,
+      "cost_usd": 0.17719800000000002,
+      "error": null
+    },
+    {
+      "agent": "bd27-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 57.27359004190657,
+      "cost_usd": 0.222889,
+      "error": null
+    },
+    {
+      "agent": "bd27-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 66.84913616604172,
+      "cost_usd": 0.26017840000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 67.47202183294576,
+      "cost_usd": 0.3321398,
+      "error": null
+    },
+    {
+      "agent": "bd27-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 127.30280750000384,
+      "cost_usd": 0.4728034,
+      "error": null
+    },
+    {
+      "agent": "bd27-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 81.9653479589615,
+      "cost_usd": 0.3753966,
+      "error": null
+    },
+    {
+      "agent": "bd27-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 119.92430879198946,
+      "cost_usd": 0.39283160000000006,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

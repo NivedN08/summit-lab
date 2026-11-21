@@ -1,0 +1,507 @@
+{
+  "study": "sc33",
+  "status": "replicated",
+  "final": {
+    "agent": "sc33-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc33/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc33-library": "opus",
+    "sc33-team-a": "opus",
+    "sc33-team-b": "opus",
+    "sc33-team-c": "opus",
+    "sc33-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "sc33-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc33/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cell_types_predicted": [
+          "Endothelial",
+          "Fibroblast",
+          "Neuron",
+          "SGC",
+          "Schwann"
+        ]
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc33-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc33/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cell_types_predicted": [
+          "Endothelial",
+          "Fibroblast",
+          "Neuron",
+          "SGC",
+          "Schwann"
+        ]
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc33-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc33/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cell_types_predicted": [
+          "Endothelial",
+          "Fibroblast",
+          "Neuron",
+          "SGC",
+          "Schwann"
+        ]
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc33-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc33/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cell_types_predicted": [
+          "Endothelial",
+          "Fibroblast",
+          "Neuron",
+          "SGC",
+          "Schwann"
+        ]
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc33-team-a",
+        "sc33-team-b"
+      ],
+      "fields": {
+        "cell_types_predicted": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc33-team-a",
+        "sc33-team-b"
+      ],
+      "fields": {
+        "cell_types_predicted": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "PITFALL (HVG step): scanpy's highly_variable_genes(flavor='seurat') does NOT implement the task's HVG rule. It expm1-transforms the data, log-transforms mean and dispersion, and bins by equal-WIDTH (pd.cut). The task asks for dispersion = variance/(mean + 1e-8) computed directly on log1p(CP10K), 20 equal-FREQUENCY bins by mean, per-bin z-score of dispersion, select z > 1.5. CHECK: implement it by hand (e.g. pd.qcut on mean with 20 bins, per-bin z-score), taking care with genes whose mean is 0 and with bins whose standard deviation is zero or NaN; compare the resulting HVG count with what scanpy would have given. GUIDANCE: use the manual implementation, handle all-zero genes explicitly (drop them or state how they are treated), and record the HVG count.",
+      "from": [
+        "sl-sc-test-0d422a8b429d"
+      ],
+      "reason": "Using the library shortcut silently selects a different gene set, which changes PCA, clusters and possibly which labels pass 1%; the team must hand-code the rule as written.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-35d55ce9d61a"
+      }
+    },
+    {
+      "text": "PITFALL (scaling and PCA): tool defaults differ from the task. scanpy's scale uses ddof=1 and can clip values (max_value); zero-variance genes become NaN after scaling and can crash or distort PCA; float32 arithmetic and the choice of SVD solver (arpack vs randomized) can change the PCs and therefore the clusters. CHECK: after scaling confirm there is no NaN/inf, that no clipping was applied (the task specifies none), and that the 50-component PCA is run in float64 or with a stated deterministic solver. GUIDANCE: drop zero-variance HVGs (or set their NaN to 0), do not clip, and record the solver and random state used.",
+      "from": [
+        "sl-sc-test-eed2d9a32203"
+      ],
+      "reason": "Hidden clipping, NaNs or a randomized solver can shift the embedding and the Leiden partition, making the result irreproducible or different from the specified pipeline.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-90dcb5526fea"
+      }
+    },
+    {
+      "text": "PITFALL (Leiden step): 'resolution 0.6' is not the same thing in every implementation. python-igraph's community_leiden defaults to the CPM objective, under which resolution 0.6 gives a completely different partition; scanpy/leidenalg use the modularity-type objective (RBConfiguration). Edge weights (binary symmetric kNN vs UMAP-style fuzzy connectivities) and how the seed is passed also change the clusters. CHECK: confirm the objective is modularity, report the number of clusters, and rerun with a second implementation or weighting (binary-symmetric kNN vs scanpy connectivities) and a few seeds to see whether the final label set changes. GUIDANCE: use modularity-based Leiden (resolution 0.6, seed 0) on a symmetric Euclidean k=20 kNN graph built on PCs 1-30; report which label set is stable and flag any label that appears or disappears across variants.",
+      "from": [
+        "sl-sc-test-89a8acd0dea1"
+      ],
+      "reason": "A wrong objective function gives a wholly different clustering without any error message; this is the single easiest way to run the 'specified' pipeline incorrectly.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-20b83f489699"
+      }
+    },
+    {
+      "text": "PITFALL (filter and denominator): the n_genes > 1000 filter preferentially keeps large-transcriptome nuclei and removes low-RNA nuclei, so minor populations can end up near the 1% cutoff; and 'fraction of total nuclei' is ambiguous between the filtered and the unfiltered count. CHECK: recompute n_genes from the count matrix itself (count > 0) instead of trusting any pre-existing obs column, confirm the matrix values are integers (raw UMIs), and compute label fractions with both denominators. GUIDANCE: use the filtered nuclei as the denominator (only filtered nuclei receive labels, so fractions sum to 100%), and state whether any label's inclusion depends on that choice.",
+      "from": [
+        "sl-sc-test-585f98bc9df3"
+      ],
+      "reason": "The denominator and the source of n_genes both directly affect the fractions compared against the 1% threshold; pre-computed obs columns may not match the task's definition.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-9e8a2129b485"
+      }
+    },
+    {
+      "text": "PITFALL (marker sets): the marker sets are not equally specific or equally sized. L1cam, in the Schwann set, is also expressed by sensory neurons; Scn7a marks non-myelinating Schwann cells while Mag and Ncmap mark myelinating ones, so no single Schwann cluster need express all four; SGCs and Schwann cells share genes; and a 2-gene set versus a 4-gene set behaves differently under a mean. CHECK: confirm all 15 marker genes are present in var with exact mouse capitalisation (e.g. Ncmap, Kcnj10); print per-gene cluster means for every marker, not just set means; see whether any cluster's Schwann score comes from L1cam alone. GUIDANCE: keep the marker sets exactly as specified (do not add or drop genes); if a gene is missing, state explicitly how it was handled (set mean over present genes).",
+      "from": [
+        "sl-sc-test-9ffc33215a93"
+      ],
+      "reason": "A missing or mis-cased gene silently changes a set score, and the per-gene table is needed to tell a genuine label from one produced by a single shared gene.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-92a1167451ec"
+      }
+    },
+    {
+      "text": "PITFALL (ambient RNA and argmax): in snRNA-seq of ganglia, ambient RNA from neurons contaminates glial nuclei and vice versa, so neuron markers (Isl1, Prph) can raise the Neuron score in non-neuronal clusters and the argmax of mean marker scores can be decided by a narrow margin. CHECK: print the full cluster x marker-set mean-score table with the winner, the runner-up, the margin between them, and cluster sizes; look for clusters whose top two scores are close. GUIDANCE: keep the task's deterministic argmax rule for the answer, but note fragile clusters and whether flipping them to the runner-up would change which labels reach 1%.",
+      "from": [
+        "sl-sc-test-4e2f59762cc9"
+      ],
+      "reason": "Tells the team where the argmax labelling is least trustworthy and how to test whether that uncertainty reaches the final label set, without departing from the specified rule.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-70bc76fbef11"
+      }
+    },
+    {
+      "text": "PITFALL (labels near the threshold): a label whose fraction is close to 1.0% can flip in or out with small implementation differences (HVG count, PCA solver, graph weights, Leiden seed). CHECK: print the exact fraction for every one of the seven labels to 3 decimals (including labels with zero nuclei), and rerun the pipeline under 2-3 reasonable variants. GUIDANCE: report the label set from the exactly specified pipeline, and list as fragile any label within about 0.3 percentage points of 1%.",
+      "from": [
+        "sl-sc-test-6e3f0d2ab77c"
+      ],
+      "reason": "The answer is a thresholded set, so the team needs to know how close each label sits to the cutoff and whether the set is robust to defensible implementation choices.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-6ead1c40ffc1"
+      }
+    },
+    {
+      "text": "PITFALL (doublet and sample-driven clusters): the data hold several samples across the Adult and Aged groups and the task specifies no batch integration or doublet removal, so doublets (e.g. neuron-glia) or a single sample can form their own cluster, and such a cluster scored by mean markers may receive a label that would otherwise be absent. CHECK: for each cluster tabulate sample and age_group composition, median total_umi and median n_genes; flag clusters with high scores for two unrelated marker sets together with unusually high UMI. GUIDANCE: do not remove them or add integration for the core answer (the pipeline is deterministic as specified), but report them and note whether they are what pushes any label over 1%.",
+      "from": [
+        "sl-sc-test-751ff8166732"
+      ],
+      "reason": "Stops the team from adding unrequested doublet removal or integration, while making sure they notice if a label owes its presence to an artefact cluster.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-826093cb7858"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams clustered an unweighted (binary) symmetric kNN graph with leidenalg called directly, because the common toolkit's neighbour function crashed in this environment for both. Neither ran a distance- or connectivity-weighted graph, so the agreement is between two runs of the same workaround, not between two independent graph constructions.",
+      "Both teams assumed 'symmetric graph' means one particular symmetrisation (neither note says whether an edge is kept when either nucleus lists the other, or only when both do) and neither tested the other.",
+      "Both teams assumed that the cluster is the right unit for the Macrophage and Mural question: a label is called absent because no whole cluster's argmax goes to it. Neither checked whether the nuclei carrying those markers form a coherent group of at least 1% of nuclei that the partition happens to merge with other nuclei.",
+      "Both teams tested Leiden seeds 0-2 only, on their own HVG set and their own graph; stability was never tested jointly across HVG set, graph weighting and symmetrisation.",
+      "Both teams treated the modularity-type objective (RBConfiguration) as the meaning of 'Leiden with resolution=0.6' without testing another objective or iteration setting on a weighted graph."
+    ],
+    "unused_evidence": [
+      "obs column age_group (Adult 11518, Aged 7741) is named in the task's first sentence but used by neither team's answer; the Adult group is a single sample (3M) and the Aged group is two samples (21M1, 21M2). Label fractions were not reported per age group or per sample.",
+      "obs column sample: team A saw one cluster that is 94% one sample; team B planned a sample/age composition check but its notes do not report its result.",
+      "pct_mito is computed in step 1 and never used afterwards by the task or by either team; no evidence it would change the label set, but neither team reported its distribution per cluster (a high-mito or high-UMI cluster would point to a debris or doublet cluster that takes a label by ambient RNA).",
+      "obs columns n_genes, n_genes_raw and total_counts are identical to values recomputed from X (checked on headers and one row); they carry no extra information. The filter removes no nuclei, so the denominator question is closed."
+    ],
+    "unresolved_weak_points": [
+      "Team A: the C1qa-high cluster (690 nuclei, 3.6%) loses to Neuron by 0.096 because of a roughly constant ambient Prph level. This was reported and flagged, not resolved: whether the 5-label set survives depends on that one margin, and it was only tested over Leiden seeds, not over HVG set or graph variant.",
+      "Team A and team B: the weighted-graph variant was not run by either team (same crash). Both name it as a weak point and both leave it open.",
+      "Team B: reports that Mural and Macrophage 'never won a cluster' but does not say where the C1qa/Aif1-high and Rgs5/Notch3-high nuclei sit in its partition or by what margin they lose; its near-tie list does not contain the cluster team A flags as the main fragility. Team B's pitfalls_checked list is empty.",
+      "The two teams do not have the same HVG set (2191 versus 2331 genes) from the same written rule. The difference (handling of zero-mean genes, tied means in equal-frequency bins, ddof of the within-bin z-score) is unexplained on team B's side and neither team ran the other's variant."
+    ],
+    "second_readings": [
+      "'Symmetric graph' (step 8): edge if either nucleus is among the other's 20 neighbours (union) or only if both are (mutual); and weighted or unweighted. The task does not say.",
+      "'Bin genes into 20 equal-frequency bins by mean' (step 5): with many genes at mean exactly 0, bins can be formed by rank (always 20 bins) or by quantile edges (tied edges collapse), and all-zero genes can be kept or dropped. These readings give different HVG sets, as the two teams' counts show.",
+      "'Fraction of total nuclei in each label' (step 12) given that the task opens with the age_group column: pooled over all nuclei (both teams) or within each age group. The pooled reading is the natural one, but the per-group table was not produced.",
+      "'Report which labels are meaningfully present' (goal) versus step 13's strict rule: team A notes that one label is biologically present but excluded by argmax. Both teams follow step 13, which is the stated return rule; I see no reason to depart from it, only to make sure the argmax result itself is robust."
+    ],
+    "verdict": "Moderate trust: the five labels both teams report sit well above 1% and should survive any reasonable variant, so the only way the answer breaks is if Macrophage (or, less likely, Mural) gains a cluster. That hinges on one narrow argmax margin that team A flagged and team B never located, and on a weighted-graph variant and an HVG-binning difference (2191 versus 2331 genes) that neither team resolved; these need to be run before the answer goes out.",
+    "questions": [
+      {
+        "to": "sc33-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your answer rests on one margin: the C1qa-high cluster (690 nuclei) goes to Neuron over Macrophage by 0.096, and you tested that only over Leiden seeds 0-2. Look inside that cluster nucleus by nucleus: what fraction of its nuclei have non-zero C1qa or Aif1, what are the per-gene means of Isl1, Prph, C1qa and Aif1 in the nuclei that do and do not, and how many nuclei are in each part compared with 1% of all nuclei (193)? Then recompute the cluster's winner and margin when the pipeline's unstated details change (the other team's 2331-gene HVG set, more Leiden seeds, n_iterations 2 versus -1). Does the cluster keep the same nuclei and the same winner in every variant? Does that change your method or your confidence?",
+        "from": [
+          "sl-sc-test-f3b832039b9d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-17a5af02d43d"
+      },
+      {
+        "to": "sc33-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you and the other team both clustered a binary kNN graph because the toolkit's neighbour function failed with a version error, and you named the untested weighting as a weak point. The failure is in one library call, not in the mathematics: check whether the weighted graph can be built another way (repairing the failing call, or computing the edge weights yourself from the kNN distances) and run Leiden on it with the weights used. Report the number of clusters, a cross-table against your 17 clusters, the full cluster-by-marker-set score table with winner and margin, and the seven label fractions to 3 decimals. Does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-f5bdf3323001"
+      },
+      {
+        "to": "sc33-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: from the same written HVG rule you select 2191 genes and the other team selects 2331. You dropped zero-mean genes before binning; the task's step 5 does not say to. Count the genes with mean exactly 0, show how the 20 bins come out (sizes and edges) with those genes kept and dropped, and with bins made by rank versus by quantile edges, and give the HVG count for each combination together with the ddof used in the within-bin z-score. Which words of step 5 support your choice? Run the rest of the pipeline on the variant that reproduces 2331 genes: do the clusters, the argmax labels and the Macrophage and Mural margins stay the same? Does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-388aa2f9cf93"
+      },
+      {
+        "to": "sc33-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: step 8 says 'a symmetric graph' and your notes do not say how you made it symmetric. State whether an edge is kept when either nucleus lists the other among its 20 neighbours or only when both do, then run the other version and report the cluster count and the label fractions. In the same run, tabulate for each cluster its composition by sample and by age_group, and the seven label fractions within each age group separately: is any label's presence at 1% carried by one sample, and does the Rgs5-high cluster (834 nuclei) or the C1qa-high cluster split or change winner under the other symmetrisation? Does that change your method?",
+        "from": [
+          "sl-sc-test-41085d12cf1b",
+          "sl-sc-test-ccc7e52f258e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-87ba95875161"
+      },
+      {
+        "to": "sc33-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you report that Mural and Macrophage never won a cluster, but your near-tie list does not say where the nuclei carrying those markers are. The other team found one cluster of several hundred nuclei with the highest C1qa of any cluster that loses its argmax by under 0.1, and a second cluster with high Rgs5. In your partition, print the full cluster-by-marker-set table with per-gene means, winner, runner-up, margin and cluster size, and locate the nuclei with non-zero C1qa or Aif1 and those with non-zero Rgs5 or Notch3: which clusters hold them, how many are they compared with 1% of all nuclei (193), and by how much does Macrophage or Mural lose in those clusters? Is that margin stable across your variants? Does that change your method or your confidence?",
+        "from": [
+          "sl-sc-test-40dad9c0c842",
+          "sl-sc-test-b21e8b0d9dc8"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-fb7c28c5394a"
+      },
+      {
+        "to": "sc33-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you and the other team both clustered an unweighted kNN graph because the toolkit's neighbour function crashed, and you named that as the part you trust least. The crash is in one library call, not in the mathematics: check whether the weighted graph can be built another way (repairing the failing call, or computing the edge weights yourself from the kNN distances) and run Leiden on it with the weights used. Report the number of clusters, a cross-table against your 17 clusters, the cluster-by-marker-set score table with winner and margin, and the seven label fractions to 3 decimals. Does that change your method?",
+        "from": [
+          "sl-sc-test-0dde35ad632f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-76d0a48825ec"
+      },
+      {
+        "to": "sc33-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: from the same written HVG rule you select 2331 genes and the other team selects 2191; the other team dropped genes with zero mean before binning. Count the genes with mean exactly 0 in your run, show how your 20 bins come out (sizes and edges; are they truly equal-frequency when many genes tie at 0?), and state the ddof of your variance and of your within-bin z-score. Give the HVG count with zero-mean genes kept and dropped, and with bins made by rank versus by quantile edges. Run the rest of the pipeline on the variant that reproduces 2191 genes: do the clusters, the argmax labels and the margins of the losing labels stay the same? Which words of step 5 support your choice? Does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-ccab666f5ab5"
+      },
+      {
+        "to": "sc33-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: step 8 says 'a symmetric graph' and your notes do not say how you made it symmetric. State whether an edge is kept when either nucleus lists the other among its 20 neighbours or only when both do, then run the other version and report the cluster count and the label fractions. Your plan also listed a sample and age composition check whose result is not in your notes: tabulate each cluster by sample and age_group with median total_umi, and the seven label fractions within each age group separately. Is any cluster made almost wholly of one sample, and does any label's presence at 1% depend on one sample or on the symmetrisation? Does that change your method?",
+        "from": [
+          "sl-sc-test-0dde35ad632f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-e93c320d023f"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In the scanpy toolkit, what graph does the default neighbours function (sc.pp.neighbors with n_neighbors and n_pcs set, method left at default) produce: how are edge weights computed, how is the graph made symmetric, and does n_neighbors=k include the cell itself? And does the default Leiden function (sc.tl.leiden) use those edge weights, which quality function does it optimise, and what are its default flavor and n_iterations in recent versions?",
+          "why": "Both teams substituted an unweighted hand-built kNN graph for the toolkit's graph and neither knows how the toolkit's default differs in weighting, symmetrisation and neighbour count; knowing the convention tells them which variants are worth running and how to rebuild the weights by hand.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Is there a known incompatibility between scanpy's neighbours/UMAP-connectivity code (or umap-learn / pynndescent) and recent scipy versions in which sparse arrays lack methods such as getnnz, and what is the recommended workaround (version pin, patch, or calling the fuzzy-simplicial-set weight computation directly)?",
+          "why": "Both teams hit the same crash and abandoned the weighted-graph variant; a known workaround would let them resolve the weak point both of them named instead of only reporting it.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When genes are binned into equal-frequency bins by mean expression for binned-dispersion HVG selection (as in the Seurat/scanpy 'seurat' flavor and hand-written equivalents), how are genes with zero mean and tied bin edges conventionally handled (dropped beforehand, rank-based bins, or quantile edges with duplicates removed), and which ddof is conventionally used for the within-bin standard deviation of dispersion?",
+          "why": "The two teams obtained HVG sets of different size from the same written rule, apparently through zero-mean gene handling and tie or ddof conventions; knowing the usual convention tells them which variant a reference implementation of such a rule most likely follows.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In scanpy, what graph does default sc.pp.neighbors produce (edge weights, symmetrisation, does n_neighbors include self), and does default sc.tl.leiden use those weights, which quality function, default flavor and n_iterations?",
+          "answer": "Default method='umap', knn=True, metric euclidean. n_neighbors counts the cell itself: obsp['distances'] has n_neighbors-1 nonzeros per row (so k=20 gives 19 true neighbours). Exact kNN is used below 8192 cells, PyNNDescent above. obsp['connectivities'] comes from umap.fuzzy_simplicial_set(knn_indices, knn_dists, set_op_mix_ratio=1, local_connectivity=1). The umap-learn convention, recalled because the source page read was truncated, is: rho_i = distance to the nearest neighbour; sigma_i is found by binary search so that sum_j exp(-(d_ij-rho_i)/sigma_i) = log2(k); w_ij = exp(-max(0, d_ij-rho_i)/sigma_i); the self edge gets weight 0; the graph is symmetrised by fuzzy union W = A + A^T - A\u2218A^T. sc.tl.leiden uses these weights (use_weights=True) and optimises RBConfigurationVertexPartition (modularity with a resolution parameter). In 1.11.x and the current stable docs the defaults are flavor='leidenalg', n_iterations=-1 (run until no improvement) and directed=None, meaning directed for leidenalg. A FutureWarning says the future defaults will be flavor='igraph', n_iterations=2, directed=False.",
+          "sources": [
+            "https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/neighbors/_connectivity.py",
+            "https://raw.githubusercontent.com/scverse/scanpy/1.11.x/src/scanpy/neighbors/__init__.py",
+            "https://raw.githubusercontent.com/scverse/scanpy/1.11.x/src/scanpy/tools/_leiden.py",
+            "https://scanpy.scverse.org/en/stable/api/generated/scanpy.tl.leiden.html",
+            "https://scanpy.scverse.org/en/stable/api/generated/scanpy.pp.neighbors.html",
+            "https://raw.githubusercontent.com/lmcinnes/umap/master/umap/umap_.py"
+          ],
+          "confidence": "high (self-inclusion, use of the umap fuzzy set, Leiden defaults); medium (exact kernel formula, from umap-learn convention because the umap page read was truncated)",
+          "deliveries": {
+            "sc33-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-a27ff22046dd"
+            },
+            "sc33-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-7e9969b217b2"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In scanpy, what graph does default sc.pp.neighbors produce (edge weights, symmetrisation, does n_neighbors include self), and does default sc.tl.leiden use those weights, which quality function, default flavor and n_iterations? ANSWER: Default method='umap', knn=True, metric euclidean. n_neighbors counts the cell itself: obsp['distances'] has n_neighbors-1 nonzeros per row (so k=20 gives 19 true neighbours). Exact kNN is used below 8192 cells, PyNNDescent above. obsp['connectivities'] comes from umap.fuzzy_simplicial_set(knn_indices, knn_dists, set_op_mix_ratio=1, local_connectivity=1). The umap-learn convention, recalled because the source page read was truncated, is: rho_i = distance to the nearest neighbour; sigma_i is found by binary search so that sum_j exp(-(d_ij-rho_i)/sigma_i) = log2(k); w_ij = exp(-max(0, d_ij-rho_i)/sigma_i); the self edge gets weight 0; the graph is symmetrised by fuzzy union W = A + A^T - A\u2218A^T. sc.tl.leiden uses these weights (use_weights=True) and optimises RBConfigurationVertexPartition (modularity with a resolution parameter). In 1.11.x and the current stable docs the defaults are flavor='leidenalg', n_iterations=-1 (run until no improvement) and directed=None, meaning directed for leidenalg. A FutureWarning says the future defaults will be flavor='igraph', n_iterations=2, directed=False. HOW SURE: high (self-inclusion, use of the umap fuzzy set, Leiden defaults); medium (exact kernel formula, from umap-learn convention because the umap page read was truncated). SOURCES: https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/neighbors/_connectivity.py, https://raw.githubusercontent.com/scverse/scanpy/1.11.x/src/scanpy/neighbors/__init__.py, https://raw.githubusercontent.com/scverse/scanpy/1.11.x/src/scanpy/tools/_leiden.py, https://scanpy.scverse.org/en/stable/api/generated/scanpy.tl.leiden.html, https://scanpy.scverse.org/en/stable/api/generated/scanpy.pp.neighbors.html, https://raw.githubusercontent.com/lmcinnes/umap/master/umap/umap_.py."
+        },
+        {
+          "question": "Is there a known incompatibility between scanpy neighbours/UMAP connectivity code (or umap-learn/pynndescent) and recent scipy sparse arrays lacking getnnz, and what is the workaround?",
+          "answer": "Yes, scanpy issue #4444 (closed). pynndescent 0.7.0 (2026-10-27) returns scipy.sparse.csr_array from PyNNDescentTransformer.fit_transform. scanpy's _ind_dist_shortcut (neighbors/_common.py) calls d.getnnz(axis=1), which sparse arrays lack, so sc.pp.neighbors fails whenever pynndescent is used, including by default at 8192 or more cells with euclidean. This was reported with scanpy 1.12.4 and scipy 1.18.1. Workarounds: pin pynndescent<0.7 (0.6.0 works); use transformer='sklearn' (exact kNN) to avoid pynndescent; upgrade to a scanpy that includes PR #4451 'fix: support pynndescent 0.7'; or compute exact kNN yourself (self in column 0) and call umap.umap_.fuzzy_simplicial_set(scipy.sparse.coo_matrix((n,1)), k, None, None, knn_indices=..., knn_dists=...) as scanpy's _connectivity.umap does. np.diff(indptr) replaces getnnz(axis=1).",
+          "sources": [
+            "https://github.com/scverse/scanpy/issues/4444",
+            "https://github.com/scverse/scanpy/issues/2773",
+            "https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/neighbors/_connectivity.py"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc33-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-62bbbd6aba8a"
+            },
+            "sc33-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-af8d5c459c96"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Is there a known incompatibility between scanpy neighbours/UMAP connectivity code (or umap-learn/pynndescent) and recent scipy sparse arrays lacking getnnz, and what is the workaround? ANSWER: Yes, scanpy issue #4444 (closed). pynndescent 0.7.0 (2026-10-27) returns scipy.sparse.csr_array from PyNNDescentTransformer.fit_transform. scanpy's _ind_dist_shortcut (neighbors/_common.py) calls d.getnnz(axis=1), which sparse arrays lack, so sc.pp.neighbors fails whenever pynndescent is used, including by default at 8192 or more cells with euclidean. This was reported with scanpy 1.12.4 and scipy 1.18.1. Workarounds: pin pynndescent<0.7 (0.6.0 works); use transformer='sklearn' (exact kNN) to avoid pynndescent; upgrade to a scanpy that includes PR #4451 'fix: support pynndescent 0.7'; or compute exact kNN yourself (self in column 0) and call umap.umap_.fuzzy_simplicial_set(scipy.sparse.coo_matrix((n,1)), k, None, None, knn_indices=..., knn_dists=...) as scanpy's _connectivity.umap does. np.diff(indptr) replaces getnnz(axis=1). HOW SURE: high. SOURCES: https://github.com/scverse/scanpy/issues/4444, https://github.com/scverse/scanpy/issues/2773, https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/neighbors/_connectivity.py."
+        },
+        {
+          "question": "In equal-frequency mean-binned dispersion HVG selection, how are zero-mean genes and tied bin edges conventionally handled, and which ddof is used for the within-bin SD?",
+          "answer": "Reference implementations do not drop zero-mean genes beforehand. scanpy 'seurat' (and the deprecated filter_genes_dispersion) sets mean==0 to 1e-12 and dispersion==0 to NaN before the log. All-zero genes therefore get NaN dispersion, are skipped in the bin mean/std, and their NaN normalized dispersion is later set to 0, so they are never selected. scanpy 'seurat' bins with pd.cut(mean, bins=n_bins), which is equal-WIDTH, not equal-frequency. The within-bin std is pandas std(ddof=1), matching R sd() in Seurat, and single-gene bins (NaN std) get normalized dispersion 1. Seurat offers binning.method='equal_frequency' (an equal number of features per bin), but the code was not read. scanpy 'cell_ranger' uses quantile edges np.r_[-inf, percentile(means, 10..100 step 5), inf] with pd.cut, whose default duplicates='raise' (from search snippets) means tied edges raise an error rather than being dropped. No reference using rank-based bins was found. The web does not settle a single convention for ties in a hand-written equal-frequency rule. Most likely: ddof=1, all genes kept, NaN z set to 0. With many zero-mean genes, qcut edges tie and the result depends on duplicates='drop' versus rank-based qcut, so report the HVG count under both.",
+          "sources": [
+            "https://github.com/theislab/scanpy/blob/1.8.x/scanpy/preprocessing/%5Fdeprecated/highly%5Fvariable%5Fgenes.py",
+            "https://cellarium-ai.github.io/cellarium-ml/_modules/cellarium/ml/preprocessing/highly_variable_genes.html",
+            "https://satijalab.org/seurat/reference/findvariablefeatures",
+            "https://scanpy.scverse.org/en/stable/api/generated/scanpy.pp.highly_variable_genes.html"
+          ],
+          "confidence": "high (ddof=1, zero-mean handling in scanpy, pd.cut equal-width); low (tie handling for equal-frequency bins, not settled)",
+          "deliveries": {
+            "sc33-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-3abd2297fc87"
+            },
+            "sc33-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-7ae8e645948e"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In equal-frequency mean-binned dispersion HVG selection, how are zero-mean genes and tied bin edges conventionally handled, and which ddof is used for the within-bin SD? ANSWER: Reference implementations do not drop zero-mean genes beforehand. scanpy 'seurat' (and the deprecated filter_genes_dispersion) sets mean==0 to 1e-12 and dispersion==0 to NaN before the log. All-zero genes therefore get NaN dispersion, are skipped in the bin mean/std, and their NaN normalized dispersion is later set to 0, so they are never selected. scanpy 'seurat' bins with pd.cut(mean, bins=n_bins), which is equal-WIDTH, not equal-frequency. The within-bin std is pandas std(ddof=1), matching R sd() in Seurat, and single-gene bins (NaN std) get normalized dispersion 1. Seurat offers binning.method='equal_frequency' (an equal number of features per bin), but the code was not read. scanpy 'cell_ranger' uses quantile edges np.r_[-inf, percentile(means, 10..100 step 5), inf] with pd.cut, whose default duplicates='raise' (from search snippets) means tied edges raise an error rather than being dropped. No reference using rank-based bins was found. The web does not settle a single convention for ties in a hand-written equal-frequency rule. Most likely: ddof=1, all genes kept, NaN z set to 0. With many zero-mean genes, qcut edges tie and the result depends on duplicates='drop' versus rank-based qcut, so report the HVG count under both. HOW SURE: high (ddof=1, zero-mean handling in scanpy, pd.cut equal-width); low (tie handling for equal-frequency bins, not settled). SOURCES: https://github.com/theislab/scanpy/blob/1.8.x/scanpy/preprocessing/%5Fdeprecated/highly%5Fvariable%5Fgenes.py, https://cellarium-ai.github.io/cellarium-ml/_modules/cellarium/ml/preprocessing/highly_variable_genes.html, https://satijalab.org/seurat/reference/findvariablefeatures, https://scanpy.scverse.org/en/stable/api/generated/scanpy.pp.highly_variable_genes.html."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc33-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc33-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc33-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc33-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc33-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 118.93678941600956,
+      "cost_usd": 0.5325194,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 97.23125404200982,
+      "cost_usd": 0.1376417,
+      "error": null
+    },
+    {
+      "agent": "sc33-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 212.30974245793186,
+      "cost_usd": 0.2590954,
+      "error": null
+    },
+    {
+      "agent": "sc33-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 231.0568827498937,
+      "cost_usd": 0.25288659999999996,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 138.72207295894623,
+      "cost_usd": 0.2491739,
+      "error": null
+    },
+    {
+      "agent": "sc33-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 153.1026647919789,
+      "cost_usd": 0.7495053999999999,
+      "error": null
+    },
+    {
+      "agent": "sc33-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 229.786523125018,
+      "cost_usd": 0.5914678000000001,
+      "error": null
+    },
+    {
+      "agent": "sc33-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 292.2043622499332,
+      "cost_usd": 0.5892682,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

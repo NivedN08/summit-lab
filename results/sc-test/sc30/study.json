@@ -1,0 +1,509 @@
+{
+  "study": "sc30",
+  "status": "replicated",
+  "final": {
+    "agent": "sc30-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc30/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc30-library": "opus",
+    "sc30-team-a": "opus",
+    "sc30-team-b": "opus",
+    "sc30-team-c": "opus",
+    "sc30-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "sc30-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc30/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cells_after_filtering": 6420
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc30-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc30/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cells_after_filtering": 6420
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc30-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc30/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cells_after_filtering": 6420
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc30-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc30/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cells_after_filtering": 6420
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc30-team-a",
+        "sc30-team-b"
+      ],
+      "fields": {
+        "cells_after_filtering": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc30-team-a",
+        "sc30-team-b"
+      ],
+      "fields": {
+        "cells_after_filtering": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Mitochondrial-percent QC probably cannot be computed on this 4T1 .h5ad. A header-only read found no var_names starting with 'mt-' or 'MT-' (no mt-Co1, mt-Nd1, mt-Cytb under any spelling); gene names are mouse symbols from an older annotation. A loose, case-insensitive '^mt' pattern instead matches roughly 68 nuclear genes (Mt1, Mt2, Mtor, Mthfd2, Mtch1...) and gives a meaningless 'mito %' that would flag healthy cells such as metallothionein-high tumor cells. CHECK: count var_names starting exactly with 'mt-' and confirm any hits are the 13 mt-encoded protein genes (mt-Nd1..6, mt-Co1..3, mt-Atp6/8, mt-Cytb); if the count is 0, print what any looser pattern matches. IF the count is 0: apply no mitochondrial filter, do not substitute nuclear Mt*/Mrp* genes, base QC only on total counts and genes detected, and say so.",
+      "from": [
+        "sl-sc-test-467e84abe531",
+        "sl-sc-test-fdb7d5898ef2"
+      ],
+      "reason": "A mito filter built from a wrong gene pattern would silently remove healthy cells and change the reported count; the team needs to verify this before using the standard QC recipe.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-a24367e0e635"
+      }
+    },
+    {
+      "text": "The 4T1 object may already have been cell-filtered upstream. A header-only read shows X is a dense int64 matrix of 6420 cells x 19973 genes (about 1 GB in memory), a single sample category '4T1_viable', an empty var table, and obs holding only 'sample' and a pre-existing 'n_genes' column (the column sc.pp.filter_cells writes). The stored n_genes may be stale, and re-applying a default threshold may remove nothing or remove cells for no reason. CHECK: recompute genes detected and total counts from X, compare with obs['n_genes'], and look at the minimum of each for a hard floor (e.g. every cell at or above some round number of genes or UMIs). IF a floor is found: treat it as the already-applied filter, do not present an unchanged count as if QC was done without saying so, and justify any further removal only by a clearly separated low-quality tail in the recomputed metrics.",
+      "from": [
+        "sl-sc-test-4430bc996a5c",
+        "sl-sc-test-fdb7d5898ef2"
+      ],
+      "reason": "Whether a prior filter exists determines what 'conservative additional filtering' means here and whether the stored n_genes can be trusted as the QC metric.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-0fd8f3998b8c"
+      }
+    },
+    {
+      "text": "Textbook lower cut-offs (min_genes=200, min_counts=500, nFeature>200) can delete real low-RNA cell types rather than 'clearly low-quality' cells. Neutrophils express only a few hundred genes and resemble background, and 4T1 tumors are heavily neutrophil-infiltrated, so a default threshold can remove a whole population. CHECK: plot histograms of log10 total counts and log10 genes detected and look for a distinct low mode; for cells below each candidate threshold, test whether they coherently express neutrophil/immune markers (S100a8, S100a9, Retnlg, Csf3r, Cxcr2, Il1b, Ptprc) or are a diffuse ambient-like mix. IF they are a coherent population: place the lower threshold below that population (at the valley under it, or a more permissive floor than the 200/500 defaults; permissive floors below 200 genes are in common tutorial use), and count how many cells each candidate choice removes.",
+      "from": [
+        "sl-sc-test-f0e74c91710b"
+      ],
+      "reason": "The choice of lower threshold is the main driver of the final cell count, and the default values are a known trap for neutrophil-rich tumors like 4T1.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-3643e68b80f6"
+      }
+    },
+    {
+      "text": "An upper cut-off on counts or genes (max_genes=2500/5000/7000, or the upper MAD tail) is a doublet heuristic, not a low-quality filter. In tumors it removes genuine large, RNA-rich malignant cells, while the task asks to remove only clearly low-quality cells. CHECK: for cells above any candidate upper cut-off, test whether they are single-lineage tumor cells (Epcam, Krt8, Krt18 and the Kate2 reporter transgene, which is present in var_names, positive; Ptprc negative) or co-express mutually exclusive lineage markers; count how many cells the upper cut-off alone removes. IF they are real cells: apply no upper threshold (or only one above an isolated extreme tail) and leave doublets to a dedicated tool such as Scrublet rather than folding them into the QC count.",
+      "from": [
+        "sl-sc-test-d5702eef9aca"
+      ],
+      "reason": "Adding a habitual upper threshold would remove real tumor cells and lower the count beyond what 'clearly low-quality' justifies.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-8e65ca3c5baa"
+      }
+    },
+    {
+      "text": "MAD-based outlier thresholds assume one roughly unimodal population in which most cells are good. A tumor sample mixes large RNA-rich carcinoma cells with small immune cells, so median +/- k MADs on a bimodal metric can cut off a real population, and 3 MADs (stringent) removes far more than the 5 MADs recommended for lenient filtering. CHECK: compute thresholds on log1p(total counts) and log1p(genes detected); report per metric and per tail how many cells are flagged at 3 and at 5 MADs and whether the lower bound even falls inside the data range; inspect the histograms for multimodality. IF the metric is multimodal or 3 MADs slices through a mode: use the lenient 5-MAD rule on the log scale or a fixed cut at a visible valley, and do not accept an automatic threshold that cuts through a mode.",
+      "from": [
+        "sl-sc-test-0daea9822800"
+      ],
+      "reason": "Automatic MAD filtering is a common default; on this mixed tumor sample it can give a very different count from a conservative filter.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-0f7b6311b018"
+      }
+    },
+    {
+      "text": "Thresholding each QC metric separately and taking the union removes more cells than intended. Guidance is to consider count depth and genes detected jointly and to be as permissive as possible. CHECK: scatter total counts against genes detected on log axes, and tabulate cells failing each criterion alone, their union, and their intersection; report the fraction removed. IF the union removes much more than the visibly detached low tail: tighten to the joint low-count-and-low-gene corner and prefer the smaller removal.",
+      "from": [
+        "sl-sc-test-08d61c437fcb"
+      ],
+      "reason": "How criteria are combined (union vs joint) directly changes the number of cells removed.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-7727c1734019"
+      }
+    },
+    {
+      "text": "Extra 'complexity' criteria copied from pipelines (outliers in pct_counts_in_top_20_genes, log10GenesPerUMI > 0.8, ribosomal or hemoglobin percent cut-offs) flag specialised cells whose transcriptome is dominated by a few genes, such as neutrophils (S100a8/S100a9), and quietly turn a conservative filter into an aggressive one. CHECK: for each such criterion separately, count the cells it flags and look at which genes dominate them and which lineage markers they express. IF the flagged cells are a coherent cell type: drop that criterion; keep only criteria whose flagged cells look broken (very few counts AND very few genes, with no lineage identity).",
+      "from": [
+        "sl-sc-test-134375902a50"
+      ],
+      "reason": "Prevents the team from adding pipeline-default criteria that remove real cell types and inflate the number of removed cells.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-45ec91c42e96"
+      }
+    },
+    {
+      "text": "QC metrics are not independent of biology, so a threshold can silently discard a cell type while the remaining data still look clean. CHECK: after choosing thresholds, compare mean expression of the discarded pool against the retained pool (log fold change per gene) and list the genes most enriched in the discarded cells. IF those genes are lineage markers (e.g. neutrophil, T cell, erythroid genes) rather than a diffuse ambient/damage signature: the filter is removing a population, so relax the threshold until the discarded pool has no cell-type identity.",
+      "from": [
+        "sl-sc-test-3867c2d299d7"
+      ],
+      "reason": "Gives the team a concrete validation step to confirm the chosen thresholds remove only low-quality cells before reporting the count.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-0dedec90b06e"
+      }
+    },
+    {
+      "text": "The reported integer depends on boundary and ordering details. sc.pp.filter_cells(min_genes=k) keeps cells with n_genes >= k (inclusive) and accepts only one of min_counts/min_genes/max_counts/max_genes per call. Running sc.pp.filter_genes(min_cells=3) before computing per-cell metrics lowers n_genes and can push boundary cells out. CHECK: confirm X holds raw integer counts, compute per-cell metrics on the full matrix first, apply cell filters, then report adata.n_obs; test whether the count changes with < versus <= at the threshold. IF sensitive: state the inclusive convention used and report the cell count from cell filtering only, since gene filtering does not change the number of cells.",
+      "from": [
+        "sl-sc-test-b3abb4498b86"
+      ],
+      "reason": "The answer is a single exact integer, so off-by-boundary and order-of-operations effects can change it even when the threshold choice is right.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-4ffdcf85446b"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams took textbook lower cut-offs (a genes-per-cell and a counts-per-cell floor) that lie below the floor the file already has, so the thresholds they 'chose' cannot remove anything by construction. Neither tested whether low-quality cells remain just above the upstream floor (for example a low mode that the upstream cut sliced through).",
+      "Both assumed that once mt- genes are absent, quality can only be judged from genes detected and total counts. Neither tried any other per-cell quality signal that the matrix still supports.",
+      "Both judged each metric on its own marginal distribution (histogram, quantiles, MAD on the log scale) over all cells pooled. A tumour sample mixes large carcinoma cells with small immune cells, so a pooled marginal can look smooth while one lineage has a detached tail; neither team split by lineage or showed the joint counts-versus-genes picture.",
+      "Both assumed the 5-MAD rule is informative here. On a distribution truncated at a hard floor the lower 5-MAD bound falls below the floor, so 'flags 0 cells' is the same vacuous result as the fixed floor, not an independent confirmation.",
+      "Both assumed that an upper cut-off is outside 'clearly low-quality' (a doublet question), and both left the upper tail uncharacterised rather than showing what those cells are.",
+      "Both assumed the upstream floor means the task's QC has in effect already been done, although the task explicitly asks to choose thresholds and apply them to this file."
+    ],
+    "unused_evidence": [
+      "Lineage and reporter genes present in var_names (the Kate2 tumour reporter, Epcam, Ptprc, neutrophil genes): they can show whether cells at either extreme of the QC metrics have one clear identity, a mixed identity, or none. Team B ran no identity check at all; Team A's record lists the related pitfalls but does not say what was computed.",
+      "About 234 ribosomal-protein genes (Rps/Rpl), Malat1 and other nuclear transcripts, and four haemoglobin genes (Hbb-bs, Hbb-bt, Hba-a1, Hba-a2) are in the matrix. These support quality proxies (ribosomal fraction, nuclear-transcript fraction, red-cell content) that could stand in for the missing mito percentage; neither team computed them.",
+      "Transcriptome concentration and complexity (share of counts in the top genes, genes per UMI): the first rows read show cells whose top gene is Malat1 with few other genes high. Team A marks 'complexity criteria' as not found without saying what was measured; Team B did not look.",
+      "The gene table itself: 19,973 genes in chromosome order from chr1 to chrX with the reporter appended, and no chrM or chrY genes under any naming (I checked alternative mito names as well as the mt- prefix). The mito genes were therefore removed by construction, which confirms the teams' reading; it also means the gene list may have been filtered upstream, which neither team checked.",
+      "obs holds only 'sample' (one category) and 'n_genes'; barcodes carry no lane suffix; uns, layers and obsm are empty. Nothing else is hidden in the file."
+    ],
+    "unresolved_weak_points": [
+      "Team A named as weakest that the expected answer may rest on a threshold that does remove cells (a stricter MAD rule or an upper cut). It only reported this; it did not characterise the cells such a rule would remove to decide whether they are 'clearly low-quality'. Confidence 0.55.",
+      "Team B named as weakest that an upper genes cap may be expected and that any such cap is arbitrary. It showed the count moves with the cap but did not test what the capped cells are, so the weak point is reported, not resolved. Confidence 0.45.",
+      "Team B's plan said it would change method if mito genes were absent; the change it made was to drop the mito criterion, with nothing put in its place. Its pitfalls_checked list is empty although the library's pitfalls were available to it.",
+      "Team A's record has an inconsistent entry (the upper-cut-off pitfall is marked not found in the data, yet as having changed the method), so it is unclear whether the lineage check on the upper tail was run."
+    ],
+    "second_readings": [
+      "'Choose ... thresholds ... and apply the filtering' can be read as thresholds chosen from this file's own distributions, which would normally bite somewhere, rather than textbook defaults that are vacuous on a pre-floored file.",
+      "'Clearly low-quality cells' can be read as lower-tail only (few genes, few counts), or as any clear QC outlier including the extreme upper tail that standard QC removes as probable multiplets. The teams took the first reading without testing whether the second is supported by the cells themselves.",
+      "'Conservative' was read by both as 'remove as few as possible'. That is the natural reading given 'only clearly low-quality', but it does not by itself imply 'remove none'.",
+      "'All viable cells' describes the sort gate (live cells). It can be read as a reason dead-cell QC matters less here, or simply as the sample label; it does not say the file is already quality-filtered."
+    ],
+    "verdict": "Moderate-to-low trust. The agreement is real but shallow: both teams applied the same textbook floors to a file already floored above them, so both were bound to remove nothing, and both named the same doubt (that a threshold which actually bites may be warranted) without testing it; neither used any quality signal beyond genes and counts, nor checked the cells at the floor or in the upper tail.",
+    "questions": [
+      {
+        "to": "sc30-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your thresholds and your 5-MAD bounds all lie below the floor the file already has, so 'removes 0 cells' was fixed before you looked. Check the shape of the distribution at the floor: count cells in narrow bins of genes detected and of total counts from the floor upward (for example steps of 100 genes over the first 1,500), and see whether the density is still rising towards the floor (a mode cut through by the upstream filter) or has fallen to near nothing before it. If cells pile up at the floor, look at what they are: one lineage with clear markers, or a diffuse profile with no identity. Does the result change your method?",
+        "from": [
+          "sl-sc-test-b7848a85243e",
+          "sl-sc-test-4430bc996a5c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-d5c972567a4e"
+      },
+      {
+        "to": "sc30-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: with mito genes absent you judged quality from two metrics only. The matrix still holds ribosomal-protein genes, Malat1 and other nuclear transcripts, haemoglobin genes, and enough to compute the share of counts in the top genes and genes per UMI. Compute each per cell, look at each distribution and at the joint counts-versus-genes scatter, and check whether any of them shows a group clearly detached from the rest; for any such group, check its lineage identity before treating it as low quality. Your record marks 'complexity criteria' as not found: say what you computed. Does the result change your method?",
+        "from": [
+          "sl-sc-test-afa58ebb0fd3",
+          "sl-sc-test-134375902a50"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-fbd1299e0ed8"
+      },
+      {
+        "to": "sc30-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your record marks the upper-cut-off pitfall as not found in the data and also as having changed your method, and your weakest point is that an upper cut or a stricter rule might be intended. Resolve it on the data rather than report it: for the cells in the extreme upper tail of counts and genes (for example those your stricter MAD rule flagged), test whether they are single-lineage cells (tumour reporter and epithelial markers without the pan-immune marker, or the reverse) or co-express mutually exclusive lineage markers, and whether the tail is continuous with the tumour-cell distribution when you look at tumour cells alone. Does the result change your method?",
+        "from": [
+          "sl-sc-test-d5702eef9aca"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-3d1b4faacfdf"
+      },
+      {
+        "to": "sc30-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your histograms and MAD bounds pool all cells, but this sample mixes large carcinoma cells with small immune cells. Split the cells into broad lineages using markers (tumour reporter/epithelial versus pan-immune, and neutrophils separately), then repeat the histogram and the lenient MAD check on log counts and log genes within each lineage. Is there a detached low or high tail inside any one lineage that the pooled view hid? Does the result change your method?",
+        "from": [
+          "sl-sc-test-0daea9822800"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-dda07048b52f"
+      },
+      {
+        "to": "sc30-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your thresholds and your 5-MAD bounds all lie below the floor the file already has, so 'removes 0 cells' was fixed before you looked. Check the shape of the distribution at the floor: count cells in narrow bins of genes detected and of total counts from the floor upward (for example steps of 100 genes over the first 1,500), and see whether the density is still rising towards the floor (a mode cut through by the upstream filter) or has fallen to near nothing before it. If cells pile up at the floor, look at what they are: one lineage with clear markers, or a diffuse profile with no identity. Does the result change your method?",
+        "from": [
+          "sl-sc-test-706c4afd99b2",
+          "sl-sc-test-4430bc996a5c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-f1f4ff77f463"
+      },
+      {
+        "to": "sc30-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your plan said you would change method if mito genes were absent; they are absent, and the change you made was to drop that criterion with nothing in its place. The matrix still holds ribosomal-protein genes, Malat1 and other nuclear transcripts, haemoglobin genes, and enough to compute the share of counts in the top genes and genes per UMI. Compute each per cell, look at each distribution and at the joint counts-versus-genes scatter, and check whether any shows a group clearly detached from the rest; for any such group, check its lineage identity before treating it as low quality. Does the result change your method?",
+        "from": [
+          "sl-sc-test-7712cbd5e676",
+          "sl-sc-test-829570449f3f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-0a53bbcd9988"
+      },
+      {
+        "to": "sc30-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your weakest point is that an upper cap may be intended, and you showed only that the count moves with the cap. Resolve it on the data: for the cells above each cap you tried, test whether they are single-lineage cells (tumour reporter and epithelial markers without the pan-immune marker, or the reverse) or co-express mutually exclusive lineage markers, and whether the upper tail is continuous with the tumour-cell distribution when you look at tumour cells alone. Does the result change your method?",
+        "from": [
+          "sl-sc-test-706c4afd99b2",
+          "sl-sc-test-d5702eef9aca"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-ef7af1908681"
+      },
+      {
+        "to": "sc30-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your record lists no pitfalls checked, and your 'smooth unimodal' reading comes from all cells pooled, although this sample mixes large carcinoma cells with small immune cells. Split the cells into broad lineages using markers (tumour reporter/epithelial versus pan-immune, and neutrophils separately), then repeat the quantiles and the lenient MAD check on log counts and log genes within each lineage. Is there a detached low or high tail inside any one lineage that the pooled view hid? Does the result change your method?",
+        "from": [
+          "sl-sc-test-3867c2d299d7",
+          "sl-sc-test-0daea9822800"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-344905ca0a09"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "When a droplet single-cell RNA-seq count matrix contains no mitochondrial genes, which other per-cell metrics do established QC guides recommend for identifying damaged or low-quality cells (for example nuclear long non-coding RNA fraction such as MALAT1, ribosomal-protein fraction, genes per UMI, share of counts in the top genes), and what rules or cut-offs do they give for each?",
+          "why": "Both teams dropped the mito criterion and put nothing in its place; knowing which substitute metrics are accepted, and how they are thresholded, decides whether there is a legitimate third criterion to test.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "If a single-cell count matrix has already been filtered upstream at a hard minimum number of genes per cell, how do QC guides recommend checking for residual low-quality cells above that minimum (for example a truncated low mode at the cut, a valley in the log-count or log-gene histogram, a knee in the barcode rank plot), and how do median-absolute-deviation outlier rules behave on a distribution truncated in this way?",
+          "why": "Both teams read 'zero cells flagged' on a truncated distribution as evidence that no low-quality cells remain; this settles whether that inference is sound.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In widely used single-cell RNA-seq QC tutorials and best-practice guides, what ranges of minimum genes per cell and minimum UMIs per cell are described as lenient or conservative for droplet data from solid tumours, and do those guides treat an upper bound on genes or counts as part of low-quality-cell filtering or as a separate multiplet-removal step?",
+          "why": "The teams' whole answer depends on which lower bound counts as 'conservative' and on whether an upper bound belongs to this filtering step; the convention, not the data, decides both.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When a droplet single-cell RNA-seq count matrix contains no mitochondrial genes, which other per-cell metrics do established QC guides recommend for identifying damaged or low-quality cells (for example nuclear long non-coding RNA fraction such as MALAT1, ribosomal-protein fraction, genes per UMI, share of counts in the top genes), and what rules or cut-offs do they give for each?",
+          "answer": "Substitutes the guides accept and how they threshold them: (a) Share of counts in the top 20 genes. sc-best-practices flags outliers beyond 5 MADs in both directions, together with log1p total counts and log1p genes, and calls this a relatively permissive rule. (b) Novelty or complexity, log10(genes)/log10(UMI). HBC expects good cells above 0.80 and filters at >0.80, but warns that low complexity can be a real cell type (e.g. RBCs). (c) Ribosomal and hemoglobin fractions. sc-best-practices computes them only as diagnostics and explicitly does not filter on them; no cut-off is given. (d) MALAT1 or nuclear lncRNA. Here LOW MALAT1 marks barcodes without a nucleus (empty droplets, cytoplasmic fragments, mature erythrocytes). BaderLab's define_malat1_threshold fits a density/quadratic to the main MALAT1 peak of normalized expression and returns a floor of at least 0.3. One atlas QC study used <3.5 normalized MALAT1 counts chosen by eye and argues against the old view that high MALAT1 means degradation. (e) Intronic nuclear fraction (DropletQC). High nuclear fraction plus low UMI marks damaged cells and low fraction plus low UMI marks empty droplets; it needs the BAM, not just the count matrix. No guide gives a universal fixed cut-off for MALAT1 or ribosomal fraction. Absent mito, the defensible third criteria are top-20-gene share at 5 MADs, novelty <0.8, or a data-driven low-MALAT1 floor. Each should be checked for whether it flags a coherent cell type.",
+          "sources": [
+            "https://www.sc-best-practices.org/preprocessing-visualization/quality-control/",
+            "https://hbctraining.github.io/Intro-to-scRNAseq/lessons/05_quality_control.html",
+            "https://github.com/BaderLab/MALAT1_threshold",
+            "https://link.springer.com/article/10.1186/s12864-024-11015-5",
+            "https://github.com/powellgenomicslab/DropletQC"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc30-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-c37d70369841"
+            },
+            "sc30-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-7efab08f4a04"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a droplet single-cell RNA-seq count matrix contains no mitochondrial genes, which other per-cell metrics do established QC guides recommend for identifying damaged or low-quality cells (for example nuclear long non-coding RNA fraction such as MALAT1, ribosomal-protein fraction, genes per UMI, share of counts in the top genes), and what rules or cut-offs do they give for each? ANSWER: Substitutes the guides accept and how they threshold them: (a) Share of counts in the top 20 genes. sc-best-practices flags outliers beyond 5 MADs in both directions, together with log1p total counts and log1p genes, and calls this a relatively permissive rule. (b) Novelty or complexity, log10(genes)/log10(UMI). HBC expects good cells above 0.80 and filters at >0.80, but warns that low complexity can be a real cell type (e.g. RBCs). (c) Ribosomal and hemoglobin fractions. sc-best-practices computes them only as diagnostics and explicitly does not filter on them; no cut-off is given. (d) MALAT1 or nuclear lncRNA. Here LOW MALAT1 marks barcodes without a nucleus (empty droplets, cytoplasmic fragments, mature erythrocytes). BaderLab's define_malat1_threshold fits a density/quadratic to the main MALAT1 peak of normalized expression and returns a floor of at least 0.3. One atlas QC study used <3.5 normalized MALAT1 counts chosen by eye and argues against the old view that high MALAT1 means degradation. (e) Intronic nuclear fraction (DropletQC). High nuclear fraction plus low UMI marks damaged cells and low fraction plus low UMI marks empty droplets; it needs the BAM, not just the count matrix. No guide gives a universal fixed cut-off for MALAT1 or ribosomal fraction. Absent mito, the defensible third criteria are top-20-gene share at 5 MADs, novelty <0.8, or a data-driven low-MALAT1 floor. Each should be checked for whether it flags a coherent cell type. HOW SURE: high. SOURCES: https://www.sc-best-practices.org/preprocessing-visualization/quality-control/, https://hbctraining.github.io/Intro-to-scRNAseq/lessons/05_quality_control.html, https://github.com/BaderLab/MALAT1_threshold, https://link.springer.com/article/10.1186/s12864-024-11015-5, https://github.com/powellgenomicslab/DropletQC."
+        },
+        {
+          "question": "If a single-cell count matrix has already been filtered upstream at a hard minimum number of genes per cell, how do QC guides recommend checking for residual low-quality cells above that minimum (for example a truncated low mode at the cut, a valley in the log-count or log-gene histogram, a knee in the barcode rank plot), and how do median-absolute-deviation outlier rules behave on a distribution truncated in this way?",
+          "answer": "What the guides recommend: inspect the log-count and log-gene histograms and the genes-vs-UMI scatter. A good sample shows one main peak; a small left shoulder or bimodality can mean failed cells, or a biologically different low-RNA population (HBC). Low-quality cells sit in the low-genes, low-UMI corner. OSCA says MAD outlier rules (3 MADs by default, on the log scale) assume a high-quality majority with roughly normal or unimodal metrics, and that they fail when this does not hold. The barcode-rank knee/inflection and emptyDrops separate cells from empty droplets, but OSCA states this 'makes no statement about the quality of the cells', so damaged cells still need outlier QC afterwards. None of the pages I read deals with a distribution truncated by an upstream hard floor, so this part comes from the MAD definition, not a cited source. Truncating the low tail raises the median and shrinks the MAD. The lower bound (median - k*MAD) then often falls below the existing floor, so 'zero cells flagged' is expected by construction. It does not show that no low-quality cells remain; at most it shows there is no extreme tail relative to the retained bulk. To settle the question, look for a pile-up or truncated mode at the cut and a valley above it, not the MAD count.",
+          "sources": [
+            "https://bioconductor.org/books/release/OSCA.advanced/quality-control-redux.html",
+            "https://bioconductor.org/books/release/OSCA.basic/quality-control.html",
+            "https://bioconductor.org/books/release/OSCA.advanced/droplet-processing.html",
+            "https://hbctraining.github.io/Intro-to-scRNAseq/lessons/05_quality_control.html"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc30-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-823d2d18bb84"
+            },
+            "sc30-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-225428b0b859"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: If a single-cell count matrix has already been filtered upstream at a hard minimum number of genes per cell, how do QC guides recommend checking for residual low-quality cells above that minimum (for example a truncated low mode at the cut, a valley in the log-count or log-gene histogram, a knee in the barcode rank plot), and how do median-absolute-deviation outlier rules behave on a distribution truncated in this way? ANSWER: What the guides recommend: inspect the log-count and log-gene histograms and the genes-vs-UMI scatter. A good sample shows one main peak; a small left shoulder or bimodality can mean failed cells, or a biologically different low-RNA population (HBC). Low-quality cells sit in the low-genes, low-UMI corner. OSCA says MAD outlier rules (3 MADs by default, on the log scale) assume a high-quality majority with roughly normal or unimodal metrics, and that they fail when this does not hold. The barcode-rank knee/inflection and emptyDrops separate cells from empty droplets, but OSCA states this 'makes no statement about the quality of the cells', so damaged cells still need outlier QC afterwards. None of the pages I read deals with a distribution truncated by an upstream hard floor, so this part comes from the MAD definition, not a cited source. Truncating the low tail raises the median and shrinks the MAD. The lower bound (median - k*MAD) then often falls below the existing floor, so 'zero cells flagged' is expected by construction. It does not show that no low-quality cells remain; at most it shows there is no extreme tail relative to the retained bulk. To settle the question, look for a pile-up or truncated mode at the cut and a valley above it, not the MAD count. HOW SURE: medium. SOURCES: https://bioconductor.org/books/release/OSCA.advanced/quality-control-redux.html, https://bioconductor.org/books/release/OSCA.basic/quality-control.html, https://bioconductor.org/books/release/OSCA.advanced/droplet-processing.html, https://hbctraining.github.io/Intro-to-scRNAseq/lessons/05_quality_control.html."
+        },
+        {
+          "question": "In widely used single-cell RNA-seq QC tutorials and best-practice guides, what ranges of minimum genes per cell and minimum UMIs per cell are described as lenient or conservative for droplet data from solid tumours, and do those guides treat an upper bound on genes or counts as part of low-quality-cell filtering or as a separate multiplet-removal step?",
+          "answer": "Commonly cited lower bounds: the scanpy tutorial's min_genes=100 (with min_cells=3), described as 'a very permissive filtering strategy'; Seurat pbmc3k's nFeature >200 (and <2500, mt <5%), which 10x notes are dataset-specific examples, not universal rules; HBC's nUMI >=500, nGene >=300 and novelty >0.8, where 500 UMI is 'the low end' and 500-1000 is 'usable'; Cell Ranger's 500-UMI floor in cell calling; and OSCA's fixed example of library size <500 for 10x PBMC. Adaptive rules are 3 MADs (OSCA default) versus 5 MADs (sc-best-practices, 'relatively permissive'). 10x quotes 2-5 SD/MAD in publications. 10x and OSCA warn that heterogeneous samples contain low-RNA cells such as neutrophils, which a single threshold may delete. None of the guides I read gives thresholds specific to solid tumours; the web does not settle a tumour-specific 'conservative' range. Overall, 100 genes is the permissive end, 200-300 genes or 500 UMI the typical default, and higher values stricter. Upper bounds: the guides frame high counts/genes as a multiplet signal, not low quality. HBC explicitly recommends no maximum thresholds (the rationale 'is not accurate') and defers doublets to tools such as Scrublet. scanpy and sc-best-practices run doublet detection as a separate step (Scrublet/scDblFinder). Seurat's <2500 is a doublet heuristic. One caveat: sc-best-practices' 5-MAD rule on counts, genes and top-20 share is two-sided, so it does remove an extreme upper tail in its QC step.",
+          "sources": [
+            "https://scanpy.readthedocs.io/en/stable/tutorials/basics/clustering.html",
+            "https://satijalab.org/seurat/articles/pbmc3k_tutorial",
+            "https://hbctraining.github.io/Intro-to-scRNAseq/lessons/05_quality_control.html",
+            "https://www.10xgenomics.com/analysis-guides/common-considerations-for-quality-control-filters-for-single-cell-rna-seq-data",
+            "https://www.sc-best-practices.org/preprocessing-visualization/quality-control/",
+            "https://bioconductor.org/books/release/OSCA.advanced/quality-control-redux.html"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc30-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-480e8c4bc932"
+            },
+            "sc30-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-6e4512984802"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In widely used single-cell RNA-seq QC tutorials and best-practice guides, what ranges of minimum genes per cell and minimum UMIs per cell are described as lenient or conservative for droplet data from solid tumours, and do those guides treat an upper bound on genes or counts as part of low-quality-cell filtering or as a separate multiplet-removal step? ANSWER: Commonly cited lower bounds: the scanpy tutorial's min_genes=100 (with min_cells=3), described as 'a very permissive filtering strategy'; Seurat pbmc3k's nFeature >200 (and <2500, mt <5%), which 10x notes are dataset-specific examples, not universal rules; HBC's nUMI >=500, nGene >=300 and novelty >0.8, where 500 UMI is 'the low end' and 500-1000 is 'usable'; Cell Ranger's 500-UMI floor in cell calling; and OSCA's fixed example of library size <500 for 10x PBMC. Adaptive rules are 3 MADs (OSCA default) versus 5 MADs (sc-best-practices, 'relatively permissive'). 10x quotes 2-5 SD/MAD in publications. 10x and OSCA warn that heterogeneous samples contain low-RNA cells such as neutrophils, which a single threshold may delete. None of the guides I read gives thresholds specific to solid tumours; the web does not settle a tumour-specific 'conservative' range. Overall, 100 genes is the permissive end, 200-300 genes or 500 UMI the typical default, and higher values stricter. Upper bounds: the guides frame high counts/genes as a multiplet signal, not low quality. HBC explicitly recommends no maximum thresholds (the rationale 'is not accurate') and defers doublets to tools such as Scrublet. scanpy and sc-best-practices run doublet detection as a separate step (Scrublet/scDblFinder). Seurat's <2500 is a doublet heuristic. One caveat: sc-best-practices' 5-MAD rule on counts, genes and top-20 share is two-sided, so it does remove an extreme upper tail in its QC step. HOW SURE: medium. SOURCES: https://scanpy.readthedocs.io/en/stable/tutorials/basics/clustering.html, https://satijalab.org/seurat/articles/pbmc3k_tutorial, https://hbctraining.github.io/Intro-to-scRNAseq/lessons/05_quality_control.html, https://www.10xgenomics.com/analysis-guides/common-considerations-for-quality-control-filters-for-single-cell-rna-seq-data, https://www.sc-best-practices.org/preprocessing-visualization/quality-control/, https://bioconductor.org/books/release/OSCA.advanced/quality-control-redux.html."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc30-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc30-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc30-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc30-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc30-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 30.0056932909647,
+      "cost_usd": 0.12208959999999999,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 84.31398425006773,
+      "cost_usd": 0.1468047,
+      "error": null
+    },
+    {
+      "agent": "sc30-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 43.643895582994446,
+      "cost_usd": 0.15448320000000001,
+      "error": null
+    },
+    {
+      "agent": "sc30-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 58.513941709068604,
+      "cost_usd": 0.1620808,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 163.56401037506294,
+      "cost_usd": 0.2908966,
+      "error": null
+    },
+    {
+      "agent": "sc30-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 133.32798804203048,
+      "cost_usd": 0.6741744000000001,
+      "error": null
+    },
+    {
+      "agent": "sc30-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 91.00319595797919,
+      "cost_usd": 0.35782280000000005,
+      "error": null
+    },
+    {
+      "agent": "sc30-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 125.44740645901766,
+      "cost_usd": 0.44740179999999996,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

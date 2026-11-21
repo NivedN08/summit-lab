@@ -1,0 +1,481 @@
+{
+  "study": "sc35",
+  "status": "replicated",
+  "final": {
+    "agent": "sc35-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc35/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc35-library": "opus",
+    "sc35-team-a": "opus",
+    "sc35-team-b": "opus",
+    "sc35-team-c": "opus",
+    "sc35-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc35-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc35/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cells_after_filtering": 11559
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc35-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc35/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cells_after_filtering": 11559
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc35-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc35/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cells_after_filtering": 11559
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc35-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc35/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "cells_after_filtering": 11559
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc35-team-a",
+        "sc35-team-b"
+      ],
+      "fields": {
+        "cells_after_filtering": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc35-team-a",
+        "sc35-team-b"
+      ],
+      "fields": {
+        "cells_after_filtering": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "DATA STRUCTURE AND PITFALL (already-filtered data). The file 156261218.node is an AnnData h5ad converted from Seurat: 11693 cells x 27946 genes; obs has sample, nCount_RNA, nFeature_RNA, pct_counts_mito and seurat_clusters; obsm has X_pca and X_umap. Because it has been through a Seurat workflow it may already be QC-filtered, and stacking an aggressive second filter on top can remove too many cells. CHECK: before filtering, look at min(nFeature_RNA), min(nCount_RNA) and max(pct_counts_mito), and count how many cells fail each candidate threshold. IF FOUND that the data already respects standard minimums: expect few removals, report the post-filter count from the thresholds you actually apply, and do not invent extra strict cuts just to force a change.",
+      "from": [
+        "sl-sc-test-0e37908cd26f"
+      ],
+      "reason": "Tells the team what the file contains and that it may have been filtered already, which determines whether a second strict filter is justified and so directly moves the reported cell count.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-719f84a1c2e6"
+      }
+    },
+    {
+      "text": "PITFALL (which matrix the QC metrics come from). In Seurat-to-AnnData conversions adata.X usually holds the log-normalized 'data' slot, not raw counts, so running sc.pp.calculate_qc_metrics on X gives wrong total_counts and can give wrong n_genes. CHECK: test whether X holds integers; if a raw-count layer exists (e.g. layers['counts']) compare it with X, and check that its row sums equal obs nCount_RNA and its non-zeros per row equal obs nFeature_RNA. IF FOUND that X is not raw counts: compute QC metrics with layer='counts' (or use the matching existing obs columns), never on log-normalized X.",
+      "from": [
+        "sl-sc-test-d31270145671"
+      ],
+      "reason": "Thresholds applied to metrics computed from the wrong matrix give a wrong cell count; the team must know to verify the count source before filtering.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-eb8296056a63"
+      }
+    },
+    {
+      "text": "PITFALL (units and prefix of the mitochondrial metric). The existing obs column pct_counts_mito may be a fraction (0-1) or a percent (0-100), and mitochondrial genes may be prefixed MT- (human) or mt- (mouse), or be absent. A 5% cutoff applied to a 0-1 fraction removes nothing; a wrong prefix finds no mito genes. CHECK: print the range of pct_counts_mito; count var_names starting with 'MT-' and with 'mt-'; recompute the mito percent from the raw counts and compare with the obs column. IF FOUND: rescale the threshold to the column's units and use the right prefix; if there are no mito genes, say so and skip the mito filter.",
+      "from": [
+        "sl-sc-test-08e08ece3711"
+      ],
+      "reason": "A unit or prefix mismatch silently disables or distorts the mitochondrial filter, changing how many cells pass.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-5ab68d0167b6"
+      }
+    },
+    {
+      "text": "PITFALL (the threshold scheme drives the cell count). Seurat's tutorial fixed cutoffs (200 < nFeature < 2500, percent.mt < 5) were tuned for PBMC3k (10x v1, shallow sequencing), while scverse best practice uses MAD outliers (5 MADs on log1p total counts and log1p genes detected, 3 MADs on mito percent, plus a hard mito > 8% cut). The two schemes can differ by thousands of cells. CHECK: compute the count under both schemes and look at the medians of nFeature_RNA and nCount_RNA. IF FOUND that median nFeature is close to or above 2500 (deep 10x v3-style data): the fixed upper cap of 2500 is inappropriate; prefer lenient MAD-based or distribution-informed cuts, and report exactly which thresholds produced the number.",
+      "from": [
+        "sl-sc-test-4899e2dcd7ec"
+      ],
+      "reason": "The choice between copied tutorial cutoffs and data-informed cutoffs is the biggest single driver of the answer; the team should choose deliberately after looking at the distributions.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-432379fc03f6"
+      }
+    },
+    {
+      "text": "PITFALL (mito cutoff too strict for the tissue). A 5% mitochondrial cutoff removes viable cells in mito-rich tissues (heart, muscle, kidney, tumour), where published cutoffs are typically 10-20%. CHECK: look at the distribution and median of pct_counts_mito, and at whether the high-mito cells form their own clusters (use seurat_clusters) rather than sitting in a low-count tail. IF FOUND: use a tissue-appropriate cut (for example 10-20%) or a MAD-based cut, and state which one you used.",
+      "from": [
+        "sl-sc-test-75df12be7288"
+      ],
+      "reason": "The mito threshold must match the tissue; a default 5% cut can discard real cell populations and change the count substantially.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-50e8abb86b8b"
+      }
+    },
+    {
+      "text": "PITFALL (multiple samples and MAD thresholds). obs has a 'sample' column. MAD outlier thresholds computed on the pooled data are biased by between-sample differences in depth and quality, so whole samples can be over- or under-filtered. CHECK: tabulate cells per sample and compare per-sample medians of nCount_RNA, nFeature_RNA and pct_counts_mito. IF FOUND that the medians differ a lot: compute MAD thresholds within each sample (group by sample). Fixed thresholds are not affected by this.",
+      "from": [
+        "sl-sc-test-16de3d75a1ee"
+      ],
+      "reason": "If the team uses adaptive (MAD) thresholds, pooled versus per-sample computation gives different cell counts; they need to check sample heterogeneity first.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-f759852c3f13"
+      }
+    },
+    {
+      "text": "PITFALL (gene filtering, order of operations and doublets). Gene-level filtering (e.g. min_cells=3) does not itself change the number of cells, but filtering genes first and then recomputing genes-per-cell slightly lowers the per-cell gene counts and so can change which cells pass. Optional doublet removal (scrublet/scDblFinder) is stochastic and changes the count. CHECK: compute per-cell metrics on the full gene set before any gene filter; record whether doublet removal was applied. GUIDANCE: report the number of cells after the cell-level QC thresholds only; treat doublet removal as a separate, explicitly stated step (run per sample on raw counts if done at all), not as part of basic threshold QC.",
+      "from": [
+        "sl-sc-test-24c07dc866b7"
+      ],
+      "reason": "Defines what the reported number should cover (cell-level threshold QC) and prevents a stochastic or order-dependent step from shifting the count unnoticed.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-216f29003fdc"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams took the tutorial upper cap of 2500 detected genes per cell as 'reasonable' for this data without testing it. It is the only cut that removes any cell in the agreed answer (134 cells), so the whole difference between the agreed answer and 'remove nothing' rests on one untested number.",
+      "Both teams assumed the upstream filtering consisted of a mito < 10% cut and lower floors only. Neither looked at the upper ends. The extremes of the obs columns suggest otherwise: the lowest nCount_RNA values are densely packed just above 554 and the highest are densely packed just below about 5530 (nFeature_RNA likewise up to 2866), which looks like a hard upstream cut on both tails, at non-round values. If an upper cut was already applied upstream, a second cap sits inside an already trimmed distribution.",
+      "Both teams treated a mito cutoff equal to the existing upstream bound as the natural choice, i.e. assumed the upstream pipeline's threshold is the 'reasonable' one, so that the mito filter removes nothing. Neither tested whether the cells in the upper mito band look damaged (fewer genes or counts than their cluster peers).",
+      "Both teams assumed fixed tutorial-style thresholds on pooled cells are the scheme the task means, and treated MAD or per-sample schemes only as sensitivity checks.",
+      "Both teams assumed 'cells after filtering' means cell-level threshold QC only, with no doublet removal and no removal of low-quality clusters."
+    ],
+    "unused_evidence": [
+      "nCount_RNA was verified but never used as a filter by either team (team A's plan named an nCount floor; its final rule has none), and its upper tail was never examined. Its extremes are the clearest sign of what upstream filtering was done.",
+      "seurat_clusters / RNA_snn_res.1 (identical, 20 clusters), X_pca and X_umap: team A used the clusters once (share of high-mito cells per cluster); team B did not use them at all. Neither asked which clusters the cells above the gene cap come from, or whether any cluster as a whole looks low quality or doublet-like.",
+      "var columns vst.mean, vst.variance, vst.variable: unused by both. They record the cell set on which the upstream Seurat run computed variable genes. Comparing vst.mean with the per-gene mean of the counts over the cells in the file tells whether the upstream analysis was run on exactly these cells (the object is the authors' post-QC set) or on a different set.",
+      "The 'sample' column (4 samples): team A compared per-sample medians and a per-sample MAD scheme; team B only counted cells per sample. Neither reported how the removed cells, or the cells in the upper mito band, split across samples.",
+      "The ratio of counts to detected genes is very low (median about 1.5 counts per gene), which says the data are shallow or downsampled. Neither team noted it or asked what it implies for a gene cap borrowed from a tutorial dataset."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weakest point, that the threshold scheme is arbitrary and the count ranges from about 7661 to 11693 depending on convention, and both gave confidence 0.35. Neither resolved it; they reported the range and picked the tutorial numbers with the mito cut relaxed.",
+      "The two teams' MAD-based sensitivity counts do not agree (team A: 11193 pooled, 11046 per sample; team B: 11657). So 'the MAD scheme' is not one scheme in the two teams' hands, and neither team's notes define it fully. This was not noticed, because each team saw only its own number.",
+      "Team A showed that a 5% mito cut hits most clusters and judged it too strict; team B reached the same choice from the distribution alone and recorded no pitfall checks. Neither tested the positive case for the cut they kept, or for the gene cap they kept."
+    ],
+    "second_readings": [
+      "'has been pre-processed' can mean (a) already QC-filtered by the authors, so that reasonable thresholds remove few or no cells, or (b) processed in other ways (clustering, PCA, UMAP present) with QC still expected to remove a material share. The teams took (a) but still applied a cap; the two readings give counts thousands of cells apart.",
+      "'reasonable thresholds' can mean widely used fixed defaults applied as they are, or thresholds chosen from this data's own distributions (per sample or pooled). The teams mixed the two: a default gene cap and a data-informed mito cut.",
+      "'quality control filtering' can stop at per-cell metric thresholds or include doublet removal or dropping low-quality clusters; 'cells_after_filtering' would differ.",
+      "Strict versus inclusive comparisons (>, >=) at the thresholds: no effect at the floors here, but worth stating for the cap."
+    ],
+    "verdict": "Low to moderate trust. The agreement is two teams applying the same tutorial convention with the same relaxation, not two independent findings: both give confidence 0.35 and name the same unresolved weak point, the reported count turns on one untested gene cap, and neither team noticed that the data look trimmed upstream on both tails or that their two MAD schemes disagree. I did not compute an answer; the choice of mito cut moves the count by thousands of cells and is the thing most worth settling before reporting.",
+    "questions": [
+      {
+        "to": "sc35-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: in your answer the only cut that removes any cell is the cap of 2500 detected genes (134 cells). Check what the data say about that cap. First, print the 20 lowest and 20 highest values of nCount_RNA and nFeature_RNA and the histogram of each near its ends: are the extremes densely packed against a hard edge at both ends (an upstream cut on both tails), or do they thin out? Second, for the cells above your cap: which seurat_clusters and samples do they come from, how do their nCount_RNA compare with the median of their own cluster, and do they sit apart from the rest of the nFeature distribution or on its smooth tail? Does the result support a cap at that value, a different upper rule, or none, and does that change your method?",
+        "from": [
+          "sl-sc-test-fdbe59ec4153",
+          "sl-sc-test-151d0bb7e9ca"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-125edf1fc3aa"
+      },
+      {
+        "to": "sc35-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you rejected the stricter mito cut because it removes a third of the cells across most clusters, and kept a cut equal to the bound already present in the data. That shows the strict cut is costly, not that the cells in the upper mito band are sound. Check them directly: within each seurat_cluster and each sample, compare nFeature_RNA and nCount_RNA of cells in the upper mito band with cells below it, and report where the mode of pct_counts_mito lies and how much mass sits in the last percentage point below the existing bound. Do the upper-band cells look damaged (fewer genes and counts than their cluster peers) or like the rest? Does that change your mito threshold or your confidence?",
+        "from": [
+          "sl-sc-test-29593537b99b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-772d3db7352d"
+      },
+      {
+        "to": "sc35-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your MAD-based scheme keeps 11193 cells pooled and 11046 per sample, while the other team's MAD-based scheme keeps 11657. So the two teams are not running the same rule. Write out yours exactly: which metrics, how many MADs on each, log scale or not, one-sided or two-sided, and whether it contains a fixed mito cut. Then report how many cells each component removes on its own. Is most of your MAD removal coming from a fixed cut inside the scheme rather than from the MAD rule? Given that the data already look trimmed upstream, which components still have a tail to remove? Does that change which scheme you treat as primary?",
+        "from": [
+          "sl-sc-test-fdbe59ec4153",
+          "sl-sc-test-d9a7964c8f92"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-cce35fb173e3"
+      },
+      {
+        "to": "sc35-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: the var table carries vst.mean and vst.variance from the upstream Seurat run, and neither team used them. Compute the per-gene mean of the counts layer over the cells in the file and compare it with vst.mean (and the count of vst.variable genes). If they match, the upstream clustering was run on exactly this cell set; if not, cells were added or removed afterwards. Then read the task's words again ('has been pre-processed', 'reasonable thresholds', 'cells_after_filtering'): given what this check shows about the state of the object, which reading do they support, that further filtering should remove a material share of cells, a few, or none? Does that change your method?",
+        "from": [
+          "sl-sc-test-151d0bb7e9ca",
+          "sl-sc-test-68c2fdefd70f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-3cd4eab01ed4"
+      },
+      {
+        "to": "sc35-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: in your answer the only cut that removes any cell is the cap of 2500 detected genes, and you recorded that the result 'depends on the upper nFeature cap' without testing the cap. First, print the 20 lowest and 20 highest values of nCount_RNA and nFeature_RNA and the histogram of each near its ends: are the extremes densely packed against a hard edge at both ends (an upstream cut on both tails), or do they thin out? Second, for the cells above your cap: which seurat_clusters and samples do they come from, how do their nCount_RNA compare with the median of their own cluster, and do they sit apart from the rest of the nFeature distribution or on its smooth tail? Does the result support a cap at that value, a different upper rule, or none, and does that change your method?",
+        "from": [
+          "sl-sc-test-022855ad23dd"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-ad6f10eeec39"
+      },
+      {
+        "to": "sc35-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you chose your mito cut from the overall distribution and from the bound already present in the data, and you did not use seurat_clusters or sample for it. Check the cells in the upper mito band directly: what share of each seurat_cluster and of each sample do they make up, and within each cluster do they have fewer detected genes and counts than cells below the band? Report also where the mode of pct_counts_mito lies and how much mass sits in the last percentage point below the existing bound. Do the upper-band cells look damaged or like the rest, and is one sample or cluster carrying them? Does that change your mito threshold or your confidence?",
+        "from": [
+          "sl-sc-test-d9a7964c8f92",
+          "sl-sc-test-29593537b99b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-a6ac80a7bc5f"
+      },
+      {
+        "to": "sc35-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your MAD-based scheme keeps 11657 cells, while the other team's MAD-based scheme keeps 11193 pooled and 11046 per sample. So the two teams are not running the same rule. Write out yours exactly: which metrics, how many MADs on each, log scale or not, one-sided or two-sided, pooled or per sample, and whether it contains a fixed mito cut. Then report how many cells each component removes on its own, and rerun it per sample. Given that the data already look trimmed upstream, which components still have a tail to remove? Does that change which scheme you treat as primary?",
+        "from": [
+          "sl-sc-test-d9a7964c8f92",
+          "sl-sc-test-fdbe59ec4153"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-d9b23e3a4d7b"
+      },
+      {
+        "to": "sc35-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: the var table carries vst.mean and vst.variance from the upstream Seurat run, and neither team used them. Compute the per-gene mean of the counts layer over the cells in the file and compare it with vst.mean (and the count of vst.variable genes). If they match, the upstream clustering was run on exactly this cell set; if not, cells were added or removed afterwards. Then read the task's words again ('has been pre-processed', 'reasonable thresholds', 'cells_after_filtering'): given what this check shows about the state of the object, which reading do they support, that further filtering should remove a material share of cells, a few, or none? Your plan also named a gene filter; state whether it enters the reported count. Does any of this change your method?",
+        "from": [
+          "sl-sc-test-fbdcfb03b08c",
+          "sl-sc-test-022855ad23dd"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-948794172efe"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "Is there published guidance, from systematic analyses across many single-cell RNA-seq datasets, on which mitochondrial-percentage cut-off is appropriate for human cells versus mouse cells and across tissues, and what default do those analyses recommend for human tissue when the tissue is not known?",
+          "why": "The mitochondrial cut-off is the single choice that moves the retained cell count most, and both teams chose it from the data's existing bound rather than from a stated standard.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "What exactly is the MAD-based outlier rule for cell QC in the scverse single-cell best-practices chapter (which metrics, how many MADs for each, whether metrics are log1p-transformed, two-sided or one-sided, and whether a fixed mitochondrial-percentage cut is added), and what are the defaults of the Bioconductor equivalents (scuttle/scater isOutlier and perCellQCFilters: nmads, log, type, batch)?",
+          "why": "The two teams each ran 'a MAD scheme' as a check and got counts hundreds of cells apart, so at least one implementation departs from the published rule; the definition settles which.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In the Seurat guided clustering tutorial and the scanpy basic clustering tutorials (legacy and current), what are the exact cell-filter thresholds and comparison operators, what rationale is given for the upper limit on detected genes per cell, and what do Seurat, scanpy or 10x Genomics guidance say about whether that upper limit transfers to datasets of a different sequencing depth or should be set from each dataset's own distribution?",
+          "why": "The only cut that removes cells in the agreed answer is a fixed upper limit on detected genes taken from a tutorial; whether that value is meant to transfer to other data decides whether it counts as a reasonable threshold here.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "Is there published guidance, from systematic analyses across many single-cell RNA-seq datasets, on which mitochondrial-percentage cut-off is appropriate for human cells versus mouse cells and across tissues, and what default do those analyses recommend for human tissue when the tissue is not known?",
+          "answer": "Yes. Osorio & Cai (Bioinformatics 2021; 37(7):963) looked at 5,530,106 cells from 1,349 PanglaoDB datasets. Human tissues have significantly higher mito% than mouse tissues, and this is not explained by platform. They give reference values for 121 mouse and 44 human tissues. A 5% cut works for mouse tissues but fails to separate healthy from low-quality cells in 13 of 44 (29.5%) human tissues. The pages I opened (PMC, bioRxiv PDF, OUP, GitHub) were cut off after the abstract and introduction, so I did not read the default they recommend for human tissue. A search-result summary of the paper says it recommends 10% as the standard threshold for human samples, with 5% kept for mouse. 10x Genomics cites this paper and says mito expression varies by sample and cell type (for example cardiomyocytes) and that data-driven cuts (3-5 MAD/SD from the median) are also common. Summary: 5% for mouse, about 10% for human when the tissue is unknown, tissue-specific values where available.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8599307/",
+            "https://www.biorxiv.org/content/biorxiv/early/2020/08/19/2020.02.20.958793.full.pdf",
+            "https://academic.oup.com/bioinformatics/article/37/7/963/5896986",
+            "https://www.10xgenomics.com/analysis-guides/common-considerations-for-quality-control-filters-for-single-cell-rna-seq-data"
+          ],
+          "confidence": "high that human needs a higher cut than the 5% that suits mouse; medium that the human default is exactly 10%, because the pages I opened were truncated and that figure comes from a search snippet",
+          "deliveries": {
+            "sc35-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-bf793b5429fc"
+            },
+            "sc35-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-50916daf83b0"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Is there published guidance, from systematic analyses across many single-cell RNA-seq datasets, on which mitochondrial-percentage cut-off is appropriate for human cells versus mouse cells and across tissues, and what default do those analyses recommend for human tissue when the tissue is not known? ANSWER: Yes. Osorio & Cai (Bioinformatics 2021; 37(7):963) looked at 5,530,106 cells from 1,349 PanglaoDB datasets. Human tissues have significantly higher mito% than mouse tissues, and this is not explained by platform. They give reference values for 121 mouse and 44 human tissues. A 5% cut works for mouse tissues but fails to separate healthy from low-quality cells in 13 of 44 (29.5%) human tissues. The pages I opened (PMC, bioRxiv PDF, OUP, GitHub) were cut off after the abstract and introduction, so I did not read the default they recommend for human tissue. A search-result summary of the paper says it recommends 10% as the standard threshold for human samples, with 5% kept for mouse. 10x Genomics cites this paper and says mito expression varies by sample and cell type (for example cardiomyocytes) and that data-driven cuts (3-5 MAD/SD from the median) are also common. Summary: 5% for mouse, about 10% for human when the tissue is unknown, tissue-specific values where available. HOW SURE: high that human needs a higher cut than the 5% that suits mouse; medium that the human default is exactly 10%, because the pages I opened were truncated and that figure comes from a search snippet. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC8599307/, https://www.biorxiv.org/content/biorxiv/early/2020/08/19/2020.02.20.958793.full.pdf, https://academic.oup.com/bioinformatics/article/37/7/963/5896986, https://www.10xgenomics.com/analysis-guides/common-considerations-for-quality-control-filters-for-single-cell-rna-seq-data."
+        },
+        {
+          "question": "What exactly is the MAD-based outlier rule for cell QC in the scverse single-cell best-practices chapter (which metrics, how many MADs for each, whether metrics are log1p-transformed, two-sided or one-sided, and whether a fixed mitochondrial-percentage cut is added), and what are the defaults of the Bioconductor equivalents (scuttle/scater isOutlier and perCellQCFilters: nmads, log, type, batch)?",
+          "answer": "Bioconductor, read from the docs and source: isOutlier(metric, nmads=3, type=c('both','lower','higher') so 'both' by default, log=FALSE (log2 when TRUE), subset=NULL, batch=NULL so the median and MAD are pooled unless a batch is given, min.diff=NA). perCellQCFilters(x, sum.field='sum', detected.field='detected', sub.fields=NULL, ...) calls isOutlier with log=TRUE and type='lower' on library size and on detected features, and with type='higher' and no log on each sub.fields column. nmads stays at 3 and batch at NULL unless passed through '...'. Because sub.fields defaults to NULL, mito is only filtered if you pass sub.fields (or TRUE to pick up subsets_*_percent columns). The function is now deprecated in favour of scrapper::suggestRnaQcThresholds. scverse best practices: the chapter page was cut off before its MAD section, so I could not confirm it from the source. From lab memory and recall, the rule is a two-sided is_outlier (outside median \u00b1 n*MAD) at 5 MADs on log1p_total_counts, log1p_n_genes_by_counts and pct_counts_in_top_20_genes, plus a mito rule of 3 MADs on pct_counts_mt (not log-transformed) OR pct_counts_mt > 8. The main differences: scverse uses 5 MADs, two-sided, with a top-20-genes metric and a fixed 8% mito cut; scuttle uses 3 MADs, lower tail only for counts and genes, and no fixed mito cut.",
+          "sources": [
+            "https://rdrr.io/bioc/scuttle/man/isOutlier.html",
+            "https://raw.githubusercontent.com/LTLA/scuttle/master/R/perCellQCFilters.R",
+            "https://www.sc-best-practices.org/preprocessing-visualization/quality-control/"
+          ],
+          "confidence": "high for the scuttle defaults; medium for the scverse rule, because the page was truncated and it rests on prior memory",
+          "deliveries": {
+            "sc35-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-d17879253613"
+            },
+            "sc35-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-39e77263e739"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What exactly is the MAD-based outlier rule for cell QC in the scverse single-cell best-practices chapter (which metrics, how many MADs for each, whether metrics are log1p-transformed, two-sided or one-sided, and whether a fixed mitochondrial-percentage cut is added), and what are the defaults of the Bioconductor equivalents (scuttle/scater isOutlier and perCellQCFilters: nmads, log, type, batch)? ANSWER: Bioconductor, read from the docs and source: isOutlier(metric, nmads=3, type=c('both','lower','higher') so 'both' by default, log=FALSE (log2 when TRUE), subset=NULL, batch=NULL so the median and MAD are pooled unless a batch is given, min.diff=NA). perCellQCFilters(x, sum.field='sum', detected.field='detected', sub.fields=NULL, ...) calls isOutlier with log=TRUE and type='lower' on library size and on detected features, and with type='higher' and no log on each sub.fields column. nmads stays at 3 and batch at NULL unless passed through '...'. Because sub.fields defaults to NULL, mito is only filtered if you pass sub.fields (or TRUE to pick up subsets_*_percent columns). The function is now deprecated in favour of scrapper::suggestRnaQcThresholds. scverse best practices: the chapter page was cut off before its MAD section, so I could not confirm it from the source. From lab memory and recall, the rule is a two-sided is_outlier (outside median \u00b1 n*MAD) at 5 MADs on log1p_total_counts, log1p_n_genes_by_counts and pct_counts_in_top_20_genes, plus a mito rule of 3 MADs on pct_counts_mt (not log-transformed) OR pct_counts_mt > 8. The main differences: scverse uses 5 MADs, two-sided, with a top-20-genes metric and a fixed 8% mito cut; scuttle uses 3 MADs, lower tail only for counts and genes, and no fixed mito cut. HOW SURE: high for the scuttle defaults; medium for the scverse rule, because the page was truncated and it rests on prior memory. SOURCES: https://rdrr.io/bioc/scuttle/man/isOutlier.html, https://raw.githubusercontent.com/LTLA/scuttle/master/R/perCellQCFilters.R, https://www.sc-best-practices.org/preprocessing-visualization/quality-control/."
+        },
+        {
+          "question": "In the Seurat guided clustering tutorial and the scanpy basic clustering tutorials (legacy and current), what are the exact cell-filter thresholds and comparison operators, what rationale is given for the upper limit on detected genes per cell, and what do Seurat, scanpy or 10x Genomics guidance say about whether that upper limit transfers to datasets of a different sequencing depth or should be set from each dataset's own distribution?",
+          "answer": "Seurat pbmc3k: CreateSeuratObject(min.cells=3, min.features=200), then subset(pbmc, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 5). The bounds are strict (exclusive), and the text says it filters cells with unique feature counts over 2,500 or less than 200 and with >5% mito. The stated reason for the upper limit is that cell doublets or multiplets may have an aberrantly high gene count. The tutorial says you filter 'based on any user-defined criteria' after looking at that dataset's violin and scatter plots. Scanpy legacy pbmc3k (clustering-2017): sc.pp.filter_cells(min_genes=200), meaning keep cells with at least 200 genes, and sc.pp.filter_genes(min_cells=3). The slicing step that follows (n_genes_by_counts < 2500, pct_counts_mt < 5, copied from Seurat) fell in the truncated part of the page and is not verified. Current scanpy clustering tutorial: no upper gene cap. It uses only filter_cells(min_genes=100) and filter_genes(min_cells=3), advises 'a very permissive filtering strategy' because poor-looking QC can be real biology, says QC should be done per sample because thresholds vary between batches, and handles doublets with scrublet. 10x Genomics: high feature counts may be multiplets, but thresholds in publications are either arbitrary or data-driven (2-5 SD/MAD from the median), and you should plot each sample's own distributions first. It warns that one threshold may not suit heterogeneous samples. None of these sources says 2500 carries over to data of a different depth. It is a value chosen for pbmc3k (shallow 10x v1 PBMCs), and all the guidance points to setting caps from each dataset's own distribution.",
+          "sources": [
+            "https://satijalab.org/seurat/articles/pbmc3k_tutorial",
+            "https://scanpy.readthedocs.io/en/stable/tutorials/basics/clustering-2017.html",
+            "https://scanpy.readthedocs.io/en/stable/tutorials/basics/clustering.html",
+            "https://www.10xgenomics.com/analysis-guides/common-considerations-for-quality-control-filters-for-single-cell-rna-seq-data"
+          ],
+          "confidence": "high for Seurat, current scanpy and 10x; medium for the legacy scanpy 2500/5% slicing (truncated page); high that no source says the 2500 cap transfers",
+          "deliveries": {
+            "sc35-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-db6187d3d6fb"
+            },
+            "sc35-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-53dd8763bfc6"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In the Seurat guided clustering tutorial and the scanpy basic clustering tutorials (legacy and current), what are the exact cell-filter thresholds and comparison operators, what rationale is given for the upper limit on detected genes per cell, and what do Seurat, scanpy or 10x Genomics guidance say about whether that upper limit transfers to datasets of a different sequencing depth or should be set from each dataset's own distribution? ANSWER: Seurat pbmc3k: CreateSeuratObject(min.cells=3, min.features=200), then subset(pbmc, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 5). The bounds are strict (exclusive), and the text says it filters cells with unique feature counts over 2,500 or less than 200 and with >5% mito. The stated reason for the upper limit is that cell doublets or multiplets may have an aberrantly high gene count. The tutorial says you filter 'based on any user-defined criteria' after looking at that dataset's violin and scatter plots. Scanpy legacy pbmc3k (clustering-2017): sc.pp.filter_cells(min_genes=200), meaning keep cells with at least 200 genes, and sc.pp.filter_genes(min_cells=3). The slicing step that follows (n_genes_by_counts < 2500, pct_counts_mt < 5, copied from Seurat) fell in the truncated part of the page and is not verified. Current scanpy clustering tutorial: no upper gene cap. It uses only filter_cells(min_genes=100) and filter_genes(min_cells=3), advises 'a very permissive filtering strategy' because poor-looking QC can be real biology, says QC should be done per sample because thresholds vary between batches, and handles doublets with scrublet. 10x Genomics: high feature counts may be multiplets, but thresholds in publications are either arbitrary or data-driven (2-5 SD/MAD from the median), and you should plot each sample's own distributions first. It warns that one threshold may not suit heterogeneous samples. None of these sources says 2500 carries over to data of a different depth. It is a value chosen for pbmc3k (shallow 10x v1 PBMCs), and all the guidance points to setting caps from each dataset's own distribution. HOW SURE: high for Seurat, current scanpy and 10x; medium for the legacy scanpy 2500/5% slicing (truncated page); high that no source says the 2500 cap transfers. SOURCES: https://satijalab.org/seurat/articles/pbmc3k_tutorial, https://scanpy.readthedocs.io/en/stable/tutorials/basics/clustering-2017.html, https://scanpy.readthedocs.io/en/stable/tutorials/basics/clustering.html, https://www.10xgenomics.com/analysis-guides/common-considerations-for-quality-control-filters-for-single-cell-rna-seq-data."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc35-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc35-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc35-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc35-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc35-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 111.21948516694829,
+      "cost_usd": 0.411363,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 87.45939908304717,
+      "cost_usd": 0.1484533,
+      "error": null
+    },
+    {
+      "agent": "sc35-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 52.59042587492149,
+      "cost_usd": 0.1495852,
+      "error": null
+    },
+    {
+      "agent": "sc35-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 56.98702137498185,
+      "cost_usd": 0.187189,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 169.9809548750054,
+      "cost_usd": 0.3191594,
+      "error": null
+    },
+    {
+      "agent": "sc35-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 130.9998662499711,
+      "cost_usd": 0.5351608,
+      "error": null
+    },
+    {
+      "agent": "sc35-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 90.34718179097399,
+      "cost_usd": 0.3736332,
+      "error": null
+    },
+    {
+      "agent": "sc35-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 73.41329091601074,
+      "cost_usd": 0.38025539999999997,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

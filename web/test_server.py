@@ -335,7 +335,7 @@ def test_static_with_dist(base_url, monkeypatch, tmp_path):
     assert status == 404
 
 
-# ------------------------------------------------------------------------ department heads (D-22)
+# ------------------------------------------------------------------------ department heads (D-23)
 
 def heads_run():
     """test-v2 with a head of Team A added: it read everything, like a run made with --heads."""

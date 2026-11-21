@@ -1,0 +1,498 @@
+{
+  "study": "bd40",
+  "status": "replicated",
+  "final": {
+    "agent": "bd40-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd40/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd40-library": "fable",
+    "bd40-team-a": "fable",
+    "bd40-team-b": "fable",
+    "bd40-team-c": "fable",
+    "bd40-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd40-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd40/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd40-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd40/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd40-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd40/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd40-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd40/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd40-team-a",
+        "bd40-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd40-team-a",
+        "bd40-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Reading the hypothesis and choosing the label. The claim has two parts and each needs its own evaluation: (1) fusion-negative rhabdomyosarcoma (FN-RMS) acquires fewer new alterations between an earlier and a later sample, where the library reads the unstated comparator as fusion-positive RMS (FP-RMS); (2) no newly acquired mutation is common, i.e. recurs across FN patients. Groups are likely to be small (around ten patients each), so a non-significant p-value is not evidence of 'no difference', and zero recurrences in n patients is still compatible with a true rate of up to about 3/n. Report direction and effect size first (for example median acquired alterations per patient, FN vs FP, with an exact Mann-Whitney or Fisher test) and significance second; separately tabulate every gene acquired in two or more FN patients, at gene level and at pathway level. An observed direction opposite to the claim counts as evidence against it whatever the p-value. 'Not verifiable' is for missing variables, not for small n: first establish whether the tables really hold multiple samples per patient and a way to tell FN from FP, and let that, not sample size, decide whether the claim is testable.",
+      "from": [
+        "sl-biodsa-test-059ffa2242e6"
+      ],
+      "reason": "The label depends on how the two-part claim and its implicit comparator are read, and on not confusing 'small n / non-significant' with either 'supported' or 'Not verifiable'.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-576970559c12"
+      }
+    },
+    {
+      "text": "Defining fusion status. The library reports that the tables have no fusion-status column, and histology is not a substitute: roughly 20% of alveolar RMS lack a PAX3/PAX7-FOXO1 fusion, embryonal, spindle-cell and pleomorphic RMS are fusion-negative, and a DNA capture panel can miss a real fusion in any single sample. Assign fusion status per patient, not per sample: cross-tabulate ONCOTREE_CODE / CANCER_TYPE_DETAILED against any PAX3-FOXO1 or PAX7-FOXO1 row (either gene order) in data_sv.txt across all of that patient's samples. List discordant patients (alveolar without a fusion call; fusion called in one sample of a patient but not another) and confirm every sample carries an RMS code. Treat a fusion seen in any sample of a patient as present from the start (the patient is FP in all samples and the fusion is never counted as 'acquired'). Run the FN-vs-FP comparison under both the SV-based and the histology-based definition and report whether the conclusion survives moving the discordant patients. (Details of the files quoted here are the library's description, not checked by the director: confirm them against the files before relying on them.)",
+      "from": [
+        "sl-biodsa-test-f7c176479da3"
+      ],
+      "reason": "FN versus FP is the grouping variable of the whole analysis; a wrong or per-sample definition moves patients between groups and can create spurious 'acquired fusions'.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-471f845f50cb"
+      }
+    },
+    {
+      "text": "Unit of analysis, zeros and sample order. Patients appear to contribute two or more samples each (the library estimates about 42 samples from about 20 patients), so samples and sample pairs are not independent. Make the patient the unit: define one baseline (earliest) sample per patient, take the union of distinct alterations absent at baseline and present in any later sample, and give each patient one acquired count; drop single-sample patients from the acquisition analysis. 'Recurrent' or 'common' means the same gene acquired in two or more different patients, never in two samples of one patient. Samples with no mutations or no structural variants have no rows at all in data_mutations.txt / data_sv.txt, so build the sample list from data_clinical_sample.txt and data_gene_panel_matrix.txt (reconciled with the data_cna.txt columns), left-join counts and fill 0 for profiled samples; keep zero-acquisition patients in every denominator and test. Do not infer sample order from the ID suffix alone: use SAMPLE_TYPE (Primary/Metastasis/Recurrence) and AGE_AT_SEQ_REPORTED_YEARS together with the suffix, flag ties and contradictions, and for pairs whose order is ambiguous report 'private to each sample' counts rather than a directional 'acquired' count. (Details of the files quoted here are the library's description, not checked by the director: confirm them against the files before relying on them.)",
+      "from": [
+        "sl-biodsa-test-82405b4b9736",
+        "sl-biodsa-test-263378af6ba8"
+      ],
+      "reason": "Counting per sample or per pair inflates n and double-counts retained gains, and dropping zero-alteration samples overstates acquisition unevenly between groups; both can change the FN-vs-FP direction and the recurrence table.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-2bdf5638d10a"
+      }
+    },
+    {
+      "text": "What counts as a 'new alteration'. 'Alterations' is broader than point mutations and indels. Literature background: FP-RMS is driven mostly by copy-number events with few point mutations, while FN-RMS carries more point mutations and a higher starting burden. Two consequences. First, counting only data_mutations.txt biases the FN-vs-FP comparison; count acquired events per patient separately in data_mutations.txt, data_cna.txt (nonzero discrete calls) and data_sv.txt, and combined, report the combined count as primary and each type separately, and say explicitly if the direction differs between data types. Second, the total or TMB_NONSYNONYMOUS of a later sample is not a measure of acquisition: never use it as the 'acquired' variable. Per patient compute baseline count, number shared, number private to the later sample(s) and number lost, and compare groups on (a) absolute acquired count, (b) fraction of patients with at least one acquired alteration, (c) acquired as a fraction of later-sample alterations. State which metric the label rests on and whether (a)-(c) agree in direction.",
+      "from": [
+        "sl-biodsa-test-52afa2bc03c0",
+        "sl-biodsa-test-bffb755c871f"
+      ],
+      "reason": "The choice of data types and of the acquisition metric (absolute vs proportional, gained vs total burden) can each flip the group comparison, so the team must fix and state them rather than default to a mutation-only or TMB-based count.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-d62c027f9b91"
+      }
+    },
+    {
+      "text": "Gene-panel versions within a pair. Samples of one patient may have been sequenced on different MSK-IMPACT panel versions (for example IMPACT410 / 468 / 505). A gene present only on the later panel can never be called in the earlier sample, so its alteration looks newly acquired when it is only newly assayed. From data_gene_panel_matrix.txt / GENE_PANEL tabulate the panel of the earlier and later sample for every patient. For every alteration called acquired, ask whether its gene could have been seen on the earlier panel; gene lists are not in the data, so use NA/blank cells in the data_cna.txt columns of older-panel samples and whether that gene is ever altered in any sample on the older panel. Check whether cross-panel pairs are unevenly split between FP and FN patients. Count acquired alterations only in genes assayable in both samples (or restrict to same-panel pairs as a sensitivity analysis) and report the result both ways. (Details of the files quoted here are the library's description, not checked by the director: confirm them against the files before relying on them.)",
+      "from": [
+        "sl-biodsa-test-93f33293e72c"
+      ],
+      "reason": "A panel upgrade between samples manufactures 'acquired' alterations; if cross-panel pairs are unevenly split between FN and FP it biases the comparison directly.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-2dffa865e961"
+      }
+    },
+    {
+      "text": "A mutation private to the later sample is not proven to be acquired. The mutation file holds only called variants, and the assay reports a call only above depth and allele-fraction thresholds (roughly depth >=20 with >=8 alt reads / 2% VAF at hotspots, >=10 alt reads / 5% VAF elsewhere), so low purity or coverage in the earlier sample turns a shared mutation into a false acquired one, and low purity in the later sample hides real gains. Single-region biopsies can also miss a pre-existing subclone, and samples without a matched normal (SOMATIC_STATUS = Unmatched) can carry germline variants that look like private somatic mutations. For each private-to-later mutation compute VAF = t_alt_count / (t_alt_count + t_ref_count); compare TUMOR_PURITY and SAMPLE_COVERAGE within each pair and between FP and FN groups; flag pairs reported at the same age or that are primary versus synchronous metastasis; flag private variants with VAF near 50% or 100% in unmatched samples. Describe the quantity as 'alterations private to the later sample' (an upper bound on true acquisition, applied equally to both groups), repeat the group comparison excluding low-purity pairs, low-VAF private calls and likely-germline variants, and state that true absence cannot be confirmed without read-level data. (Details of the files quoted here are the library's description, not checked by the director: confirm them against the files before relying on them.)",
+      "from": [
+        "sl-biodsa-test-0a7d1cfd6d21",
+        "sl-biodsa-test-d73c732acc1b"
+      ],
+      "reason": "Gives the sensitivity analyses needed to show the FN-vs-FP result is not produced by purity, coverage, germline contamination or synchronous sampling differences between pairs.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-d0cf319bbfcc"
+      }
+    },
+    {
+      "text": "Copy-number gains and losses between paired samples. Discrete gene-level calls in data_cna.txt come from fold-change thresholds, so the same amplification can be called in a high-purity sample and missed in a low-purity one, and adjacent genes in one amplicon inflate counts if each gene is a separate event. For each copy-number call private to one sample of a pair, look up the overlapping segment's seg.mean in data_cna_hg19.seg for both samples: if the partner shows a same-direction shift below threshold, treat it as shared, not acquired. Collapse co-amplified neighbouring genes on one segment into one event, count per segment/amplicon rather than per gene, and rerun the group comparison.",
+      "from": [
+        "sl-biodsa-test-339ed5a0a8cf"
+      ],
+      "reason": "Copy-number events are expected to be a large share of alterations in one group; per-gene counting and threshold artefacts could inflate acquired counts unevenly and so change the comparison.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-1ad8620b4346"
+      }
+    },
+    {
+      "text": "Outliers and uncontrolled confounders. The number of alterations gained between samples depends on the time between them and on intervening chemotherapy or radiotherapy (treated relapses can be hypermutated), so one hypermutated or long-interval patient can dominate a group mean. Look at the acquired count per patient by group for an outlier (also check TMB_NONSYNONYMOUS and MSI_TYPE of later samples), and compare between groups the interval between samples from AGE_AT_SEQ_REPORTED_YEARS (whole years only, so coarse). Use medians and rank or permutation tests rather than means, report results with and without any outlier, and state interval and therapy as uncontrolled confounders (the library reports therapy data are not in the tables). (Details of the files quoted here are the library's description, not checked by the director: confirm them against the files before relying on them.)",
+      "from": [
+        "sl-biodsa-test-fe159e2fce56"
+      ],
+      "reason": "With about ten patients per group a single outlier decides a mean-based comparison; the team needs robust statistics and an explicit with/without-outlier result.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-46deb13f1748"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams read the unstated comparator of 'fewer' as fusion-positive RMS and tested only a between-group difference in absolute counts; neither tested a within-FN reading (new alterations few relative to those retained from the first sample) or a proportional reading on all alteration types (team A gave a new/later fraction for mutations only).",
+      "Both teams counted every called variant and every discrete copy-number call as an 'alteration' with equal weight. The mutation table holds only 78 rows with no driver/oncogenicity annotation (FILTER, CLIN_SIG, SIFT, PolyPhen all empty), so neither team could or did restrict to driver alterations, and neither tested whether the direction depends on that.",
+      "Both teams treated 'absent from the first sample's call list' as 'not present in the first sample'. The discrete copy-number table holds only the values -2, 0 and 2 (no low-level calls), so a call private to the later sample can be a threshold crossing of a segment that already existed, driven by purity. Team A checked this against the segment file at fixed thresholds; team B did not check it at segment level.",
+      "Both teams assumed the later sample of each pair is equally able to show new events in both groups. Several fusion-positive later samples have blank or low purity (20-30%) or low coverage (down to 211), and four fusion-positive samples have their truncal fusion recorded only by an RNA assay ('Archer') rather than by the DNA panel. Neither team measured per-pair re-detection of first-sample alterations as a sensitivity control.",
+      "Both teams evaluated the second clause ('no common mutations') only inside the FN group (genes acquired in two or more FN patients) and let the label rest on the first clause alone; neither applied the same recurrence rule to FP patients as a reference, and neither restricted the second clause to the mutation table although the wording says 'mutations'.",
+      "Both teams treated each patient's samples as an ordered earlier/later pair of the same tumour. Order is unrecorded for about half the patients (reported age is floored at 18 for 28 of 42 samples), and at least one FN patient's samples share no alteration at all and carry different primary-site labels."
+    ],
+    "unused_evidence": [
+      "data_cna.txt NaN pattern: I confirmed that exactly 155 genes are NaN in all 42 samples and no gene is NaN in only some samples, whatever the panel (IMPACT410/468/505). The NaN cells therefore do not mark genes missing from an older panel. Team B's 'restricted to genes on all panels of the patient' used these cells and removed nothing (its counts were unchanged), so team B has no working cross-panel control. Team A noticed this and used same-panel pairs instead.",
+      "Event_Info in data_sv.txt: four PAX-FOXO1 rows are annotated 'Fusion - Archer' (P-0006113-T02, P-0028971-T01, P-0019531-T01, P-0060318-T04) while the others are DNA-panel calls. Neither team used this as an indicator of DNA-level detection sensitivity in those fusion-positive samples.",
+      "PRIMARY_SITE and METASTATIC_SITE per sample: sites differ within some FN patients (for example Nasopharynx vs Soft Tissue, Palate vs Soft Tissue, Sinus vs Soft Tissue, two samples both typed Primary). Neither team used site to judge whether a pair is one tumour sampled twice in time, two regions, or possibly unrelated lesions.",
+      "TUMOR_PURITY and SAMPLE_COVERAGE of the later sample: blank purity for four FP samples (P-0060318-T04, P-0063459-T03, P-0069477-T02 and -T03) and coverage of 211 and 203 in two later samples. Team B compared purity and coverage between groups but did not report the result or say how blanks were handled; neither team conditioned the acquired count on later-sample quality.",
+      "Segment file noise: one FP sample (P-0028971-T01) has 190 segments against a cohort median of 44, a sign of an over-segmented profile that can create or hide gene-level calls. Not mentioned by either team.",
+      "t_alt_count / t_ref_count and n_ref_count / n_alt_count are filled for all 78 mutations. Team A used a VAF filter on acquired calls; team B did not use allele counts. Neither used the SV read-support columns.",
+      "Overall survival in the patient table was not used; it is not needed for this hypothesis."
+    ],
+    "unresolved_weak_points": [
+      "Team A: the FN excess is carried by copy-number calls. Under its strictest segment-confirmed definition the difference is not significant and the medians reverse in the 13 same-panel patients. This was reported, not resolved: team A does not say which definition its label rests on, or why the reversal does not count against the label.",
+      "Team A: arm/amplicon assignment for collapsing gene-level calls came from general knowledge of gene locations rather than from the data. Not verified against any coordinates in the files.",
+      "Team A: the label depends on reading the comparator as FP-RMS; the alternative reading was named but not evaluated. Interval and therapy uncontrolled (cannot be resolved from these tables).",
+      "Team B: the ambiguity of 'no common mutations' was named and left open; the label rests on the first clause only and the second clause has no stated verdict.",
+      "Team B: acquired count correlates with purity gain (rho 0.41, p 0.09). Reported only; the FN-vs-FP comparison was not repeated with purity change controlled.",
+      "Team B: the claim that the direction 'never reversed' was not tested in same-panel pairs or with segment-confirmed events, the one setting where team A saw a reversal. Its panel restriction did nothing (see unused evidence).",
+      "Both: two FN patients (10%-purity first sample; zero shared alterations) supply a large part of the FN count. Team A excluded only the first, team B both; after exclusion team B's rank test is p 0.07."
+    ],
+    "second_readings": [
+      "'Fewer' than what: (a) fewer than FP-RMS in absolute count (the teams' reading); (b) fewer relative to the alterations FN tumours already carry, i.e. few new events compared with retained ones; (c) fewer per alteration at baseline (proportional).",
+      "'Acquire' at which time: only pairs with documented time separation (a Local Recurrence sample, or different reported ages) are evidence of acquisition; a primary and a metastasis reported at the same age may be one time point sampled in two places.",
+      "'Alterations' in clause 1 versus 'mutations' in clause 2: clause 2 may refer only to the mutation table, and 'common' may mean recurrent across FN patients (teams' main reading) or shared between a patient's own samples (team B's alternative).",
+      "'No common mutations' may be meant as a contrast with FP-RMS, where some acquired event recurs; then the relevant check is recurrence in FN set against recurrence in FP under one rule.",
+      "'New alterations' may mean driver or clinically reported alterations rather than every call including variants of unknown significance; the tables carry no annotation to separate them."
+    ],
+    "verdict": "Moderate trust. The direction (FN at least as many private-to-later alterations as FP) holds under most definitions both teams tried, but it rests on gene-level copy-number calls and two doubtful FN patients, team B's panel control was a no-op, team A's strictest segment-confirmed count reverses in same-panel pairs, the second clause has no verdict from either team, and the label depends on reading the comparator as FP-RMS.",
+    "questions": [
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your strictest segment-confirmed count gives no significant FN-vs-FP difference and reverses in the 13 same-panel patients, yet the label rests on the 'fewer' clause. For every private-to-later copy-number call, print the seg.mean of the covering segment in the first and in the later sample next to both samples' TUMOR_PURITY, and classify the call as (i) a new segment or (ii) a segment already present at baseline that only crossed the calling threshold. Give the per-patient count of class (i) events, FN vs FP, for all patients, for same-panel pairs and for cross-panel pairs. Does the direction hold in each subset, and does the result change which definition you treat as primary or how firmly you state the label?",
+        "from": [
+          "sl-biodsa-test-81287ba7a88a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-ebbcbbd83804"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Neither team measured whether the later sample could have shown new events. For each patient compute the fraction of first-sample alterations (mutations, copy-number events, non-fusion SVs) that are re-detected in the later sample, and list it beside the later sample's TUMOR_PURITY (blank for four FP samples), SAMPLE_COVERAGE (as low as 211) and whether that sample's PAX-FOXO1 row in data_sv.txt is annotated 'Archer' rather than a DNA-panel call. Compare this re-detection fraction between FN and FP, then repeat the acquired-count comparison using only pairs whose later sample re-detects its baseline events and has known, adequate purity. Does the FN-vs-FP direction survive, and does this change your method?",
+        "from": [
+          "sl-biodsa-test-81287ba7a88a",
+          "sl-biodsa-test-8b611f12c42c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-3cd671357805"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You name the comparator reading as a weak point but evaluate only FN vs FP in absolute counts (plus a new/later fraction for mutations only). Using your event-level definition for all alteration types, compute per patient: baseline count, shared, acquired, lost; then (a) within FN, acquired against shared (retained) events, and (b) acquired per later-sample event and per baseline event, FN vs FP, stating how patients with a zero denominator are handled. Do the absolute, proportional and within-FN readings agree in direction? If they do not, which reading does your label rest on and why?",
+        "from": [
+          "sl-biodsa-test-81287ba7a88a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-cefd88121bc9"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The second clause was assessed only inside the FN group. Apply one recurrence rule to both groups: list every gene (and, separately, every copy-number event) acquired in two or more patients for FN and for FP, using the mutation table alone and then all alteration types, with and without the patient whose first sample has 10% purity and the patient whose samples share no alteration (also check whether that patient's samples have different PRIMARY_SITE labels). Then give an explicit verdict on the second clause on its own (supported, contradicted, or not decidable at n=10) and say whether it changes how you combine the two clauses into one label.",
+        "from": [
+          "sl-biodsa-test-81287ba7a88a",
+          "sl-biodsa-test-85a3e4278475"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-3f2f93dea453"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You restricted to 'genes profiled on all of the patient's panels' using NaN cells in data_cna.txt and the counts did not change (74 FN, 15 FP). Check whether the NaN cells are the same set of genes in every one of the 42 samples regardless of GENE_PANEL (count genes that are NaN in some samples but not others). If no gene differs between panels, the restriction tested nothing. In that case run a control that does separate panels: the FN-vs-FP comparison in same-panel pairs only and in cross-panel pairs only, and for each private-to-later call in a cross-panel pair state whether that gene has any nonzero call or mutation in any sample run on the older panel. Does the direction hold in the same-panel pairs, and does this change your method or your statement that the direction never reversed?",
+        "from": [
+          "sl-biodsa-test-3bbb9bcb98a9",
+          "sl-biodsa-test-34a1c513e98e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-f03f1fac2160"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: 54 of your 74 FN acquired events are gene-level copy-number calls, and the discrete table holds only -2, 0 and 2. Using data_cna_hg19.seg, for each private-to-later call compare the seg.mean of the covering region in the first and later sample, with both purities, and separate calls where a new segment appears from calls where an existing segment only crossed the threshold. Count segment-confirmed acquired events per patient (one per contiguous segment, not capped at one per patient), FN vs FP, overall and in same-panel pairs. Does the direction hold under this definition, and does it change your method?",
+        "from": [
+          "sl-biodsa-test-7a4ced5252e1"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-77b66b747727"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You report that acquired count rises with purity gain (rho 0.41) but did not carry this into the group comparison. Tabulate purity change (later minus first) and later-sample coverage by group, say how the samples with blank purity (four, all FP) were treated, and compute per pair the fraction of first-sample alterations re-detected in the later sample. Then repeat FN vs FP on acquired counts (a) stratified or adjusted for purity change and (b) only in pairs with documented time separation (a Local Recurrence sample or different reported ages) whose later sample re-detects its baseline events. Does the direction survive in both, and does this change your method?",
+        "from": [
+          "sl-biodsa-test-113b20554d5f",
+          "sl-biodsa-test-7a4ced5252e1"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-582d941bd92a"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You left 'no common mutations' unresolved and rested the label on the first clause. Evaluate both readings on the data: (i) genes with a newly acquired mutation (mutation table only, then all alteration types) in two or more patients, tabulated for FN and for FP under the same rule, with and without the two FN patients you flagged; (ii) per patient, the number of mutations shared between first and later samples. Also compute, within FN, acquired versus retained alterations, as a check on whether 'fewer' could be read against the tumour's own baseline rather than against FP. State a separate verdict for each clause under each reading. Does any reading change the label, or how you justify it?",
+        "from": [
+          "sl-biodsa-test-34a1c513e98e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-5e134a31681d"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "For the hybrid-capture targeted sequencing assay that exists in 410-gene, 468-gene and 505-gene versions (MSK-IMPACT), which genes were added in the 468-gene version relative to the 410-gene version, and which in the 505-gene version relative to the 468-gene version?",
+          "why": "Several patients have their first and later samples on different panel versions, and the data tables do not mark which genes each version covers. The added-gene lists would show whether an alteration seen only in the later sample could have been detected in the earlier one.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In cBioPortal-format data from a targeted hybrid-capture panel where the discrete copy-number table contains only the values -2, 0 and 2, how are those calls made (fold-change and significance thresholds), are they corrected for tumour purity, and are arm-level or low-level gains and losses reported at all?",
+          "why": "Most alterations that appear only in the later sample are discrete copy-number calls. Knowing the calling rule tells the teams whether such a call can arise from a purity change alone, and what segment-level threshold reproduces it.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In studies that sequence paired earlier and later (relapse or metastasis) tumour samples from the same patient with a targeted panel, how is a 'newly acquired alteration' conventionally defined: are all called variants and copy-number calls counted, or only oncogenic or likely oncogenic alterations (for example OncoKB-annotated), and how are variants of unknown significance treated?",
+          "why": "Both teams counted every call equally and the tables hold no driver annotation. If the convention is to count only driver alterations, the teams need to state that their count is a different quantity and test whether the group comparison depends on it.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "For the hybrid-capture targeted sequencing assay that exists in 410-gene, 468-gene and 505-gene versions (MSK-IMPACT), which genes were added in the 468-gene version relative to the 410-gene version, and which in the 505-gene version relative to the 468-gene version?",
+          "answer": "468 vs 410 (58 genes added): AGO2, BABAM1, CARM1, CDC42, CSDE1, CYLD, CYSLTR2, DROSHA, DUSP4, ELF3, EPAS1, ERF, EZH1, FAM58A (now CCNQ), HLA-B, INPPL1, KMT2B, KMT5A, KNSTRN, LYN, MAPKAP1, MSH3, MSI1, MSI2, NTHL1, NUF2, PDCD1LG2, PPARG, PPP4R2, PRDM14, PREX2, PRKCI, PRKD1, PTP4A1, RAC2, RECQL, RRAGC, RRAS, RRAS2, RTEL1, RXRA, SESN1, SESN2, SESN3, SHOC2, SLX4, SMYD3, SOS1, SPRED1, STK19 (now WHR1), TAP1, TAP2, TEK, TP53BP1, UPF1, WHSC1 (now NSD2), WHSC1L1 (now NSD3), WWTR1. 505 vs 468 (37 genes added): AGO1, ALB, APLNR, ARHGAP35, ATXN7, CMTR2, CTR9, CYP19A1, ETAA1, EZHIP, FOXF1, GAB1, GAB2, GNB1, HLA-C, KBTBD4, KLF5, LZTR1, MAD2L2, MLLT1, MTAP, NADK, PGBD5, PHF6, POT1, REST, SCG5, SERPINB3, SERPINB4, SETDB1, SLFN11, SMARCA2, SMARCE1, SPRTN, TRIP13, USP8, ZNRF3. The versions are nested (410 inside 468 inside 505), so an alteration in any gene outside these two lists was assayable in the earlier sample whatever its panel. How this was obtained: the 505-vs-468 list is a direct set difference of the cBioPortal API definitions of IMPACT505 (505 symbols) and IMPACT468. The 468-vs-410 list is from a paper's supplementary table that splits the 468 genes into 341-panel genes, 69 genes added at 410 and 58 added at 468; its 468 total matches the cBioPortal IMPACT468 list once renamed symbols are reconciled. Caveats: (1) cBioPortal's IMPACT468 holds 469 symbols; the extra one is GTF2I, which is in neither the supplementary 468 list nor IMPACT505. (2) cBioPortal uses current HGNC symbols (CCNQ, WHR1, NSD2, NSD3, H3C*/H3-3A histone names, KMT2A/C/D, ELOC, AMER1 and others) where older tables use the previous names, so match on both. (3) FOXO1 was added at the 410 version and is on all three; PAX3 and PAX7 are not on any version as genes. (4) No independent IMPACT410 gene list was read, and gene membership says nothing about which introns are tiled for rearrangement detection.",
+          "sources": [
+            "https://www.cbioportal.org/api/gene-panels/IMPACT505",
+            "https://www.cbioportal.org/api/gene-panels/IMPACT468",
+            "https://www.thelancet.com/cms/10.1016/S2589-7500(21)00104-7/attachment/93631f3d-043d-42b8-b9b4-c0df6cc9a5cb/mmc1.pdf"
+          ],
+          "confidence": "high for 505 vs 468; medium to high for 468 vs 410 (single supplementary table, total cross-checked)",
+          "deliveries": {
+            "bd40-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-6589bdd40a8c"
+            },
+            "bd40-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-ceb4ae8ab7a8"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: For the hybrid-capture targeted sequencing assay that exists in 410-gene, 468-gene and 505-gene versions (MSK-IMPACT), which genes were added in the 468-gene version relative to the 410-gene version, and which in the 505-gene version relative to the 468-gene version? ANSWER: 468 vs 410 (58 genes added): AGO2, BABAM1, CARM1, CDC42, CSDE1, CYLD, CYSLTR2, DROSHA, DUSP4, ELF3, EPAS1, ERF, EZH1, FAM58A (now CCNQ), HLA-B, INPPL1, KMT2B, KMT5A, KNSTRN, LYN, MAPKAP1, MSH3, MSI1, MSI2, NTHL1, NUF2, PDCD1LG2, PPARG, PPP4R2, PRDM14, PREX2, PRKCI, PRKD1, PTP4A1, RAC2, RECQL, RRAGC, RRAS, RRAS2, RTEL1, RXRA, SESN1, SESN2, SESN3, SHOC2, SLX4, SMYD3, SOS1, SPRED1, STK19 (now WHR1), TAP1, TAP2, TEK, TP53BP1, UPF1, WHSC1 (now NSD2), WHSC1L1 (now NSD3), WWTR1. 505 vs 468 (37 genes added): AGO1, ALB, APLNR, ARHGAP35, ATXN7, CMTR2, CTR9, CYP19A1, ETAA1, EZHIP, FOXF1, GAB1, GAB2, GNB1, HLA-C, KBTBD4, KLF5, LZTR1, MAD2L2, MLLT1, MTAP, NADK, PGBD5, PHF6, POT1, REST, SCG5, SERPINB3, SERPINB4, SETDB1, SLFN11, SMARCA2, SMARCE1, SPRTN, TRIP13, USP8, ZNRF3. The versions are nested (410 inside 468 inside 505), so an alteration in any gene outside these two lists was assayable in the earlier sample whatever its panel. How this was obtained: the 505-vs-468 list is a direct set difference of the cBioPortal API definitions of IMPACT505 (505 symbols) and IMPACT468. The 468-vs-410 list is from a paper's supplementary table that splits the 468 genes into 341-panel genes, 69 genes added at 410 and 58 added at 468; its 468 total matches the cBioPortal IMPACT468 list once renamed symbols are reconciled. Caveats: (1) cBioPortal's IMPACT468 holds 469 symbols; the extra one is GTF2I, which is in neither the supplementary 468 list nor IMPACT505. (2) cBioPortal uses current HGNC symbols (CCNQ, WHR1, NSD2, NSD3, H3C*/H3-3A histone names, KMT2A/C/D, ELOC, AMER1 and others) where older tables use the previous names, so match on both. (3) FOXO1 was added at the 410 version and is on all three; PAX3 and PAX7 are not on any version as genes. (4) No independent IMPACT410 gene list was read, and gene membership says nothing about which introns are tiled for rearrangement detection. HOW SURE: high for 505 vs 468; medium to high for 468 vs 410 (single supplementary table, total cross-checked). SOURCES: https://www.cbioportal.org/api/gene-panels/IMPACT505, https://www.cbioportal.org/api/gene-panels/IMPACT468, https://www.thelancet.com/cms/10.1016/S2589-7500(21)00104-7/attachment/93631f3d-043d-42b8-b9b4-c0df6cc9a5cb/mmc1.pdf."
+        },
+        {
+          "question": "In cBioPortal-format data from a targeted hybrid-capture panel where the discrete copy-number table contains only the values -2, 0 and 2, how are those calls made (fold-change and significance thresholds), are they corrected for tumour purity, and are arm-level or low-level gains and losses reported at all?",
+          "answer": "Calling rule (MSK-IMPACT validation paper, Cheng 2015): GC-normalised coverage of target regions in the tumour is divided by that of the best-fitting normal from a pool of control normals (not necessarily the matched normal), log-transformed, and segmented by circular binary segmentation; segments are clustered and the cluster nearest log-ratio 0 defines a null distribution. A whole-gene event is called when fold change > 2.0 (gain) or < -2.0 (loss) with P < 0.05 after false-discovery-rate correction; germline copy-number calls from the matched normal are subtracted. Hyman 2015 states the same rule as 'at least a twofold gain or loss relative to the matched normalised baseline', adds that narrow amplicons are considered more likely significant than broad gains, and that every call is manually reviewed. Purity: no purity or ploidy correction is described in the calling rule. Cheng 2015 names purity/ploidy estimation as future work, and the FACETS paper presents purity-, ploidy-adjusted integer copy number as a separate analysis needed to interpret panel calls. The discrete calls are therefore on the raw tumour/normal ratio, and a purity change alone can create or remove a call. Low-level and arm-level: the rule has no single-copy (+1/-1) category and no arm-level category; only whole-gene events past twofold are called, which is why the table holds only -2, 0 and 2. Sub-threshold and broad changes are visible only in the segment file. Threshold to reproduce a call from segments: about log2 ratio >= +1 for an amplification and <= -1 for a deletion. This conversion is my arithmetic, not a statement in the sources, as is the consequence that with a diploid baseline a homozygous deletion reaches -1 only at purity >= 50%, and an n-copy amplification reaches +1 only when purity x (n - 2) >= 2. Not settled: whether the thresholds were changed for the later 468/505-era pipeline (Cheng 2015 says threshold tuning was ongoing), whether the segment file's values are the same log-ratios the caller used, and how often manual review overrides the rule. The meaning of the codes (-2 deep deletion, 2 amplification) was seen only in a cBioPortal FAQ search snippet in this session, not on a page I opened.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5808190/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4940024/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5027494/"
+          ],
+          "confidence": "medium to high for the rule and the absence of purity correction; medium for current thresholds; the log2 and purity figures are derived, not sourced",
+          "deliveries": {
+            "bd40-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-a03f77f4f7b2"
+            },
+            "bd40-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-589f6bbc580f"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cBioPortal-format data from a targeted hybrid-capture panel where the discrete copy-number table contains only the values -2, 0 and 2, how are those calls made (fold-change and significance thresholds), are they corrected for tumour purity, and are arm-level or low-level gains and losses reported at all? ANSWER: Calling rule (MSK-IMPACT validation paper, Cheng 2015): GC-normalised coverage of target regions in the tumour is divided by that of the best-fitting normal from a pool of control normals (not necessarily the matched normal), log-transformed, and segmented by circular binary segmentation; segments are clustered and the cluster nearest log-ratio 0 defines a null distribution. A whole-gene event is called when fold change > 2.0 (gain) or < -2.0 (loss) with P < 0.05 after false-discovery-rate correction; germline copy-number calls from the matched normal are subtracted. Hyman 2015 states the same rule as 'at least a twofold gain or loss relative to the matched normalised baseline', adds that narrow amplicons are considered more likely significant than broad gains, and that every call is manually reviewed. Purity: no purity or ploidy correction is described in the calling rule. Cheng 2015 names purity/ploidy estimation as future work, and the FACETS paper presents purity-, ploidy-adjusted integer copy number as a separate analysis needed to interpret panel calls. The discrete calls are therefore on the raw tumour/normal ratio, and a purity change alone can create or remove a call. Low-level and arm-level: the rule has no single-copy (+1/-1) category and no arm-level category; only whole-gene events past twofold are called, which is why the table holds only -2, 0 and 2. Sub-threshold and broad changes are visible only in the segment file. Threshold to reproduce a call from segments: about log2 ratio >= +1 for an amplification and <= -1 for a deletion. This conversion is my arithmetic, not a statement in the sources, as is the consequence that with a diploid baseline a homozygous deletion reaches -1 only at purity >= 50%, and an n-copy amplification reaches +1 only when purity x (n - 2) >= 2. Not settled: whether the thresholds were changed for the later 468/505-era pipeline (Cheng 2015 says threshold tuning was ongoing), whether the segment file's values are the same log-ratios the caller used, and how often manual review overrides the rule. The meaning of the codes (-2 deep deletion, 2 amplification) was seen only in a cBioPortal FAQ search snippet in this session, not on a page I opened. HOW SURE: medium to high for the rule and the absence of purity correction; medium for current thresholds; the log2 and purity figures are derived, not sourced. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC5808190/, https://pmc.ncbi.nlm.nih.gov/articles/PMC4940024/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5027494/."
+        },
+        {
+          "question": "In studies that sequence paired earlier and later (relapse or metastasis) tumour samples from the same patient with a targeted panel, how is a 'newly acquired alteration' conventionally defined: are all called variants and copy-number calls counted, or only oncogenic or likely oncogenic alterations (for example OncoKB-annotated), and how are variants of unknown significance treated?",
+          "answer": "The web does not show one fixed convention. The three papers read report two tiers side by side: all reported alterations, and the oncogenic or likely oncogenic subset, with the interpretation resting mainly on the second. (1) A 108-patient longitudinal MSK-IMPACT study of translocation-associated sarcomas, including alveolar rhabdomyosarcoma, counted every reported alteration absent from the first test as acquired (122 events in 53% of patients, mean 2.1 per case), then split them by OncoKB: 27% oncogenic/likely oncogenic, 73% VUS. Its per-histotype comparison and its list of recurrent acquired events (TP53 first, 10% of patients) use the oncogenic tier. In ARMS, 35% of cases acquired VUS only, and the amplifications were mostly present at baseline. (2) A paired cholangiocarcinoma MSK-IMPACT study filtered alterations to OncoKB oncogenic variants for its main results, and defined concordance as shared over (shared + private to either sample), reported both as overall (oncogenic mutations, CNAs and rearrangements) and mutation-only; it also showed one figure with oncogenic and VUS together (849 alterations, 38% oncogenic). (3) A 2013 paired NSCLC panel study split 311 alterations into known recurrent versus likely passenger; concordance was 94% versus 63%, so most apparently private calls sat in the passenger tier (abstract only read). What this means for the teams: counting every call is a published quantity, but it is the broader of two and should be named 'all alterations private to the later sample'. VUS are not discarded in these papers; they are reported as their own stratum. A driver-only count needs OncoKB-style annotation, which the task tables do not hold, so the group comparison should be stated as an all-calls result and, if possible, re-run on a proxy driver subset to see whether the direction holds.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC13347250/",
+            "https://doi.org/10.1200/po.23.00534",
+            "https://ascopubs.org/doi/10.1200/JCO.2012.47.7737"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd40-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-b28fd1afa0ce"
+            },
+            "bd40-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-9399e87434a7"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In studies that sequence paired earlier and later (relapse or metastasis) tumour samples from the same patient with a targeted panel, how is a 'newly acquired alteration' conventionally defined: are all called variants and copy-number calls counted, or only oncogenic or likely oncogenic alterations (for example OncoKB-annotated), and how are variants of unknown significance treated? ANSWER: The web does not show one fixed convention. The three papers read report two tiers side by side: all reported alterations, and the oncogenic or likely oncogenic subset, with the interpretation resting mainly on the second. (1) A 108-patient longitudinal MSK-IMPACT study of translocation-associated sarcomas, including alveolar rhabdomyosarcoma, counted every reported alteration absent from the first test as acquired (122 events in 53% of patients, mean 2.1 per case), then split them by OncoKB: 27% oncogenic/likely oncogenic, 73% VUS. Its per-histotype comparison and its list of recurrent acquired events (TP53 first, 10% of patients) use the oncogenic tier. In ARMS, 35% of cases acquired VUS only, and the amplifications were mostly present at baseline. (2) A paired cholangiocarcinoma MSK-IMPACT study filtered alterations to OncoKB oncogenic variants for its main results, and defined concordance as shared over (shared + private to either sample), reported both as overall (oncogenic mutations, CNAs and rearrangements) and mutation-only; it also showed one figure with oncogenic and VUS together (849 alterations, 38% oncogenic). (3) A 2013 paired NSCLC panel study split 311 alterations into known recurrent versus likely passenger; concordance was 94% versus 63%, so most apparently private calls sat in the passenger tier (abstract only read). What this means for the teams: counting every call is a published quantity, but it is the broader of two and should be named 'all alterations private to the later sample'. VUS are not discarded in these papers; they are reported as their own stratum. A driver-only count needs OncoKB-style annotation, which the task tables do not hold, so the group comparison should be stated as an all-calls result and, if possible, re-run on a proxy driver subset to see whether the direction holds. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC13347250/, https://doi.org/10.1200/po.23.00534, https://ascopubs.org/doi/10.1200/JCO.2012.47.7737."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd40-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd40-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd40-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd40-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd40-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 70.68465274991468,
+      "cost_usd": 0.14162370000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 154.4607747499831,
+      "cost_usd": 0.202969,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 169.8502420000732,
+      "cost_usd": 0.3514406,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 215.00274716608692,
+      "cost_usd": 0.4677553,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 187.9506587079959,
+      "cost_usd": 0.3941729,
+      "error": null
+    },
+    {
+      "agent": "bd40-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 252.63715512491763,
+      "cost_usd": 0.6708086000000001,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 263.6133827919839,
+      "cost_usd": 0.6024435,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 278.9475365000544,
+      "cost_usd": 0.6936211999999998,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

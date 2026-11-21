@@ -1,0 +1,376 @@
+{
+  "study": "bd05",
+  "status": "replicated",
+  "final": {
+    "agent": "bd05-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd05/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "checks": [
+      "recheck_on_agreed_nv"
+    ],
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m02/prompts",
+    "reuse_first_round": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1"
+  },
+  "models": {
+    "director": "opus",
+    "bd05-library": "opus",
+    "bd05-team-a": "opus",
+    "bd05-team-b": "opus",
+    "bd05-team-c": "opus",
+    "bd05-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd05-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd05/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd05-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd05/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd05-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd05/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd05-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd05/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd05-team-a",
+        "bd05-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd05-team-a",
+        "bd05-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The hypothesis is a universal negative: it claims no JAK2-nonmutated MPN patient carries a somatic CALR mutation. It is not a question about frequency, and the known near-mutual-exclusivity of CALR and JAK2 says nothing about whether it holds. Per sample, build JAK2 status and CALR status from data_mutations.txt (Tumor_Sample_Barcode joined to SAMPLE_ID), keep only MPN samples, and count samples that have a CALR mutation and no JAK2 mutation. One credible somatic CALR call in a JAK2-wild-type MPN sample is enough to refute the claim. A count of zero supports it only if those samples were actually profiled for CALR.",
+      "from": [
+        "sl-dev-panel-noise-lab1-d3fd2c56a374"
+      ],
+      "reason": "This sets the logic of the decision. Teams often treat it as a frequency or exclusivity question and pick the wrong label.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-67895eec4d1b"
+      }
+    },
+    {
+      "text": "CALR driver mutations are frameshift indels in exon 9. Type 1 is a 52-bp deletion (p.L367fs*46) and type 2 is a 5-bp TTGTC insertion (p.K385fs*47), and there are many rarer +1 frameshift variants. Exon 9 lies at about chr19:13054500-13055000 on GRCh37. For all Hugo_Symbol==CALR rows, tabulate Variant_Classification, Variant_Type and HGVSp. Do not filter to SNVs or missense calls, or to one protein change, because that misses these mutations. Count every exon 9 frameshift.",
+      "from": [
+        "sl-dev-panel-noise-lab1-9ce3663a0548"
+      ],
+      "reason": "A filter that keeps only SNVs or missense calls makes CALR mutations look absent, which biases the result toward the hypothesis.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-d62b77e15ef4"
+      }
+    },
+    {
+      "text": "Define 'JAK2 mutated' as any JAK2 driver mutation, not just V617F. This includes exon 12 indels around codons 536-547, such as N542-E543del and F537-K539delinsL. Tabulate every JAK2 HGVSp value. Report the result under both definitions (V617F only, and any JAK2 driver), and note whether the conclusion changes.",
+      "from": [
+        "sl-dev-panel-noise-lab1-8c99729d4593"
+      ],
+      "reason": "The JAK2 definition decides which samples fall in the 'nonmutated' group, so it can move a sample in or out of the counterexample set.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-64db14b21bde"
+      }
+    },
+    {
+      "text": "In a minority of MPN patients, CALR mutations occur together with JAK2 V617F, often at low JAK2 burden. A CALR-mutant sample that also has any JAK2 call is not JAK2-nonmutated, so it is not a counterexample. For each CALR-mutant sample, list its JAK2 calls and their VAF (t_alt_count/(t_ref_count+t_alt_count)). Judge the hypothesis only on CALR-mutant samples with no JAK2 call.",
+      "from": [
+        "sl-dev-panel-noise-lab1-23e30ff40460"
+      ],
+      "reason": "This keeps co-mutated samples from being wrongly counted as counterexamples.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-1d9ed55262a4"
+      }
+    },
+    {
+      "text": "Not every CALR variant is a somatic driver. In-frame exon 9 deletions, silent or intronic variants and changes outside exon 9 may be germline polymorphisms or passengers. For each CALR row, check Variant_Classification, position/exon, Mutation_Status and the somatic or matched-normal fields, including n_alt_count in the normal sample. Base the verdict on somatic exon 9 frameshift calls. Report other CALR variants separately and say whether the conclusion depends on them.",
+      "from": [
+        "sl-dev-panel-noise-lab1-cf2d1958e4be"
+      ],
+      "reason": "Counting non-driver or germline CALR variants can create counterexamples that do not exist.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-fe63106892ec"
+      }
+    },
+    {
+      "text": "In a cBioPortal MAF, samples with no mutation calls do not appear at all. Take the list of samples from data_clinical_sample.txt and mark a sample JAK2-mutated if it has any JAK2 row in the MAF. Compare how many samples are in the clinical file and how many are in the MAF, and use any profiling or TMB columns to confirm that samples were sequenced.",
+      "from": [
+        "sl-dev-panel-noise-lab1-14f044f998c5"
+      ],
+      "reason": "Using the clinical file gives the correct denominator and shows whether the sample set was profiled for CALR, which a zero-count conclusion depends on.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-de7ec09d79f1"
+      }
+    },
+    {
+      "text": "Check that Tumor_Sample_Barcode values match SAMPLE_ID, and do not join on PATIENT_ID by mistake. Check for patients with more than one sample: the hypothesis is about patients, so combine each patient's samples before judging. Tabulate CANCER_TYPE_DETAILED/ONCOTREE_CODE and keep only MPN subtypes (PV, ET, PMF, MPN NOS). Non-MPN samples have no bearing on the hypothesis.",
+      "from": [
+        "sl-dev-panel-noise-lab1-f2cab7affca4"
+      ],
+      "reason": "A wrong join, unmerged multi-sample patients or non-MPN samples can assign the wrong JAK2/CALR status and distort the count.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-4ae89344ec21"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 4,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams defined a sample's JAK2 status solely from the presence of a JAK2 row in data_mutations.txt (exome calls), assuming the exome calling detected every JAK2 mutation, including low-burden V617F.",
+      "Both teams assumed every CALR exon 9 frameshift row is somatic because SOMATIC_STATUS=Matched at sample level, without checking per-row normal-read evidence.",
+      "Both teams assumed one sample equals one patient and that all 151 samples are in scope as MPN."
+    ],
+    "unused_evidence": [
+      "data_mutations.txt carries a study-supplied per-sample column 'JAK2/MPL mutation' (values JAK2 / MPL / unmutated). Neither team used it. It is probably the study's own JAK2/MPL classification, possibly from a separate, more sensitive assay. It could reclassify CALR-mutant samples that have no JAK2 MAF row.",
+      "Columns 'Germline reads' and 'Germline allele percentage (%)' (and 'Tumor allele burden (%)', 'Tumor reads') hold per-row matched-normal evidence. Team A said somatic status could not be checked per row because Mutation_Status/n_alt_count are empty, but these columns can check it.",
+      "Column 'Type of Change' / 'Protein Change' (the study's own annotation) was not cross-checked against Variant_Classification/HGVSp for CALR rows."
+    ],
+    "unresolved_weak_points": [
+      "Team A named per-row somatic status as its weakest point and resolved it only by appeal to study design, although germline-read columns exist that could test it directly.",
+      "Team B named undetected JAK2 mutations as its weakest point and did not resolve it. The 'JAK2/MPL mutation' column is a direct way to test it."
+    ],
+    "second_readings": [
+      "'Nonmutated JAK2' could be read as the study's own sample-level JAK2 classification (the JAK2/MPL mutation column) rather than as no JAK2 call in the exome MAF. These could differ for low-burden JAK2 cases.",
+      "The wording could also be read as restricting to JAK2- and MPL-unmutated ('double-negative') patients. Under that reading, CALR-mutant samples annotated MPL would be excluded. The scope of the claim is unchanged, but the count of counterexamples could change."
+    ],
+    "verdict": "Fairly high trust. Both teams found many CALR exon 9 frameshifts in samples with no JAK2 call, and one credible counterexample settles a universal negative. Neither team used the study's own per-sample 'JAK2/MPL mutation' annotation or the germline-read columns, and either could in principle reclassify the counterexamples. Those checks should be run before release.",
+    "questions": [
+      {
+        "to": "bd05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: data_mutations.txt has a per-sample column 'JAK2/MPL mutation' (JAK2 / MPL / unmutated). Cross-tabulate it per sample against your MAF-derived JAK2 status and CALR status. Are any CALR-mutant samples you counted as JAK2-nonmutated labelled 'JAK2' in that column? Does the result change your method or your count?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-e62fcf553b69"
+      },
+      {
+        "to": "bd05-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You said per-row somatic status could not be checked. For every CALR row you counted, tabulate 'Germline reads', 'Germline allele percentage (%)' and 'Tumor allele burden (%)'. Do any of those calls show substantial normal-sample support that would make them non-somatic, and does that change your counterexample count?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-4c8c127884cc"
+      },
+      {
+        "to": "bd05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your weakest point is undetected JAK2 mutations. Cross-tabulate the per-sample 'JAK2/MPL mutation' column in data_mutations.txt against your JAK2-wildtype labels for the CALR-positive samples. Is any CALR-positive sample labelled JAK2 there, and does that change how you define JAK2-nonmutated?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-31ce8872df15"
+      },
+      {
+        "to": "bd05-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: For each CALR exon 9 frameshift you counted, check 'Germline reads' and 'Germline allele percentage (%)' against 'Tumor allele burden (%)'. Are all of them clearly absent in the matched normal? Does excluding any with normal support change your conclusion?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m02-r1-8258e904e615"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In exome-sequencing studies of myeloproliferative neoplasms, how often does exome variant calling miss JAK2 V617F at low allele burden compared with allele-specific PCR, and do such studies usually report sample-level JAK2 status from a separate assay?",
+          "why": "This decides whether the absence of a JAK2 row in an exome MAF is a reliable definition of JAK2-nonmutated, or whether a study-supplied sample-level JAK2 annotation should take precedence.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When a myeloid neoplasm study uses a matched normal derived from T cells or buccal cells, can somatic driver mutations appear at low levels in the 'germline' sample, and what germline-read threshold is conventionally used to call a variant somatic?",
+          "why": "Teams need a principled rule for using normal-sample read counts to confirm that CALR calls are somatic.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In exome-sequencing studies of myeloproliferative neoplasms, how often does exome variant calling miss JAK2 V617F at low allele burden compared with allele-specific PCR, and do such studies usually report sample-level JAK2 status from a separate assay?",
+          "answer": "NGS misses JAK2 V617F mainly below about 1-2% allele burden. In a 427-patient qPCR-vs-NGS comparison, the two methods agreed above 2% (the NGS limit of detection). Only 1 of 298 samples was NGS-negative at a qPCR burden of 3%, but 21 samples with qPCR burdens of 0.1-1% were NGS-negative. A deep NGS vs dPCR study (52 samples, more than 3500x) found 100% positivity concordance at burdens of 2.5% and above. Exome depth (~100x) is much lower, so exome-based calls would likely miss more low-burden cases. MPN exome studies (e.g. Nangalia et al. 2013 NEJM) classify patients as JAK2-mutated or nonmutated at the sample level. The pages read did not show which assay they used, so the 'separate assay' part is not settled by the web. Practical recommendation: if the study supplies a sample-level JAK2 annotation, use it in preference to treating an absent MAF row as JAK2-nonmutated. Also note that a missed low-burden JAK2 would rarely matter for a CALR-positive sample, because the drivers are near mutually exclusive.",
+          "sources": [
+            "https://pubmed.ncbi.nlm.nih.gov/30259120/",
+            "https://doi.org/10.1182/blood-2023-188510",
+            "https://www.nejm.org/doi/10.1056/NEJMoa1312542",
+            "https://www.nejm.org/doi/full/10.1056/NEJMoa1311347"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd05-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-111d7f19d88c"
+            },
+            "bd05-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-9790e5a90003"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In exome-sequencing studies of myeloproliferative neoplasms, how often does exome variant calling miss JAK2 V617F at low allele burden compared with allele-specific PCR, and do such studies usually report sample-level JAK2 status from a separate assay? ANSWER: NGS misses JAK2 V617F mainly below about 1-2% allele burden. In a 427-patient qPCR-vs-NGS comparison, the two methods agreed above 2% (the NGS limit of detection). Only 1 of 298 samples was NGS-negative at a qPCR burden of 3%, but 21 samples with qPCR burdens of 0.1-1% were NGS-negative. A deep NGS vs dPCR study (52 samples, more than 3500x) found 100% positivity concordance at burdens of 2.5% and above. Exome depth (~100x) is much lower, so exome-based calls would likely miss more low-burden cases. MPN exome studies (e.g. Nangalia et al. 2013 NEJM) classify patients as JAK2-mutated or nonmutated at the sample level. The pages read did not show which assay they used, so the 'separate assay' part is not settled by the web. Practical recommendation: if the study supplies a sample-level JAK2 annotation, use it in preference to treating an absent MAF row as JAK2-nonmutated. Also note that a missed low-burden JAK2 would rarely matter for a CALR-positive sample, because the drivers are near mutually exclusive. HOW SURE: medium. SOURCES: https://pubmed.ncbi.nlm.nih.gov/30259120/, https://doi.org/10.1182/blood-2023-188510, https://www.nejm.org/doi/10.1056/NEJMoa1312542, https://www.nejm.org/doi/full/10.1056/NEJMoa1311347."
+        },
+        {
+          "question": "When a myeloid neoplasm study uses a matched normal derived from T cells or buccal cells, can somatic driver mutations appear at low levels in the 'germline' sample, and what germline-read threshold is conventionally used to call a variant somatic?",
+          "answer": "Yes. Nangalia et al. 2013 used cultured T cells, isolated T cells or buccal swabs as constitutional samples. A PV exome study using T-cell normals found apparent germline variants at COSMIC hotspots of PV-related genes in 7/31 patients, implying that early clones contribute to T cells. MSK paired sequencing found tumor DNA at VAF >2% in the normal samples of 25% of MPN patients. Buccal and saliva normals are known to carry leukemic contamination. An MDS study excluded T-cell normals with >5% myeloid contamination. The pages read gave no single standard germline-read threshold. Commonly applied heuristics are a normal VAF below about 2-5%, or a large tumor-to-normal VAF ratio, rather than requiring zero normal reads. A CALR exon-9 frameshift with a substantial tumor VAF and only a few normal reads should be treated as somatic.",
+          "sources": [
+            "https://www.nejm.org/doi/10.1056/NEJMoa1312542",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4532385/",
+            "https://www.nature.com/articles/s41467-023-42585-9",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5969383/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC12672828/"
+          ],
+          "confidence": "medium (contamination of normals: high; specific threshold: low)",
+          "deliveries": {
+            "bd05-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-9a4903e984e8"
+            },
+            "bd05-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-e536daa37371"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a myeloid neoplasm study uses a matched normal derived from T cells or buccal cells, can somatic driver mutations appear at low levels in the 'germline' sample, and what germline-read threshold is conventionally used to call a variant somatic? ANSWER: Yes. Nangalia et al. 2013 used cultured T cells, isolated T cells or buccal swabs as constitutional samples. A PV exome study using T-cell normals found apparent germline variants at COSMIC hotspots of PV-related genes in 7/31 patients, implying that early clones contribute to T cells. MSK paired sequencing found tumor DNA at VAF >2% in the normal samples of 25% of MPN patients. Buccal and saliva normals are known to carry leukemic contamination. An MDS study excluded T-cell normals with >5% myeloid contamination. The pages read gave no single standard germline-read threshold. Commonly applied heuristics are a normal VAF below about 2-5%, or a large tumor-to-normal VAF ratio, rather than requiring zero normal reads. A CALR exon-9 frameshift with a substantial tumor VAF and only a few normal reads should be treated as somatic. HOW SURE: medium (contamination of normals: high; specific threshold: low). SOURCES: https://www.nejm.org/doi/10.1056/NEJMoa1312542, https://pmc.ncbi.nlm.nih.gov/articles/PMC4532385/, https://www.nature.com/articles/s41467-023-42585-9, https://pmc.ncbi.nlm.nih.gov/articles/PMC5969383/, https://pmc.ncbi.nlm.nih.gov/articles/PMC12672828/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd05-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd05-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd05-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd05-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 49.61717462504748,
+      "cost_usd": 0.2465228,
+      "error": null
+    },
+    {
+      "agent": "bd05-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 94.29390466597397,
+      "cost_usd": 0.5269889999999999,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 36.515548459021375,
+      "cost_usd": 0.203467,
+      "error": null
+    },
+    {
+      "agent": "bd05-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 54.31086195795797,
+      "cost_usd": 0.23450339999999997,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": [],
+  "recheck": [],
+  "reused": {
+    "from": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1",
+    "memory_replayed": {
+      "writes": null,
+      "pass_downs": 7,
+      "note": "memory writes are replayed only with local memory"
+    },
+    "first_round_cost_usd": 0.674982,
+    "first_round_runs": 4
+  }
+}

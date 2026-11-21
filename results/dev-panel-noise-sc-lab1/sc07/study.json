@@ -1,0 +1,390 @@
+{
+  "study": "sc07",
+  "status": "replicated",
+  "final": {
+    "agent": "sc07-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab1/sc07/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "sc07-library": "opus",
+    "sc07-team-a": "opus",
+    "sc07-team-b": "opus",
+    "sc07-team-c": "opus",
+    "sc07-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "sc07-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab1/sc07/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc07-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab1/sc07/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc07-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab1/sc07/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc07-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab1/sc07/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc07-team-a",
+        "sc07-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc07-team-a",
+        "sc07-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The file 158542059.node contains raw integer UMI counts (100000 cells x 40352 genes; obs columns cell_type with 18 levels, donor 12, cytokine 91, treatment 2, sample 1092). PCA on raw or unscaled counts makes PC1 follow sequencing depth. Before PCA, run the standard pipeline: normalize_total to 1e4, log1p, select about 2000 highly variable genes, scale with max_value=10, then PCA. Check PC1 against total counts, and report the preprocessing you used.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab1-ee93e6a1af6f",
+        "sl-dev-panel-noise-sc-lab1-d80a3f817d2b"
+      ],
+      "reason": "PC1 itself, and so every R2 that follows, depends on preprocessing. Raw counts would give a depth axis instead of a biological one.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab1-75b7ff77287a"
+      }
+    },
+    {
+      "text": "Compute PC1 at the cell level (or from pseudobulks by donor x cytokine x cell_type). Do not use pseudobulks per sample (donor x cytokine): that removes cell type as a factor and shifts how variance is split between donor and cytokine. Do not compare R2 values computed on different units.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab1-bc32c91d985e"
+      ],
+      "reason": "The question ranks cell type, so the unit of analysis has to keep cell type as a factor. A different unit changes the ranking.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab1-d75c45a657d9"
+      }
+    },
+    {
+      "text": "Do not apply batch correction or regress out donor (Harmony, regress_out, an integrated embedding) before computing PC1. obsm is empty in the raw file. Use uncorrected log-normalized, scaled HVG data.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab1-73f733dab99e"
+      ],
+      "reason": "Correction removes donor variance from PC1 and artificially lowers donor's rank.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab1-884b90f175d1"
+      }
+    },
+    {
+      "text": "Measure the variance each factor explains as the marginal R2 of PC1 regressed on that one factor alone, with the factor as categorical (one-hot dummies or one-way ANOVA: between-group SS / total SS). This is the scater getExplanatoryPCs / scib pcRegression convention. Never code a factor as integer labels. Do not use sequential (Type I) sums of squares from one joint model: in this unbalanced design the shares depend on order. Also, PBS is one of the 91 cytokine levels, so treatment is an exact coarsening of cytokine. Treatment's marginal R2 can never exceed cytokine's, and in a joint model treatment is fully aliased and gets zero. Confirm the nesting with a crosstab. You may also report partial (Type II) R2 as a check. If it disagrees with the marginal ranking, report both.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab1-ad843f9d194a",
+        "sl-dev-panel-noise-sc-lab1-d3c04d51543d",
+        "sl-dev-panel-noise-sc-lab1-165dc0ef62f7"
+      ],
+      "reason": "How R2 is attributed decides the ranking. Integer coding, joint-model sequential SS and the treatment/cytokine nesting each give wrong or order-dependent results.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab1-3ddcb4016f74"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams computed PC1 on one cell-level PCA of all 100k cells with the same pipeline (normalize_total 1e4, log1p, 2000 HVG, scale), so the ranking is checked against only one embedding family. Neither tested HVG count (e.g. 5000), removing MT/RP genes, or a random 50% subsample.",
+      "Both treated cells as independent observations in the R2. Cells are nested in samples (donor x cytokine, 1092 levels) and in barcode wells, so the cytokine R2 versus its chance floor (~0.0009 for 91 levels) was judged without a within-donor permutation null.",
+      "Both assumed the 100k cells are a representative draw of the design. Neither checked whether cells per sample, per donor or per cell type are balanced, and imbalance changes the marginal R2 of donor and cytokine."
+    ],
+    "unused_evidence": [
+      "obs barcode-well columns (bc1_well/bc1_wind, bc2_well, bc3_well) and the sublibrary suffix in the cell index (e.g. '__s96'): these are technical batch labels in combinatorial-barcoding data. If sublibrary or bc1 well lines up with donor, part of the 'donor' R2 is technical, and neither team checked the confounding.",
+      "pct_counts_MT / total_counts_MT and gene_count: QC covariates that could drive PC1 alongside the depth correlation both teams saw (r~0.4). Neither team regressed them out as a sensitivity check or looked at which factor absorbs the effect.",
+      "The 'sample' column (1092 levels): it could serve as the unit for a permutation or mixed-model test of whether cytokine beats chance. Team A used donor x cytokine x cell_type pseudobulks, but team B used nothing like it."
+    ],
+    "unresolved_weak_points": [
+      "Team A: the donor and cytokine partial R2 values are tiny in absolute terms (0.002 vs 0.0006). Team A reported this but ran no permutation or subsample test of the ordering.",
+      "Team B: cytokine eta^2 (0.0018) is only about twice the chance floor (~0.0009). Team B reported this and dismissed it because of nesting; it did not compute adjusted R2 or a permutation null.",
+      "Both teams saw PC1 correlate with log depth at r~0.4 and took no action. Neither showed that the ranking survives regressing out depth or computing R2 within cell types."
+    ],
+    "second_readings": [
+      "'Variance explained in PC1' could mean a joint-model partition (e.g. a variance-components / mixed model with all factors as random effects) instead of marginal one-way R2. Team A's Type II check partly covers this.",
+      "PC1 could come from a sample-level pseudobulk PCA (the usual unit in perturbation screens) instead of a cell-level PCA. Under that reading, cell type enters only through composition and the order of donor and cytokine may change. Team A checked a donor x cytokine x cell_type pseudobulk but not a per-sample one."
+    ],
+    "verdict": "I trust answer A fairly well. Cell type (~0.96) and donor (~0.10) are separated from cytokine (~0.002) by large margins under every variant tried, and treatment \u2264 cytokine follows from the nesting. The only fragile part is cytokine vs chance, and the main untested risk is that part of the donor share is technical batch, which would not flip the order.",
+    "questions": [
+      {
+        "to": "sc07-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate donor against the sublibrary suffix in the cell index and against bc1_well. If donor is confounded with a technical batch, does the donor R2 on PC1 stay above cytokine's when you compute it within a single sublibrary, and does that change your method?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab1-0c26cd547551"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-6660ca658d34"
+      },
+      {
+        "to": "sc07-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Recompute PC1 after regressing log total counts and pct_counts_MT out of the scaled matrix (and separately with 5000 HVGs and on a random 50% subsample). Does the order of any two factors change, and if it does, which variant do you report?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab1-6e30d3cca418"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-49379c2584af"
+      },
+      {
+        "to": "sc07-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Run a permutation null that shuffles cytokine labels between samples within each donor (keeping the cells of a sample together), say 200 times. Is the observed cytokine R2 outside that null, and is the gap between donor and cytokine larger than the permutation spread?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab1-fd2ef5d1c8eb"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-7b79c655793e"
+      },
+      {
+        "to": "sc07-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Compute adjusted R2 for each factor and a within-donor, sample-level permutation null for cytokine. Does cytokine still rank above treatment and below donor once the chance floor is accounted for, and does that change your method?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab1-ec98d0576e13"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-fa391bbc20cc"
+      },
+      {
+        "to": "sc07-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your donor eta^2 (0.10) is marginal. Compute donor's partial R2 given cell type, and the donor eta^2 within each of the largest cell types. Is donor still clearly above cytokine, or is most of its share cell-type composition?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab1-6ad427fa2d1b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-3339062f50bd"
+      },
+      {
+        "to": "sc07-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check the barcode-well columns (bc1_well, sublibrary suffix) and the number of cells per sample and per donor. Are donor or cytokine confounded with a technical batch or with strong imbalance, and if so, does the ranking hold when you restrict to a balanced subset?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab1-6420051a3d2a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-6e1f3ff013ff"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In combinatorial split-pool barcoding single-cell protocols, what do the round-1, round-2 and round-3 barcode wells and the sublibrary identifier encode, and which of them is usually confounded with sample identity?",
+          "why": "This decides whether the barcode columns are a technical batch that could inflate the variance attributed to donor.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When ranking categorical covariates by variance explained in a principal component at the single-cell level, what is the recommended way to account for cells nested within samples (e.g. a permutation at sample level or a mixed model) when one factor has many levels?",
+          "why": "The cytokine factor's share is close to its chance floor, so the right null decides whether it truly ranks above the binary treatment factor.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In combinatorial split-pool barcoding single-cell protocols, what do the round-1, round-2 and round-3 barcode wells and the sublibrary identifier encode, and which of them is usually confounded with sample identity?",
+          "answer": "Round 1 is the well of the first plate (in-cell reverse transcription). Samples are loaded into specific round-1 wells, at least one well per sample, so round 1 is the sample-specific barcode and is confounded with sample identity (here, donor x cytokine). For rounds 2 and 3, pooled cells are randomly redistributed into ligation-plate wells, so these barcodes are essentially random with respect to sample. The sublibrary (subpool, i7 PCR index; the fourth barcode) is a random split of the final pool, used to tell barcode collisions apart. It is a technical batch that is not confounded with sample by design. Only the round-1 barcode stands in for sample, so it is not an independent batch effect that would add to donor variance.",
+          "sources": [
+            "https://www.parsebiosciences.com/technology/",
+            "https://scg-lib-structs.readthedocs.io/en/stable/ge/SPLiT-seq.html",
+            "https://www.protocols.io/view/evercode-wt-v2-2-1-c4ftytnn.pdf"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc07-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab1-da646266e368"
+            },
+            "sc07-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab1-cf52241d8279"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In combinatorial split-pool barcoding single-cell protocols, what do the round-1, round-2 and round-3 barcode wells and the sublibrary identifier encode, and which of them is usually confounded with sample identity? ANSWER: Round 1 is the well of the first plate (in-cell reverse transcription). Samples are loaded into specific round-1 wells, at least one well per sample, so round 1 is the sample-specific barcode and is confounded with sample identity (here, donor x cytokine). For rounds 2 and 3, pooled cells are randomly redistributed into ligation-plate wells, so these barcodes are essentially random with respect to sample. The sublibrary (subpool, i7 PCR index; the fourth barcode) is a random split of the final pool, used to tell barcode collisions apart. It is a technical batch that is not confounded with sample by design. Only the round-1 barcode stands in for sample, so it is not an independent batch effect that would add to donor variance. HOW SURE: high. SOURCES: https://www.parsebiosciences.com/technology/, https://scg-lib-structs.readthedocs.io/en/stable/ge/SPLiT-seq.html, https://www.protocols.io/view/evercode-wt-v2-2-1-c4ftytnn.pdf."
+        },
+        {
+          "question": "When ranking categorical covariates by variance explained in a principal component at the single-cell level, what is the recommended way to account for cells nested within samples (e.g. a permutation at sample level or a mixed model) when one factor has many levels?",
+          "answer": "The web does not prescribe a specific null for ranking PC1 R2 at the cell level. The closest guidance is from variancePartition (Hoffman & Schadt): a categorical variable with many levels fitted as a fixed effect absorbs variance even under the null and gives biased variance fractions. The recommended approach is to fit all categorical factors as random effects in one linear mixed model, estimated by ML, with fraction = var_X/(fixed + random + residual), which the docs report is empirically unbiased. Zimmerman et al. 2021 say cells within an individual are pseudoreplicates and recommend a random effect for individual/sample; pseudobulk is valid but conservative. My recommendation, which is inference and not stated on the web: test cytokine against a null that permutes labels at the sample level (whole donor x cytokine samples, within donor), or use the random-effects variance partition PC1 ~ (1|cell_type)+(1|donor)+(1|cytokine). Treatment is nested in cytokine, so its marginal R2 cannot exceed cytokine's raw R2. The question is only whether cytokine's excess over its chance floor is real.",
+          "sources": [
+            "https://bioconductor.org/packages/release/bioc/vignettes/variancePartition/inst/doc/rnd_effects.html",
+            "https://www.nature.com/articles/s41467-021-21038-1"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc07-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab1-f3b4662df2f1"
+            },
+            "sc07-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab1-903f07b54f18"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When ranking categorical covariates by variance explained in a principal component at the single-cell level, what is the recommended way to account for cells nested within samples (e.g. a permutation at sample level or a mixed model) when one factor has many levels? ANSWER: The web does not prescribe a specific null for ranking PC1 R2 at the cell level. The closest guidance is from variancePartition (Hoffman & Schadt): a categorical variable with many levels fitted as a fixed effect absorbs variance even under the null and gives biased variance fractions. The recommended approach is to fit all categorical factors as random effects in one linear mixed model, estimated by ML, with fraction = var_X/(fixed + random + residual), which the docs report is empirically unbiased. Zimmerman et al. 2021 say cells within an individual are pseudoreplicates and recommend a random effect for individual/sample; pseudobulk is valid but conservative. My recommendation, which is inference and not stated on the web: test cytokine against a null that permutes labels at the sample level (whole donor x cytokine samples, within donor), or use the random-effects variance partition PC1 ~ (1|cell_type)+(1|donor)+(1|cytokine). Treatment is nested in cytokine, so its marginal R2 cannot exceed cytokine's raw R2. The question is only whether cytokine's excess over its chance floor is real. HOW SURE: medium. SOURCES: https://bioconductor.org/packages/release/bioc/vignettes/variancePartition/inst/doc/rnd_effects.html, https://www.nature.com/articles/s41467-021-21038-1."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc07-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc07-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc07-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc07-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc07-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 98.9307172500994,
+      "cost_usd": 0.4632946,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 39.444253875059076,
+      "cost_usd": 0.1381794,
+      "error": null
+    },
+    {
+      "agent": "sc07-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 54.29394616605714,
+      "cost_usd": 0.16017900000000002,
+      "error": null
+    },
+    {
+      "agent": "sc07-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 57.938738707918674,
+      "cost_usd": 0.13969499999999999,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 51.18833849998191,
+      "cost_usd": 0.23998380000000002,
+      "error": null
+    },
+    {
+      "agent": "sc07-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 53.122022832976654,
+      "cost_usd": 0.3083104,
+      "error": null
+    },
+    {
+      "agent": "sc07-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 99.35063758399338,
+      "cost_usd": 0.25714519999999996,
+      "error": null
+    },
+    {
+      "agent": "sc07-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 99.86790116596967,
+      "cost_usd": 0.35926060000000004,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,438 @@
+{
+  "study": "pf22",
+  "status": "replicated",
+  "final": {
+    "agent": "pf22-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-pilot/lab-planted/pf22/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "pf22-library": "opus",
+    "pf22-team-a": "opus",
+    "pf22-team-b": "opus",
+    "pf22-team-c": "opus",
+    "pf22-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "pf22-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-pilot/lab-planted/pf22/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "pf22-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-pilot/lab-planted/pf22/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "pf22-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-pilot/lab-planted/pf22/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "pf22-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-pilot/lab-planted/pf22/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "pf22-team-a",
+        "pf22-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "pf22-team-a",
+        "pf22-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "In data_clinical_patient.txt the '#' description line defines ER_STATUS as 1 = negative and 0 = positive. Read the header descriptions, cross-tabulate ER_STATUS against ER_PERCENT_POSITIVE (ER-negatives should have 0%), and build an explicit ER-positive indicator (ER_STATUS == 0) before any comparison; flag rows where status and percentage disagree.",
+      "from": [
+        "sl-lab-planted-c980d242cf29"
+      ],
+      "reason": "Taking 1 as positive would flip the sign of the ER+ minus ER- difference, and the hypothesis is about direction.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-3077514e84ca"
+      }
+    },
+    {
+      "text": "ER_PERCENT_POSITIVE may disagree with ER_STATUS (e.g. 'positive' with 0% or below the ASCO/CAP 1% threshold), and the cohort may include men. Tabulate status against percentage and tabulate SEX; as a sensitivity analysis, define ER from percentage >= 1% and repeat with and without male patients, reporting whether the conclusion changes.",
+      "from": [
+        "sl-lab-planted-12f37f9b8200"
+      ],
+      "reason": "Misclassified exposure or a mixed-sex cohort could change the estimated ER difference.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-03aca16bcdd4"
+      }
+    },
+    {
+      "text": "SITE is the hospital that both enrolled the patient and ran the blood tests, so assay calibration and case mix can differ by site. Tabulate the ER-positive fraction and the glucose distribution (mean, median, SD) by site and compare the pooled ER difference with within-site differences. Base the conclusion on a site-adjusted or site-stratified estimate (glucose ~ ER + SITE). Because lab-to-lab differences can be proportional or change variance, not only shift the mean, also check robustness with within-site standardisation (per-site z-scores or log glucose with site effects) or a site-by-ER interaction (this last point is from unverified background knowledge, low-medium confidence).",
+      "from": [
+        "sl-lab-planted-5ec590559e66",
+        "sl-lab-planted-8b87c71ab800"
+      ],
+      "reason": "If ER mix differs by site, site lab offsets can create, hide or reverse a pooled ER difference (Simpson's paradox); an additive site term alone may not remove it.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-6249ba6bed08"
+      }
+    },
+    {
+      "text": "Fasting glucose rises with age and BMI, and ER-positive patients tend to be older. Where age and BMI are available (possibly in data_clinical_supplement.txt, joined on PATIENT_ID), compare them between ER groups and fit glucose ~ ER + age + BMI + SITE. Report the crude and adjusted ER coefficients side by side and state what each shows.",
+      "from": [
+        "sl-lab-planted-89566caca1d3"
+      ],
+      "reason": "A crude ER difference may be explained by age/BMI; the teams need both estimates to judge the claim.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-7dae42824787"
+      }
+    },
+    {
+      "text": "FASTING_GLUCOSE is labelled mg/dL, but a site may have recorded mmol/L (values around 3-15 instead of 60-250). Describe glucose by site and look for a cluster below about 30; if present, convert (mg/dL = mmol/L x 18.016) or standardise within site, and report results both ways.",
+      "from": [
+        "sl-lab-planted-ecfbbdaf701e"
+      ],
+      "reason": "Mixed units would badly distort group means, especially when ER mix differs by site.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-389df58df349"
+      }
+    },
+    {
+      "text": "Check FASTING_GLUCOSE, ER_STATUS and ER_PERCENT_POSITIVE for sentinel codes (-1, 0, 999, 9999) or text such as NA; physiological fasting glucose is roughly 50-400 mg/dL. Set sentinels to missing, report how many values were dropped in each ER group, and add a robust comparison (medians / Mann-Whitney) as a sensitivity check.",
+      "from": [
+        "sl-lab-planted-3d37694c3f75"
+      ],
+      "reason": "Sentinels silently entering means could create or mask a group difference.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-55e15a19ceac"
+      }
+    },
+    {
+      "text": "Glucose is a patient-level variable, while the sample table can hold several samples per patient (primary and metastasis). Confirm PATIENT_ID is unique in the patient table and analyse one row per patient; do not join sample rows onto the glucose outcome.",
+      "from": [
+        "sl-lab-planted-fc96a125aaac"
+      ],
+      "reason": "Duplicated patients inflate n and false significance.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-409448457642"
+      }
+    },
+    {
+      "text": "The hypothesis is directional (ER-positive higher). Report the sign and size of the ER+ minus ER- difference with a 95% CI, and whether crude and adjusted analyses agree. A non-significant difference and a difference in the opposite direction are different kinds of evidence; a one-sided test or a check of whether the CI excludes a meaningful positive effect helps tell them apart. 'Not verifiable' in this task is defined as the data lacking the relevant variables, so decide the label from what the estimates and their CIs actually show.",
+      "from": [
+        "sl-lab-planted-367381f89fa6",
+        "sl-lab-planted-ad3647c3db55"
+      ],
+      "reason": "Interpreting a null or opposite-direction result is the main point where the choice of label can go wrong.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-6ccfe612d4ea"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat site as an additive (or log/z-scaled) nuisance and adjust for it, assuming the site imbalance in ER status (site C2 is roughly 10% ER+) reflects lab calibration or enrolment and not a real difference in patients. If sites differ in who they enrol (e.g. diabetic or older referral populations), adjusting for site may remove or create the ER effect; the crude and adjusted estimates were not compared openly as competing estimands.",
+      "Both treat every ER_PERCENT_POSITIVE>0 patient as ER-positive, which matches ER_STATUS exactly. Neither tested whether the result depends on the ER-low band (1-9%, a handful of patients) or on a dose-response in staining percent.",
+      "Both assume a non-significant negative point estimate with a CI upper bound near +0.65 to ~3 mg/dL is enough for 'False'. The threshold for a 'meaningful' positive difference (~3 mg/dL) was chosen by the team, not drawn from the data or the task.",
+      "Both assume that patients are independent, that each one has a single valid fasting measurement, and that the whole cohort, male patients included (about half), is in scope."
+    ],
+    "unused_evidence": [
+      "ER_PERCENT_POSITIVE was used only to confirm the coding. Neither team used it as a continuous exposure, e.g. whether glucose tracks staining percent among ER+ patients.",
+      "The sample table (sample type, batch, purity, proliferation, immune scores) was used at most as extra covariates. That is probably irrelevant to glucose, but processing batch could be correlated with site or enrolment period.",
+      "Haemoglobin and calcium were used by team B only as site negative controls. Team A looked at them by site but did not report them as a control for ER group."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weak point: the reversal is not significant (two-sided p ~0.11), so 'False' depends on an equivalence-style reading. Neither resolved it. Both just reported it, and neither ran a formal equivalence/non-inferiority test with a margin justified in advance.",
+      "Team A's site-confounding concern was handled by adjustment. The crude (unadjusted) ER+ vs ER- difference and its sign were not reported in either method note, so we cannot tell whether adjustment changed the direction."
+    ],
+    "second_readings": [
+      "'Higher fasting glucose' could mean the raw cohort-level difference in means (descriptive, unadjusted) rather than a site-adjusted effect. If the crude and adjusted estimates differ in sign or significance, the label may differ.",
+      "The hypothesis may be about breast-cancer patients, i.e. women. Team A and team B both ran female-only analyses, which addresses this reading if the direction held there.",
+      "The boundary between 'False' and 'Not verifiable'/'cannot settle': the task says False needs 'evidence that contradicts'. A non-significant opposite-direction estimate could be read as failing to support the claim rather than contradicting it. The task offers no separate 'inconclusive' label, so with the variables present the choice is between True and False."
+    ],
+    "verdict": "Moderately trusted. Both teams decoded the inverted ER coding correctly and the negative direction holds across many sensitivity analyses, but the 'False' label rests on a non-significant reversal and a margin the teams chose themselves. The crude-vs-adjusted comparison is not documented.",
+    "questions": [
+      {
+        "to": "pf22-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Report the crude (no site, no covariates) ER+ minus ER- difference in fasting glucose with its CI next to the site-adjusted one. Do the two agree in sign and in what they rule out, and if not, which one answers the hypothesis as worded?",
+        "from": [
+          "sl-lab-planted-2a01544fe8d2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-14e97b33c967"
+      },
+      {
+        "to": "pf22-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Run a formal equivalence or one-sided non-superiority test for ER+ > ER- with a margin you justify before you look at the result (e.g. from the within-site glucose SD). Does it support calling the data contradictory rather than merely non-supportive?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-b72a0b8e5e16"
+      },
+      {
+        "to": "pf22-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Among ER+ patients, regress glucose on ER_PERCENT_POSITIVE, and separately drop the ER-low band (<10%). Is there any dose-response or sign change that would alter your reading of the binary comparison?",
+        "from": [
+          "sl-lab-planted-1c96e8a00002"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-7ead2305bf58"
+      },
+      {
+        "to": "pf22-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Check whether processing batch or sample type is linked to site or ER group and to glucose. Does adding batch to the adjusted model change the ER coefficient?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-08c974beaa69"
+      },
+      {
+        "to": "pf22-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Report the crude unadjusted ER+ minus ER- glucose difference and its 95% CI alongside the site-FE estimate. Does site adjustment move the estimate in sign or significance, and does your label depend on choosing the adjusted estimand?",
+        "from": [
+          "sl-lab-planted-f8177c8ac23f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-a70ab1965979"
+      },
+      {
+        "to": "pf22-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your ~3 mg/dL 'meaningful' threshold was set by you. Re-run the decision as a TOST/non-superiority test with margins of 1, 3 and 5 mg/dL. Does the False label survive all reasonable margins?",
+        "from": [
+          "sl-lab-planted-f8177c8ac23f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-eacbbd98f79e"
+      },
+      {
+        "to": "pf22-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Use ER_PERCENT_POSITIVE as a continuous exposure among ER+ patients, and repeat the main comparison excluding ER-low (<10%) patients. Does either change the direction or the CI bound you rely on?",
+        "from": [
+          "sl-lab-planted-7f975ae23ae3"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-a8d0785ff064"
+      },
+      {
+        "to": "pf22-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check the glucose distribution by ER group within each site for skew, high outliers (possible diabetics) or bimodality, and rerun with a robust/median comparison. Does the upper CI bound for ER+ > ER- change materially?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-4d37117fc142"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "When a directional hypothesis (group A higher than group B) is tested and the estimate points the other way but is not statistically significant, what do standard statistical guidelines say about whether this counts as evidence against the hypothesis, versus absence of evidence, and how are equivalence/non-superiority margins usually justified?",
+          "why": "Both teams' label hinges on treating a non-significant opposite-direction estimate as contradiction; neither showed knowledge of a formal convention.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Under ASCO/CAP guidelines, how are breast tumours with 1-10% ER-staining cells classified, and are they normally analysed with ER-positive or ER-negative tumours in research comparisons?",
+          "why": "The ER-positive group includes some ER-low tumours; how they are grouped could affect the comparison.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When a directional hypothesis (group A higher than group B) is tested and the estimate points the other way but is not statistically significant, what do standard statistical guidelines say about whether this counts as evidence against the hypothesis, versus absence of evidence, and how are equivalence/non-superiority margins usually justified?",
+          "answer": "THE WEB DID NOT SETTLE THIS: the research gateway returned HTTP 403 on all 3 calls, so no page was read. From unverified background knowledge: a non-significant estimate, even one pointing the opposite way, counts as absence of evidence, not evidence against the hypothesis (Altman & Bland, BMJ 1995; ASA 2016 statement on p-values). To count as evidence against a directional claim you need either a significant effect in the opposite direction, or a one-sided non-superiority/TOST equivalence test whose confidence interval excludes a meaningful positive effect. That margin should be fixed in advance from the smallest clinically important difference (ICH E9/E10, FDA non-inferiority guidance, Lakens 2017 SESOI), not chosen after seeing the data. For fasting glucose, about 5-10 mg/dL is a plausible clinically meaningful margin, but that figure is my own judgement.",
+          "sources": [],
+          "confidence": "medium for the principle; low for any specific margin (no sources retrieved)",
+          "deliveries": {
+            "pf22-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-planted-0e28ba795221"
+            },
+            "pf22-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-planted-09615591cd68"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a directional hypothesis (group A higher than group B) is tested and the estimate points the other way but is not statistically significant, what do standard statistical guidelines say about whether this counts as evidence against the hypothesis, versus absence of evidence, and how are equivalence/non-superiority margins usually justified? ANSWER: THE WEB DID NOT SETTLE THIS: the research gateway returned HTTP 403 on all 3 calls, so no page was read. From unverified background knowledge: a non-significant estimate, even one pointing the opposite way, counts as absence of evidence, not evidence against the hypothesis (Altman & Bland, BMJ 1995; ASA 2016 statement on p-values). To count as evidence against a directional claim you need either a significant effect in the opposite direction, or a one-sided non-superiority/TOST equivalence test whose confidence interval excludes a meaningful positive effect. That margin should be fixed in advance from the smallest clinically important difference (ICH E9/E10, FDA non-inferiority guidance, Lakens 2017 SESOI), not chosen after seeing the data. For fasting glucose, about 5-10 mg/dL is a plausible clinically meaningful margin, but that figure is my own judgement. HOW SURE: medium for the principle; low for any specific margin (no sources retrieved). SOURCES: none given."
+        },
+        {
+          "question": "Under ASCO/CAP guidelines, how are breast tumours with 1-10% ER-staining cells classified, and are they normally analysed with ER-positive or ER-negative tumours in research comparisons?",
+          "answer": "THE WEB DID NOT SETTLE THIS: the research gateway returned HTTP 403, so no page was read. From unverified background knowledge: the ASCO/CAP 2020 update (Allison et al., J Clin Oncol 2020;38:1346-66) keeps >=1% as ER-positive, but reports 1-10% as 'ER Low Positive', with a required comment that they are heterogeneous, gain little from endocrine therapy, and often behave biologically like ER-negative tumours. Research practice is mixed: many studies follow the guideline and group them with ER-positive, while others analyse them separately or with ER-negative tumours. A sensitivity analysis that excludes or regroups 1-10% tumours is advisable.",
+          "sources": [],
+          "confidence": "medium-high for the classification; medium for research practice (no sources retrieved)",
+          "deliveries": {
+            "pf22-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-planted-961880cc3e3c"
+            },
+            "pf22-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-planted-5c8c7de769dc"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Under ASCO/CAP guidelines, how are breast tumours with 1-10% ER-staining cells classified, and are they normally analysed with ER-positive or ER-negative tumours in research comparisons? ANSWER: THE WEB DID NOT SETTLE THIS: the research gateway returned HTTP 403, so no page was read. From unverified background knowledge: the ASCO/CAP 2020 update (Allison et al., J Clin Oncol 2020;38:1346-66) keeps >=1% as ER-positive, but reports 1-10% as 'ER Low Positive', with a required comment that they are heterogeneous, gain little from endocrine therapy, and often behave biologically like ER-negative tumours. Research practice is mixed: many studies follow the guideline and group them with ER-positive, while others analyse them separately or with ER-negative tumours. A sensitivity analysis that excludes or regroups 1-10% tumours is advisable. HOW SURE: medium-high for the classification; medium for research practice (no sources retrieved). SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "pf22-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "pf22-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "pf22-team-b",
+      "round": "challenge",
+      "reason": "agreed with pf22-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "pf22-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 41.35050933295861,
+      "cost_usd": 0.121315,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 77.10353858303279,
+      "cost_usd": 0.2216692,
+      "error": null
+    },
+    {
+      "agent": "pf22-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 51.96642358403187,
+      "cost_usd": 0.21284340000000002,
+      "error": null
+    },
+    {
+      "agent": "pf22-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 53.2861335829366,
+      "cost_usd": 0.212253,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 48.80898908304516,
+      "cost_usd": 0.19545439999999997,
+      "error": null
+    },
+    {
+      "agent": "pf22-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 41.839404458063655,
+      "cost_usd": 0.1450016,
+      "error": null
+    },
+    {
+      "agent": "pf22-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 93.20242066599894,
+      "cost_usd": 0.3875956,
+      "error": null
+    },
+    {
+      "agent": "pf22-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 100.34579458390363,
+      "cost_usd": 0.39978499999999995,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

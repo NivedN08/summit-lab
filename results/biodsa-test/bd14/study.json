@@ -1,0 +1,235 @@
+{
+  "study": "bd14",
+  "status": "replicated",
+  "final": {
+    "agent": "bd14-team-a",
+    "team": "team-a",
+    "round": "analysis",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd14/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd14-library": "fable",
+    "bd14-team-a": "fable",
+    "bd14-team-b": "fable",
+    "bd14-team-c": "fable",
+    "bd14-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd14-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd14/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd14-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd14/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd14-team-a",
+        "bd14-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "First step, before any modelling: establish whether the data contain the hypothesis exposure at all. The exposure is community-level (area-level) average income. The library's listing of the file headers reported that the patient table has only PATIENT_ID, AGE_AT_DIAGNOSIS, AGE_AT_PROCUREMENT, RACE, SMOKING, PSA, M_STAGE, VITAL_STATUS, DISEASE_EXTENT and the sample table only PATIENT_ID, SAMPLE_ID, TUMOR_SAMPLE_HISTOLOGY, TISSUE_TYPE, SAMPLE_TYPE, GLEASON_SCORE, ONCOTREE_CODE, CANCER_TYPE, CANCER_TYPE_DETAILED, SAMPLE_CLASS, GENE_PANEL, SOMATIC_STATUS, 8Q_ARM, TMB_NONSYNONYMOUS, and that a case-insensitive search for income|ancestry|zip|census|admixture across all seven files returned nothing. This is the library's report, not a verified fact: re-list every column yourself (including the '#' description lines of both clinical tables and the headers of the mutation, SV, CNA, seg and gene-panel files) and confirm whether any income, zip code, census tract, deprivation index or other socioeconomic field is present. Whatever you find, do not use a stand-in as the 'income' term: self-reported race, smoking, PSA or stage are not valid proxies for a socioeconomic exposure (race bundles ancestry, culture, discrimination and economic position, and in this hypothesis race is the adjustment covariate, so it cannot also be the exposure). A race-vs-8q result answers a different question and may be reported only as descriptive context, never as support for or against the income hypothesis. If the exposure column turns out to be absent, say explicitly which variable is missing and choose the label from the task's own label definitions for that situation.",
+      "from": [
+        "sl-biodsa-test-9ce6c3ac453b",
+        "sl-biodsa-test-03758f286860"
+      ],
+      "reason": "Whether a real income variable exists determines if any association can be estimated at all; the team must verify this itself and must not substitute race or another column for income, which would test a different question.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-66f8746a654b"
+      }
+    },
+    {
+      "text": "The hypothesis requires adjustment for race AND genetic ancestry. Quantitative ancestry needs germline ancestry-informative SNP genotypes (matched normal or unfiltered tumour pileups) projected onto reference panels; it cannot be recovered from a filtered somatic mutation file, a gene-level CNA matrix or a seg file, because germline variants have been removed (the library notes a SOMATIC_STATUS column, suggesting matched-normal-filtered somatic calls, and its header listing found only a self-reported RACE column). Check for yourself whether any ancestry-fraction column exists and inspect RACE for small or Unknown/Other categories. If no ancestry column exists, do not attempt to infer ancestry from somatic calls and do not describe any estimate as 'ancestry-adjusted'; adjustment by self-reported race alone is at best partial and must be described as such.",
+      "from": [
+        "sl-biodsa-test-f425c6611d67"
+      ],
+      "reason": "The adjustment set named in the hypothesis includes ancestry; the team needs to know that it may not be available, that it cannot be reconstructed from these file types, and how to describe a race-only adjustment honestly.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-9aadc92cd8fc"
+      }
+    },
+    {
+      "text": "Outcome definition: arm-level 8q gain is not the same as gene-level amplification. Focal MYC amplification in data_cna.txt does not equal 8q arm gain, and re-deriving arm gain from the panel seg file is threshold-dependent with no consensus definition (e.g. ASCETS default |log2 ratio| 0.2 over at least 70% of the covered arm with a minimum breadth-of-coverage filter; others use 0.1/50% or >90% of the arm). The library reports a curated 8Q_ARM column in data_clinical_sample.txt: use it as the primary outcome, tabulate its levels (e.g. Gain/Neutral/Loss and missing), define the binary as Gain vs not-Gain, and state how Loss and missing are handled. If you recompute from data_cna_hg19.seg (hg19 8q is roughly chr8:45.6Mb-146.4Mb), compare with 8Q_ARM in a confusion table and treat the seg-derived call as a sensitivity analysis only.",
+      "from": [
+        "sl-biodsa-test-aad510e93625"
+      ],
+      "reason": "Fixes the outcome variable: prevents using MYC gene-level calls or an ad hoc seg threshold as '8q gain' when a curated arm-level call is reported to exist.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-fa44600f6222"
+      }
+    },
+    {
+      "text": "Adjustment set, applicable only if a real income exposure is found. State the adjustment set up front: the hypothesis names only race and ancestry, so the minimally adjusted model is the primary analysis. Two opposing concerns about clinical covariates: (1) 8q gain frequency in prostate cancer rises steeply with progression (grade, stage, metastatic and castration-resistant disease) and socioeconomic position affects stage at presentation, so disease extent is plausibly a mediator; adjusting for DISEASE_EXTENT, M_STAGE, GLEASON_SCORE or SAMPLE_TYPE is overadjustment for the total association, while not adjusting leaves an association that may only reflect who presents late. (2) Log2 ratios shrink toward zero as tumour purity falls (a one-copy gain is log2(1.5)=0.585 only at 100% purity), so arm gains are under-called in low-purity samples, and purity differs between primary and metastatic samples and between tissue sites, producing differential outcome misclassification correlated with sample type. Therefore: tabulate 8Q_ARM by DISEASE_EXTENT, M_STAGE, SAMPLE_TYPE, TISSUE_TYPE, Gleason group and GENE_PANEL (the library notes IM5 vs IM6 panels are visible in sample IDs) and compare the 8q seg.mean distribution across those strata; fit the model both without and with these clinical/technical variables; report the minimally adjusted model as primary and the clinically/technically adjusted or stratified model as a labelled sensitivity analysis. Do not interpret raw gain-frequency differences between groups with different sample-type mix, and do not read covariate coefficients from the same model as if each were itself an adjusted effect (Table 2 fallacy).",
+      "from": [
+        "sl-biodsa-test-993c24fbdcd9",
+        "sl-biodsa-test-8bfa3753dd04"
+      ],
+      "reason": "Two library facts pull in opposite directions on whether to adjust for disease stage and sample type; the team needs one reconciled rule (minimal model primary, clinical/technical adjustment as sensitivity) so the choice of covariates does not silently decide the result.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-ade10bcda975"
+      }
+    },
+    {
+      "text": "Pre-specify one primary analysis. With a single binary outcome there are many defensible variants (Gain vs not-Gain or dropping Loss; which race categories are collapsed; which clinical covariates are added; curated vs seg-derived arm call), and running several and reporting whichever crosses p<0.05 is hidden multiple testing that inflates false positives and effect sizes. Before fitting anything, write down one primary model (exposure coding, outcome coding, adjustment set). Count how many variants you actually run and whether the conclusion flips between them. Base the label on the pre-stated primary model, report every variant run as a sensitivity analysis with its estimate and 95% CI, and treat a result that is significant in only one of several variants as unsettled rather than as support.",
+      "from": [
+        "sl-biodsa-test-94eee4e1cdd0"
+      ],
+      "reason": "The other items invite several sensitivity analyses; without a pre-stated primary model the team could pick the label from whichever variant happens to be significant.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-415269f53aed"
+      }
+    },
+    {
+      "text": "Sparse-data caution for any race-adjusted model of a binary arm-gain outcome: institutional clinical-sequencing cohorts are heavily imbalanced by race, so logistic regression with small race categories suffers sparse-data bias or separation (maximum-likelihood odds ratios drift away from the null or become infinite as covariates are added; Wald p-values become unreliable). Print the full outcome x exposure x RACE cross-table; flag any cell under about 5-10, any coefficient with |log OR| > 3 or a huge standard error, and estimates that move away from the null as covariates are added. If found, use Firth penalized logistic regression with profile-likelihood intervals (or exact/stratified Cochran-Mantel-Haenszel), collapse or drop tiny race categories with the decision stated, and report likelihood-ratio rather than Wald tests.",
+      "from": [
+        "sl-biodsa-test-ae693a297899"
+      ],
+      "reason": "Race is a required adjustment covariate and is likely to have small categories; an unpenalised logistic model could then give unstable or spurious estimates and p-values.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-8e8bb5a91a2f"
+      }
+    },
+    {
+      "text": "Applicable only if an area-level income column (zip code or census-tract median household income) is actually present: it is a contextual variable, not individual income. Agreement with household income is poor, coefficients can be biased or change sign (ecological fallacy), patients in the same area share one value (clustered errors), and area income is strongly correlated with race, making the two hard to separate. Check its granularity (how many patients share each value), its distribution by RACE (overlap/positivity) and whether it is continuous or pre-binned. Model income as given (quantiles, or per unit on a log scale; not an arbitrary median split), use cluster-robust or multilevel standard errors if area identifiers exist, check income-by-race overlap before trusting a race-adjusted estimate, and interpret the result as a neighbourhood-level association only.",
+      "from": [
+        "sl-biodsa-test-896de7178f4e"
+      ],
+      "reason": "If the team does find an income variable, how it is coded, clustered and overlapped with race changes the model specification and the trustworthiness of the race-adjusted estimate.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-14c12732df62"
+      }
+    },
+    {
+      "text": "Unit of analysis and scope: this is a single-centre clinical tumour-sequencing cohort, where patients are selected on referral, advanced disease and access to care; these relate to socioeconomic position and race, and to 8q gain through disease stage, so conditioning on being sequenced can induce or mask a socioeconomic-genomic association and under-represents minority and low-income patients. Describe the cohort mix (RACE counts, DISEASE_EXTENT, SAMPLE_TYPE) and check whether there is one sample per patient (the library reports both clinical tables have about 2068 data rows; confirm). Analyse one sample per patient, present any association as holding within this selected cohort only, and consider stratifying by disease extent to see whether an association is consistent within strata.",
+      "from": [
+        "sl-biodsa-test-477414130b2a"
+      ],
+      "reason": "Sets the unit of analysis (one sample per patient) and limits how far any association or null result can be generalised beyond this selected cohort.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-3720884cd255"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 0,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed the hypothesis can only be tested with a real community-level income column, and that no other column (race, smoking, PSA, stage) may stand in for it. I regard this as sound: race is the adjustment covariate in the hypothesis, so it cannot also serve as the exposure.",
+      "Both teams assumed the label rule 'Not verifiable' applies when the exposure is absent even though the outcome (8Q_ARM) and one adjustment variable (RACE) are present. The task's own example (a claim about a variable the data do not hold) matches this situation, so the assumption follows the task text.",
+      "Both teams assumed genetic ancestry cannot be recovered from the somatic-only files. This was not tested, but it cannot change the label because the income exposure is missing regardless."
+    ],
+    "unused_evidence": [
+      "Free-text and metadata columns of data_mutations.txt (Center, COMMENTS, Comments, comments, Sequence_Source, BAM_File) were not tabulated by team B, which searched column names and description lines only. I tabulated them: Center is 'MSKCC' in every row and the others are empty in every row, so they hold no patient-level socioeconomic or geographic attribute.",
+      "Population allele-frequency columns (AFR_MAF, EUR_MAF, ExAC_AF_*), n_ref_count/n_alt_count and the 7 'Unmatched' samples were not used. They annotate somatic variants and could at most bear on ancestry, not on income, so ignoring them does not affect the label.",
+      "data_cna.txt, data_sv.txt and data_gene_panel_matrix.txt hold only gene-level copy number, rearrangements and panel assignment (IMPACT341/410/468). None carries a patient attribute beyond the sample ID."
+    ],
+    "unresolved_weak_points": [
+      "Team A's weakest point (an income measure stored under an unrelated name) is resolved: all 23 clinical columns were tabulated and each has a clear non-socioeconomic meaning. I re-listed both clinical tables independently (patient: 9 columns; sample: 14 columns; 2069 rows each, one sample per patient) and found the same.",
+      "Team A's content-level keyword search (13 terms, all seven files, 0 hits) reproduces exactly when I rerun it.",
+      "Team B's weakest point (Not verifiable versus False) is a reading of the rubric, not something a data check can settle. It is reported rather than resolved, but the task defines False as requiring that the relevant variables be identifiable in the data, and the exposure is not."
+    ],
+    "second_readings": [
+      "'Community-level average income' could be read as any area-level socioeconomic measure (zip-code or census-tract median income, deprivation index). No such field, and no geographic identifier from which one could be derived, exists in any file, so every reading of the exposure leads to the same gap.",
+      "'After adjusting for race and ancestry' could be read as requiring only self-reported race. Even under that looser reading the exposure is still absent, so the label does not move.",
+      "'8q gains' could be read as the curated 8Q_ARM call or a segment-derived arm call. Team B showed the two agree (all 2069 samples covered); the outcome definition is not what limits the analysis."
+    ],
+    "verdict": "I trust the agreed answer (Not verifiable) highly. It rests on the absence of the exposure rather than on a model, and I confirmed that absence independently: both clinical tables' columns and description lines, the headers of all five other files, the free-text mutation columns, and a rerun of the content-level keyword search show no income, socioeconomic or geographic variable. No further data check could change the label, so I ask no questions.",
+    "questions": []
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd14-team-b",
+      "round": "analysis",
+      "reason": "agreed with bd14-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd14-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 106.47475783294067,
+      "cost_usd": 0.2208783,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 103.75768695794977,
+      "cost_usd": 0.16578310000000002,
+      "error": null
+    },
+    {
+      "agent": "bd14-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 80.6206879169913,
+      "cost_usd": 0.13377930000000002,
+      "error": null
+    },
+    {
+      "agent": "bd14-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 62.70154704200104,
+      "cost_usd": 0.1559926,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 75.18636804202106,
+      "cost_usd": 0.2145673,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

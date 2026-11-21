@@ -1,0 +1,471 @@
+{
+  "study": "sc13",
+  "status": "replicated",
+  "final": {
+    "agent": "sc13-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc13/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc13-library": "opus",
+    "sc13-team-a": "opus",
+    "sc13-team-b": "opus",
+    "sc13-team-c": "opus",
+    "sc13-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "sc13-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc13/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "pericyte_caf_relative_pca_knn_adjacency": 3.0
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc13-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc13/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "pericyte_caf_relative_pca_knn_adjacency": 3.0
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc13-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc13/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "pericyte_caf_relative_pca_knn_adjacency": 3.0
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc13-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc13/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "pericyte_caf_relative_pca_knn_adjacency": 3.0
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc13-team-a",
+        "sc13-team-b"
+      ],
+      "fields": {
+        "pericyte_caf_relative_pca_knn_adjacency": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc13-team-a",
+        "sc13-team-b"
+      ],
+      "fields": {
+        "pericyte_caf_relative_pca_knn_adjacency": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The library reports that .X in the provided file (an h5ad, about 6420 cells x 19918 genes, one sample) is ALREADY processed: dense float32, mostly negative values, maximum exactly 10 (i.e. log-normalised, z-scored and clipped at 10). It reports that var carries mean/std/highly_variable (2000 HVGs) and varm['PCs'], that obsm is empty (no X_pca), and that integer counts sit in layers['raw_counts']. Running normalize_total/log1p on .X would double-transform it (log of negatives gives NaN) and silently wreck the PCA. Verify this yourself before preprocessing: print adata.X.min()/max() and the fraction of integer values, and confirm layers['raw_counts'] is non-negative integer with a large maximum; do not trust the uns['log1p'] flag alone. Then either (a) restart from layers['raw_counts'] -> normalize_total(1e4) -> log1p -> HVG -> scale(max_value=10) -> PCA, or (b) treat .X as the finished scaled matrix and go straight to PCA on the HVGs. Do not mix the two, and say which you used. Ideally run both and compare the final ratio; the library gives no rule for which to prefer if they disagree, so if they do, report both values and state which you chose as primary and why.",
+      "from": [
+        "sl-sc-test-f07fd168ef7b"
+      ],
+      "reason": "Applying standard preprocessing to an already scaled matrix is the most likely way to get a wrong PCA and therefore a wrong kNN graph; the team must know the state of .X before choosing a pipeline.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-17248841efa0"
+      }
+    },
+    {
+      "text": "Which genes enter the PCA depends on the scanpy version. The library reports that older releases (up to about 1.11) make sc.pp.pca silently restrict to var['highly_variable'] when that column exists, while newer releases changed the relevant argument (use_highly_variable removed, mask argument renamed), so the same call may use all ~19918 genes instead of the 2000 HVGs and give a different kNN graph. HVG flavour also matters: flavor='seurat_v3' expects raw counts (pass layer='raw_counts'), flavor='seurat' expects log-normalised data, and HVG selection cannot be run on z-scored data. Check: print scanpy.__version__ and, after PCA, count how many genes have non-zero loadings in varm['PCs']; it should equal the HVG count you intended. Do not rely on implicit behaviour: pass the gene mask explicitly (or subset adata[:, hvg]) and state n_top_genes and n_comps (the standard defaults are 2000 and 50).",
+      "from": [
+        "sl-sc-test-3f0faed8ee92"
+      ],
+      "reason": "A silent switch between HVG-only and all-gene PCA changes the embedding and so the neighbour counts; the check is cheap and makes the gene set explicit.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-7a71ecb9fe28"
+      }
+    },
+    {
+      "text": "Build the kNN graph on ALL cells in PCA space, with the PCA fitted on all cells. Subsetting to pericytes (or pericytes plus CAFs) before PCA or kNN, building the graph on UMAP coordinates, or building it on the full gene matrix instead of the PCA embedding changes the neighbours entirely. If the file has no obsm['X_pca'] and you have not computed one, sc.pp.neighbors will silently compute its own PCA with defaults; n_pcs=None uses all stored PCs. Check: assert the embedding given to the neighbour search has shape (n_cells_total, n_pcs) and is the obsm['X_pca'] you computed, and that neighbour indices range over all cells. Use use_rep='X_pca' and state n_pcs.",
+      "from": [
+        "sl-sc-test-d7306b1db75f"
+      ],
+      "reason": "The task says kNN in PCA space among pericytes and all other types; building the graph on a subset or on a different representation gives a different number.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ebe88e5a4490"
+      }
+    },
+    {
+      "text": "scanpy's obsp['connectivities'] is NOT the kNN graph: it is the UMAP fuzzy-union graph, symmetrised and weighted, with many more than k neighbours per cell. Counting its non-zeros or summing its weights as 'kNN edges' gives different cell-type fractions than the true directed kNN in obsp['distances'] (exactly k-1 non-zeros per row). Direction matters too: edges going OUT of pericytes (their own nearest neighbours) differ from edges coming IN from other cells, because abundant types pull in many incoming edges. Use the directed, unweighted neighbour lists of the pericyte cells (from obsp['distances'] or sklearn NearestNeighbors indices) as the primary definition of 'kNN edges of pericyte-labeled cells'; check that each pericyte row has exactly k-1 neighbours. Treat the symmetrised/weighted variant only as a sensitivity check and flag it if the ratio changes materially.",
+      "from": [
+        "sl-sc-test-3e59b728cbb1"
+      ],
+      "reason": "The choice between connectivities and the true directed kNN list changes the edge counts that go into both numerator and denominator of the ratio.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-4beb73676dbe"
+      }
+    },
+    {
+      "text": "Watch for an off-by-one in k from self-neighbours. scanpy's n_neighbors=15 counts the cell itself, so each cell gets 14 real neighbours. sklearn NearestNeighbors.kneighbors(X) with the training data passed as X returns each cell as its own first neighbour, whereas kneighbors() with no argument excludes self. Check: assert no neighbour index equals the query index and print the number of real neighbours per pericyte cell. Drop self-edges and state the k actually used. Note: the requested ratio (CAF fraction / max other fraction) is unchanged by whether pericyte-pericyte or self edges remain in the denominator of the fractions, because both fractions share that denominator; the ratio depends only on the cross-type edge COUNTS, and those do change with k.",
+      "from": [
+        "sl-sc-test-992f9df42dda"
+      ],
+      "reason": "Mixing scanpy and sklearn conventions gives k versus k-1 real neighbours, which shifts the cross-type counts; knowing the ratio is invariant to the fraction denominator saves the team from debating that definition.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-0579f78b647c"
+      }
+    },
+    {
+      "text": "Specify the comparison set exactly. The library reports 11 labels in the cell-type annotation: B cells, CAFs, Endothelial cells, Epithelial/Cancer cells, M2-like Macrophages, Macrophages, Monocyte-derived cells, Neutrophils, Pericytes, Proliferating myeloid cells, T/NK cells (confirm with value_counts on the label column). The denominator of the ratio is the maximum over non-pericyte types OTHER than CAFs (9 labels if the list is right); including CAFs in the maximum caps the ratio at 1. Use exact label equality, not substring matching ('Macrophages' also matches 'M2-like Macrophages'; 'CAF' vs 'CAFs'), and do not merge myeloid labels. Raw adjacency fractions are not abundance-corrected, but the task asks for the raw-fraction ratio, so do not substitute a permutation-based neighbourhood-enrichment score; an abundance-normalised view may be mentioned as context only.",
+      "from": [
+        "sl-sc-test-1a2ce31d27ce"
+      ],
+      "reason": "Getting the label set or the denominator wrong (CAFs in the max, substring matches, merged labels, enrichment z-scores) changes the reported ratio directly.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-88ec26700dcc"
+      }
+    },
+    {
+      "text": "The ratio is a quotient of two small edge counts and may be unstable or undefined. Pericytes are usually a small, tight cluster, so most of their kNN edges stay within pericytes and only a few go to other types; the denominator (largest non-CAF, non-pericyte type) may rest on a handful of edges or be zero, so the ratio can swing with small changes in k, number of PCs or HVGs. Check: print the pericyte cell count and the raw edge COUNTS (not only fractions) to every other label, and recompute the ratio over a small grid (k = 10, 15, 20, 30; n_pcs = 30, 50; scaled vs unscaled). Report as the answer the value from the canonical scanpy defaults (2000 HVGs, scale max_value=10, 50 PCs, n_neighbors=15, euclidean) and state the range seen across the grid. If the denominator is zero, say so explicitly rather than returning inf silently.",
+      "from": [
+        "sl-sc-test-11867020024e"
+      ],
+      "reason": "The answer is a single float that may be sensitive to parameters the task leaves open; the team needs a stated default to report and a way to know how fragile that number is.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-f458ffc265f8"
+      }
+    },
+    {
+      "text": "PCA and neighbour search can be non-deterministic. sklearn randomized PCA is not exactly reproducible across platforms, and arpack has reported run-to-run or thread-count differences. The library reports that scanpy uses exact brute-force kNN only for small data (euclidean metric with fewer than 8192 cells, or fewer than 4096 otherwise) and approximate PyNNDescent beyond that or for other metrics such as cosine; at about 6420 cells euclidean would be exact and cosine approximate. Small neighbour changes matter when only a few cross-type edges exist. Check: run the pipeline twice and compare the pericyte edge-count table, and cross-check scanpy's neighbours against exact sklearn NearestNeighbors(algorithm='brute') on the same X_pca. Fix svd_solver='arpack' and random_state=0, use exact kNN, and keep the euclidean metric as the default.",
+      "from": [
+        "sl-sc-test-d464ad9894dc"
+      ],
+      "reason": "With few cross-type edges, an approximate or unseeded neighbour search can move the ratio between runs; fixing solver, seed and exact search makes the reported number reproducible.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-e076d55f978a"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams took the 2000 genes flagged highly_variable in the file as the product of 'standard preprocessing' and built the PCA on them. Neither tested how that flag was produced. Team A's support for it (re-scaling raw counts on those genes reproduces .X) only tests the normalise/log/scale steps, which are per-gene and would reproduce .X for any gene set; it says nothing about gene selection. Both teams also saw that a freshly selected HVG set gives zero non-CAF edges at the same k, so the agreed value depends entirely on this untested choice.",
+      "Both teams used scanpy's n_neighbors=15, which is 14 real neighbours per cell (49 x 14 = 686 edges). Neither reported the edge table for 15 real neighbours, which is what a hand-built kNN with k=15 and self excluded would give. Their grids (10, 15, 20, 30) skip the adjacent value.",
+      "Both teams read 'kNN edges of pericyte-labeled cells' as the out-going neighbour lists of pericytes and read 'all other non-pericyte cell types' as excluding CAFs from the maximum.",
+      "Both teams treated every annotated pericyte and every neighbour as a correctly labelled single cell; neither looked at which individual cells carry the 8 cross-type edges."
+    ],
+    "unused_evidence": [
+      "var['means'], var['variances'], var['variances_norm'], var['highly_variable_rank']: the columns written by the variance-stabilising HVG flavour. Neither team compared them with the data. On the first 8 genes I checked, the stored means and variances equal the per-gene mean and variance (ddof=1) of the log-normalised matrix over these 6420 cells to all printed digits, and do not equal those of the raw counts or of the depth-normalised counts. So the stored HVG flags appear to come from the variance-stabilising flavour run on log-normalised data, not on raw counts. That is not what either a default HVG call or a raw-count call of that flavour would select, and it bears directly on which gene set is 'standard'.",
+      "var['mean'] and var['std']: the values are about 1e-9 and 1.0 for the genes I looked at, including very sparse genes whose z-scores must have been clipped. Neither team used these columns. They may indicate the scaling step was recorded on already-standardised data, i.e. the file's history is not a single pass of the usual pipeline.",
+      "obs['n_genes'] (min 501, max 7755): never used. It could show whether the few pericytes that own the cross-type edges, or the cells they point to, are unusually gene-rich (possible doublets), as the library's hubness/doublet pitfall suggested.",
+      "obs['sample'] has a single category, so there is no batch structure to use; ignoring it is harmless.",
+      "varm['PCs'] is non-zero on exactly the 2000 flagged genes. Team B used it; Team A recomputed. Both agree, so this piece is covered."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weak point (8 cross-type edges, denominator of 2 edges, ratio between 2 and infinity across settings) and both only reported it. Neither examined which pericyte cells own those edges, how many distinct cells, at what neighbour rank, or how close the next candidate neighbour is.",
+      "Team B chose the stored matrix and PCs over its own planned from-raw pipeline because the stored route 'gives a defined value'. That is a choice made on the outcome, not on evidence about which preprocessing is standard. It was not resolved by any check on the data.",
+      "Team A could not run the variance-stabilising HVG flavour (missing package) and fell back on the stored flags without establishing what input those flags were computed from.",
+      "The library's hubness/doublet check (in-degree of the cells receiving pericyte edges, gene counts of the pericytes involved) does not appear in either team's checks_run. Team B received no library pitfalls at all.",
+      "Team B's check that the stored loadings match a fresh PCA is reported only as a PC1 correlation; Team B's 'symmetrized graph' check is listed but its result is not given."
+    ],
+    "second_readings": [
+      "'Standard preprocessing': (a) accept the file's stored scaled matrix and HVG flags, or (b) run normalise, log, HVG selection, scale, PCA from the raw counts with default tool settings. The teams' own numbers show these give different edge tables (a defined ratio versus a zero denominator at the default k).",
+      "'kNN graph' with unspecified k: scanpy's default counts the cell itself (14 real neighbours); a directly built kNN with k=15 gives 15 real neighbours. The ratio moves with k.",
+      "'kNN edges' of pericyte cells: out-going neighbour lists only, or all edges of the graph that touch a pericyte (also in-coming edges from other cells' lists).",
+      "'Maximum adjacency fraction among all other non-pericyte cell types': 'other' as other than CAF (the teams' reading, which I find the natural one) or other than pericyte (which would include CAFs and cap the ratio at 1).",
+      "The fraction's denominator (all pericyte edges or only non-pericyte edges) does not matter: it cancels in the ratio."
+    ],
+    "verdict": "Low to moderate trust. The two teams agree only because both fell back on the file's stored HVG flags; both saw that a freshly selected gene set gives a zero denominator, the value rests on 8 edges (6 versus 2) and moves between 2 and about 6 with k, and the stored summary columns suggest those flags were made by a variance-stabilising selection run on log-normalised data rather than by a default call, which neither team checked.",
+    "questions": [
+      {
+        "to": "sc13-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you kept the stored HVG flags because re-scaling raw counts on those genes reproduces .X, but scaling is per gene and would reproduce .X for any gene set, so that check does not test gene selection. Compare var['means'] and var['variances'] for all genes with the per-gene mean and variance (ddof=1) over the 6420 cells of (i) raw counts, (ii) depth-normalised counts and (iii) log-normalised values, and check whether highly_variable equals the top 2000 by highly_variable_rank. Which input and which flavour produced the stored flags, and is that what a standard preprocessing run on this file would select? Does the result change which gene set you treat as primary, and so your method?",
+        "from": [
+          "sl-sc-test-9603b693c8f8",
+          "sl-sc-test-fadd5b6e21f7"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-53297b92d3f5"
+      },
+      {
+        "to": "sc13-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your grid used k=10, 15, 20, 30 in scanpy's convention, where 15 means 14 real neighbours. A kNN graph built directly with k=15 and self excluded has 15 real neighbours, and your grid skips it. Print the pericyte edge-count table to every label at 14, 15 and 16 real neighbours on your primary embedding. Is the ratio the same across these? If not, what in the task text supports the convention you report? Does it change your method?",
+        "from": [
+          "sl-sc-test-7a2e57d379e0",
+          "sl-sc-test-0579f78b647c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-5b2df24e9149"
+      },
+      {
+        "to": "sc13-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you named the 2-edge denominator as your weakest point but only reported it. List the pericyte cells that own the 8 cross-type edges: how many distinct cells, the neighbour rank of each cross-type edge, and the distance gap between each such neighbour and the next candidate that would replace it. Add obs['n_genes'] of those pericytes against the other pericytes, and the in-degree of the target cells. Do the two non-CAF edges come from one cell, and do they sit at the edge of the neighbour list where float precision or the PCA solver could flip them? Does that change what you report, or your method?",
+        "from": [
+          "sl-sc-test-fadd5b6e21f7"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-ca8c0c3e858e"
+      },
+      {
+        "to": "sc13-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: 'kNN edges of pericyte-labeled cells' can also mean every edge of the graph that touches a pericyte, including edges from other cells' neighbour lists into pericytes. Your connectivities check was weighted; count instead, unweighted, the in-coming edges by source label (non-pericyte cells that list a pericyte among their neighbours) and the union of in-coming and out-going edges. Print both tables. Does the ratio under that reading differ from the out-going one, and does that change your method?",
+        "from": [
+          "sl-sc-test-4beb73676dbe"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-226b29bc0a45"
+      },
+      {
+        "to": "sc13-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your plan was a from-raw pipeline, and you moved to the stored matrix and PCs because that route 'gives a defined value'. That is a reason about the outcome, not about the data. Check how the stored HVG flags were made: compare var['means'] and var['variances'] for all genes with the per-gene mean and variance (ddof=1) over the 6420 cells of raw counts, of depth-normalised counts and of log-normalised values, and check that highly_variable is the top 2000 by highly_variable_rank. Then swap only the gene set (stored flags versus your fresh selection) with scaling, PCs and k held fixed, and print both pericyte edge tables. Is the gene set the whole cause of the difference, and which gene set does the evidence in the file support as the standard one? Does it change your method?",
+        "from": [
+          "sl-sc-test-338282e1ad38",
+          "sl-sc-test-c080c2bfafc5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-73dd858702a6"
+      },
+      {
+        "to": "sc13-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: scanpy's n_neighbors=15 counts the cell itself, so your 686 edges are 49 pericytes x 14 real neighbours. Your k grid (10, 15, 20, 30, 50) skips the adjacent value. Assert that no pericyte row contains itself, then print the pericyte edge-count table to every label at 14, 15 and 16 real neighbours on the same PCs. Is the ratio stable across these? If not, what in the task text supports the convention you report? Does it change your method?",
+        "from": [
+          "sl-sc-test-043ca67ada6b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-bdc8e4131cb0"
+      },
+      {
+        "to": "sc13-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you wrote that no method change can fix small counts, but you did not look at the cells behind them. List the pericyte cells that own the 8 cross-type edges: how many distinct cells, the neighbour rank of each cross-type edge, and the distance gap to the next candidate neighbour. Add obs['n_genes'] of those pericytes against the other pericytes, and the in-degree of the cells they point to. Do the two non-CAF edges come from one cell, and are they marginal enough to flip with float precision or solver choice? Does that change what you report, or your method?",
+        "from": [
+          "sl-sc-test-074f30c38b8f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-b0615d28f701"
+      },
+      {
+        "to": "sc13-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: two of your checks are listed without results. (1) You compared stored and recomputed PCs by the PC1 correlation only: compare the pericytes' full neighbour lists from the embedding built with the stored loadings (state whether you centred the clipped matrix first) with those from a fresh PCA, over all 50 components. (2) You ran a symmetrized graph: print the unweighted edge table by label for edges coming into pericytes from other cells' neighbour lists, and for the union of in-coming and out-going edges. Do either of these give a different ratio from your reported one, and does that change your method?",
+        "from": [
+          "sl-sc-test-338282e1ad38"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-fdc7295a61ea"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In scanpy's highly_variable_genes, which columns does each flavour ('seurat', 'cell_ranger', 'seurat_v3') write to var, what input does 'seurat_v3' expect, and what happens (error, warning, or silent run) when 'seurat_v3' is given log-normalised data instead of raw counts? Is running it on log-normalised data a known common practice, and how different is the resulting gene set reported to be?",
+          "why": "The teams can then identify from stored var columns which HVG call produced a file's flags and judge whether that gene set counts as standard preprocessing or as an off-label variant, which decides which gene set the PCA should use.",
+          "passed": false,
+          "reasons": [
+            "a number within 1 percent of another team's value for \"pericyte_caf_relative_pca_knn_adjacency\""
+          ]
+        },
+        {
+          "question": "When a kNN graph with k=15 is built on a PCA embedding, how many real (non-self) neighbours per cell do the common tools give by default: scanpy's pp.neighbors(n_neighbors=15), scikit-learn's NearestNeighbors.kneighbors() with and without the training data passed, scikit-learn's kneighbors_graph (include_self default), and Seurat's FindNeighbors(k.param)? Which convention is usual when analysts compute cell-type neighbour composition from such a graph?",
+          "why": "The quantity is a ratio of very small edge counts, so 14 versus 15 real neighbours can change it; the teams need to know which convention an unspecified 'kNN graph' most plausibly implies.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "What does scanpy's pp.scale store in var['mean'] and var['std']: the per-gene statistics before scaling, and are they computed before or after clipping with max_value? What would stored values of mean about 0 and std about 1 indicate about how the function was called?",
+          "why": "It tells the teams whether stored scaling statistics show that scaling was applied once to log-normalised data or re-applied to already standardised data, which affects whether the stored matrix can be taken as the output of a single standard pipeline.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When a kNN graph with k=15 is built on a PCA embedding, how many real (non-self) neighbours per cell do the common tools give by default: scanpy's pp.neighbors(n_neighbors=15), scikit-learn's NearestNeighbors.kneighbors() with and without the training data passed, scikit-learn's kneighbors_graph (include_self default), and Seurat's FindNeighbors(k.param)? Which convention is usual when analysts compute cell-type neighbour composition from such a graph?",
+          "answer": "scanpy pp.neighbors(n_neighbors=15): the count includes the cell itself, so obsp['distances'] holds 14 real neighbours per row. This holds with the exact/sklearn backend, which is the default for 6420 cells with the euclidean metric. A reported bug (#3809) means the pynndescent backend gives 15 nonzeros. obsp['connectivities'] is a symmetrised UMAP graph and is not a 15-NN list. sklearn NearestNeighbors(n_neighbors=15).kneighbors() with no X: the docs say the query point is not considered its own neighbour, giving 15 real neighbours. kneighbors(X_train): each point comes back as its own first neighbour, giving 14 real + self. kneighbors_graph: include_self defaults to False, giving 15 real neighbours. Seurat FindNeighbors(k.param): the cell itself is its 1st NN, so k.param-1 are real, and the NN graph rowSums equal k.param (self on the diagonal); for k=15 that is 14 real. On which convention is usual: no source settles it. In a scanpy-style 'standard preprocessing' workflow, an unspecified 'kNN graph with k=15' most plausibly means sc.pp.neighbors(n_neighbors=15) and its directed obsp['distances'], i.e. 14 real neighbours (the Seurat convention agrees). Report 15 real neighbours (sklearn, self excluded) as a sensitivity check.",
+          "sources": [
+            "https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html",
+            "https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.kneighbors_graph.html",
+            "https://scanpy.scverse.org/en/stable/api/generated/scanpy.pp.neighbors.html",
+            "https://github.com/scverse/scanpy/issues/3809",
+            "https://github.com/scverse/scanpy/issues/2587",
+            "https://github.com/lmcinnes/umap/issues/53",
+            "https://github.com/satijalab/seurat/issues/4697",
+            "https://github.com/satijalab/seurat/issues/4494"
+          ],
+          "confidence": "high for the per-tool counts; medium for the Seurat count (from issue threads, not the source code, which would not load in full); low-medium for which convention is usual (a judgement, not documented)",
+          "deliveries": {
+            "sc13-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-4ad9aec67ceb"
+            },
+            "sc13-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-1b023f5dae26"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a kNN graph with k=15 is built on a PCA embedding, how many real (non-self) neighbours per cell do the common tools give by default: scanpy's pp.neighbors(n_neighbors=15), scikit-learn's NearestNeighbors.kneighbors() with and without the training data passed, scikit-learn's kneighbors_graph (include_self default), and Seurat's FindNeighbors(k.param)? Which convention is usual when analysts compute cell-type neighbour composition from such a graph? ANSWER: scanpy pp.neighbors(n_neighbors=15): the count includes the cell itself, so obsp['distances'] holds 14 real neighbours per row. This holds with the exact/sklearn backend, which is the default for 6420 cells with the euclidean metric. A reported bug (#3809) means the pynndescent backend gives 15 nonzeros. obsp['connectivities'] is a symmetrised UMAP graph and is not a 15-NN list. sklearn NearestNeighbors(n_neighbors=15).kneighbors() with no X: the docs say the query point is not considered its own neighbour, giving 15 real neighbours. kneighbors(X_train): each point comes back as its own first neighbour, giving 14 real + self. kneighbors_graph: include_self defaults to False, giving 15 real neighbours. Seurat FindNeighbors(k.param): the cell itself is its 1st NN, so k.param-1 are real, and the NN graph rowSums equal k.param (self on the diagonal); for k=15 that is 14 real. On which convention is usual: no source settles it. In a scanpy-style 'standard preprocessing' workflow, an unspecified 'kNN graph with k=15' most plausibly means sc.pp.neighbors(n_neighbors=15) and its directed obsp['distances'], i.e. 14 real neighbours (the Seurat convention agrees). Report 15 real neighbours (sklearn, self excluded) as a sensitivity check. HOW SURE: high for the per-tool counts; medium for the Seurat count (from issue threads, not the source code, which would not load in full); low-medium for which convention is usual (a judgement, not documented). SOURCES: https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html, https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.kneighbors_graph.html, https://scanpy.scverse.org/en/stable/api/generated/scanpy.pp.neighbors.html, https://github.com/scverse/scanpy/issues/3809, https://github.com/scverse/scanpy/issues/2587, https://github.com/lmcinnes/umap/issues/53, https://github.com/satijalab/seurat/issues/4697, https://github.com/satijalab/seurat/issues/4494."
+        },
+        {
+          "question": "What does scanpy's pp.scale store in var['mean'] and var['std']: the per-gene statistics before scaling, and are they computed before or after clipping with max_value? What would stored values of mean about 0 and std about 1 indicate about how the function was called?",
+          "answer": "The docs say var['mean'], var['std'] and var['var'] are the per-gene means, standard deviations and variances before scaling. In the source, _center_and_std computes mean_var(x, axis=0, correction=1) on the input matrix (ddof=1, and std=0 is replaced by 1) before centring and dividing. max_value clipping is applied after scaling, so the stored stats are from the unscaled, unclipped input. After one pp.scale on log-normalised data you would expect positive means (roughly 0-3 for log1p CP10k) and varied stds. Stored means of about 0 and stds of about 1 therefore mean the matrix given to the call that wrote them was already standardised: pp.scale was re-run on z-scored data, overwriting the original stats. A rerun on a matrix clipped at 10 would leave std slightly below 1 for genes that were clipped. Such stats cannot recover the original log-normalised means/stds, but rerunning scale on z-scored data is nearly idempotent, so .X still matches a single standard scale apart from small clipping effects.",
+          "sources": [
+            "https://scanpy.readthedocs.io/en/stable/generated/scanpy.pp.scale.html",
+            "https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/preprocessing/_scale.py"
+          ],
+          "confidence": "high for what is stored and the order relative to clipping; medium for the interpretation of mean~0/std~1 (an inference from the code)",
+          "deliveries": {
+            "sc13-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-75ee37f5d73c"
+            },
+            "sc13-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-c7fc3f7f2e24"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What does scanpy's pp.scale store in var['mean'] and var['std']: the per-gene statistics before scaling, and are they computed before or after clipping with max_value? What would stored values of mean about 0 and std about 1 indicate about how the function was called? ANSWER: The docs say var['mean'], var['std'] and var['var'] are the per-gene means, standard deviations and variances before scaling. In the source, _center_and_std computes mean_var(x, axis=0, correction=1) on the input matrix (ddof=1, and std=0 is replaced by 1) before centring and dividing. max_value clipping is applied after scaling, so the stored stats are from the unscaled, unclipped input. After one pp.scale on log-normalised data you would expect positive means (roughly 0-3 for log1p CP10k) and varied stds. Stored means of about 0 and stds of about 1 therefore mean the matrix given to the call that wrote them was already standardised: pp.scale was re-run on z-scored data, overwriting the original stats. A rerun on a matrix clipped at 10 would leave std slightly below 1 for genes that were clipped. Such stats cannot recover the original log-normalised means/stds, but rerunning scale on z-scored data is nearly idempotent, so .X still matches a single standard scale apart from small clipping effects. HOW SURE: high for what is stored and the order relative to clipping; medium for the interpretation of mean~0/std~1 (an inference from the code). SOURCES: https://scanpy.readthedocs.io/en/stable/generated/scanpy.pp.scale.html, https://raw.githubusercontent.com/scverse/scanpy/main/src/scanpy/preprocessing/_scale.py."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc13-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc13-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc13-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc13-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc13-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 34.92118695797399,
+      "cost_usd": 0.1408824,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 108.17621091601904,
+      "cost_usd": 0.1462584,
+      "error": null
+    },
+    {
+      "agent": "sc13-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 101.63795200001914,
+      "cost_usd": 0.26714360000000004,
+      "error": null
+    },
+    {
+      "agent": "sc13-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 108.99968108395115,
+      "cost_usd": 0.2259266,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 195.15682583395392,
+      "cost_usd": 0.3578034,
+      "error": null
+    },
+    {
+      "agent": "sc13-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 131.32276391598862,
+      "cost_usd": 0.6247735999999999,
+      "error": null
+    },
+    {
+      "agent": "sc13-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 114.29392645799089,
+      "cost_usd": 0.45209639999999995,
+      "error": null
+    },
+    {
+      "agent": "sc13-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 131.01611199998297,
+      "cost_usd": 0.39553760000000004,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,465 @@
+{
+  "study": "bd38",
+  "status": "refereed",
+  "final": {
+    "agent": "bd38-team-a",
+    "team": "team-a",
+    "round": "revise",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd38/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "checks": [
+      "recheck_on_agreed_nv"
+    ],
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m02/prompts",
+    "reuse_first_round": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1"
+  },
+  "models": {
+    "director": "opus",
+    "bd38-library": "opus",
+    "bd38-team-a": "opus",
+    "bd38-team-b": "opus",
+    "bd38-team-c": "opus",
+    "bd38-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd38-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd38/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd38-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd38/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd38-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd38/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd38-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m02-r1/bd38/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd38-team-a",
+        "bd38-team-b"
+      ],
+      "fields": {
+        "label": false
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "bd38-team-a",
+        "bd38-team-b"
+      ],
+      "fields": {
+        "label": false
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Whether a pathway is 'significantly mutated' is a statistical question. The percent of samples with any pathway mutation does not answer it, because large gene sets made of long genes get hit by chance. Count the samples with at least one nonsilent mutation in the pathway genes and compare that count with a null model that accounts for each sample's mutation count and each gene's coding length (for example, permute each sample's mutations across genes weighted by CDS length, or run per-sample binomial tests and combine them PathScan-style). Make the call from the null-model p-value. A high raw frequency with p>0.05 does not contradict 'not significantly mutated'.",
+      "from": [
+        "sl-dev-panel-noise-lab1-bce0f6415640"
+      ],
+      "reason": "This sets the evidence standard for the label. Without it, a team could read a high raw mutation frequency as significance.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-9a2713b1001b"
+      }
+    },
+    {
+      "text": "The result depends heavily on which genes define ERBB-PI3K. Write the gene list out. Use a narrow curated set as the primary test: EGFR, ERBB2, ERBB3, ERBB4, PIK3CA, PIK3CB, PIK3R1, PIK3R2, PTEN, AKT1, AKT2, AKT3, MTOR, TSC1, TSC2, RICTOR, RPTOR, STK11, INPP4B and PPP2R1A, which is the TCGA 2018 PI3K set plus the ERBB receptors. Then rerun with a broader KEGG ErbB set as a sensitivity check. If the two disagree, report the curated result as primary and note the difference.",
+      "from": [
+        "sl-dev-panel-noise-lab1-1900e8b8e95b"
+      ],
+      "reason": "How the gene set is defined can flip the conclusion, so it needs to be fixed in advance and checked for sensitivity.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-b277197453b5"
+      }
+    },
+    {
+      "text": "Count only nonsilent coding variants as pathway hits: Missense, Nonsense, Frame_Shift, In_Frame, Splice_Site, Translation_Start_Site and Nonstop (check the Variant_Classification column in data_mutations.txt). Leave out silent, intronic, UTR, flank and other non-coding variants. Silent variants can be used to estimate the background rate.",
+      "from": [
+        "sl-dev-panel-noise-lab1-615241360cd0"
+      ],
+      "reason": "Including non-coding or silent variants inflates the number of pathway hits.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-954352afed91"
+      }
+    },
+    {
+      "text": "data_mutations.txt has a FILTER column (with values such as 'common_variant') and population-frequency columns (ExAC_AF, GMAF). Leftover germline polymorphisms, which are common in Asian-ancestry cohorts that reference panels cover poorly, can look like recurrent pathway mutations. Exclude calls flagged common_variant and calls with population AF above 1% (including ExAC_AF_EAS). Be wary of variants that recur at the same position in many samples but are not known hotspots. Rerun the test after filtering.",
+      "from": [
+        "sl-dev-panel-noise-lab1-f2cfb42a8029"
+      ],
+      "reason": "Germline artefacts can make the pathway look falsely significant.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-0a79a620c43b"
+      }
+    },
+    {
+      "text": "Sample IDs do not match between tables: the clinical table uses IDs like 'NPC15F' while Tumor_Sample_Barcode in the MAF uses IDs like 'NPC015D'. Compare the two ID sets and normalise the formats. Use all sequenced samples in data_clinical_sample.txt as the denominator, including any with zero mutations, not only the samples that appear in the MAF.",
+      "from": [
+        "sl-dev-panel-noise-lab1-49c78fd717e2"
+      ],
+      "reason": "A naive join drops samples and changes the denominator for frequency and significance.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-377754a606a9"
+      }
+    },
+    {
+      "text": "Check whether any patient has more than one sample (compare unique PATIENT_ID with SAMPLE_ID, and look for suffixes that mark repeat samples). If so, keep one sample per patient before testing the pathway.",
+      "from": [
+        "sl-dev-panel-noise-lab1-ee42d9bfeaba"
+      ],
+      "reason": "Counting repeat samples from the same patient inflates recurrence.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-5f55ebf5ce4f"
+      }
+    },
+    {
+      "text": "One or a few hypermutated tumours can carry most of the pathway mutations. Look at mutations per sample (and TMB if it is available) and at what share of pathway hits comes from the top 1-3 samples. Count samples mutated rather than total mutations, use a per-sample null, or report the result with hypermutators excluded.",
+      "from": [
+        "sl-dev-panel-noise-lab1-51c3c429cfd8"
+      ],
+      "reason": "Hypermutators can drive a false significant result.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-e2d32a480636"
+      }
+    },
+    {
+      "text": "The only molecular data here are point mutations and indels; there is no copy-number file. Published ERBB-PI3K alteration rates often include amplifications, which these data cannot show. Frame the test as mutation-level significance. Mutation data are enough to test 'significantly mutated', so a missing CNA file is not by itself grounds for 'Not verifiable'.",
+      "from": [
+        "sl-dev-panel-noise-lab1-4aae13c99604"
+      ],
+      "reason": "This prevents a wrong 'Not verifiable' call and stops teams comparing these data with published rates that include copy-number alterations.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-ca6cf6a65074"
+      }
+    },
+    {
+      "text": "Record how many pathway or gene-set tests you run. If you test several, apply Benjamini-Hochberg and treat ERBB-PI3K as significant only if q<0.05. If it is the single pre-specified test, use p<0.05. Fisher-combined p-values are anti-conservative when their inputs are correlated.",
+      "from": [
+        "sl-dev-panel-noise-lab1-660853ed867d"
+      ],
+      "reason": "Unadjusted multiple tests overstate significance.",
+      "fact_ids": {
+        "team-a": "sl-m02-r1-907a8a76a2ce"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "bd38-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that the significance result changes depending on which gene universe the null is drawn from (only genes present in the mutation file versus a full exome-wide gene list). Check how your length-weighted proteome null behaves under that choice, and whether genes that are long but never mutated in this cohort drive the background. Does it change your method?",
+      "from": [
+        "sl-m02-r1-9a2713b1001b"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m02-r1-4f8e49276916"
+    },
+    {
+      "to": "bd38-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team defined the pathway to include RAS-family genes downstream of ERBB receptors, and looked at whether the pathway hits fall at known activating hotspots. Check which of your observed pathway hits are recognised hotspots and whether the task's 'ERBB-PI3K signaling pathway' reasonably includes those downstream genes. Does either change your method or how you weigh the evidence?",
+      "from": [
+        "sl-m02-r1-b277197453b5"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m02-r1-f2feea5c5356"
+    },
+    {
+      "to": "bd38-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team reported that the hypermutated sample carries no pathway hits. Check whether that holds in your data and how including a sample with no pathway hits but a very large mutation count affects a per-sample null. Is reporting the full-cohort or the hypermutator-excluded test the right primary analysis, and does it change your method?",
+      "from": [
+        "sl-m02-r1-e2d32a480636"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m02-r1-2ab513c029a2"
+    },
+    {
+      "to": "bd38-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team built its null so that each gene's chance of being hit scales with its coding/protein length and each sample's own mutation count is preserved. Your notes say your random-gene-set permutation ignores gene length. Check whether your pathway genes are longer or shorter than typical genes and how that affects your null. Does it change your method?",
+      "from": [
+        "sl-m02-r1-9a2713b1001b"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m02-r1-fb5e7f7e27ac"
+    },
+    {
+      "to": "bd38-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found calls flagged FILTER=common_variant and calls with population allele frequency above 1% (including East Asian frequency columns) in the mutation file, and removed them before testing; your mutation counts differ from theirs. Check whether any of your pathway hits or background mutations are such calls, and which variant classes you counted as nonsynonymous. Does it change your method?",
+      "from": [
+        "sl-m02-r1-0a79a620c43b",
+        "sl-m02-r1-954352afed91"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m02-r1-59caf9fdd3ef"
+    },
+    {
+      "to": "bd38-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team used a narrower curated ERBB receptor + PI3K gene set without RAS genes as its primary test and a broader set only as a sensitivity check. Check how your result depends on including the RAS genes, and how many null-model/gene-set/universe variants you ran in total before choosing one. Does that change your method or call?",
+      "from": [
+        "sl-m02-r1-b277197453b5",
+        "sl-m02-r1-907a8a76a2ce"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m02-r1-f61d0f0b7659"
+    },
+    {
+      "to": "bd38-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team based its call only on a null-model test of samples mutated, treating hotspot status as descriptive. Your call combines a permutation result with functional hotspot evidence. Check whether the presence of a few known hotspots answers the statistical question of a pathway being 'significantly mutated' in this cohort. Does it change your method?",
+      "from": [
+        "sl-m02-r1-9a2713b1001b"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m02-r1-f69a82024da1"
+    }
+  ],
+  "warning_signs_to_team_c": [],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": {
+    "difference": "Both teams use the same filters and the same kind of null: a per-sample, length-weighted, exome-wide null. Both find that the narrowest ERBB receptor + PI3K/PTEN/AKT set is borderline (p about 0.05-0.12). They differ in how they read 'ERBB-PI3K signaling pathway'. X takes the narrow set as primary and so does not reject (True). Y counts RAS, which links ERBB to PI3K, and canonical hotspots as part of the pathway, and so rejects (False).",
+    "test": "test.py: I reran the length-weighted Poisson-binomial null (100k simulations, proteome of 1.07e7 aa) on five gene sets. The deciding set was fixed in advance: a standard KEGG-ErbB-signalling-style definition (46 genes: receptors, ligands, adaptors, RAS/RAF/MEK/ERK, PI3K/AKT/mTOR), which neither team chose. I also ran X's narrow sets and the extended sets (+mTOR/TSC, PIK3CG, PIK3R3, PDPK1, NRG1, then +RAS).",
+    "expected_if_x": "The independent KEGG ErbB definition, and the extended sets, give p>=0.05. Only a cherry-picked definition reaches significance.",
+    "expected_if_y": "The independent KEGG ErbB definition gives p<0.05. Significance is not confined to one favourable gene set.",
+    "outcome": "Narrow 13 genes: 4 hit vs 1.52 expected, p=0.059. Narrow+mTOR: 5 vs 2.20, p=0.060. Extended 20 (with PIK3CG and NRG1 hits): 7 vs 2.52, p=0.009. Extended+RAS: 8 vs 2.59, p=0.003. KEGG ErbB core, 46 genes: 8 vs 4.09, p=0.038. Every set has more hits than expected. Only the narrowest receptor+PI3K/AKT sets miss 0.05, and they miss it only marginally.",
+    "pick": "Y",
+    "reason": "The definition fixed in advance (KEGG ErbB) is significant (p=0.038), and so is the broader ERBB-PI3K/AKT/mTOR set, even without RAS (p=0.009). X's True call depends on the narrowest definition, which is still borderline (p=0.06). The weight of the evidence contradicts 'not significantly mutated'. Caveats: protein lengths are approximate and the cohort is small.",
+    "own_answer": null,
+    "picked_agent": "bd38-team-a",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "bd38-team-b",
+      "Y": "bd38-team-a"
+    }
+  },
+  "research": [
+    {
+      "round": "questions",
+      "questions": [
+        {
+          "question": "How do pathway-level mutation significance methods (e.g. PathScan, MutSig-style gene-set tests, random gene-set permutation) define the background model, and specifically how do they account for gene coding length and per-sample mutation rate?",
+          "why": "The teams' disagreement mainly comes from different null models, one length-weighted per-sample and one unweighted random gene sets. A standard definition would show which construction answers 'significantly mutated'.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In random gene-set permutation tests for mutation enrichment, what gene universe is conventionally used (all genes with coding sequence, only genes covered by sequencing, or only genes observed mutated), and how does that choice bias the p-value?",
+          "why": "One team found the result swings with the choice of gene universe. The convention would settle which universe is appropriate.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Which genes do standard curated definitions of the 'ERBB-PI3K' or 'RTK/RAS/PI3K' signaling pathway include in large pan-cancer genomic studies, and are RAS-family genes counted as part of an ERBB-PI3K pathway?",
+          "why": "The teams used different gene sets (with and without RAS genes), and that affects the pathway hit count.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "How do pathway-level mutation significance methods (e.g. PathScan, MutSig-style gene-set tests, random gene-set permutation) define the background model, and specifically how do they account for gene coding length and per-sample mutation rate?",
+          "answer": "Length-aware methods define the null as random somatic mutation in which each gene's chance of being hit is proportional to its coding length, and they work sample by sample. PathScan (Wendl et al. 2011) takes gene lengths and a single background mutation rate (assumed not to vary between genes), scores each pathway gene as mutated or not, computes a p-value per sample and combines the samples with Fisher-Lancaster. PathScore uses a per-patient hypergeometric test that conditions on each patient's total mutation count and weights each gene by transcript length times BMR, against a background of all genes in the pathway database; it multiplies the per-patient probabilities. The weighted resampling method (PLoS One 2012) draws random gene sets weighted by per-individual BMR times gene length. These papers describe unweighted gene-set tests as biased, producing falsely significant pathways made of long genes. So the length-weighted, per-sample null is the standard way to define 'significantly mutated'.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3106187/",
+            "https://manpages.org/pathscan/3",
+            "https://doi.org/10.1101/067090",
+            "https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0037595"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd38-team-a": {
+              "delivered": false,
+              "reasons": [
+                "contains another team's value for \"label\""
+              ],
+              "fact_id": null
+            },
+            "bd38-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-4238641a1f9a"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How do pathway-level mutation significance methods (e.g. PathScan, MutSig-style gene-set tests, random gene-set permutation) define the background model, and specifically how do they account for gene coding length and per-sample mutation rate? ANSWER: Length-aware methods define the null as random somatic mutation in which each gene's chance of being hit is proportional to its coding length, and they work sample by sample. PathScan (Wendl et al. 2011) takes gene lengths and a single background mutation rate (assumed not to vary between genes), scores each pathway gene as mutated or not, computes a p-value per sample and combines the samples with Fisher-Lancaster. PathScore uses a per-patient hypergeometric test that conditions on each patient's total mutation count and weights each gene by transcript length times BMR, against a background of all genes in the pathway database; it multiplies the per-patient probabilities. The weighted resampling method (PLoS One 2012) draws random gene sets weighted by per-individual BMR times gene length. These papers describe unweighted gene-set tests as biased, producing falsely significant pathways made of long genes. So the length-weighted, per-sample null is the standard way to define 'significantly mutated'. HOW SURE: high. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC3106187/, https://manpages.org/pathscan/3, https://doi.org/10.1101/067090, https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0037595."
+        },
+        {
+          "question": "In random gene-set permutation tests for mutation enrichment, what gene universe is conventionally used (all genes with coding sequence, only genes covered by sequencing, or only genes observed mutated), and how does that choice bias the p-value?",
+          "answer": "The convention is that the background must be the set of genes that could have been selected, meaning the genes the assay measured (for exome or somatic mutation data, the genes covered by sequencing, which is about all protein-coding genes). For genetic-variation studies a whole-genome background is considered suitable because every gene can carry a variant. A universe wider than what was measured inflates significance (p too small). An overly narrow universe, such as only genes observed mutated, deflates significance and conditions on the outcome. No source read supports a universe of only mutated genes. Neither source is specific to cancer-mutation permutation tests; they are general guidance for enrichment analysis.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8936487/",
+            "https://davidbioinformatics.nih.gov/documentation/tools/tech-gene-enrichment.html"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd38-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-1da91e3ed778"
+            },
+            "bd38-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-ca5b1d3afcd9"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In random gene-set permutation tests for mutation enrichment, what gene universe is conventionally used (all genes with coding sequence, only genes covered by sequencing, or only genes observed mutated), and how does that choice bias the p-value? ANSWER: The convention is that the background must be the set of genes that could have been selected, meaning the genes the assay measured (for exome or somatic mutation data, the genes covered by sequencing, which is about all protein-coding genes). For genetic-variation studies a whole-genome background is considered suitable because every gene can carry a variant. A universe wider than what was measured inflates significance (p too small). An overly narrow universe, such as only genes observed mutated, deflates significance and conditions on the outcome. No source read supports a universe of only mutated genes. Neither source is specific to cancer-mutation permutation tests; they are general guidance for enrichment analysis. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC8936487/, https://davidbioinformatics.nih.gov/documentation/tools/tech-gene-enrichment.html."
+        },
+        {
+          "question": "Which genes do standard curated definitions of the 'ERBB-PI3K' or 'RTK/RAS/PI3K' signaling pathway include in large pan-cancer genomic studies, and are RAS-family genes counted as part of an ERBB-PI3K pathway?",
+          "answer": "Definitions vary. MSigDB KEGG_MEDICUS_REFERENCE_GF_RTK_RAS_PI3K_SIGNALING_PATHWAY explicitly includes HRAS, KRAS and NRAS, along with EGFR, ERBB2, ERBB3, ERBB4, ERBB ligands (EGF, TGFA, AREG, EREG, NRG1-4), GRB2, SOS1/2, PIK3CA/CB/CD, PIK3R1/2/3, AKT1-3 and other RTKs and ligands. The TCGA PanCancer curation (Sanchez-Vega et al. 2018, Cell) defines PI3K signaling and RTK/RAS/MAPK signaling as two separate pathways. That RAS genes sit in RTK-RAS rather than PI3K is from memory; the gene templates were not readable on the pages fetched. No page read gave a canonical 'ERBB-PI3K' list, so including RAS is a choice each study makes. Report results with and without RAS.",
+          "sources": [
+            "https://www.gsea-msigdb.org/gsea/msigdb/human/download_geneset.jsp?fileType=gmt&geneSetName=KEGG_MEDICUS_REFERENCE_GF_RTK_RAS_PI3K_SIGNALING_PATHWAY",
+            "https://www.cell.com/cell/fulltext/S0092-8674(18)30359-3",
+            "https://mskcc-epi-bio.github.io/gnomeR/reference/pathways.html"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd38-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-cb0eb0c8752f"
+            },
+            "bd38-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m02-r1-029d0726d003"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Which genes do standard curated definitions of the 'ERBB-PI3K' or 'RTK/RAS/PI3K' signaling pathway include in large pan-cancer genomic studies, and are RAS-family genes counted as part of an ERBB-PI3K pathway? ANSWER: Definitions vary. MSigDB KEGG_MEDICUS_REFERENCE_GF_RTK_RAS_PI3K_SIGNALING_PATHWAY explicitly includes HRAS, KRAS and NRAS, along with EGFR, ERBB2, ERBB3, ERBB4, ERBB ligands (EGF, TGFA, AREG, EREG, NRG1-4), GRB2, SOS1/2, PIK3CA/CB/CD, PIK3R1/2/3, AKT1-3 and other RTKs and ligands. The TCGA PanCancer curation (Sanchez-Vega et al. 2018, Cell) defines PI3K signaling and RTK/RAS/MAPK signaling as two separate pathways. That RAS genes sit in RTK-RAS rather than PI3K is from memory; the gene templates were not readable on the pages fetched. No page read gave a canonical 'ERBB-PI3K' list, so including RAS is a choice each study makes. Report results with and without RAS. HOW SURE: medium. SOURCES: https://www.gsea-msigdb.org/gsea/msigdb/human/download_geneset.jsp?fileType=gmt&geneSetName=KEGG_MEDICUS_REFERENCE_GF_RTK_RAS_PI3K_SIGNALING_PATHWAY, https://www.cell.com/cell/fulltext/S0092-8674(18)30359-3, https://mskcc-epi-bio.github.io/gnomeR/reference/pathways.html."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd38-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "bd38-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "bd38-team-b",
+      "round": "revise",
+      "reason": "the referee's test supported the other answer: The definition fixed in advance (KEGG ErbB) is significant (p=0.038), and so is the broader ERBB-PI3K/AKT/mTOR set, even without RAS (p=0.009). X's True call depends on the narrowest definition, which is still borderline (p=0.06). The weight of the evidence contradicts 'not significantly mutated'. Caveats: protein lengths are approximate and the cohort is small."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 47.890979834017344,
+      "cost_usd": 0.1845994,
+      "error": null
+    },
+    {
+      "agent": "bd38-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 92.92477941606194,
+      "cost_usd": 0.4783292,
+      "error": null
+    },
+    {
+      "agent": "bd38-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 87.5388257500017,
+      "cost_usd": 0.3736384,
+      "error": null
+    },
+    {
+      "agent": "bd38-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 95.3839984999504,
+      "cost_usd": 0.4032038000000001,
+      "error": null
+    },
+    {
+      "agent": "bd38-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 78.4029164169915,
+      "cost_usd": 0.276909,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": [],
+  "recheck": [],
+  "reused": {
+    "from": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1",
+    "memory_replayed": {
+      "writes": null,
+      "pass_downs": 9,
+      "note": "memory writes are replayed only with local memory"
+    },
+    "first_round_cost_usd": 0.996989,
+    "first_round_runs": 4
+  }
+}

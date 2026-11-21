@@ -15,6 +15,7 @@ import json
 import pathlib
 import statistics
 
+from lab.budget import Budget, estimates_for, prior_spend
 from lab.contracts import WORKER, Adapter, Agent, Backend, EventLog, Study
 from lab.protocol import AgentRunner, answer_file, load_doc, make_brief
 
@@ -23,10 +24,21 @@ def attempt_dir(run_dir: pathlib.Path, study_id: str, k: int) -> pathlib.Path:
     return pathlib.Path(run_dir) / "baseline" / study_id / f"attempt-{k}"
 
 
+def baseline_brief(study: Study, timeout_s: int = 1800, prompt_dir=None) -> str:
+    """A single agent's brief (baseline.md): the task text and the data, nothing else.
+    prompt_dir: a prompt overlay folder (Config.prompt_dir), for the self-challenge arm's solver."""
+    return make_brief("baseline", None, prompt_dir=prompt_dir, statement=study.statement, data_dir=str(study.data_dir),
+                      time_limit_minutes=timeout_s // 60, answer_file=answer_file(study))
+
+
 def run_baselines(adapter: Adapter, backend: Backend, log: EventLog, run_dir: pathlib.Path, studies: list[Study],
-                  attempts: int, model: str, max_agents: int, timeout_s: int = 1800) -> dict:
-    """Run `attempts` single agents per study, skipping attempts already done. Returns {study: {k: ok}}."""
-    runner = AgentRunner(backend, log, max_agents)
+                  attempts: int, model: str, max_agents: int, timeout_s: int = 1800,
+                  max_usd: float | None = None) -> dict:
+    """Run `attempts` single agents per study, skipping attempts already done. Returns {study: {k: ok}}.
+    With max_usd, the run directory's spend (what its event log already records, plus these attempts)
+    is capped: an attempt that would pass it raises BudgetExceeded and is not marked done."""
+    budget = Budget(max_usd, prior_spend(log), estimates=estimates_for(getattr(adapter, "name", None))) if max_usd is not None else None
+    runner = AgentRunner(backend, log, max_agents, budget=budget)
     run_dir = pathlib.Path(run_dir).resolve()
     done = {(e["study"], e["attempt_number"]) for e in log.events("baseline.done")}
     jobs = [(s, k) for s in studies for k in range(1, attempts + 1) if (s.id, k) not in done]
@@ -34,8 +46,7 @@ def run_baselines(adapter: Adapter, backend: Backend, log: EventLog, run_dir: pa
 
     def one(study: Study, k: int) -> bool:
         agent = Agent(f"baseline-{study.id}-{k}", WORKER, "baseline", model)
-        brief = make_brief("baseline", None, statement=study.statement, data_dir=str(study.data_dir),
-                           time_limit_minutes=timeout_s // 60, answer_file=answer_file(study))
+        brief = baseline_brief(study, timeout_s)
         ws = attempt_dir(run_dir, study.id, k)
         result = runner.run(agent, brief, ws, readable=[study.data_dir], env=None, timeout_s=timeout_s,
                             study=study.id, phase=f"baseline-{k}", role="baseline",

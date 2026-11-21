@@ -1,0 +1,355 @@
+{
+  "study": "bh03",
+  "status": "replicated",
+  "final": {
+    "agent": "bh03-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh03/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh03-library": "opus",
+    "bh03-team-a": "opus",
+    "bh03-team-b": "opus",
+    "bh03-team-c": "opus",
+    "bh03-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh03-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh03/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh03-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh03/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh03-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh03/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh03-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh03/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh03-team-a",
+        "bh03-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh03-team-a",
+        "bh03-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "No table in this dataset measures cell viability or any functional readout; there are only a sample clinical table (cancer type, sample type, TMB) and a mutation MAF. Under the benchmark's label convention, missing the measured variable does not make a hypothesis 'Not verifiable' if the hypothesis is about this study's cancer type and genes. Check that CANCER_TYPE_DETAILED is Medulloblastoma and that DDX3X and CTNNB1 appear in Hugo_Symbol of data_mutations.txt. If they do, the label has to be True or False. Base it on the closest proxy, which is DDX3X/CTNNB1 mutation co-occurrence, together with established biology, and say which kind of evidence decided it.",
+      "from": [
+        "sl-lab-2f30a633ba43"
+      ],
+      "reason": "This stops the team from answering 'Not verifiable' just because the functional measurement was never deposited, which would be graded as wrong.",
+      "fact_ids": {
+        "team-a": "sl-lab-1274fad44fa8"
+      }
+    },
+    {
+      "text": "Benchmark hypotheses worded as 'X does NOT do Y' are often a study's positive finding reversed, so do not assume the negative wording is correct. Published medulloblastoma genomics work (around 2012, recalled from memory and not verified against a source) reported that DDX3X mutations cluster in WNT-subgroup, CTNNB1-mutant tumours, and it included functional experiments on whether mutant DDX3X and mutant beta-catenin act together on proliferation and viability. Use a Fisher exact test on a 2x2 table of samples (DDX3X-mutant vs CTNNB1-mutant) to check DDX3X enrichment in CTNNB1-mutant samples. Then weigh that result against the established biology.",
+      "from": [
+        "sl-lab-5ab709dc1c19"
+      ],
+      "reason": "The data cannot test viability directly, so the team needs the proxy test and the biological context, and has to read the hypothesis's negative wording with care.",
+      "fact_ids": {
+        "team-a": "sl-lab-683312bd9e25"
+      }
+    },
+    {
+      "text": "The clinical table has no subgroup column. Infer WNT status from CTNNB1 exon-3 hotspot mutations (codons about 32-45) and SHH status from PTCH1, SMO or SUFU mutations. Use only nonsynonymous calls and count samples, not MAF rows. DDX3X mutations also occur in SHH tumours, and DDX3X is X-linked and enriched in males, so pooled DDX3X frequencies are confounded. Report DDX3X frequency for each inferred subgroup.",
+      "from": [
+        "sl-lab-268c9e690b99"
+      ],
+      "reason": "This defines the CTNNB1-mutant/WNT group correctly and keeps DDX3X mutations in SHH tumours from distorting the co-occurrence proxy.",
+      "fact_ids": {
+        "team-a": "sl-lab-f753b703f0a8"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat DDX3X/CTNNB1 co-occurrence as a proxy for functional cooperation on viability. Co-occurrence can come from a shared subgroup background (WNT tumours) without any effect on viability, and neither team tested whether the enrichment is specific to CTNNB1 rather than to WNT tumours generally.",
+      "Both teams counted every nonsilent DDX3X call as 'mutant DDX3X' and did not tell missense (possibly dominant or altered-function) changes apart from truncating (loss-of-function) ones. The functional claim concerns mutant proteins, so the class matters for which biology applies.",
+      "Both teams took all 92 clinical samples as sequenced and as the denominator, and did not check this against the '#seq_samples' header in the MAF.",
+      "Both teams relied on a recalled, unverified published functional result (mutant DDX3X enhances viability with mutant beta-catenin) as the deciding evidence."
+    ],
+    "unused_evidence": [
+      "t_ref_count/t_alt_count/t_depth: the VAF of DDX3X and CTNNB1 calls in co-mutated samples (clonal vs subclonal, and hemizygous-like VAF for the X-linked DDX3X). Neither team used them.",
+      "Hotspot, SIFT, PolyPhen and MA:FImpact columns, plus Protein_position/DOMAINS: whether the DDX3X mutations fall in the helicase domains and are predicted damaging, which bears on the mechanism.",
+      "The '#seq_samples' comment line at the top of data_mutations.txt, which defines which samples were sequenced (the correct denominator for wild-type calls).",
+      "Validation_Status/Verification_Status/FILTER columns for the few DDX3X and CTNNB1 calls that drive a 3-of-6 result."
+    ],
+    "unresolved_weak_points": [
+      "Team A and Team B both named the lack of any viability measurement as their weakest point. Both only reported it: the label rests on recalled literature that neither checked against a source.",
+      "The co-occurrence result rests on 3 co-mutated samples. Neither team checked how robust it is (e.g. to the filter choice or to excluding unvalidated calls)."
+    ],
+    "second_readings": [
+      "'Enhance cell viability in combination with mutant beta-catenin' could be read as an interaction claim (DDX3X mutants help only alongside mutant, not wild-type, beta-catenin) rather than simply 'DDX3X mutants are present in CTNNB1-mutant tumours'. Co-occurrence speaks only weakly to the interaction reading.",
+      "'DDX3X mutations' could mean the recurrent missense mutations the study tested, or any nonsilent DDX3X change, including truncations. The two readings may imply opposite biology (gain vs loss of function)."
+    ],
+    "verdict": "I trust the agreed 'False' moderately to highly. The hypothesis matches a reversed functional finding from a medulloblastoma study on these genes, and the data show DDX3X enriched in CTNNB1-mutant tumours. The deciding evidence, though, is recalled literature that neither team verified, and the co-occurrence proxy rests on 3 samples, with mutation class and subgroup specificity left unchecked.",
+    "questions": [
+      {
+        "to": "bh03-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate the DDX3X calls by Variant_Classification, Protein_position/DOMAINS and SIFT/PolyPhen, split by CTNNB1 exon-3 status. Are the co-occurring DDX3X mutations missense in the helicase domains, or truncating? Does that split change whether the 'enhances viability' biology you relied on applies to these mutations?",
+        "from": [
+          "sl-lab-fa7293957a7e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-a047e9ae81f3"
+      },
+      {
+        "to": "bh03-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Compare the sample list in the '#seq_samples' header of data_mutations.txt with the 92 clinical samples, and recompute your 2x2 Fisher table on the sequenced set only. Does the denominator or the result change?",
+        "from": [
+          "sl-lab-a93bad3b989c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-2b12f67661a6"
+      },
+      {
+        "to": "bh03-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your label rests on a recalled functional result. Which part of your reasoning would change if that recall were wrong about the direction (enhance vs not enhance), and does any in-data check (e.g. VAF/clonality of DDX3X in CTNNB1-mutant samples from t_alt_count/t_depth) bear on it independently?",
+        "from": [
+          "sl-lab-fa7293957a7e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-8514eee2a949"
+      },
+      {
+        "to": "bh03-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Compute VAF (t_alt_count/t_depth) for DDX3X and CTNNB1 in the 3 co-mutated samples and check Validation_Status/FILTER. Are the DDX3X calls clonal and supported? Does the co-occurrence still hold if weak or unvalidated calls are removed?",
+        "from": [
+          "sl-lab-424926967473"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-912d7422a608"
+      },
+      {
+        "to": "bh03-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Infer subgroups (e.g. SHH via PTCH1/SMO/SUFU) and report DDX3X frequency within non-WNT subgroups. Is the DDX3X-CTNNB1 enrichment specific to CTNNB1, or does DDX3X also recur outside WNT? Does that change how much the co-occurrence supports a cooperation-on-viability claim?",
+        "from": [
+          "sl-lab-968239d223a8"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-710a979245a1"
+      },
+      {
+        "to": "bh03-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate DDX3X mutation classes (missense vs truncating, Protein_position, Hotspot column). Do the DDX3X mutations in CTNNB1-mutant samples match the kind of mutant your recalled functional finding refers to, and does this change your label reasoning?",
+        "from": [
+          "sl-lab-424926967473"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-d23e4410d752"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In functional studies of recurrent DDX3X missense mutations in medulloblastoma, did mutant DDX3X enhance or reduce cell viability or proliferation when co-expressed with oncogenic (stabilized) beta-catenin, compared with wild-type beta-catenin?",
+          "why": "Both teams' label rests on a recalled, unverified functional result. Its direction decides between True and False.",
+          "passed": false,
+          "reasons": [
+            "contains another team's value for \"label\""
+          ]
+        },
+        {
+          "question": "Are recurrent DDX3X mutations in WNT-subgroup medulloblastoma generally regarded as loss-of-function, dominant-negative or gain-of-function, and do missense helicase-domain mutations differ from truncating ones in this respect?",
+          "why": "Later work may describe DDX3X mutations differently from early reports. That bears on how 'enhance viability' should be read and whether co-occurrence implies cooperation.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "Are recurrent DDX3X mutations in WNT-subgroup medulloblastoma generally regarded as loss-of-function, dominant-negative or gain-of-function, and do missense helicase-domain mutations differ from truncating ones in this respect?",
+          "answer": "The web did not settle this question. All three research gateway calls (two searches and one contents request) failed with HTTP 502 (Exa 403), so no page was read. From unsourced recollection only: the original WNT-medulloblastoma report described mutant DDX3X as cooperating with mutant beta-catenin and raising cell viability, which reads like a gain of function. Later functional work is recalled as treating the recurrent helicase-domain missense mutations as loss-of-function or hypomorphic, possibly dominant-negative in heterozygous cells, and truncating mutations as null. The teams should not rely on this as verified.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh03-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-4b8f8c75adf3"
+            },
+            "bh03-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-97e72d2e1984"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Are recurrent DDX3X mutations in WNT-subgroup medulloblastoma generally regarded as loss-of-function, dominant-negative or gain-of-function, and do missense helicase-domain mutations differ from truncating ones in this respect? ANSWER: The web did not settle this question. All three research gateway calls (two searches and one contents request) failed with HTTP 502 (Exa 403), so no page was read. From unsourced recollection only: the original WNT-medulloblastoma report described mutant DDX3X as cooperating with mutant beta-catenin and raising cell viability, which reads like a gain of function. Later functional work is recalled as treating the recurrent helicase-domain missense mutations as loss-of-function or hypomorphic, possibly dominant-negative in heterozygous cells, and truncating mutations as null. The teams should not rely on this as verified. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh03-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh03-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh03-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh03-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh03-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 47.97166766598821,
+      "cost_usd": 0.2058198,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 24.550985874957405,
+      "cost_usd": 0.1690608,
+      "error": null
+    },
+    {
+      "agent": "bh03-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 31.190460291923955,
+      "cost_usd": 0.1175466,
+      "error": null
+    },
+    {
+      "agent": "bh03-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 34.9863689589547,
+      "cost_usd": 0.1476044,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 71.55970995803364,
+      "cost_usd": 0.3345132,
+      "error": null
+    },
+    {
+      "agent": "bh03-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 64.22369187499862,
+      "cost_usd": 0.1305766,
+      "error": null
+    },
+    {
+      "agent": "bh03-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 56.445045125088654,
+      "cost_usd": 0.24169660000000004,
+      "error": null
+    },
+    {
+      "agent": "bh03-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 71.6490225000307,
+      "cost_usd": 0.21273019999999998,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

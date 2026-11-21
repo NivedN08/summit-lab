@@ -1,0 +1,382 @@
+{
+  "study": "bh38",
+  "status": "replicated",
+  "final": {
+    "agent": "bh38-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh38/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh38-library": "opus",
+    "bh38-team-a": "opus",
+    "bh38-team-b": "opus",
+    "bh38-team-c": "opus",
+    "bh38-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "bh38-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh38/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh38-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh38/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh38-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh38/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh38-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh38/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh38-team-a",
+        "bh38-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh38-team-a",
+        "bh38-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The deposited tables (clinical, CNA segments and log2 CNA, FPKM expression and z-scores, mutations) hold no DNA-methylation or chromatin data. The hypothesis is still about this study's own cohort: CRPC-NE versus CRPC-Adeno, coded in the clinical DISEASE_CODE column. Under the benchmark convention, a claim about the study's own cohort is labelled True or False, not 'Not verifiable', even when the measurement it needs was not deposited. First confirm that both groups exist and that no methylation file is present. Then test with the closest proxies: expression of epigenetic regulators (EZH2, DNMT1/3A/3B, TET1-3, SOX2) and mutations or CNAs in chromatin-modifier genes.",
+      "from": [
+        "sl-lab-0e353a2e1b76"
+      ],
+      "reason": "This decides which kind of label is allowed. Without a methylation table, teams are likely to answer 'Not verifiable' by mistake.",
+      "fact_ids": {
+        "team-a": "sl-lab-094721b0c178"
+      }
+    },
+    {
+      "text": "Expression of EZH2, DNMT1 or UHRF1 is not an accepted quantitative proxy for global DNA methylation. These genes are linked to proliferation and E2F, so their expression largely tracks cell-cycle activity. Treat regulator expression as supporting context only. A non-significant difference in a few regulator genes is not evidence that the two groups share the same epigenetic profile; a 'False' label needs positive contradicting evidence. First check that the NE-defining genes separate the groups as expected (SYP, CHGA, ASCL1 up; AR, KLK3 down), which confirms the labels. Where the proxies cannot settle the question, decide from established biology and say so: the study reporting this cohort described distinct, largely hypermethylated NEPC methylomes and EZH2 up-regulation. This comes from domain knowledge with low confidence; no source could be retrieved.",
+      "from": [
+        "sl-lab-787533b68058",
+        "sl-lab-28e7fde9294d"
+      ],
+      "reason": "This sets how much weight proxy results can carry, and stops a weak or null proxy result from being read as a contradiction.",
+      "fact_ids": {
+        "team-a": "sl-lab-c7b355d2d849"
+      }
+    },
+    {
+      "text": "Several patients contribute more than one sample (for example, WCMC0 has samples _1, _5, _6, _8, _9 and _10; WCMC159 has several). Count samples per PATIENT_ID within each DISEASE_CODE group. Collapse to one sample per patient, or average, or use a patient random effect before testing group differences. Otherwise n is inflated and the p-values are too small.",
+      "from": [
+        "sl-lab-e8a84df2f260"
+      ],
+      "reason": "Pseudoreplication would overstate any difference between the groups.",
+      "fact_ids": {
+        "team-a": "sl-lab-d67fe5ce4b5e"
+      }
+    },
+    {
+      "text": "Tumour purity (CLONET_PURITY) and tissue site (TUMOR_TISSUE_SITE, e.g. liver vs bone) can be confounded with CRPC-NE vs CRPC-Adeno status, and both change bulk expression of any gene, including epigenetic regulators. Compare the purity and site distributions between the groups. If they differ, adjust for them in a regression or check that the effect holds within strata.",
+      "from": [
+        "sl-lab-fa0f6a255a09"
+      ],
+      "reason": "Confounding could produce, or hide, an apparent epigenetic-regulator difference.",
+      "fact_ids": {
+        "team-a": "sl-lab-b4d3b3a4b35a"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed that expression of a hand-picked panel of about 10-19 epigenetic regulators is the right proxy for 'epigenetic profile'; neither tested a genome-wide, unbiased contrast (e.g. clustering on all genes or on the full chromatin-modifier gene set) that would show whether the proxy panel choice drives the result.",
+      "Both treated DISEASE_CODE (CRPC-NE vs CRPC-Adeno) as a clean binary grouping, although PATHOLOGY_CLASSIFICATION splits CRPC-NE into four classes (B 22, C 8, D 10, E 4 samples) that may include mixed or amphicrine tumours; only team A ran a B-only check (n=2 with RNA).",
+      "Both assumed the hypothesis is the source study's own finding and not its reversal; the label rests on recalled biology rather than on a data readout, and neither team considered whether the 'False' reading (e.g. a reported finding of shared or overlapping epigenetic features) is plausible."
+    ],
+    "unused_evidence": [
+      "data_log2_cna.txt and data_cna_hg19.seg: neither team used copy-number data, e.g. CNAs of chromatin modifiers (EZH2 gain, etc.) or genome-wide CNA similarity between groups, which bears on whether the groups are genomically distinct or clonally related.",
+      "GENOMIC_BURDEN, PLOIDY and TMB_NONSYNONYMOUS columns: not used as covariates or as context for whether NE tumours differ broadly or only in a few features.",
+      "Team A did not use the z-score file; team B did not fit a purity-adjusted model. Each one's missing check is covered by the other, but no single analysis has both.",
+      "Multiple samples per patient (e.g. WCMC0, WCMC90, WCMC159 with several samples) could be used to see whether within-patient differences across NE/Adeno states exist; neither team checked whether any patient has samples in both groups."
+    ],
+    "unresolved_weak_points": [
+      "Team A: there is no methylation data, so the label rests on domain knowledge. Only reported, not resolved; its PCA on the regulator panel did not separate groups (p=0.41), which goes against the 'distinct' reading and was set aside.",
+      "Team B: expression proxies are confounded by purity (0.86 vs 0.62) and biopsy site (bone 1/44 vs 22/70), and no purity-adjusted model was fitted. Only reported, not resolved.",
+      "Both: groups with RNA are small (about 10 NE vs 25 Adeno patients), and the proxy signals reported (p about 0.01-0.04) were not shown to survive FDR plus purity and site adjustment together."
+    ],
+    "second_readings": [
+      "'Distinct epigenetic profiles' could mean DNA-methylation profiles specifically (which are not in the tables), or the wider epigenetic state including expression of epigenetic modifiers such as EZH2 (which is in the tables). The two readings use different evidence.",
+      "'Distinct' could mean groups that separate cleanly in unsupervised analysis, or just differences in a few features on average; a PCA with no separation fits the second reading but not the first.",
+      "'CRPC-neuroendocrine' could mean all CRPC-NE by disease code or only pure small-cell (pathology class B and similar); the answer may depend on which group is used."
+    ],
+    "verdict": "Moderately trusted: the hypothesis clearly concerns this cohort (CRPC-NE vs CRPC-Adeno groups are present), so the only real risk is True vs False, and both teams rest that on recalled biology with weak, confounded proxies. Team A's non-separating PCA was not reconciled with 'distinct', and that should be settled before release.",
+    "questions": [
+      {
+        "to": "bh38-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your regulator-panel PCA did not separate NE from Adeno (p=0.41). Did you run the same unsupervised check on all expressed genes, or on a broad chromatin-modifier gene set, with one sample per patient? Does the result change how much weight the expression evidence gets, or which reading of 'distinct' you test?",
+        "from": [
+          "sl-lab-646aaba793fb",
+          "sl-lab-c15c264c425e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-6fa2dac8adaf"
+      },
+      {
+        "to": "bh38-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For your significant regulators (e.g. DNMT1), does the NE-vs-Adeno difference survive a model with purity and biopsy site together (bone vs non-bone), after BH correction? If it does not, does that change the method or the label?",
+        "from": [
+          "sl-lab-646aaba793fb"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-d3d2f59a7681"
+      },
+      {
+        "to": "bh38-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Neither copy-number file was used. Did you compare copy-number changes of chromatin modifiers (e.g. EZH2 and the DNMTs) between NE and Adeno patients in data_log2_cna.txt? Does that result agree with the expression proxy, and does it change the method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-9d33336a2a5b"
+      },
+      {
+        "to": "bh38-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your label rests on recall of the source study's methylation finding. What check in these tables would separate 'the study reported distinct profiles' from 'the study reported the reverse or shared features', and did you run it? If none is possible, does that change your confidence?",
+        "from": [
+          "sl-lab-c15c264c425e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-cbe413cfb7e1"
+      },
+      {
+        "to": "bh38-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You noted the purity (0.86 vs 0.62) and bone-site confounding but did not fit an adjusted model. Do the EZH2, DNMT1 and UHRF1 differences survive regression on purity and bone site together, with BH correction across your panel? Does that change the method?",
+        "from": [
+          "sl-lab-99b582144825"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-b45bb7855877"
+      },
+      {
+        "to": "bh38-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: CRPC-NE spans pathology classes B, C, D and E. Did you check whether the regulator differences hold in each class separately against class A, or only in the pooled CRPC-NE group? Does the answer depend on which NE definition you use?",
+        "from": [
+          "sl-lab-1f3945e4cfcd"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-41a1727a36ed"
+      },
+      {
+        "to": "bh38-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Did you run an unsupervised analysis (PCA or clustering on all genes, or on a broad chromatin-modifier gene set, one sample per patient) to see whether NE and Adeno separate as groups rather than in a few genes? Does the result change which reading of 'distinct' you test?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-fcadc9ff1114"
+      },
+      {
+        "to": "bh38-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Neither copy-number file was used. Did you compare chromatin-modifier copy-number changes, or genome-wide CNA burden (GENOMIC_BURDEN), between NE and Adeno patients? Does that agree with your expression and mutation tabulation, and does it change the method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-b0b2b09da66a"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In published genome-wide DNA-methylation studies comparing neuroendocrine prostate cancer with castration-resistant prostate adenocarcinoma, were the two groups reported as distinct in methylation (e.g. separating in unsupervised clustering), or as largely similar?",
+          "why": "Both labels rest on recalled biology with no methylation data in the tables. An independent check of the established finding is the only thing that settles True vs False.",
+          "passed": false,
+          "reasons": [
+            "contains another team's value for \"label\""
+          ]
+        },
+        {
+          "question": "Is higher expression of EZH2, DNMT1 and UHRF1 in a tumour subtype generally treated as evidence of a distinct epigenetic state, or mainly as a marker of higher proliferation?",
+          "why": "The teams use the expression of these regulators as support. If it mostly reflects proliferation, the proxy says little about epigenetic distinctness.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "Is higher expression of EZH2, DNMT1 and UHRF1 in a tumour subtype generally treated as evidence of a distinct epigenetic state, or mainly as a marker of higher proliferation?",
+          "answer": "Not settled by the web: the research gateway returned HTTP 403 (Exa) on both search and contents, so no pages were read. From domain knowledge only: EZH2, DNMT1 and UHRF1 are E2F/pRB target genes tied to S-phase and appear in standard proliferation signatures. Higher expression of these genes in a subtype is therefore mostly read as a sign of higher proliferation. It counts as evidence of a distinct epigenetic state only if it holds after adjusting for proliferation (for example against MKI67/TOP2A or an E2F score), or if direct methylation or chromatin data back it up. For NEPC specifically, EZH2 is also described as a functional driver, and NEPC is reported to have distinct, largely hypermethylated methylomes. Even so, the expression proxy alone is weak support for 'distinct epigenetic profiles'.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh38-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-070b61a879a3"
+            },
+            "bh38-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-72ce1b29097f"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Is higher expression of EZH2, DNMT1 and UHRF1 in a tumour subtype generally treated as evidence of a distinct epigenetic state, or mainly as a marker of higher proliferation? ANSWER: Not settled by the web: the research gateway returned HTTP 403 (Exa) on both search and contents, so no pages were read. From domain knowledge only: EZH2, DNMT1 and UHRF1 are E2F/pRB target genes tied to S-phase and appear in standard proliferation signatures. Higher expression of these genes in a subtype is therefore mostly read as a sign of higher proliferation. It counts as evidence of a distinct epigenetic state only if it holds after adjusting for proliferation (for example against MKI67/TOP2A or an E2F score), or if direct methylation or chromatin data back it up. For NEPC specifically, EZH2 is also described as a functional driver, and NEPC is reported to have distinct, largely hypermethylated methylomes. Even so, the expression proxy alone is weak support for 'distinct epigenetic profiles'. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh38-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh38-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh38-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh38-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh38-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 54.919892958016135,
+      "cost_usd": 0.1746874,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 68.75684408308007,
+      "cost_usd": 0.21280539999999998,
+      "error": null
+    },
+    {
+      "agent": "bh38-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 78.39405662496574,
+      "cost_usd": 0.2991328,
+      "error": null
+    },
+    {
+      "agent": "bh38-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 99.24443149997387,
+      "cost_usd": 0.3064748,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 57.44748654193245,
+      "cost_usd": 0.2376938,
+      "error": null
+    },
+    {
+      "agent": "bh38-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 32.30007133295294,
+      "cost_usd": 0.1096248,
+      "error": null
+    },
+    {
+      "agent": "bh38-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 83.69634500006214,
+      "cost_usd": 0.325283,
+      "error": null
+    },
+    {
+      "agent": "bh38-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 107.69632158300374,
+      "cost_usd": 0.3717764,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

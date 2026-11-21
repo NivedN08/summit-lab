@@ -1,0 +1,507 @@
+{
+  "study": "bd25",
+  "status": "replicated",
+  "final": {
+    "agent": "bd25-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd25/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd25-library": "fable",
+    "bd25-team-a": "fable",
+    "bd25-team-b": "fable",
+    "bd25-team-c": "fable",
+    "bd25-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd25-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd25/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd25-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd25/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd25-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd25/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd25-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd25/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd25-team-a",
+        "bd25-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd25-team-a",
+        "bd25-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Scope of the claim versus the data: the library reports that the clinical tables hold only demographics, stage, purity, subtype and mutation-burden columns, with no drug-treatment, drug-response or survival field. Confirm this by listing the clinical columns yourself. Then state explicitly in your reasoning which parts of the hypothesis the tables can address (CDKN2A alteration status, RB1 protein abundance and RB1 phosphorylation are reported to be measured per tumour) and which part they cannot (actual response to a CDK4/6 inhibitor). Do not claim a drug-response effect that was not measured, and do not decide the label before you have checked which variables are actually present; the choice of label is yours and should follow from that check and your analysis.",
+      "from": [
+        "sl-biodsa-test-e8e2abc6549e"
+      ],
+      "reason": "The wording 'CDK4/6 inhibition unsuccessful' invites two opposite errors: stopping immediately because there is no response column, or asserting a response effect from data that hold none. The team must decide deliberately which part of the claim is testable. I removed the library's background statement about what predicts inhibitor benefit in trials, because it leans towards an answer.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-11c90930c014"
+      }
+    },
+    {
+      "text": "Several files are not what their names suggest (library's reading of the files; verify each point). (1) data_protein_quantification_zscores.txt is reported to have 7983 of 11110 rows entirely NA, so using it silently drops most proteins; use data_protein_quantification.txt (row IDs look like 'RB1|RB1', 'CDKN2A|CDKN2A') as the primary protein table and confirm RB1 and CDKN2A are non-NA in most samples. (2) data_mrna_seq_fpkm.txt contains negative values, so it is already log-transformed/centred; check ranges and do not log-transform again. (3) The z-score files are standardised against all samples in the study, not against normal tissue; do not re-z-score them or threshold them as tumour-versus-normal. (4) mRNA is only a modest proxy for protein; use RNA as supporting evidence, not as a stand-in for RB1 protein. (5) Clinical CANCER_TYPE says 'Lung Adenocarcinoma' but ONCOTREE_CODE is LUSC and the column descriptions say 108 lung squamous tumours; treat the cohort as squamous. (6) Sample counts differ by table (protein 108, RNA 108, methylation 103 reported), so intersect sample IDs per analysis and report the n actually used.",
+      "from": [
+        "sl-biodsa-test-766f107daaed"
+      ],
+      "reason": "Picking the z-score protein file or re-transforming the RNA table would silently corrupt or empty the analysis; knowing the correct primary tables and the sample-count mismatch changes which files are loaded and how.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-0e51ac8e38fb"
+      }
+    },
+    {
+      "text": "data_phosphoprotein_quantification.txt is reported to be collapsed to ONE row per gene, not one per phosphosite. The RB1 row is named 'RB1_acetylprotein' (the '_acetylprotein' suffix is a mislabel carried by every row of the phospho, acetyl and ubiquityl files), and its NAME field lists many sites together (S37, S249, T356, T373, S608/S612, S780, S788, S795, S807/S811, T821/T826). Confirm there is a single RB1 row (grep '^RB1_'), and match samples by column name, not position: column order differs between files, and the phospho file has 108 sample columns after 3 ID columns. Because the value is gene-level, it measures overall RB1 phosphorylation and cannot separate CDK4/cyclin D sites (e.g. S807/S811) from CDK2/cyclin E sites; describe it as overall RB1 phosphorylation, not CDK4/6-specific site occupancy. The protein rows for CCND1, CDK4, CDK6, CCNE1 and CDKN2A can serve as context for which kinase arm is active.",
+      "from": [
+        "sl-biodsa-test-4d70d87248a3"
+      ],
+      "reason": "Without this the team may fail to find RB1 phospho at all (searching for 'RB1' with a phospho suffix or for site-level rows), may dismiss the row as acetylation data, may misalign samples by column position, or may over-interpret the value as CDK4/6-specific.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-7e477d6c5af1"
+      }
+    },
+    {
+      "text": "Calling mutations from data_mutations.txt: the file is reported to include many non-protein-altering rows (about 8000 Silent, plus Intron, 3'/5'Flank, 3'/5'UTR, RNA, Splice_Region) and the Mutation_Status column is empty. Filter on Variant_Classification to protein-altering classes (Missense, Nonsense, Frame_Shift, In_Frame, Splice_Site, Nonstop, Translation_Start_Site) before calling a tumour CDKN2A-mutant or RB1-mutant, and count samples, not rows. Tabulate truncating (nonsense, frameshift, splice-site) versus missense separately where group size allows, since they have different expected effects on protein abundance. All 108 samples are reported to have MAF rows, and Tumor_Sample_Barcode equals the plain sample ID (e.g. C3L-00081), so absence of a CDKN2A row means sequenced and not point-mutated.",
+      "from": [
+        "sl-biodsa-test-9b1954657625"
+      ],
+      "reason": "Group definition is the first step of the analysis; unfiltered rows inflate the mutant group, and knowing that every sample was sequenced settles how to treat samples with no CDKN2A row.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-473941e5c221"
+      }
+    },
+    {
+      "text": "Defining CDKN2A status needs care on three counts. (a) CDKN2A/p16 is inactivated mostly by homozygous deletion and promoter methylation, with point mutation the minority route, and this dataset has no copy-number table, so tumours that are 'wild-type by MAF' can still be p16-null. Look in the MAF-wild-type group for a low/absent cluster in CDKN2A protein, CDKN2A mRNA, and for high CDKN2A promoter methylation (data_methylation_epic.txt is reported to have a CDKN2A row). (b) The clinical column CDKN2A_PATHWAY_ALTERATION_STATUS is described as mutations in genes 'in the CDKN2A pathway', so it may count genes other than CDKN2A, possibly RB1 itself, which would make an RB1 comparison circular; cross-tabulate it against MAF CDKN2A mutation and RB1 mutation before using it. (c) The CDKN2A gene encodes two unrelated proteins, p16INK4a (the CDK4/6 inhibitor) and p14ARF (MDM2/p53 regulator); only p16 bears on CDK4/6-RB signalling, but the protein, RNA and methylation tables carry one gene-level CDKN2A row that can mix both. The library reports 17 CDKN2A MAF rows in 17 different samples of 108, all annotated on transcript ENST00000304494 (p16INK4a): 11 truncating/splice, 2 in-frame deletions, 4 missense; verify with the HGVSc/HGVSp_Short/Transcript_ID columns. Check whether the CDKN2A protein and RNA rows actually drop in the truncating mutants; if they do not, do not use the gene-level row as a p16 read-out or to define 'p16-null' tumours, rest the grouping on mutation calls, and say that p14ARF cannot be separated. Run the analysis under at least two definitions (strict MAF CDKN2A mutation; broader loss = mutation or low p16 protein/RNA or high methylation) and report whether the RB1 result is the same under both.",
+      "from": [
+        "sl-biodsa-test-8c81dbcd80af",
+        "sl-biodsa-test-66c68c31a7ac"
+      ],
+      "reason": "How the CDKN2A group is defined determines every downstream comparison. A MAF-only definition misclassifies deleted/methylated tumours, the clinical pathway flag may be circular with RB1, and the gene-level CDKN2A rows may not reflect p16; each of these can change the result.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-645bd7de1bf9"
+      }
+    },
+    {
+      "text": "A phospho log-ratio mixes two things: how much of the parent protein is present and what fraction of it is phosphorylated. A tumour with low RB1 protein will show low RB1 phospho even if the phosphorylated fraction is unchanged, so raw RB1 phospho differences can simply restate RB1 protein differences. Correlate RB1 phospho with RB1 protein across samples, then compute a protein-adjusted phospho value (phospho log-ratio minus protein log-ratio, or the residual from regressing phospho on protein) and repeat any group comparison with it. Report both: raw phospho means 'amount of phosphorylated RB', adjusted phospho means 'phosphorylation per RB molecule'. Do not infer altered CDK4/6 activity from raw phospho alone.",
+      "from": [
+        "sl-biodsa-test-8be2bf73144c"
+      ],
+      "reason": "The hypothesis names RB1 protein expression and RB1 phosphorylation as two separate things; without protein adjustment the phospho result is not independent evidence.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-03f9aec4a40b"
+      }
+    },
+    {
+      "text": "RB1 phosphorylation in bulk tumour is largely a read-out of how many cells are cycling (in a published 63-tumour series phospho-RB tracked Ki-67 with r = 0.80), so a difference in RB1 phospho between CDKN2A groups can reflect proliferation rate rather than CDK4/6 de-repression. Build a proliferation score from the RNA or protein table (e.g. MKI67, TOP2A, MCM2-7, PCNA) and test whether RB1 phospho still differs by CDKN2A status after adjusting for it, alongside the RB1-protein adjustment. Separately, high p16 is itself a marker of RB loss, so a two-way CDKN2A-altered versus wild-type split hides structure: cross-tabulate CDKN2A status against RB1 state (RB1 mutant or RB1-protein-low versus RB1 intact), look at CDKN2A protein/RNA in the RB1-deficient tumours, and describe tumours by joint p16/RB state (p16 lost with RB intact; p16 high with RB lost; neither) rather than by CDKN2A mutation alone.",
+      "from": [
+        "sl-biodsa-test-2210f21e95cb"
+      ],
+      "reason": "Proliferation is a confounder that could create or explain away a phospho difference, and the joint p16/RB cross-tabulation is a different analysis design from a two-group test.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-b15816f70df3"
+      }
+    },
+    {
+      "text": "RB can be functionally lost without an RB1 point mutation (deletion, methylation, complex rearrangement, or constitutive hyperphosphorylation, including by cyclin E/CDK2, which bypasses CDK4/6), and RB1 DNA status only partly predicts RB protein. With no copy-number table here, RB1 status from the MAF under-calls RB loss. Compare RB1 protein in RB1-truncating-mutant tumours versus the rest to see what 'RB-lost' looks like in this assay, then look for non-mutant tumours at the same low level. As a functional cross-check, score E2F-target / RB-loss genes from the RNA table (e.g. CCNE1, E2F1, MCM genes, and CDKN2A itself, which rises when RB is lost) and see whether they track RB1 protein. Classify RB status from protein (and phospho) rather than from mutation alone, and note CCNE1-high tumours as a separate route of CDK4/6 bypass that RB1 protein level does not capture.",
+      "from": [
+        "sl-biodsa-test-8d801010fd43"
+      ],
+      "reason": "It changes how RB1 status is defined (protein-based threshold anchored on truncating mutants, not MAF alone) and adds a cross-check the team would not otherwise run.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-35c35734cb82"
+      }
+    },
+    {
+      "text": "Comparing only the mean RB1 protein or phospho level between CDKN2A-altered and wild-type tumours does not match the question. p16 and RB tend to be reciprocally altered in lung cancer, so some mean difference between groups is expected either way, and a significant or non-significant mean test says nothing about whether individual CDKN2A-altered tumours vary in RB1 status, which is what the hypothesis is about. Tabulate the distribution of RB1 protein and RB1 phospho inside the CDKN2A-altered group (range, spread, number of tumours below a low-RB threshold such as the level seen in RB1-truncating-mutant tumours), and count co-occurrence of CDKN2A alteration with RB1 mutation or RB1-low protein. Report those counts and proportions alongside any group test, and weigh the within-group picture, not the mean comparison alone, when reaching your conclusion.",
+      "from": [
+        "sl-biodsa-test-08649e76ada7"
+      ],
+      "reason": "It redirects the central analysis from a between-group mean test to within-group heterogeneity and co-occurrence counts, which is the quantity the hypothesis actually refers to.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-c83b7416da27"
+      }
+    },
+    {
+      "text": "Bulk tumour protein and phospho values average tumour cells with stroma and immune cells, which express RB1 and p16 normally. Low purity can hide RB1 loss in tumour cells, and purity often differs between mutation-defined groups and subtypes, which can create or mask group differences. data_clinical_sample.txt is reported to hold ESTIMATE_TUMORPURITY and TSNET_PURITY: correlate RB1 protein, RB1 phospho and CDKN2A protein with them and compare purity between CDKN2A groups. If purity matters, add it as a covariate (linear model of the RB1 measure on CDKN2A status plus purity) or confirm the result in the high-purity half; NMF_SUBTYPE is another candidate covariate.",
+      "from": [
+        "sl-biodsa-test-1a72da7a7748"
+      ],
+      "reason": "Purity is a measured confounder available in the clinical table; adjusting for it can change both group differences and the count of tumours called RB1-low.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-69bc112f8439"
+      }
+    },
+    {
+      "text": "TMT proteomics has plex-level batch structure and non-random missing values: a protein or phospho value absent in one plex is missing for every sample in that plex, and low-abundance species go missing more often. Imputing zeros or minimum values, or dropping samples unevenly, can fabricate an 'RB1-low' group. Count NAs in the RB1 protein and RB1 phospho rows and check whether they cluster by EXPERIMENT (TMT plex) or by CDKN2A group; test whether RB1 values differ by plex. Analyse complete cases without imputation. The mutation-defined subgroups are small, so use rank-based tests (Mann-Whitney, Spearman) and Fisher's exact test for co-occurrence, report effect sizes with confidence intervals and the group n, and do not read a non-significant result in a small subgroup as proof of no difference.",
+      "from": [
+        "sl-biodsa-test-3f5b132cc6e0"
+      ],
+      "reason": "Handling of missing values and the choice of tests for small groups directly affects whether an RB1-low subgroup appears and how a null result should be read.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-edc6c6ab1b57"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams fixed the same label rule before looking: 'True if CDKN2A-altered tumours show substantial heterogeneity in RB1 protein/phospho'. Neither tested that heterogeneity against a reference (other proteins, random groups of the same size, or the non-mutant tumours), so the rule may be satisfied by any continuous protein measurement and cannot produce 'False' in practice. Team B's own SD ratio (mutant/other 0.73, CI 0.35-1.01) says mutants are not more variable than the rest, and this was not reconciled with the rule.",
+      "Both teams treat two different observations as support at once: (i) RB1 protein is higher in CDKN2A-altered tumours and nearly all of them are RB-proficient, and (ii) RB1 varies widely inside the altered group. Neither stated which of these the hypothesis predicts, nor which observed pattern would have counted against it.",
+      "Both broad CDKN2A definitions use low CDKN2A RNA/protein to call 'altered'. Because p16 rises when RB is lost, RB-lost tumours are mechanically placed in the 'unaltered' group; the near-absence of RB-low tumours among the 'altered' is partly built into the definition. Both knew the biology, neither tested a definition that does not depend on CDKN2A expression level.",
+      "Both assume the gene-level RB1 phospho row (many sites collapsed by an unknown rule) minus RB1 protein is a valid 'phosphorylation per molecule' measure, and both then conclude that phospho adds nothing beyond protein. Whether the 'and phosphorylation' half of the claim is supported was not judged separately from the 'expression' half.",
+      "Both treat all 17 CDKN2A and 5 RB1 MAF calls as somatic. The clinical table marks 9 tumours as Unmatched (no matched normal); at least one CDKN2A missense mutant and one RB1 splice mutant are among them. Mutation_Status and FILTER are empty for every MAF row, so the file itself offers no somatic/germline or quality flag.",
+      "Both read the absence of a drug-response variable as leaving the molecular premise sufficient for a True/False label rather than 'Not verifiable'. This is a judgement about the task's definition, not something either tested."
+    ],
+    "unused_evidence": [
+      "TSNET_PURITY is filled for all 108 tumours; ESTIMATE_TUMORPURITY is missing for 39. Team B used only the ESTIMATE column (n=69), found rho about 0 and dropped purity; Team A used TSNet and found rho 0.56 inside the mutants. The two teams' purity conclusions conflict and Team B never used the complete column.",
+      "SOMATIC_STATUS (Matched 99 / Unmatched 9) was not used by either team to qualify mutation calls.",
+      "Phospho rows for the other pocket proteins RBL1 and RBL2 (108/108 non-missing), CCND1 phospho T286, E2F1 phospho, and protein rows for CDK4, CDK6, CDK2 (108/108), CCND1 (93), CDKN2B (104), MTAP (108). The library suggested CDK4/CDK6/CCND1 as context for which kinase arm is active; neither team's notes show them used (Team A used only CCNE1 counts).",
+      "CDKN2A_PATHWAY_ALTERATION_STATUS: both set it aside because it does not match MAF CDKN2A mutation. Neither worked out what it does track (23 flagged tumours have no point mutation in the pathway genes; a CIN column shows copy number was available to the study). It may be the study's own grouping. Team A ran a 'flag' comparison and Team B a sensitivity analysis but neither reported the result or reran it without the RB1 mutants that make it circular.",
+      "PATHOLOGY_BASED_HISTOLOGY_ASSESSMENT (basaloid, adenosquamous?, sarcomatoid variants), NMF_SUBTYPE_CORE and CIMP_STATUS_METH: only Team B adjusted for NMF subtype; nobody checked whether the RB1-low tumours sit in one histological variant or subtype.",
+      "RB1 ubiquityl row (K289, 28/108 non-missing), acetyl, miRNA and circular RNA tables: unused; too sparse or too indirect to be likely to change the answer."
+    ],
+    "unresolved_weak_points": [
+      "Team A: 'the step from the data to the label' - only 1 of 17 strict mutants (2-4 of 57-84 broad) is RB-low, and that one tumour has purity 0.34. Reported, not resolved: the team's own rule asked for 'an RB-deficient subset' and the evidence for one inside the altered group rests on a handful of tumours of doubtful purity. The team also did not say in which direction low purity should move RB1 protein.",
+      "Team B: 'no drug response, a strict reader could call this Not verifiable' and 'only 17 mutants, 13/17 have above-median RB1, phospho is gene-level'. Reported only. The leave-one-out result (phospho difference becomes p=0.012 without the RB1-low mutant) shows the picture depends on one tumour, and purity was not controlled for that tumour because the complete purity column was not used.",
+      "Both: confidence 0.62 and 0.68, with the same residual doubt (True versus Not verifiable). Agreement between the teams does not reduce this doubt because both chose the same reading for the same reason."
+    ],
+    "second_readings": [
+      "Reading A (teams): CDKN2A status alone does not fix RB1 state, so RB1 must be looked at tumour by tumour -> evidence is within-group spread.",
+      "Reading B: CDKN2A-altered tumours as a group have intact, expressed and phosphorylated RB1 (the drug target is present), so a failed CDK4/6 trial should be re-examined by RB1 status -> evidence is the group-level association between CDKN2A alteration and RB1 protein/phospho, and the location of the RB-low tumours. The teams' numbers bear on this reading too, but they did not say which reading the label rests on.",
+      "Reading C: 'expression AND phosphorylation' - both must carry information. If phospho only restates protein (rho 0.80, no difference after adjustment), only half the claim is examined.",
+      "Reading D: 'CDKN2A mutations' = MAF point mutations only (n=17) versus any CDKN2A inactivation (n=57-84) versus the study's pathway flag (n=34). The teams ran several, but the label should be stated for the literal reading (mutations) first.",
+      "Reading E: the claim is about declaring CDK4/6 inhibition unsuccessful, i.e. a treatment outcome, which the tables do not hold -> 'Not verifiable'. Whether measured CDKN2A, RB1 protein and RB1 phospho count as 'relevant variables' under the task's definition is the deciding point."
+    ],
+    "verdict": "Moderate trust. The agreed label survives the two main molecular readings (within-group spread, and group-level association of CDKN2A alteration with RB1 protein/phospho), but both teams reached it through the same rule, which was never tested against a reference and may be unable to return 'False'; the RB-deficient subset the rule asks for rests on very few tumours with unresolved purity, the phosphorylation half adds little beyond protein in their own results, and the True-versus-Not-verifiable choice (no drug response in the data) is a shared judgement that neither team could test.",
+    "questions": [
+      {
+        "to": "bd25-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your label rule is met when RB1 'varies widely' inside CDKN2A-altered tumours, but you gave no reference for 'widely'. First write down which observed pattern would have made you answer False. Then run this check: compute the within-group SD (and range) of RB1 protein and of protein-adjusted RB1 phospho in the CDKN2A-mutant group, and place it (a) as a percentile among the same statistic for all fully quantified proteins / phospho rows, and (b) against the distribution from 1,000 randomly drawn groups of 17 tumours. Is RB1's spread in the mutants larger than, equal to, or smaller than these references? Does the result change whether your rule can separate True from False, and so whether the label should rest on within-group spread or on something else you measured?",
+        "from": [
+          "sl-biodsa-test-9c4d22db6665",
+          "sl-biodsa-test-8cce7da51466"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-325cf0179892"
+      },
+      {
+        "to": "bd25-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your rule asked for 'an RB-deficient subset' among CDKN2A-altered tumours, and 9 of your 11 RB-low tumours fall in the 24 'unaltered' ones. Two things could produce that split by construction: your broad definitions call a tumour altered when CDKN2A RNA is low, while RB loss itself raises p16; and the one RB-low mutant has low purity. Run this check: recount RB-low tumours (with exact CIs) using only definitions that do not depend on CDKN2A expression level (MAF mutation alone; MAF mutation or methylation-high alone), once in all tumours and once in the TSNet high-purity half, and state for each how many RB-low altered tumours remain. Also say which way you expect low purity to move bulk RB1 protein and why. Does the count that remains still satisfy your own rule, and does that change the method or the label rule?",
+        "from": [
+          "sl-biodsa-test-9cdd6dcfdc4c",
+          "sl-biodsa-test-8cce7da51466"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-39031f5dafd3"
+      },
+      {
+        "to": "bd25-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The hypothesis names RB1 expression AND phosphorylation, but you found raw phospho restates protein and adjusted phospho does not differ by CDKN2A status. Rows you did not use can test whether phosphorylation carries its own information: protein CDK4, CDK6, CDK2, CCND1, and phospho rows for RBL1, RBL2, CCND1 and CCNE1. Run this check inside the CDKN2A-altered tumours only: Spearman correlation of protein-adjusted RB1 phospho with (a) CDK4, CDK6 and CCND1 protein, (b) CDK2 and CCNE1, (c) protein-adjusted RBL1 and RBL2 phospho, and (d) your E2F/proliferation score, with n and CIs. Does adjusted RB1 phospho vary in a structured way among altered tumours, or is it indistinguishable from noise? Does the result change how you treat the 'phosphorylation' half of the claim in your method?",
+        "from": [
+          "sl-biodsa-test-4e57fae1bb88",
+          "sl-biodsa-test-7e477d6c5af1"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-a91cc461d6fa"
+      },
+      {
+        "to": "bd25-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You set CDKN2A_PATHWAY_ALTERATION_STATUS aside without finding out what it encodes, and your notes list a 'flag' comparison without its result. Run two checks. (1) Tabulate the flag against your three inactivation routes (MAF mutation, RNA-low, methylation-high), against CDKN2A/CDKN2B/MTAP RNA and CDKN2A protein, and against CIN, to see what the 23 flagged tumours without a pathway point mutation have in common. (2) Report the RB1 protein and adjusted-phospho comparison for flagged versus unflagged tumours after removing the 5 RB1-mutant and the CDK4-mutant tumours, and separately report your strict-mutation result after dropping the tumours marked SOMATIC_STATUS = Unmatched (at least one CDKN2A missense and one RB1 splice call are in tumour-only samples). Do direction and size agree with your three definitions? If not, does that change which definition your method should lead with?",
+        "from": [
+          "sl-biodsa-test-c42573be72c3"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-64ca68385ff7"
+      },
+      {
+        "to": "bd25-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your label rests on 'CDKN2A status explains only 4-6% of RB1 variance' and on within-mutant spread, yet your own SD ratio (mutant/other 0.73, CI 0.35-1.01) shows mutants are not more variable than other tumours. First write down which observed pattern would have made you answer False. Then run this check: compute the variance explained by CDKN2A mutation, and the within-mutant SD, for every fully quantified protein, and report where RB1 falls in those two distributions (percentile); repeat the within-group SD against 1,000 random groups of 17 tumours. Is RB1 more or less tied to CDKN2A status than a typical protein? Does the result change whether your rule can separate True from False, and so which of your measured quantities the label should rest on?",
+        "from": [
+          "sl-biodsa-test-cff0b008f570",
+          "sl-biodsa-test-ee5800a13afc"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-bed2b23dd1df"
+      },
+      {
+        "to": "bd25-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You judged purity unimportant from ESTIMATE_TUMORPURITY, which is missing for 39 of 108 tumours, and adjusted for plex and subtype instead. The column TSNET_PURITY is filled for all 108. Run this check: correlate RB1 protein, RB1 phospho and normalised phospho with TSNET_PURITY in all tumours and inside the 17 mutants; refit the mutant-versus-other models with TSNET_PURITY as a covariate; and report the TSNet purity of the RB1-low mutant (C3L-02625) and of each tumour with RB1 protein <= -2, together with whether those tumours remain RB1-low relative to tumours of similar purity. Your leave-one-out already shows the phospho result turns on that one tumour. Does the purity result change your count of RB1-deficient-range cases among CDKN2A-altered tumours, and does that change the method?",
+        "from": [
+          "sl-biodsa-test-d0d7dd8a5dc1",
+          "sl-biodsa-test-cff0b008f570"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-e903306aaf90"
+      },
+      {
+        "to": "bd25-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your 84-tumour 'altered' class calls deletion from low CDKN2A mRNA. RB loss raises p16, so RB-lost tumours cannot enter that class, which could by itself make the altered group look RB-intact. You also kept CDKN2A_PATHWAY_ALTERATION_STATUS only as an unreported sensitivity analysis, and did not use SOMATIC_STATUS (9 tumours have no matched normal; at least one CDKN2A missense and one RB1 splice call are in them). Run this check: report the fraction of tumours in the RB1 loss-of-function range, with exact CIs, under (a) MAF mutation only, (b) MAF mutation excluding Unmatched tumours, (c) mutation or hypermethylation without the mRNA criterion, (d) the pathway flag after removing RB1- and CDK4-mutant tumours; and tabulate the flag against your mRNA-low and methylation-high calls to see what it tracks. Do the four definitions agree on direction and on whether an RB1-deficient subset exists? If not, does that change which definition the method leads with?",
+        "from": [
+          "sl-biodsa-test-b0c2bee12081",
+          "sl-biodsa-test-ee5800a13afc"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-57ce65d5666f"
+      },
+      {
+        "to": "bd25-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: The hypothesis names RB1 expression AND phosphorylation. You report that aggregate phospho tracks protein (rho 0.80), that normalised phospho does not differ by CDKN2A status, and that 'RB1 protein/phospho' tracks the E2F score (rho about 0.4) without saying whether normalised phospho does. Unused rows can test this: protein CDK4, CDK6, CDK2, CCND1 and phospho rows for RBL1, RBL2, CCND1, CCNE1. Run this check inside CDKN2A-altered tumours only: Spearman correlation of protein-normalised RB1 phospho with the E2F-target score, with CDK4/CDK6/CCND1 protein, with CDK2/CCNE1, and with protein-normalised RBL1 and RBL2 phospho (n and CI for each). Does normalised phospho carry structured information beyond RB1 abundance in these tumours? Does the result change how your method treats the 'phosphorylation' half of the claim, as distinct from the 'expression' half?",
+        "from": [
+          "sl-biodsa-test-49f07431753a",
+          "sl-biodsa-test-4d70d87248a3"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-d2bdbedd5784"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In mass-spectrometry phosphoproteomic datasets distributed in cancer-genomics portal format, when a table gives one row per gene whose name concatenates many phosphosite identifiers, how is that gene-level value conventionally computed from the site-level log-ratios (mean, median, sum, most-variable or best-covered site), and is it already normalised to the parent protein's abundance?",
+          "why": "Both teams subtract protein from the gene-level phospho value and read the result as phosphorylation per molecule. If the collapsed value is an average over sites with different kinases and coverage, or is already protein-normalised, that adjusted measure and the conclusion that phosphorylation adds nothing beyond protein would need a different interpretation.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In bulk tumour tissue proteomics, how does RB1 protein abundance in non-malignant stromal and immune cells compare with that in proliferating carcinoma cells, and in which direction does low tumour purity bias the measured bulk RB1 protein level in a tumour whose cancer cells have intact RB1 versus one whose cancer cells have lost RB1?",
+          "why": "The few RB1-low tumours found among CDKN2A-altered cases include a low-purity sample. One team treats low purity as a reason to distrust the RB1-low call while the briefing said admixture hides RB1 loss; the expected direction of the bias decides whether those cases count as an RB-deficient subset.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When somatic mutations are called from tumour exomes without a matched normal sample, what proportion of reported coding variants are typically germline, and which standard filters (population allele-frequency cut-offs, variant allele fraction patterns) are used to separate rare germline variants from true somatic mutations in tumour-suppressor genes?",
+          "why": "A small part of the cohort lacks a matched normal and the mutation file carries no somatic/germline or quality flag, so the mutation-defined groups (which are small) may include calls that are not somatic; knowing the standard filter tells the teams how to check their group definitions.",
+          "passed": false,
+          "reasons": [
+            "contains another team's value for \"label\""
+          ]
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In mass-spectrometry phosphoproteomic datasets distributed in cancer-genomics portal format, when a table gives one row per gene whose name concatenates many phosphosite identifiers, how is that gene-level value conventionally computed from the site-level log-ratios (mean, median, sum, most-variable or best-covered site), and is it already normalised to the parent protein's abundance?",
+          "answer": "Not settled by the web within the call limit. What the pages I opened do show: (1) The portal's own convention for mass-spec phospho data is one row per SITE, not per gene. Its CPTAC import script (ms2cbioportal.py) names rows GENE|GENE_<P><residue><position>, chaining multi-site peptides with underscores (this docstring came from a search excerpt of the file; the part I opened shows the processing order: clean rows, format gene names, select sample columns, remove infinities, average duplicate rows, optional proteomic ruler). There is no step in that sequence that subtracts or divides by protein abundance. (2) A one-row-per-gene table listing many sites is therefore a non-standard collapse, and I found no document stating its rule. A phosphoproteomics review (Mantini et al. 2020) says many tools 'simply collapse quantitative information from multiple phosphosites into a single protein phosphorylation value' and warns that this loses site-specific behaviour (activating versus inhibiting sites). The only explicit rule I saw was a median of the log-ratios of all sites from the protein, in a search excerpt of that review, not in the text I could open. (3) The FragPipe TMT tutorial says TMT-Integrator writes gene-, protein-, peptide- and site-level reports with median centring as the default normalisation; no protein-abundance correction is mentioned in the part read. Working assumption for the teams: the value is a mean or median over whichever sites were quantified and is NOT protein-normalised. Under that assumption 'phospho minus protein' is a legitimate but coarse measure (average net phosphorylation per molecule across measured sites, not CDK4/6-site occupancy), and the sites feeding the average may differ between TMT plexes. The normalisation question can be checked in the data: a strong positive correlation between the gene-level phospho row and the protein row means it is not protein-normalised; near zero or negative would suggest it already is. I could not reach the 'Protein level Data' section of the portal file-format page (the tool returned only the top of the page).",
+          "sources": [
+            "https://github.com/cBioPortal/CPTAC-proteomics-pipeline/blob/master/ms2cbioportal.py",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6731080/",
+            "https://doi.org/10.1002/pmic.201900312",
+            "https://fragpipe.nesvilab.org/docs/tutorial_tmt.html",
+            "https://github.com/cbioportal/cbioportal/blob/master/docs/File-Formats.md"
+          ],
+          "confidence": "low for the collapse statistic (web does not settle it); medium that the value is not protein-normalised",
+          "deliveries": {
+            "bd25-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-91f49175ceda"
+            },
+            "bd25-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-d804b4a46371"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In mass-spectrometry phosphoproteomic datasets distributed in cancer-genomics portal format, when a table gives one row per gene whose name concatenates many phosphosite identifiers, how is that gene-level value conventionally computed from the site-level log-ratios (mean, median, sum, most-variable or best-covered site), and is it already normalised to the parent protein's abundance? ANSWER: Not settled by the web within the call limit. What the pages I opened do show: (1) The portal's own convention for mass-spec phospho data is one row per SITE, not per gene. Its CPTAC import script (ms2cbioportal.py) names rows GENE|GENE_<P><residue><position>, chaining multi-site peptides with underscores (this docstring came from a search excerpt of the file; the part I opened shows the processing order: clean rows, format gene names, select sample columns, remove infinities, average duplicate rows, optional proteomic ruler). There is no step in that sequence that subtracts or divides by protein abundance. (2) A one-row-per-gene table listing many sites is therefore a non-standard collapse, and I found no document stating its rule. A phosphoproteomics review (Mantini et al. 2020) says many tools 'simply collapse quantitative information from multiple phosphosites into a single protein phosphorylation value' and warns that this loses site-specific behaviour (activating versus inhibiting sites). The only explicit rule I saw was a median of the log-ratios of all sites from the protein, in a search excerpt of that review, not in the text I could open. (3) The FragPipe TMT tutorial says TMT-Integrator writes gene-, protein-, peptide- and site-level reports with median centring as the default normalisation; no protein-abundance correction is mentioned in the part read. Working assumption for the teams: the value is a mean or median over whichever sites were quantified and is NOT protein-normalised. Under that assumption 'phospho minus protein' is a legitimate but coarse measure (average net phosphorylation per molecule across measured sites, not CDK4/6-site occupancy), and the sites feeding the average may differ between TMT plexes. The normalisation question can be checked in the data: a strong positive correlation between the gene-level phospho row and the protein row means it is not protein-normalised; near zero or negative would suggest it already is. I could not reach the 'Protein level Data' section of the portal file-format page (the tool returned only the top of the page). HOW SURE: low for the collapse statistic (web does not settle it); medium that the value is not protein-normalised. SOURCES: https://github.com/cBioPortal/CPTAC-proteomics-pipeline/blob/master/ms2cbioportal.py, https://pmc.ncbi.nlm.nih.gov/articles/PMC6731080/, https://doi.org/10.1002/pmic.201900312, https://fragpipe.nesvilab.org/docs/tutorial_tmt.html, https://github.com/cbioportal/cbioportal/blob/master/docs/File-Formats.md."
+        },
+        {
+          "question": "In bulk tumour tissue proteomics, how does RB1 protein abundance in non-malignant stromal and immune cells compare with that in proliferating carcinoma cells, and in which direction does low tumour purity bias the measured bulk RB1 protein level in a tumour whose cancer cells have intact RB1 versus one whose cancer cells have lost RB1?",
+          "answer": "Partly settled. Non-malignant cells in tumour tissue do carry RB1: pathology studies use them as the internal positive control when tumour cells are RB-negative ('Stromal cells served as the positive internal control. Cases lacking adequate internal control were excluded' in a small-cell lung cancer series; 'RB1-positive endothelial cells served as an internal positive control' in a glioblastoma series; endothelial staining likewise in a prostate series). Those three sentences are search excerpts of the pages; the tool returned only the top of each page when opened, where the one directly relevant passage was the glioblastoma paper's statement that RB1 FISH signal persists in 'intratumoral non-neoplastic elements such as endothelial cells' when tumour cells have homozygous deletion. So for a tumour whose cancer cells have lost RB1, admixture RAISES bulk RB1 toward the stromal level and low purity hides the loss, as the briefing said. The quantitative comparison of stroma with proliferating RB1-intact carcinoma cells is NOT settled: the only statement found is that 'RB levels fluctuate as a function of cellular proliferation' (review, search excerpt), with no direction or magnitude, and no source gave a measured stroma-to-carcinoma ratio or a purity effect on RB1 in bulk proteomics. The direction for an RB1-intact tumour is therefore reasoning, not a sourced fact: if quiescent stroma holds less RB than cycling cancer cells, low purity LOWERS bulk RB1 in an intact tumour. Taken together, purity compresses both kinds of tumour toward the stromal level rather than biasing one way. An RB1-low value in a low-purity sample cannot be created by admixture if the cancer cells truly lost RB (admixture works against it, so that call is conservative), but it could come from dilution of an RB1-intact tumour if stroma is RB-poor. Neither team's rule is safe on its own; the data can decide: among RB1-wild-type tumours regress RB1 protein on purity (positive slope means dilution lowers RB1 and a low-purity RB1-low call is suspect; flat or negative means purity cannot explain it), check whether the sample sits below what its purity predicts, and look for RB-loss features stroma cannot mimic (high p16/CDKN2A RNA or protein, high E2F targets, RB1 truncating mutation).",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC9623236/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3246124/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC2914856/",
+            "https://aacrjournals.org/clincancerres/article/28/2/255/675586/Relevance-of-pRB-Loss-in-Human",
+            "https://aacrjournals.org/clincancerres/article/20/4/890/78787/Rb-Loss-Is-Characteristic-of-Prostatic-Small-Cell"
+          ],
+          "confidence": "medium: high that stromal and endothelial cells express RB1 and that admixture masks loss in RB1-lost tumours; low on the stroma-versus-carcinoma level and hence on the direction for RB1-intact tumours",
+          "deliveries": {
+            "bd25-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-638313537ddf"
+            },
+            "bd25-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-47a48468b588"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In bulk tumour tissue proteomics, how does RB1 protein abundance in non-malignant stromal and immune cells compare with that in proliferating carcinoma cells, and in which direction does low tumour purity bias the measured bulk RB1 protein level in a tumour whose cancer cells have intact RB1 versus one whose cancer cells have lost RB1? ANSWER: Partly settled. Non-malignant cells in tumour tissue do carry RB1: pathology studies use them as the internal positive control when tumour cells are RB-negative ('Stromal cells served as the positive internal control. Cases lacking adequate internal control were excluded' in a small-cell lung cancer series; 'RB1-positive endothelial cells served as an internal positive control' in a glioblastoma series; endothelial staining likewise in a prostate series). Those three sentences are search excerpts of the pages; the tool returned only the top of each page when opened, where the one directly relevant passage was the glioblastoma paper's statement that RB1 FISH signal persists in 'intratumoral non-neoplastic elements such as endothelial cells' when tumour cells have homozygous deletion. So for a tumour whose cancer cells have lost RB1, admixture RAISES bulk RB1 toward the stromal level and low purity hides the loss, as the briefing said. The quantitative comparison of stroma with proliferating RB1-intact carcinoma cells is NOT settled: the only statement found is that 'RB levels fluctuate as a function of cellular proliferation' (review, search excerpt), with no direction or magnitude, and no source gave a measured stroma-to-carcinoma ratio or a purity effect on RB1 in bulk proteomics. The direction for an RB1-intact tumour is therefore reasoning, not a sourced fact: if quiescent stroma holds less RB than cycling cancer cells, low purity LOWERS bulk RB1 in an intact tumour. Taken together, purity compresses both kinds of tumour toward the stromal level rather than biasing one way. An RB1-low value in a low-purity sample cannot be created by admixture if the cancer cells truly lost RB (admixture works against it, so that call is conservative), but it could come from dilution of an RB1-intact tumour if stroma is RB-poor. Neither team's rule is safe on its own; the data can decide: among RB1-wild-type tumours regress RB1 protein on purity (positive slope means dilution lowers RB1 and a low-purity RB1-low call is suspect; flat or negative means purity cannot explain it), check whether the sample sits below what its purity predicts, and look for RB-loss features stroma cannot mimic (high p16/CDKN2A RNA or protein, high E2F targets, RB1 truncating mutation). HOW SURE: medium: high that stromal and endothelial cells express RB1 and that admixture masks loss in RB1-lost tumours; low on the stroma-versus-carcinoma level and hence on the direction for RB1-intact tumours. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC9623236/, https://pmc.ncbi.nlm.nih.gov/articles/PMC3246124/, https://pmc.ncbi.nlm.nih.gov/articles/PMC2914856/, https://aacrjournals.org/clincancerres/article/28/2/255/675586/Relevance-of-pRB-Loss-in-Human, https://aacrjournals.org/clincancerres/article/20/4/890/78787/Rb-Loss-Is-Characteristic-of-Prostatic-Small-Cell."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd25-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd25-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd25-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd25-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd25-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 139.03159170795698,
+      "cost_usd": 0.31264079999999994,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 94.59327745903283,
+      "cost_usd": 0.1590131,
+      "error": null
+    },
+    {
+      "agent": "bd25-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 224.51843287493102,
+      "cost_usd": 0.48915580000000003,
+      "error": null
+    },
+    {
+      "agent": "bd25-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 264.1955596670741,
+      "cost_usd": 0.5093156,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 229.47524449997582,
+      "cost_usd": 0.560553,
+      "error": null
+    },
+    {
+      "agent": "bd25-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 187.58892716595437,
+      "cost_usd": 0.40841739999999993,
+      "error": null
+    },
+    {
+      "agent": "bd25-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 320.10547437507194,
+      "cost_usd": 0.6081552,
+      "error": null
+    },
+    {
+      "agent": "bd25-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 358.50097166595515,
+      "cost_usd": 0.5545027,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

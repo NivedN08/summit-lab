@@ -1,0 +1,323 @@
+{
+  "study": "pf10",
+  "status": "replicated",
+  "final": {
+    "agent": "pf10-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-pilot/lab-planted/pf10/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "pf10-library": "opus",
+    "pf10-team-a": "opus",
+    "pf10-team-b": "opus",
+    "pf10-team-c": "opus",
+    "pf10-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "pf10-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-pilot/lab-planted/pf10/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "pf10-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-pilot/lab-planted/pf10/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "pf10-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-pilot/lab-planted/pf10/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "pf10-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout-pilot/lab-planted/pf10/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "pf10-team-a",
+        "pf10-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "pf10-team-a",
+        "pf10-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The IFN-gamma signature score is measured per sample (data_clinical_sample.txt), but statin use is recorded per patient. Patients may contribute several samples (e.g. primary and metastasis). Count samples per PATIENT_ID and check for sample IDs that do not join to the patient table. If patients have more than one sample, analyse one value per patient (e.g. primary sample only, or the patient mean) or use a mixed model with a patient random effect. A sample-level t-test treats repeated samples as independent and overstates significance, so report it only as a sensitivity check.",
+      "from": [
+        "sl-lab-planted-b6c8d4513afd"
+      ],
+      "reason": "This sets the unit of analysis. Getting it wrong inflates the evidence.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-981e5387f770"
+      }
+    },
+    {
+      "text": "Expression-signature scores can be driven by PROCESSING_BATCH. Cross-tabulate statin status by batch, compare IFNG scores across batches, and fit IFNG ~ statin + batch (or stratify within batch). If statin users are spread unevenly across batches, the crude difference can be an artefact or can reverse after adjustment (Simpson's paradox). In that case base the conclusion on the batch-adjusted estimate.",
+      "from": [
+        "sl-lab-planted-be4b3083148b"
+      ],
+      "reason": "Batch confounding can change the direction of the result.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-339ddc76abd1"
+      }
+    },
+    {
+      "text": "Bulk immune signatures such as IFN-gamma scores tend to fall as TUMOR_PURITY rises, because purer samples hold less immune infiltrate. Correlate purity with IFNG_SIGNATURE_SCORE and compare purity between statin groups. If they differ, adjust for purity (e.g. IFNG ~ statin + purity + batch + sample type) and report whether the statin estimate changes in sign or size.",
+      "from": [
+        "sl-lab-planted-fa91562fec3b"
+      ],
+      "reason": "Purity is a technical confounder that can create or hide a group difference.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-2a46437ea821"
+      }
+    },
+    {
+      "text": "SAMPLE_TYPE (primary vs metastasis) affects the immune microenvironment. Cross-tabulate sample type by statin status and compare IFNG by sample type. If it is imbalanced, stratify by sample type or restrict to primary samples, with a sensitivity analysis.",
+      "from": [
+        "sl-lab-planted-f4310d981fbf"
+      ],
+      "reason": "Imbalanced sample type between groups can confound the comparison.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-67da5fa7757e"
+      }
+    },
+    {
+      "text": "Patients taking statins differ systematically from those who do not (age, comorbidity, healthy-user and indication bias), and statin prescribing may vary by SITE. Cross-tabulate statin use by SITE and compare AGE, SEX, ECOG_PS and BMI between statin groups. Include SITE and the key covariates in an adjusted model. Do not adjust for TOTAL_CHOLESTEROL as an ordinary confounder: statins lower cholesterol, so it lies on the causal path (a mediator). Use it only in a sensitivity analysis.",
+      "from": [
+        "sl-lab-planted-59ceb9a56e06"
+      ],
+      "reason": "This covers patient-level confounding and warns against a specific over-adjustment mistake.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-946ab02a12bf"
+      }
+    },
+    {
+      "text": "Do not choose the label from p<0.05 alone. Report the effect estimate with its 95% CI, both crude and adjusted, plus a nonparametric test (Mann-Whitney), and check outliers and missing IFNG or statin values. Treat a non-significant result, a clearly null estimate and an estimate in the opposite direction as different findings. Fit the label definitions accordingly: 'True' needs users to be robustly higher, 'False' needs relevant variables present that give a null or reversed result, and 'Not verifiable' applies only when the relevant variables are missing.",
+      "from": [
+        "sl-lab-planted-f5c5407aa394"
+      ],
+      "reason": "This guides how to turn the statistics into a label without confusing absence of evidence with evidence against.",
+      "fact_ids": {
+        "team-a": "sl-lab-planted-bcb80b2feb5f"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat the batch- and covariate-adjusted OLS mean difference as the right summary and assume a common additive statin effect across batches, sites and sample types; neither formally tested statin-by-batch or statin-by-sample-type interaction (Team A only reports per-batch estimates of +9 to +14).",
+      "Both assume STATIN_USE/dose>0 is a clean binary exposure and that dose carries no extra information; neither examined a dose gradient among users.",
+      "Both assume the IFNG score is on a comparable scale across processing batches (additive batch shift only), not that batches differ in spread or scaling."
+    ],
+    "unused_evidence": [
+      "HYPOXIA_SCORE (from the same expression assay) was used by neither team; it could serve as a negative-control assay signature to show whether statin users have generally shifted assay scores (technical artefact) rather than a specific IFNG difference.",
+      "STATIN_DOSE_MG used only as a binary; a dose-response check among users is unused.",
+      "SERUM_CREATININE, SERUM_ALBUMIN and FOLLOW_UP_MONTHS were not used; Team B also did not use the supplement file (ECOG_PS, BMI). These are health-status markers that could proxy confounding by indication or frailty, though they are unlikely to reverse a ~12-point effect."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named residual confounding by indication as their weakest point and only reported it; neither used the available health-status variables (creatinine, albumin, ECOG, BMI, cholesterol) as a deliberate check, though the hypothesis is associational so this matters little for the label."
+    ],
+    "second_readings": [
+      "'Higher' could be read as a mean difference or a distributional/median difference; both teams report Welch and Mann-Whitney, which agree, so this reading is covered.",
+      "The hypothesis is associational ('patients taking statins have a higher score'), not causal; the crude and adjusted estimates agree, so neither reading changes the label. No second reading of group, quantity or scale appears plausible: the STATIN_USE inverted coding is documented in the header and matches dose exactly."
+    ],
+    "verdict": "High trust: both teams caught the documented inverted STATIN_USE coding, confirmed it against dose, and found a large difference that holds crude, adjusted and within every batch. The remaining checks (negative-control signature, interactions, extra health covariates) are unlikely to reverse it.",
+    "questions": [
+      {
+        "to": "pf10-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Fit IFNG ~ statin * PROCESSING_BATCH and IFNG ~ statin * SAMPLE_TYPE (plus your covariates) and test the interaction terms. Is the statin difference the same direction in every batch-by-sample-type cell, and does any interaction change your method or label?",
+        "from": [
+          "sl-lab-planted-d265109d4df0"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-830fa1a0e275"
+      },
+      {
+        "to": "pf10-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Run the same statin comparison on HYPOXIA_SCORE, which comes from the same expression assay, as a negative-control outcome. If statin users are also shifted on hypoxia, does that suggest an assay-level artefact that changes how you interpret the IFNG difference?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-2239391e50e2"
+      },
+      {
+        "to": "pf10-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Among users only, regress IFNG on STATIN_DOSE_MG, and add SERUM_CREATININE, SERUM_ALBUMIN and FOLLOW_UP_MONTHS to the adjusted model. Does the estimate's sign or CI change enough to alter your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-4589b5761051"
+      },
+      {
+        "to": "pf10-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You did not join data_clinical_supplement.txt. Join it, check ECOG_PS and BMI balance between statin groups, and add them (and SERUM_ALBUMIN, SERUM_CREATININE, TOTAL_CHOLESTEROL) to the adjusted model. Does the statin estimate change in sign or CI?",
+        "from": [
+          "sl-lab-planted-3321ed6a3c12"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-8e80ad936d35"
+      },
+      {
+        "to": "pf10-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Run the statin comparison on HYPOXIA_SCORE as a negative-control outcome from the same assay. If users differ there too, does that change your interpretation of the IFNG result?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-1f6ec90df017"
+      },
+      {
+        "to": "pf10-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Test statin-by-batch and statin-by-sample-type interactions, and report the statin difference within each batch-by-sample-type cell. Is the direction consistent everywhere, and does any heterogeneity change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-planted-43d1820614bf"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "pf10-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "pf10-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "pf10-team-b",
+      "round": "challenge",
+      "reason": "agreed with pf10-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "pf10-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 58.41278391692322,
+      "cost_usd": 0.1776902,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 45.20072045910638,
+      "cost_usd": 0.14119740000000003,
+      "error": null
+    },
+    {
+      "agent": "pf10-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 45.40197258302942,
+      "cost_usd": 0.157683,
+      "error": null
+    },
+    {
+      "agent": "pf10-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 66.50701687496621,
+      "cost_usd": 0.20123039999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 47.73775433294941,
+      "cost_usd": 0.21897080000000002,
+      "error": null
+    },
+    {
+      "agent": "pf10-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 46.79378929105587,
+      "cost_usd": 0.1934076,
+      "error": null
+    },
+    {
+      "agent": "pf10-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 55.34476058394648,
+      "cost_usd": 0.26089460000000003,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

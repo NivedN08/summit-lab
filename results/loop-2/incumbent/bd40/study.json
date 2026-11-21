@@ -1,0 +1,418 @@
+{
+  "study": "bd40",
+  "status": "replicated",
+  "final": {
+    "agent": "bd40-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd40/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bd40-library": "opus",
+    "bd40-team-a": "opus",
+    "bd40-team-b": "opus",
+    "bd40-team-c": "opus",
+    "bd40-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd40-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd40/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd40-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd40/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd40-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd40/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd40-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd40/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd40-team-a",
+        "bd40-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd40-team-a",
+        "bd40-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "'Acquiring new alterations' is a claim about change within a patient over time. Pooled mutation counts or TMB compared between FP and FN groups answer a different question. Find the patients with two or more samples (from SAMPLE_TYPE such as Primary vs Recurrence/Metastasis, and from sample-ID suffixes like T01/T02). Order each patient's samples and compare every later sample with the earliest one. Count an alteration as acquired if it appears in the later sample and not in the earliest. Summarise at patient level (union or max across later samples) so that patients with several samples are not counted twice, then compare those per-patient counts between FP and FN patients.",
+      "from": [
+        "sl-incumbent-e367fdf3d660",
+        "sl-incumbent-ada2ae1ba14f"
+      ],
+      "reason": "This defines the unit of analysis. Without it, teams may test baseline burden instead of acquired alterations.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-ff8e466729f0"
+      }
+    },
+    {
+      "text": "The clinical tables have no fusion-status (FP vs FN) column. Histology (ARMS/ERMS in ONCOTREE_CODE) is only a proxy: some ARMS are fusion-negative, and spindle/sclerosing RMS are FN. Define fusion status from data_sv.txt by calling a patient FP if any of their samples carries a PAX3-FOXO1 or PAX7-FOXO1 SV (also check other FOXO1 partners). Cross-tabulate this against histology. DNA panels can miss fusions, so be cautious with ARMS cases that have no detected fusion, and report results under both the SV-based and the histology-based definitions.",
+      "from": [
+        "sl-incumbent-159691375e85"
+      ],
+      "reason": "The group variable has to be built by the teams, and the way it is built can change group membership.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-1c3d0c1ca809"
+      }
+    },
+    {
+      "text": "Paired samples may have been sequenced on different MSK-IMPACT panel versions (341/410/468/505). A later, larger panel creates spurious 'new' alterations. Use data_gene_panel_matrix.txt to find each sample's panel, and count an alteration as acquired only if its gene was covered by the earlier sample's panel too (the intersection of the two panels).",
+      "from": [
+        "sl-incumbent-40024fde91de"
+      ],
+      "reason": "This is a technical artifact that directly inflates acquired counts.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-2f835a30e206"
+      }
+    },
+    {
+      "text": "Low tumour purity or coverage in one sample of a pair can make alterations look gained or lost, and CNAs are especially sensitive to purity. Compare TUMOR_PURITY and coverage within each pair, and check the VAF (t_alt_count/t_depth) of 'new' mutations. Flag pairs where purity is below about 20-30% and run a sensitivity analysis without them.",
+      "from": [
+        "sl-incumbent-1f29d11299c5"
+      ],
+      "reason": "This artifact can create false acquired or lost events.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-11296b573a91"
+      }
+    },
+    {
+      "text": "'Alterations' covers more than SNVs/indels. Include CNA calls of +/-2 from data_cna.txt (for example MYCN or CDK4 amplification and CDKN2A deletion) and SVs in the per-patient acquired counts. Check for NaN CNA values in genes that a sample's panel did not cover. Report acquired mutations, CNAs and SVs separately and also combined.",
+      "from": [
+        "sl-incumbent-98c2d89c58d1"
+      ],
+      "reason": "A mutation-only analysis may miss the main acquired events in RMS.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-4d3aa29a2ded"
+      }
+    },
+    {
+      "text": "The hypothesis has two parts: (a) FN patients acquire fewer new alterations, and (b) no acquired mutation is shared across FN patients. Test both. For (b), list acquired alterations by Hugo_Symbol across FN patients and across FP patients separately, and count genes acquired in two or more patients (in RMS, candidates include RAS genes, TP53, CDKN2A, MYCN, FGFR4, NF1 and BCOR). Keep baseline (shared/truncal) alterations apart from acquired ones. FN-RMS is known to carry more baseline mutations than FP-RMS, so do not mistake a baseline difference for a difference in acquisition. Group sizes are small, so report counts per gene and per group with the n, and give more weight to direction and description than to p-values.",
+      "from": [
+        "sl-incumbent-9e106990d3d8",
+        "sl-incumbent-1ec45d47bc78"
+      ],
+      "reason": "Both parts of the claim need a test, and baseline differences must not be confused with acquisition.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-3fb582a5da2c"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams order samples by the T-number in SAMPLE_ID and call anything absent from the lowest-numbered sample 'acquired'. Several FN pairs start from a metastasis and end at a primary (e.g. P-0074869 T02 Metastasis -> T03 Primary, P-0077663 T01 Metastasis -> T02 Primary), and P-0013120 has two metastases. So 'acquired' may partly mean spatial heterogeneity, not evolution over time.",
+      "Both treat a variant missing from the earlier sample's call set as truly absent there. Neither looked at allele counts (t_alt_count/t_depth, filled for all 78 mutations) or purity-adjusted VAF to see whether 'new' events are clonal in the later sample and could have been below detection in a low-purity earlier sample.",
+      "Both treat each patient's pair as one comparable unit, with no adjustment for the differing time gaps, panel versions or numbers of samples per patient (P-0035844 and P-0060318 have three samples)."
+    ],
+    "unused_evidence": [
+      "data_cna_hg19.seg (segment log2 ratios for all 42 samples): neither team used it. A genome-wide copy-number change measure (e.g. fraction of genome changed between samples) could confirm or contradict the gene-level |CNA|=2 counts that drive much of the FN excess.",
+      "AGE_AT_SEQ_REPORTED_YEARS and SAMPLE_TYPE: these offer an independent check on time order that neither team used to resolve the ordering weakness both named.",
+      "MSI_SCORE/MSI_TYPE: two FN patients are MSI 'Indeterminate' with high scores (P-0050430 up to 8.71, P-0074869 about 4.4), and P-0050430 is an adult (age 53). A few hypermutating or adult cases could carry the group difference.",
+      "t_alt_count/t_depth and TUMOR_PURITY: these allow a VAF/clonality check of acquired mutations. Team B did not use purity at all.",
+      "data_gene_panel_matrix.txt: Team B reports no restriction to genes covered by both panels, although several pairs switch panels (IMPACT468 -> IMPACT505, IMPACT410 -> IMPACT468)."
+    ],
+    "unresolved_weak_points": [
+      "Sample time order (both teams): each reported it and kept the method because 'the effect is large'. Neither re-ran the analysis with a different ordering, e.g. by SAMPLE_TYPE, by age at sequencing, or with symmetric differences.",
+      "Team B: small n and no formal test. It also reports no panel-intersection restriction and no purity sensitivity check. These were not resolved.",
+      "Team A's recurrent acquired genes in FN (TP53, MDM2, BAP1) mix mutations and CNAs (MDM2 is likely an amplification). The 'no common mutations' half of the claim needs a count of mutations only."
+    ],
+    "second_readings": [
+      "'No common mutations' could mean no acquired mutation (SNV/indel only) recurs across FN patients, rather than no recurrent alteration of any type. It could also mean no mutation is shared between the samples of one patient, i.e. a fully divergent, non-truncal relationship.",
+      "'Fewer new alterations' could be read relative to FP-RMS (as both teams did) or relative to the FN tumours' own baseline burden. FN starts with more baseline mutations, so the reading could change the comparison.",
+      "The task's wording asks about acquisition over disease progression (relapse or metastasis after the first sample). Pairs in which both samples were taken at diagnosis (e.g. two Primary samples, as in P-0048073, P-0050430 and P-0051453) may not be in scope."
+    ],
+    "verdict": "Moderately high trust. Both teams independently find that FN patients gain more alterations than FP patients, a large difference that runs against the hypothesis and fits known RMS biology. Still, both rely on ID-based ordering and gene-level calls without VAF, seg or MSI checks. The 'no common mutations' half has not been separated from CNAs, so the checks above should be run before release.",
+    "questions": [
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Split your FN recurrent acquired genes (TP53, MDM2, BAP1) and your per-group totals into SNV/indel mutations versus CNAs versus SVs. Does any acquired mutation (not a CNA) recur in two or more FN patients? Does that change how you judge the 'no common mutations' half of the hypothesis?",
+        "from": [
+          "sl-incumbent-7aa18bdeeb1d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-c9ed2d3c112d"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Re-order each patient's samples by SAMPLE_TYPE (Primary before Local Recurrence/Metastasis) and by AGE_AT_SEQ_REPORTED_YEARS instead of the T-number. Also drop pairs where both samples are Primary. Do the FN vs FP acquired counts and their direction hold, and does this change your method?",
+        "from": [
+          "sl-incumbent-ccf28aac9323"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-0b177676303d"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Check whether any FOXO1 fusion, or other SV present in one sample of an FP patient, is missing from the other sample and is therefore counted as 'acquired' or as a loss. Separately, rerun the comparison excluding the two FN patients with MSI 'Indeterminate' (P-0050430, P-0074869). Does either check change the group difference?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-e113a609edb9"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Using data_cna_hg19.seg, compute for each pair a genome-wide measure of copy-number change between earlier and later samples (e.g. fraction of genome whose seg.mean differs by more than a threshold). Does it agree in direction with your gene-level CNA counts for FN vs FP, and does it change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-757f42a60c0c"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Several pairs switch panels between samples (e.g. IMPACT468 -> IMPACT505). Restrict new mutations and new CNAs to genes covered by both samples' panels (data_gene_panel_matrix / non-NaN CNA in both). Do the FN vs FP per-pair counts still differ in the same direction?",
+        "from": [
+          "sl-incumbent-0d4fa2f7d43b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-369aa949be0f"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Several FN first samples have low TUMOR_PURITY (e.g. P-0051132 at 10%). For each 'new' mutation, compute purity-adjusted VAF in the later sample from t_alt_count/t_depth, and rerun the comparison excluding pairs whose earlier sample has purity of 30% or less. Does the FN excess survive, and does this change your method?",
+        "from": [
+          "sl-incumbent-0d4fa2f7d43b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-aaf7166dd3f1"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Re-order samples by SAMPLE_TYPE and AGE_AT_SEQ_REPORTED_YEARS rather than SAMPLE_ID, and separately count events that differ in either direction (gained or lost). Then run a simple two-group test (e.g. Mann-Whitney) on per-patient counts. Does the direction or strength of the FN vs FP difference change?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-047e0363d930"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: List the new mutations (SNV/indel only, excluding CNAs) by Hugo_Symbol across FN patients. Is any gene newly mutated in two or more FN patients? How does that bear on the 'no common mutations' part of the hypothesis as distinct from the 'fewer' part?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-193aeef1b947"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In targeted tumour-normal panel sequencing with multiple samples per patient, what is the standard way to decide that a mutation is truly absent from an earlier sample rather than below detection (e.g. genotyping the later sample's variants in the earlier sample's reads, purity-adjusted VAF thresholds)?",
+          "why": "Both teams count 'acquired' events from call-set presence or absence, without the allele-count or purity reasoning that decides whether 'new' is real.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In published comparisons of genomic evolution between diagnosis and relapse/metastasis, how are acquired alterations usually defined when the two samples are on different versions of a targeted gene panel, or when the first sequenced sample is a metastasis rather than the primary?",
+          "why": "Panel switches and non-chronological sample order are present here, and neither team checked whether its handling of them follows accepted practice.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In targeted tumour-normal panel sequencing with multiple samples per patient, what is the standard way to decide that a mutation is truly absent from an earlier sample rather than below detection (e.g. genotyping the later sample's variants in the earlier sample's reads, purity-adjusted VAF thresholds)?",
+          "answer": "The web did not settle this: the research gateway returned HTTP 403 on all 3 attempted calls, so no page was read. From domain knowledge, the usual practice (e.g. MSK-IMPACT pipelines) is to force-genotype ('fillout', e.g. GetBaseCountsMultiSample) every variant found in any of a patient's samples in all of that patient's BAMs. A variant is called absent from the earlier sample only if that locus has enough depth (roughly >=20-50x) and 0-1 alt reads, after allowing for the sample's purity. Low-level supporting reads mean 'present (subclonal)'. With call tables only, 'new' calls are provisional: check the earlier sample's purity and coverage, and the VAF of the new call, and run a sensitivity analysis that excludes low-purity baselines.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bd40-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-edb3d28c4985"
+            },
+            "bd40-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-90fe0cd8be9f"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In targeted tumour-normal panel sequencing with multiple samples per patient, what is the standard way to decide that a mutation is truly absent from an earlier sample rather than below detection (e.g. genotyping the later sample's variants in the earlier sample's reads, purity-adjusted VAF thresholds)? ANSWER: The web did not settle this: the research gateway returned HTTP 403 on all 3 attempted calls, so no page was read. From domain knowledge, the usual practice (e.g. MSK-IMPACT pipelines) is to force-genotype ('fillout', e.g. GetBaseCountsMultiSample) every variant found in any of a patient's samples in all of that patient's BAMs. A variant is called absent from the earlier sample only if that locus has enough depth (roughly >=20-50x) and 0-1 alt reads, after allowing for the sample's purity. Low-level supporting reads mean 'present (subclonal)'. With call tables only, 'new' calls are provisional: check the earlier sample's purity and coverage, and the VAF of the new call, and run a sensitivity analysis that excludes low-purity baselines. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "In published comparisons of genomic evolution between diagnosis and relapse/metastasis, how are acquired alterations usually defined when the two samples are on different versions of a targeted gene panel, or when the first sequenced sample is a metastasis rather than the primary?",
+          "answer": "The web did not settle this: the gateway was down and no page was read. From domain knowledge, acquired or private alterations are counted only in genes covered by both samples' panels (the intersection). Genes only on the later panel are excluded or flagged. Samples are ordered by collection time (earlier or pre-treatment vs later or post-treatment), not by the primary/metastasis label. So an earlier metastasis is the baseline, and 'acquired' means found only at the later timepoint. Some studies call these 'private' rather than 'acquired' when the samples are synchronous or their order is unclear.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bd40-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-f14e9a535387"
+            },
+            "bd40-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-da6ed0dbdd62"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In published comparisons of genomic evolution between diagnosis and relapse/metastasis, how are acquired alterations usually defined when the two samples are on different versions of a targeted gene panel, or when the first sequenced sample is a metastasis rather than the primary? ANSWER: The web did not settle this: the gateway was down and no page was read. From domain knowledge, acquired or private alterations are counted only in genes covered by both samples' panels (the intersection). Genes only on the later panel are excluded or flagged. Samples are ordered by collection time (earlier or pre-treatment vs later or post-treatment), not by the primary/metastasis label. So an earlier metastasis is the baseline, and 'acquired' means found only at the later timepoint. Some studies call these 'private' rather than 'acquired' when the samples are synchronous or their order is unclear. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd40-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd40-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd40-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd40-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd40-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 58.74290916591417,
+      "cost_usd": 0.1877166,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 39.95123579201754,
+      "cost_usd": 0.1343102,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 37.284032416995615,
+      "cost_usd": 0.1602782,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 50.20876645797398,
+      "cost_usd": 0.260498,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 79.17199312499724,
+      "cost_usd": 0.3513786,
+      "error": null
+    },
+    {
+      "agent": "bd40-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 39.163840332999825,
+      "cost_usd": 0.1391708,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 64.67553954198956,
+      "cost_usd": 0.34555179999999996,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 80.46779437502846,
+      "cost_usd": 0.3279958,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

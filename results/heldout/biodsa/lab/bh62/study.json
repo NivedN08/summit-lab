@@ -1,0 +1,396 @@
+{
+  "study": "bh62",
+  "status": "replicated",
+  "final": {
+    "agent": "bh62-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh62/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh62-library": "opus",
+    "bh62-team-a": "opus",
+    "bh62-team-b": "opus",
+    "bh62-team-c": "opus",
+    "bh62-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh62-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh62/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh62-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh62/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh62-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh62/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh62-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh62/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh62-team-a",
+        "bh62-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh62-team-a",
+        "bh62-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The hypothesis concerns a mutational profile, not self-reported smoking. Compute per-sample SNV spectra from data_mutations.txt and judge how many tumours show a tobacco-like (SBS4-like: C>A-dominant, with transcriptional strand bias) profile. Use clinical smoking variables (TOBACCO_SMOKING_HISTORY_INDICATOR, pack-years) only as context. If the two disagree, base the label on the mutation data and say which evidence decided it. Note that in head and neck cancer SBS4 is reported to be much weaker than in lung cancer, even in heavy smokers (Alexandrov et al. 2016, Science).",
+      "from": [
+        "sl-lab-51442c93aafc"
+      ],
+      "reason": "Using smoking history as a stand-in for the mutational profile is the most likely way to reach the wrong conclusion.",
+      "fact_ids": {
+        "team-a": "sl-lab-3f37466b71a2"
+      }
+    },
+    {
+      "text": "HNSCC exome spectra are often dominated by APOBEC (SBS2/SBS13: C>T and C>G at TCW) and clock-like (SBS1/SBS5) signatures. For each sample, report the fractions of the six substitution classes and classify it as tobacco-like (high C>A), APOBEC-like or clock-like. Before looking at results, decide whether 'consistent with tobacco' means dominant or merely detectable. Report both counts against a 50% threshold.",
+      "from": [
+        "sl-lab-5604eb789c13"
+      ],
+      "reason": "The operational definition of 'consistent with tobacco' decides the majority call, so fix it in advance and show both versions.",
+      "fact_ids": {
+        "team-a": "sl-lab-914b1525c5ce"
+      }
+    },
+    {
+      "text": "data_mutations.txt has no trinucleotide-context column, so a full 96-channel SBS fit needs a reference genome (hg19), which may not be available offline. If it is not, use the pyrimidine-collapsed 6-class spectrum plus transcriptional strand (Strand/transcript strand columns). As the tobacco proxy, use C>A fraction with strand bias: tobacco adducts cause excess G>T on the non-transcribed strand. Do not claim exact SBS4 exposures.",
+      "from": [
+        "sl-lab-cea0a34d603f"
+      ],
+      "reason": "Affects which method is feasible and how strongly the results can be stated.",
+      "fact_ids": {
+        "team-a": "sl-lab-1aecb3a12acd"
+      }
+    },
+    {
+      "text": "HNSCC exomes often carry only about 50-300 SNVs per sample, so per-sample signature fitting overfits. SBS4 can be confused with flat signatures (SBS5/SBS40) and with C>A artifacts or oxidative signatures (SBS18, SBS45). Count SNVs per sample across all variant classifications, flag samples with fewer than 50, and fit only a restricted signature set (SBS1, SBS2, SBS13, SBS4, SBS5, SBS18). Require a minimum exposure, for example at least 10-20% and at least 10 mutations. Check for low-VAF C>A excess as a sign of artifact, and report how robust the majority call is.",
+      "from": [
+        "sl-lab-02e5a1b9c5e7"
+      ],
+      "reason": "Low mutation counts and artifacts can inflate or deflate the tobacco call.",
+      "fact_ids": {
+        "team-a": "sl-lab-bc9cf2789d33"
+      }
+    },
+    {
+      "text": "HPV-positive HNSCC (mostly oropharynx) has lower smoking rates and is more APOBEC-driven. Tabulate the HPV columns (HPV_ISH/HPV_PCR/HPV_PATHSEQ) and TUMOR_TISSUE_SITE, and report the tobacco-profile fraction in the whole cohort and in the HPV-negative subset. The hypothesis is about HNSCC cases overall, so take the label from the whole cohort and use the stratification to explain it.",
+      "from": [
+        "sl-lab-c63b66d8e44a"
+      ],
+      "reason": "Cohort composition can shift the majority; stratification makes the result interpretable without changing the target population.",
+      "fact_ids": {
+        "team-a": "sl-lab-373ba8ecec1c"
+      }
+    },
+    {
+      "text": "The clinical smoking columns are inconsistent with each other (e.g. HN_00076 is 'Ever tobacco' but 'Never cigarette smoker' with 0 pack-years) and have missing values. Cross-tabulate TOBACCO_SMOKING_HISTORY_INDICATOR, SMOKING_HISTORY and SMOKING_PACK_YEARS, keep one row per patient, and report the smoker fraction under each definition. Smokeless or chewed tobacco leaves a different signature (SBS29, oral cavity), not SBS4.",
+      "from": [
+        "sl-lab-dd14a3d799c0"
+      ],
+      "reason": "Needed if smoking history is used as context. The point about smokeless tobacco affects what counts as a tobacco-consistent profile.",
+      "fact_ids": {
+        "team-a": "sl-lab-fe18ae9baef5"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams reduced 'mutational profile consistent with tobacco' to the C>A fraction of a 6-class spectrum, and neither tested whether a different operationalisation (dominant vs detectable, a per-sample baseline, or a signature fit) changes the majority call. Team A's own sensitivity range runs from 31% to 76%.",
+      "Both used every SNV, including nonsynonymous calls under selection (e.g. recurrent TP53/driver hotspots), as if they were a neutral record of mutagen exposure.",
+      "Both treated the 74 tumours as one homogeneous HNSCC population, so the label was taken from pooled fractions across subsites (oral cavity, larynx, hypopharynx, oropharynx, sinonasal), HPV status and primary/recurrence samples."
+    ],
+    "unused_evidence": [
+      "Variant_Type (SNP vs DNP/ONP): tobacco also leaves doublet substitutions (CC>AA/GG>TT). Neither team counted these, and they are independent evidence of a tobacco-like profile.",
+      "Synonymous variants (~2300) vs nonsynonymous: a spectrum built only from synonymous or passenger calls is less distorted by selection. Neither team built one.",
+      "TUMOR_TISSUE_SITE and SAMPLE_TYPE (4 recurrences, 2 sinonasal tumours): neither team stratified by subsite or checked recurrences, and tobacco signal in HNSCC is reported to concentrate in the larynx.",
+      "DRINKER: alcohol exposure and its interplay with tobacco was not examined; t_ref/t_alt/n_alt_count were only used by team A."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the arbitrary per-sample threshold for 'consistent with tobacco' as their weakest point. Neither resolved it. Team B kept its label partly on self-reported exposure (88% ever-tobacco), which measures exposure and not the mutational profile.",
+      "Team B's own numbers show that only 42% of samples exceed the highest never-smoker C>A fraction and only 12% have C>A > C>T. Under a strict reading these sit below 50%, yet team B did not reconcile them with its label.",
+      "No trinucleotide context or signature fit was done. 17/74 samples have <50 SNVs, so per-sample calls are noisy."
+    ],
+    "second_readings": [
+      "'Exhibit a mutational profile consistent with tobacco exposure' can mean a tobacco signature that is detectable or elevated in most tumours (a cohort-level association with smoking), or that the dominant process in most tumours is tobacco. The two readings may give different labels.",
+      "'The majority of HNSCC cases' can mean the whole cohort or the smoker/HPV-negative cases. It could also be read as a study-level statement that the cohort's aggregate spectrum is tobacco-like (C>A enriched compared with non-smoking cancers), not a per-sample count."
+    ],
+    "verdict": "Moderate trust. Both teams found a real cohort-level tobacco association (C>A tracks pack-years, with strand bias). But whether a majority of individual tumours is 'tobacco-consistent' swings across 50% with an arbitrary threshold. Team B partly leaned on self-reported exposure, not on the profile.",
+    "questions": [
+      {
+        "to": "bh62-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Recompute the 6-class spectrum and the tobacco-like fraction using synonymous variants only (or excluding recurrent driver hotspots) in the n>=50 subset. Does the share of tumours above your never-smoker C>A baseline stay on the same side of 50%, and does that change your method?",
+        "from": [
+          "sl-lab-2e362bc38ba9"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-697ee65ec2a0"
+      },
+      {
+        "to": "bh62-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Count DNP rows in Variant_Type and the CC>AA/GG>TT doublets per sample, and compare them between ever- and never-tobacco tumours. Does this independent tobacco marker agree with your C>A-based per-sample calls, and how many samples carry either marker?",
+        "from": [
+          "sl-lab-6ef0ea7f76ac"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-ac283007b17b"
+      },
+      {
+        "to": "bh62-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Before looking at the count, state which single per-sample criterion you will use to decide (dominant vs elevated over the never-smoker baseline), then tabulate the tobacco-like fraction by TUMOR_TISSUE_SITE and SAMPLE_TYPE. Does the whole-cohort majority depend on one subsite, and does that change how you justify the label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-4efc2d2b56b8"
+      },
+      {
+        "to": "bh62-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your label partly rests on 88% self-reported ever-tobacco, but the hypothesis concerns the mutational profile. Using mutation data alone, with a criterion fixed before you look, what fraction of tumours is tobacco-like, and how do you reconcile 42% above the never-smoker maximum with a 'majority' claim?",
+        "from": [
+          "sl-lab-cbce5d65642b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-36eca3196f2d"
+      },
+      {
+        "to": "bh62-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Repeat the C>A analysis on synonymous variants only, and separately count DNP CC>AA/GG>TT doublets per sample (Variant_Type). Do these less selection-biased markers support or weaken your per-sample tobacco calls?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-56a666172b7a"
+      },
+      {
+        "to": "bh62-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate the tobacco-like fraction by TUMOR_TISSUE_SITE, HPV status and SAMPLE_TYPE (4 recurrences), and check the C>A transcriptional strand bias. Does the cohort-level signal come from a subset, and does this change the evidence your label rests on?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-dabd8a253985"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In published whole-exome studies of head and neck squamous cell carcinoma, how is a tumour classified as having a 'tobacco-associated mutational profile' (e.g. C>A transversion fraction thresholds, SBS4 exposure cut-offs, or comparison with lung cancer spectra), and what proportion of HNSCC tumours typically meet such criteria?",
+          "why": "Both teams flagged the per-sample threshold as arbitrary. The tobacco-like share moves from 31% to 76% across thresholds, so the field's convention decides which side of 50% applies.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How strongly does restricting to coding nonsynonymous variants (versus synonymous or genome-wide mutations) bias the 6-class substitution spectrum, and is the tobacco doublet signature (CC>AA) a reliable smoking marker in exome data?",
+          "why": "Both teams used all coding SNVs. Selection on drivers could distort C>A fractions, and doublets are unused independent evidence.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In published whole-exome studies of head and neck squamous cell carcinoma, how is a tumour classified as having a 'tobacco-associated mutational profile' (e.g. C>A transversion fraction thresholds, SBS4 exposure cut-offs, or comparison with lung cancer spectra), and what proportion of HNSCC tumours typically meet such criteria?",
+          "answer": "NOT SETTLED BY THE WEB: the research gateway returned HTTP 403 on every call, so no page was read. From unverified background knowledge: there is no standard per-sample threshold. The early HNSCC exome papers described a tobacco-like spectrum (excess C>A/G>T transversions in smokers and HPV-negative tumours, resembling lung cancer) at the cohort or group level and did not classify each tumour. Signature studies (Alexandrov 2013/2016) report SBS4 in only a minority of HNSCC, with a weak link to smoking except in larynx, while APOBEC (SBS2/13) and clock-like (SBS1/5) signatures dominate. The 50% call therefore rests on the threshold and is not settled by any convention from the field. If the hypothesis comes from the source publication, it was probably stated as a cohort-level observation about smokers' spectra.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh62-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-0419cf0a976c"
+            },
+            "bh62-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-8c2b6b1bdfdb"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In published whole-exome studies of head and neck squamous cell carcinoma, how is a tumour classified as having a 'tobacco-associated mutational profile' (e.g. C>A transversion fraction thresholds, SBS4 exposure cut-offs, or comparison with lung cancer spectra), and what proportion of HNSCC tumours typically meet such criteria? ANSWER: NOT SETTLED BY THE WEB: the research gateway returned HTTP 403 on every call, so no page was read. From unverified background knowledge: there is no standard per-sample threshold. The early HNSCC exome papers described a tobacco-like spectrum (excess C>A/G>T transversions in smokers and HPV-negative tumours, resembling lung cancer) at the cohort or group level and did not classify each tumour. Signature studies (Alexandrov 2013/2016) report SBS4 in only a minority of HNSCC, with a weak link to smoking except in larynx, while APOBEC (SBS2/13) and clock-like (SBS1/5) signatures dominate. The 50% call therefore rests on the threshold and is not settled by any convention from the field. If the hypothesis comes from the source publication, it was probably stated as a cohort-level observation about smokers' spectra. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "How strongly does restricting to coding nonsynonymous variants (versus synonymous or genome-wide mutations) bias the 6-class substitution spectrum, and is the tobacco doublet signature (CC>AA) a reliable smoking marker in exome data?",
+          "answer": "NOT SETTLED BY THE WEB: the gateway returned 403. From unverified background knowledge: only a few coding SNVs per tumour are drivers, so the bias is small. Nonsynonymous and synonymous spectra are broadly similar, although TP53 hotspots (some C>A in smokers) and the codon structure shift the fractions by a few points. Comparing silent and non-silent spectra in the data is a cheap check. CC>AA (DBS2) is linked to smoking, but exomes carry very few doublets per tumour (often 0-3). It is useful as pooled or supporting evidence (smokers vs never-smokers) and is unreliable as a per-sample classifier.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh62-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-2c1227dd7e4e"
+            },
+            "bh62-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-a63bbcf613a3"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How strongly does restricting to coding nonsynonymous variants (versus synonymous or genome-wide mutations) bias the 6-class substitution spectrum, and is the tobacco doublet signature (CC>AA) a reliable smoking marker in exome data? ANSWER: NOT SETTLED BY THE WEB: the gateway returned 403. From unverified background knowledge: only a few coding SNVs per tumour are drivers, so the bias is small. Nonsynonymous and synonymous spectra are broadly similar, although TP53 hotspots (some C>A in smokers) and the codon structure shift the fractions by a few points. Comparing silent and non-silent spectra in the data is a cheap check. CC>AA (DBS2) is linked to smoking, but exomes carry very few doublets per tumour (often 0-3). It is useful as pooled or supporting evidence (smokers vs never-smokers) and is unreliable as a per-sample classifier. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh62-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh62-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh62-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh62-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh62-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 74.35510799998883,
+      "cost_usd": 0.2411118,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 34.99730295792688,
+      "cost_usd": 0.14103279999999999,
+      "error": null
+    },
+    {
+      "agent": "bh62-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 48.8865920829121,
+      "cost_usd": 0.18525240000000004,
+      "error": null
+    },
+    {
+      "agent": "bh62-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 57.333625457948074,
+      "cost_usd": 0.233382,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 50.12355591706,
+      "cost_usd": 0.22632180000000002,
+      "error": null
+    },
+    {
+      "agent": "bh62-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 44.427565542049706,
+      "cost_usd": 0.15112699999999998,
+      "error": null
+    },
+    {
+      "agent": "bh62-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 75.27315491694026,
+      "cost_usd": 0.3040796,
+      "error": null
+    },
+    {
+      "agent": "bh62-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 71.07711225003004,
+      "cost_usd": 0.3379222,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

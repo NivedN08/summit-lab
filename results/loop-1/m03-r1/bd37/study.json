@@ -1,0 +1,435 @@
+{
+  "study": "bd37",
+  "status": "replicated",
+  "final": {
+    "agent": "bd37-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd37/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m03/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bd37-library": "opus",
+    "bd37-team-a": "opus",
+    "bd37-team-b": "opus",
+    "bd37-team-c": "opus",
+    "bd37-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd37-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd37/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd37-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd37/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd37-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd37/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd37-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd37/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd37-team-a",
+        "bd37-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd37-team-a",
+        "bd37-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The hypothesis says the genetic model outperforms established methods, so it is not enough to show the genetic risk groups (sample column PROGNOSTIC_MODEL, Low/Medium/High) are significant on their own in a log-rank or Cox test. Compare them head-to-head with the established clinical index (patient IPI column) for overall survival. Fit Cox models on the same patients for IPI alone, PROGNOSTIC_MODEL alone, and both together. Compare Harrell's C-index (with a bootstrap CI for the difference) and AIC, and run a likelihood-ratio test of adding PROGNOSTIC_MODEL to IPI. In the joint model, check whether the genetic model stays independently prognostic after IPI adjustment, and check proportional hazards (Schoenfeld residuals / cox.zph). Decide beforehand what result would count as 'outperforming': higher discrimination than IPI plus information added beyond IPI.",
+      "from": [
+        "sl-m03-r1-da234cac244d",
+        "sl-m03-r1-b051c1bea1da"
+      ],
+      "reason": "Without this, a team could treat any significant association as evidence of superiority. The hypothesis is about comparative performance and added value, not prognostic significance alone.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-6cb3d2869395"
+      }
+    },
+    {
+      "text": "OS_MONTHS, OS_STATUS, IPI and PROGNOSTIC_MODEL are missing for different patients (e.g. DLBCL_DUKE_658 has a blank IPI). The C-index depends on case mix and follow-up, so C-indices from different subsets cannot be compared. Count the non-missing values for each variable, restrict every compared model to the same complete-case intersection, and report that N. Patient-level IPI and sample-level PROGNOSTIC_MODEL sit in different files, so join them by patient ID carefully.",
+      "from": [
+        "sl-m03-r1-df4c9b1da86b"
+      ],
+      "reason": "If the models are fitted on different subsets, the comparison is invalid without anyone noticing.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-e555d824ea29"
+      }
+    },
+    {
+      "text": "How IPI is coded changes its C-index. Evaluate IPI both as the 0-5 score and as the standard risk groups (0-1 low, 2 low-intermediate, 3 high-intermediate, 4-5 high), so the comparison with the 3-level genetic model is fair. Cell-of-origin (ABC/GCB) is another established DLBCL prognostic method. Check whether any COO column exists and include it as a comparator if it does. If the conclusion depends on the coding, say so.",
+      "from": [
+        "sl-m03-r1-94d4f1396cdc"
+      ],
+      "reason": "With an unfair coding of the comparator, the result can tip either way. Leaving out COO, if it is present, would omit an established method that the hypothesis names generically.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-a2e56c5b6459"
+      }
+    },
+    {
+      "text": "The genetic risk model may have been derived in this same cohort, while IPI was defined externally. If so, its in-sample discrimination is optimistically biased. Read the '#' description lines for PROGNOSTIC_MODEL in data_clinical_sample.txt, and check whether it covers all samples or only a subset (which would hint at training versus validation). Treat a small in-sample advantage cautiously and state the optimism caveat.",
+      "from": [
+        "sl-m03-r1-c273ca939480"
+      ],
+      "reason": "Without this, the teams could misjudge how much weight an apparent C-index advantage deserves.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-9412ff7c8468"
+      }
+    },
+    {
+      "text": "Harrell's C-index can be distorted by heavy censoring and long follow-up tails. Report the censoring fraction and median follow-up. As a sensitivity analysis, compute Uno's C or a truncated C (e.g. survival::concordance with timewt='n/G2' or ymax), or time-dependent AUC at about 3 and 5 years, and check that the comparison holds.",
+      "from": [
+        "sl-m03-r1-d4f37b486766"
+      ],
+      "reason": "This makes sure the discrimination comparison is not an artefact of the censoring pattern.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-d9022931a7b7"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": true,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat IPI as the only 'current established method'; neither tested other established prognostic markers present in the data (MYC/BCL2/BCL6 FISH, i.e. double/triple-hit status) or tried to reconstruct any alternative.",
+      "Both assume PROGNOSTIC_MODEL is a purely genetic classifier. Neither checked whether it already contains clinical information (e.g. IPI or its factors). If it does, comparing it with IPI is circular and would not test 'genetic alterations' at all.",
+      "Both assume complete-case analysis (n=618 of 1001, 185 of 315 deaths) is not biased, and that the missingness of PROGNOSTIC_MODEL is random. A missing model label may instead mark a held-out or non-profiled subset.",
+      "Both define 'outperform' as overall-survival discrimination or fit over the whole follow-up, and weigh AIC against a C-index that is not significantly different. They then reach a definite verdict even though the two metrics disagree."
+    ],
+    "unused_evidence": [
+      "Sample columns BCL2_FISH_STATUS, MYC_FISH and BCL6_FISH_STATUS (125 samples each). Double-hit status is an established DLBCL prognostic method and is a possible second comparator.",
+      "Individual IPI factor columns (IPI_AGE, IPI_ECOG, IPI_LDH, IPI_ANNARBOR_STAGE, IPI_EXTRANODAL_SITES). They can show whether PROGNOSTIC_MODEL tracks IPI factors, and whether patients missing a total IPI have partial factors.",
+      "INITIAL_TX_RESPONSE (Complete/Partial/No response). It is a second outcome and part of 'prognosis', and neither team evaluated it.",
+      "data_mutations.txt and data_log2_cna.txt. The 'genetic alterations' themselves were never used. Neither team checked whether the 248 patients without a PROGNOSTIC_MODEL label have genomic data, or whether the alterations predict outcome beyond IPI independently of the precomputed label.",
+      "TUMOR_PURITY and the CENSORED column. CENSORED matches OS_STATUS exactly, so it is redundant. Purity could explain low-confidence genomic classification in some patients."
+    ],
+    "unresolved_weak_points": [
+      "Team A: the C-index is not better than IPI (0.673 vs 0.682, CI spans 0), so the verdict rests on AIC/LRT. That is only reported. Neither team showed that a better likelihood fit (with more parameters and an in-sample model) counts as 'outperforming'.",
+      "Both teams: the genomic model was probably derived in this cohort, so its performance is optimistic. Both only noted this. Neither checked whether the labelled and unlabelled subsets differ in a way that marks a training/validation split, and neither ran any optimism correction or internal validation on the raw alterations.",
+      "Team B: the ranking flips with IPI coding (0-5 score vs grouped). Choosing 'equal granularity' is a judgement call and was not tested against the standard 4-group IPI that Team A used."
+    ],
+    "second_readings": [
+      "'Current established methods' (plural) may mean IPI plus cell-of-origin and/or double-hit FISH, not IPI alone. With COO absent and FISH available for only part of the cohort, the comparison may be only partly testable.",
+      "'Outperform in predicting prognosis' may mean discrimination (C-index), which the teams found equal or slightly worse, rather than adding information to IPI (LRT). The two readings could give different labels.",
+      "'Genetic alterations identified in the study' may mean the raw mutation/CNA features, not the precomputed PROGNOSTIC_MODEL label. If the label mixes in clinical variables, the precomputed label does not test the hypothesis."
+    ],
+    "verdict": "I have low-to-moderate trust in the agreed answer. Both teams found the genomic model no better than IPI on discrimination and lean on AIC, which is in-sample and possibly circular. Neither checked whether PROGNOSTIC_MODEL embeds clinical factors, what the 248 unlabelled patients represent, or the other established marker in the data (FISH double-hit).",
+    "questions": [
+      {
+        "to": "bd37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate PROGNOSTIC_MODEL against IPI and each IPI factor column (IPI_AGE, IPI_LDH, IPI_ECOG, IPI_ANNARBOR_STAGE, IPI_EXTRANODAL_SITES). Does the 'genomic' risk group look like it encodes clinical factors? If so, does comparing it with IPI still test genetic alterations, and does that change your method?",
+        "from": [
+          "sl-m03-r1-fac24a377fc5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-7027b1dfe943"
+      },
+      {
+        "to": "bd37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Compare the 248 patients without PROGNOSTIC_MODEL with the labelled ones on deaths, follow-up, IPI, and presence in data_mutations.txt / data_log2_cna.txt. Does the pattern suggest a held-out set or a non-profiled set? If it is held out, does evaluating IPI there or in the labelled set change your comparison?",
+        "from": [
+          "sl-m03-r1-fac24a377fc5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-d87d2417f360"
+      },
+      {
+        "to": "bd37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: In the subset with BCL2/MYC/BCL6 FISH results, how does the genomic model compare with FISH-based double/triple-hit status, the other established marker in the data? Does adding this comparator change your conclusion?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-b2f4220fcbb6"
+      },
+      {
+        "to": "bd37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your C-index shows the genetic model is not better than IPI, while AIC/LRT favour it. Write down, before re-running anything, which criterion 'outperforms' requires. Under that criterion, does the C-index result (CI spanning 0, in-sample model) support your label, or does it point to a different one?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-a09d43ec8a94"
+      },
+      {
+        "to": "bd37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate PROGNOSTIC_MODEL against IPI and each IPI factor column. Is the genomic classification independent of the clinical factors, or does it look partly built from them? Does that change whether your comparison tests 'genetic alterations'?",
+        "from": [
+          "sl-m03-r1-5555220a159f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-d3c660f333ae"
+      },
+      {
+        "to": "bd37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Repeat the C-index comparison with IPI in the standard 4 risk groups (0-1, 2, 3, 4-5) as well as 3 groups and the 0-5 score. Does your verdict hold under every coding? If not, how do you justify choosing one coding?",
+        "from": [
+          "sl-m03-r1-ce66555e4b98"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-74058d26d251"
+      },
+      {
+        "to": "bd37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check whether the 248 unlabelled patients have mutation/CNA data and how their deaths, follow-up and IPI compare with the labelled patients. Does this suggest the labels come from a training split, and does that change how you weigh the in-sample advantage?",
+        "from": [
+          "sl-m03-r1-5555220a159f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-8d0b293546a5"
+      },
+      {
+        "to": "bd37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Neither FISH (BCL2/MYC/BCL6) status nor INITIAL_TX_RESPONSE entered your analysis. Does the genomic model beat double-hit status in the FISH subset, and does it predict treatment response better than IPI? Do these results change your label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-40e7ca5d8532"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "When a new categorical risk classifier and an established clinical index have similar Harrell C-index values but the classifier has a much lower AIC in a Cox model, what do standard clinical-prediction-model guidelines (e.g. TRIPOD, Steyerberg) say about whether the new classifier 'outperforms' the index?",
+          "why": "The teams' conclusions rest on resolving C-index parity against an AIC advantage. Neither team cited a convention for which criterion defines better prognostic performance.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Which prognostic tools are considered current established methods for risk stratification in diffuse large B-cell lymphoma treated with R-CHOP (e.g. IPI, R-IPI, NCCN-IPI, cell of origin, double-hit FISH)? How is each defined?",
+          "why": "Both teams used only IPI as the comparator. If other tools are standard, the comparison may be incomplete, or the hypothesis may be only partly testable.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How large is the typical optimism in the apparent C-index of a risk model derived and evaluated in the same cohort, and what are the standard ways to correct it (bootstrap optimism correction, cross-validation)?",
+          "why": "Both teams named in-cohort derivation as their weakest point but did not quantify it. Knowing the typical size would show whether a small apparent advantage can survive correction.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When a new categorical risk classifier and an established clinical index have similar Harrell C-index values but the classifier has a much lower AIC in a Cox model, what do standard clinical-prediction-model guidelines (e.g. TRIPOD, Steyerberg) say about whether the new classifier 'outperforms' the index?",
+          "answer": "NOT WEB-VERIFIED: the research gateway returned HTTP 403 on all 4 attempts, so this is background knowledge only. TRIPOD and Steyerberg treat discrimination (C-index) and calibration as the core performance measures. AIC and likelihood-ratio statistics measure overall fit and how much information a model adds; Steyerberg and Harrell note they detect added value more sensitively than a change in C. They do not show better discrimination. Equal C with lower AIC therefore means better fit or added information beyond the index, but not clearly better discriminative performance. To claim a new model 'outperforms' an index, guidelines expect better discrimination and calibration, ideally after internal (bootstrap) or external validation, and preferably with clinical usefulness shown (net benefit or reclassification). An in-sample AIC gain alone is weak evidence of outperformance.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-21bc9173c429"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-1df5d35be7ef"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a new categorical risk classifier and an established clinical index have similar Harrell C-index values but the classifier has a much lower AIC in a Cox model, what do standard clinical-prediction-model guidelines (e.g. TRIPOD, Steyerberg) say about whether the new classifier 'outperforms' the index? ANSWER: NOT WEB-VERIFIED: the research gateway returned HTTP 403 on all 4 attempts, so this is background knowledge only. TRIPOD and Steyerberg treat discrimination (C-index) and calibration as the core performance measures. AIC and likelihood-ratio statistics measure overall fit and how much information a model adds; Steyerberg and Harrell note they detect added value more sensitively than a change in C. They do not show better discrimination. Equal C with lower AIC therefore means better fit or added information beyond the index, but not clearly better discriminative performance. To claim a new model 'outperforms' an index, guidelines expect better discrimination and calibration, ideally after internal (bootstrap) or external validation, and preferably with clinical usefulness shown (net benefit or reclassification). An in-sample AIC gain alone is weak evidence of outperformance. HOW SURE: medium. SOURCES: none given."
+        },
+        {
+          "question": "Which prognostic tools are considered current established methods for risk stratification in diffuse large B-cell lymphoma treated with R-CHOP (e.g. IPI, R-IPI, NCCN-IPI, cell of origin, double-hit FISH)? How is each defined?",
+          "answer": "NOT WEB-VERIFIED (gateway HTTP 403); background knowledge only. IPI (1993) scores 1 point each for age >60, stage III/IV, elevated LDH, ECOG >=2 and >1 extranodal site; groups are 0-1 low, 2 low-intermediate, 3 high-intermediate, 4-5 high. R-IPI (Sehn 2007) regroups the same factors as 0 very good, 1-2 good, 3-5 poor. NCCN-IPI (Zhou 2014) scores 0-8: age 41-60=1, 61-75=2, >75=3; LDH ratio >1-3=1, >3=2; stage III/IV=1; ECOG>=2=1; extranodal disease in marrow, CNS, liver/GI or lung=1. Its groups are 0-1, 2-3, 4-5 and >=6, and it discriminates better than IPI in the rituximab era. Cell of origin (GCB vs ABC/non-GCB) comes from gene expression profiling or IHC algorithms (e.g. Hans); ABC has the worse outcome. Double-hit or triple-hit status is MYC rearrangement plus BCL2 and/or BCL6 rearrangement by FISH (WHO HGBL-DH/TH) and has a poor prognosis. Other tools are MYC/BCL2 double expression by IHC and CNS-IPI for CNS relapse. IPI (or a variant) is the universal clinical comparator; COO and double-hit status are the main established biological stratifiers.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-2cd9620fd4b0"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-0bab915a467b"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Which prognostic tools are considered current established methods for risk stratification in diffuse large B-cell lymphoma treated with R-CHOP (e.g. IPI, R-IPI, NCCN-IPI, cell of origin, double-hit FISH)? How is each defined? ANSWER: NOT WEB-VERIFIED (gateway HTTP 403); background knowledge only. IPI (1993) scores 1 point each for age >60, stage III/IV, elevated LDH, ECOG >=2 and >1 extranodal site; groups are 0-1 low, 2 low-intermediate, 3 high-intermediate, 4-5 high. R-IPI (Sehn 2007) regroups the same factors as 0 very good, 1-2 good, 3-5 poor. NCCN-IPI (Zhou 2014) scores 0-8: age 41-60=1, 61-75=2, >75=3; LDH ratio >1-3=1, >3=2; stage III/IV=1; ECOG>=2=1; extranodal disease in marrow, CNS, liver/GI or lung=1. Its groups are 0-1, 2-3, 4-5 and >=6, and it discriminates better than IPI in the rituximab era. Cell of origin (GCB vs ABC/non-GCB) comes from gene expression profiling or IHC algorithms (e.g. Hans); ABC has the worse outcome. Double-hit or triple-hit status is MYC rearrangement plus BCL2 and/or BCL6 rearrangement by FISH (WHO HGBL-DH/TH) and has a poor prognosis. Other tools are MYC/BCL2 double expression by IHC and CNS-IPI for CNS relapse. IPI (or a variant) is the universal clinical comparator; COO and double-hit status are the main established biological stratifiers. HOW SURE: medium. SOURCES: none given."
+        },
+        {
+          "question": "How large is the typical optimism in the apparent C-index of a risk model derived and evaluated in the same cohort, and what are the standard ways to correct it (bootstrap optimism correction, cross-validation)?",
+          "answer": "NOT WEB-VERIFIED (gateway HTTP 403); background knowledge only. Optimism depends on events per parameter and on data-driven selection. For a prespecified low-dimensional model with ample events it is about 0.01-0.03 in C. With variable, cutpoint or gene selection in the same cohort, or few events, it is often 0.05-0.10 or more, and gene signatures often shrink further on external validation. The standard correction is Harrell/Efron bootstrap optimism correction: on each of 200+ resamples, repeat the full modelling process including selection, then subtract the mean optimism (C in the bootstrap sample minus C in the original sample) from the apparent C. Repeated k-fold cross-validation is an alternative, and external or temporal validation is preferred. An uncorrected apparent advantage of about 0.02 or less lies within typical optimism.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-f62eeacf92b1"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-9c3800aadb91"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How large is the typical optimism in the apparent C-index of a risk model derived and evaluated in the same cohort, and what are the standard ways to correct it (bootstrap optimism correction, cross-validation)? ANSWER: NOT WEB-VERIFIED (gateway HTTP 403); background knowledge only. Optimism depends on events per parameter and on data-driven selection. For a prespecified low-dimensional model with ample events it is about 0.01-0.03 in C. With variable, cutpoint or gene selection in the same cohort, or few events, it is often 0.05-0.10 or more, and gene signatures often shrink further on external validation. The standard correction is Harrell/Efron bootstrap optimism correction: on each of 200+ resamples, repeat the full modelling process including selection, then subtract the mean optimism (C in the bootstrap sample minus C in the original sample) from the apparent C. Repeated k-fold cross-validation is an alternative, and external or temporal validation is preferred. An uncorrected apparent advantage of about 0.02 or less lies within typical optimism. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd37-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd37-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd37-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd37-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd37-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 70.62547574995551,
+      "cost_usd": 0.169875,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 52.154469125089236,
+      "cost_usd": 0.20929259999999997,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 76.88743229105603,
+      "cost_usd": 0.2045872,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 88.00042174989358,
+      "cost_usd": 0.24893120000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 110.34327720908914,
+      "cost_usd": 0.42699240000000005,
+      "error": null
+    },
+    {
+      "agent": "bd37-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 72.3510309580015,
+      "cost_usd": 0.211661,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 129.4244221249828,
+      "cost_usd": 0.4870422,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 110.21817458397709,
+      "cost_usd": 0.4519114,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

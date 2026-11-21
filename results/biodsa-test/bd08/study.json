@@ -1,0 +1,496 @@
+{
+  "study": "bd08",
+  "status": "replicated",
+  "final": {
+    "agent": "bd08-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd08/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd08-library": "fable",
+    "bd08-team-a": "fable",
+    "bd08-team-b": "fable",
+    "bd08-team-c": "fable",
+    "bd08-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "bd08-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd08/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd08-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd08/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd08-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd08/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd08-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd08/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd08-team-a",
+        "bd08-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd08-team-a",
+        "bd08-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Defining 'PTEN loss of function' (task bd08). Do not count every PTEN row in data_mutations.txt as loss of function, and do not use mutations alone. The standard (OncoKB) definition is: truncating mutations (Nonsense_Mutation, Frame_Shift_Ins, Frame_Shift_Del, Splice_Site) and homozygous deletion (PTEN = -2 in data_cna.txt). A missense variant counts only if it is a known inactivating variant (for example phosphatase-core residues C124, G129, R130, R173); other missense variants are of unknown significance and are common UV passengers in melanoma. 5'Flank, intron, silent and in-frame calls do not count, and a CNA value of 2 is an amplification, not a loss. The library reports that data_cna.txt holds only the values -2, 0 and 2 (no -1), so hemizygous loss cannot be seen. What to do: list every PTEN row in the mutation file (Variant_Classification, HGVSp_Short, Hotspot, allele fraction t_alt_count/(t_alt_count+t_ref_count)) and the PTEN row of data_cna.txt. Build a patient-level strict flag = truncating mutation OR CNA -2 (primary), and a broad flag = any nonsynonymous PTEN mutation OR CNA -2 (sensitivity). If the two flags classify patients differently, report results under both, base the conclusion on the strict flag, and say whether the direction is the same.",
+      "from": [
+        "sl-biodsa-test-3a71b2853a13",
+        "sl-biodsa-test-be6340a7e85f"
+      ],
+      "reason": "The exposure in the hypothesis is 'PTEN alterations that result in loss of function'. Which patients fall in the altered group depends entirely on this definition, and the group is small, so a few misclassified patients can change the result.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-b927dd656015"
+      }
+    },
+    {
+      "text": "The PFS outcome has no event indicator (task bd08). The library reports that data_clinical_patient.txt has PFS_MONTHS with no missing values but no PFS status/censoring column. OS_STATUS exists, but it must not be used as the PFS event flag: death is not progression, living patients have usually already progressed, and OS_MONTHS is described as measured from initial diagnosis rather than from the start of therapy. Do not replace PFS with OS. What to do: confirm there is no PFS status column; check PFS_MONTHS <= OS_MONTHS for every patient; flag patients who might still be progression-free at last follow-up (OS_STATUS LIVING with very long PFS, RESPONSE_GRADE Excellent, anything in COMMENTS). Primary analysis: treat every PFS time as an observed progression (Kaplan-Meier, log-rank and Cox with all events = 1), cross-checked with a Wilcoxon rank-sum test on PFS_MONTHS. Sensitivity analysis: treat the plausible ongoing responders as censored. State the assumption made and report whether the direction and the conclusion are the same under both.",
+      "from": [
+        "sl-biodsa-test-f4199d976669",
+        "sl-biodsa-test-be6340a7e85f"
+      ],
+      "reason": "A team that does not notice the missing event column will either build a wrong survival analysis from OS_STATUS or change the endpoint without saying so. Either changes what is actually being tested.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-36e765e0a510"
+      }
+    },
+    {
+      "text": "The hypothesis is directional and the labels have specific meanings (task bd08). The claim is that PTEN loss of function goes with LONGER progression-free survival on BRAF inhibitors. A two-sided p-value alone cannot support or reject it: the direction of the effect must be reported and compared with the claimed direction. Always report: group sizes, median PFS in each group, and the hazard ratio for PTEN-altered versus PTEN wild-type with its 95% confidence interval, stating which group is the reference (with wild-type as reference, HR > 1 means shorter PFS in the PTEN-altered group). Judge on direction plus confidence interval, not on p < 0.05 alone. Per the task text, 'Not verifiable' is for data that lack the relevant variables or tables; it is not the label for a comparison that is merely small or underpowered when the PTEN and PFS variables are present.",
+      "from": [
+        "sl-biodsa-test-dacafa3c4ed8"
+      ],
+      "reason": "The label depends on reading the direction correctly and on using 'Not verifiable' only as the task defines it. Without this a team may pick a label from a p-value alone or use 'Not verifiable' for a small-sample result.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-80c6186d2f69"
+      }
+    },
+    {
+      "text": "Fix the primary analysis before looking at outcomes (task bd08). In a small biomarker study, trying several PTEN definitions, several endpoints (PFS, OS, response, RESPONSE_GRADE), subgroups and data-chosen PFS cut-points (for example 'PFS > 6 months' picked after looking), then reporting whichever is significant, can create or erase a result; cut-points chosen to minimise the p-value inflate false positives severalfold. What to do: write down one primary analysis in advance: the strict PTEN loss-of-function flag against PFS_MONTHS as a time-to-event or continuous outcome in all patients. Label every other analysis as a sensitivity analysis. Do not dichotomise PFS at a threshold chosen from the data, and do not switch the endpoint to OS or response rate, because the hypothesis is about PFS. If results differ across definitions or endpoints, base the label on the pre-specified primary analysis and report the others openly.",
+      "from": [
+        "sl-biodsa-test-7f5980c07d94"
+      ],
+      "reason": "Several of the other briefing items ask for sensitivity analyses. Without a pre-specified primary analysis the team has many possible results to choose from and the label could depend on which one they happen to report.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-0d76fa7a5aa0"
+      }
+    },
+    {
+      "text": "Small, unbalanced groups make standard p-values unreliable (task bd08). The cohort is about 66 patients and the PTEN-altered group will be a small minority. With small, unbalanced groups the asymptotic chi-square log-rank p-value and the Cox Wald test are inaccurate (often anti-conservative) and Cox estimates can be unstable. What to do: count PTEN-altered and wild-type patients and the events in each. If the smaller group has fewer than roughly 10-15 patients, do not rely on the asymptotic p-value alone: add a permutation log-rank test (shuffle the PTEN labels at least 10,000 times), use the Cox likelihood-ratio test or a Firth-penalised Cox model instead of the Wald test, show the Kaplan-Meier curves and medians, and report the hazard-ratio confidence interval so its width is visible.",
+      "from": [
+        "sl-biodsa-test-c56a83caccb9"
+      ],
+      "reason": "The choice of test changes the p-value materially when one group is very small, and the default tools give the less trustworthy version.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-dd4aceb9d1c4"
+      }
+    },
+    {
+      "text": "Treatment is not uniform (task bd08). The library's read of the AGENT column reports 48 vemurafenib, 6 dabrafenib, 8 dabrafenib+trametinib, 3 vemurafenib+cobimetinib and 1 'Vem+cob (leukemia patient)', so about 12 of 66 patients received a BRAF+MEK inhibitor combination and the rest BRAF-inhibitor monotherapy. Randomised trials show clearly longer PFS on the combination than on monotherapy, so an imbalance of regimen between PTEN groups can create or hide a PTEN effect. What to do: verify the counts; cross-tabulate PTEN status against AGENT collapsed to monotherapy versus combination (Fisher exact test) and compare PFS by regimen. If there is an imbalance or a regimen effect on PFS, add a log-rank test or Cox model stratified by monotherapy versus combination, and a sensitivity analysis restricted to BRAF-inhibitor monotherapy (the population the hypothesis names). Check that the conclusion does not hinge on the single leukemia patient.",
+      "from": [
+        "sl-biodsa-test-7478fcc260d3",
+        "sl-biodsa-test-be6340a7e85f"
+      ],
+      "reason": "Regimen is a known strong driver of PFS and is mixed in this cohort; a team working from the data alone may pool all patients without checking whether regimen explains or masks the PTEN comparison.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-bb4815b5eed7"
+      }
+    },
+    {
+      "text": "Adjusting for covariates: what is allowed and what is not (task bd08). PFS on BRAF-targeted therapy is strongly driven by baseline prognosis: LDH (not in this dataset), ECOG status, number of metastatic organ sites, tumour burden and M stage. In a retrospective cohort of about 66 a chance imbalance in these can drive the PTEN result. Two opposite errors to avoid: (1) ignoring imbalance, and (2) over-adjusting. With at most about 66 events a Cox model supports only about 4-6 covariates. RESPONSE_TO_TARGET_THERAPY, BORR, RESPONSE_GRADE and OS are post-treatment outcomes, not confounders; adjusting for them or stratifying by them removes the effect being tested. What to do: compare ECOG_STATUS, M_STAGE, GREATER_THAN_3_SITES / NUMBER_OF_SITES, RECIST_BURDEN_OF_DISEASE, LIVER_INVOLVEMENT and BRAIN_METS between PTEN groups and count missing values per covariate. Give the unadjusted estimate first. If there is imbalance, add one parsimonious adjusted Cox model with 2-4 pre-treatment covariates (for example ECOG, more than 3 sites or RECIST burden, regimen), with Firth penalisation if unstable. Never include response variables. State that LDH is unavailable.",
+      "from": [
+        "sl-biodsa-test-20c9dca4c1ef",
+        "sl-biodsa-test-be6340a7e85f"
+      ],
+      "reason": "The clinical table contains both pre-treatment covariates and post-treatment response columns side by side; putting the response columns in a model, or fitting too many covariates for the sample size, would distort the PTEN estimate.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-1e13e19e79fc"
+      }
+    },
+    {
+      "text": "Absence of a PTEN call is not automatically wild-type on a targeted panel (task bd08). In targeted-panel cBioPortal studies a sample with no recorded alteration in a gene may be 'not profiled' if the gene was absent from the panel version used. The library reports that samples here were sequenced on three bait versions (bait_v3 n=10, bait_v4 n=11, bait_v5 n=45), that data_gene_panel_matrix.txt has only a 'mutations' column (no CNA column), and that no gene lists are supplied, so PTEN coverage per version cannot be read directly. It also reports that all 66 samples appear in the CNA header and in the mutation file. What to do: tabulate PTEN mutation calls and PTEN deep-deletion calls by bait version and check that PTEN has calls in samples from every version. If PTEN calls occur in all versions, treating absence as wild-type is reasonable. If a version has zero PTEN calls and no sign that PTEN was covered, do not count those samples as wild-type without comment; rerun excluding that version as a sensitivity analysis.",
+      "from": [
+        "sl-biodsa-test-fd1258a671e1",
+        "sl-biodsa-test-be6340a7e85f"
+      ],
+      "reason": "This decides who is in the comparison group. If one panel version did not cover PTEN, those patients would be wrongly counted as wild-type.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-a11780905867"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat a 0 in data_cna.txt as 'PTEN copy number assessed and intact'. The table has 59 genes and only the values -2/0/2; 25 of 66 sample columns are zero for every gene, and deep-deletion calls of any gene are sparse on bait_v4 (4 calls in 11 samples, against 44 in 45 samples on bait_v5 and 13 in 10 on bait_v3). Neither team tested whether an all-zero column means 'no events' or 'copy number not evaluable', so the wild-type reference group may contain unassessed samples.",
+      "Both assume every sample was taken before BRAF-inhibitor start. No column gives biopsy timing; sample IDs carry mixed suffixes (-T, -PT, -PT1, -P, -M, -M1, -MT1, -MT3, -T1). Both ran a metastasis-only sensitivity run, which tests sample type, not timing. This cannot be settled from the tables and should be stated as an assumption.",
+      "Both assume PFS_MONTHS is counted from BRAF-inhibitor start and that the only censored patients are the 6 LIVING patients with PFS equal to OS; the 15 LIVING patients with PFS below OS are taken as progressed and the 2 DECEASED patients with PFS equal to OS as events (death). The column description says OS is 'since initial diagnosis', which the PFS==OS pattern contradicts. Both teams bracketed this (all-events vs 6 censored), so it is tested as far as the data allow.",
+      "Both pool BRAF-inhibitor monotherapy (54) with BRAF+MEK combination (12) as 'treated with BRAF inhibitors' for the headline number, and both judge 'increased PFS' on the hazard-ratio/median scale even though each found the proportional-hazards test failing or borderline.",
+      "Both put patients with a PTEN missense-only call in the wild-type reference group for the primary analysis (and move them all into the altered group for the broad run); neither ran the comparison with those patients set aside."
+    ],
+    "unused_evidence": [
+      "IMMUNE_TREATMENT (32 of 66 patients with some immunotherapy, several marked adjuvant or prior) and CHEMOTHERAPY (13 of 66): neither team's balance table or adjusted model used them. They describe other lines of therapy, which mark how pre-treated a patient was; whether given before or after the BRAF inhibitor is not stated.",
+      "Hotspot column in data_mutations.txt: it is 0 in all 816 rows, including every BRAF V600E row, so it carries no information. Team A cited 'none flagged as hotspots' when describing the PTEN missense variants; that statement is not evidence about their function.",
+      "The rest of data_cna.txt (58 other genes) and the per-sample pattern of calls: usable as a check on whether copy number was evaluable in a sample; neither team looked beyond the PTEN row.",
+      "A PTEN missense call (p.Y177H) sits in a bait_v4 sample, which shows PTEN was sequenced on bait_v4; team A listed the variant but still reported bait_v4 PTEN coverage as unconfirmed.",
+      "BORR (continuous best change in tumour size, complete for all 66) was not used by either team; team B used RESPONSE_GRADE as corroboration instead, without checking whether that grade is itself derived from PFS.",
+      "COMMENTS: four free-text notes describe clinical progression or new lesions; they line up with the 'NE'/PD response entries and were only partly used (team B excluded non-evaluable responders; team A used only the leukemia note in AGENT)."
+    ],
+    "unresolved_weak_points": [
+      "Team A (borderline significance, PH test fails, censoring inferred): reported and worked around with rank and permutation tests and a bootstrap of the median difference, not resolved; no mean-scale or landmark summary was given. Its bait_v4 coverage worry was reported with a sensitivity run but can be partly resolved from the data (a PTEN mutation call exists on bait_v4), which the team did not notice.",
+      "Team B (13 PTEN-LoF patients, p near 0.04, censoring inferred, the 2 LoF patients on combination therapy did well, interaction p=0.023): reported only. The reversed direction in the combination arm rests on 2 patients and cannot be resolved in this dataset; the team's corroborating response-grade test may not be independent of PFS.",
+      "Both: the loss-of-function definition for missense variants and the invisibility of hemizygous loss are judgement calls that were bracketed (strict vs broad) but not settled by any functional evidence; one deep-deleted sample also carries a PTEN missense call, an internal inconsistency in the copy-number call that neither team commented on."
+    ],
+    "second_readings": [
+      "'Treated with BRAF inhibitors' can mean BRAF-inhibitor monotherapy only (54 patients) or any regimen containing a BRAF inhibitor (66). Both teams ran both; the combination-only subgroup points the other way but has 2 altered patients.",
+      "'Alterations in PTEN that result in loss of function' can mean truncating mutation or homozygous deletion only, or these plus missense variants with known inactivating effect, or any PTEN alteration. The middle reading was not run by either team.",
+      "'Increased progression-free survival' can be read on the hazard/median scale (what both teams used), as mean PFS time, or as the proportion progression-free at a fixed time. With non-proportional hazards these can differ.",
+      "'Associated' can mean the crude association or the association after allowing for regimen and baseline prognosis; both teams reported both.",
+      "The label: 'False' read as 'evidence contradicts' versus 'no support for the claim'. Both teams adopted a rule under which either reading gives the same label, and the variables exist, so 'Not verifiable' does not arise."
+    ],
+    "verdict": "I trust the agreed label fairly well: two independent analyses give the same direction under every PTEN definition, both censoring rules, regimen adjustment and bait stratification, and the relevant variables are present. What is not yet tested is whether zero copy-number calls mean 'assessed', how the missense-only patients should be classed, and whether the direction holds on a mean or landmark scale given non-proportional hazards; I expect these to affect the strength of the evidence more than the label.",
+    "questions": [
+      {
+        "to": "bd08-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You left PTEN coverage on bait_v4 as unconfirmed. Run two tabulations: (a) every PTEN row of data_mutations.txt of any variant class, by bait version of its sample; (b) the number of non-zero calls and of -2 calls per sample across all genes of data_cna.txt, by bait version. Does (a) show that PTEN was sequenced on bait_v4, and does (b) show that copy-number calling was equally sensitive on the three versions? State whether the result changes how you treat bait_v4 samples in the reference group.",
+        "from": [
+          "sl-biodsa-test-a11780905867"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-837223c367fd"
+      },
+      {
+        "to": "bd08-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You counted every sample with PTEN = 0 in data_cna.txt as copy-number intact. Count the samples whose column in data_cna.txt is 0 for every gene in the table, and tabulate them by bait version and by PTEN mutation status. Then rerun your primary comparison with those samples removed from the wild-type group. Does the direction or the confidence interval change, and does that change which analysis you lead with?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-b74d8aad3e41"
+      },
+      {
+        "to": "bd08-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You wrote that none of the PTEN missense variants is flagged as a hotspot. Tabulate the Hotspot column over all rows of data_mutations.txt, including the BRAF V600 rows, and say whether it can distinguish anything. Then run a three-group comparison (strict loss of function / missense-only / no PTEN alteration) so that the missense-only patients are in neither the altered nor the reference group. Does setting them aside change the direction or strength of the strict result?",
+        "from": [
+          "sl-biodsa-test-b927dd656015"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-c66a74b6e37f"
+      },
+      {
+        "to": "bd08-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your balance table and adjusted model did not use IMMUNE_TREATMENT or CHEMOTHERAPY. Collapse each to yes/no, cross-tabulate against the strict PTEN flag (Fisher exact), check whether either is related to PFS, and say what the tables let you conclude about whether these treatments came before or after the BRAF inhibitor. If either is imbalanced, does adding it to your parsimonious adjusted model change the direction or the interval for PTEN?",
+        "from": [
+          "sl-biodsa-test-1e13e19e79fc"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-8864b6147c53"
+      },
+      {
+        "to": "bd08-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your proportional-hazards test was borderline and the PTEN effect differed by regimen, so a single hazard ratio may not describe 'increased PFS' on every scale. Using your derived censoring, compute for each PTEN group the restricted mean PFS up to a fixed horizon that both groups reach, and the Kaplan-Meier proportion progression-free at fixed times (for example 6 and 12 months), with intervals, and say whether the two curves cross. Is the direction the same on the mean and landmark scales as on the hazard and median scales?",
+        "from": [
+          "sl-biodsa-test-52abb98f2a30"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-55af55fe3fb0"
+      },
+      {
+        "to": "bd08-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You used the Fisher test on 'Poor' RESPONSE_GRADE as supporting evidence. Cross-tabulate RESPONSE_GRADE against PFS_MONTHS (range of PFS within each grade) and against RESPONSE_TO_TARGET_THERAPY to see whether the grade is a function of PFS. If it is, it is the same outcome counted twice; in that case compare BORR (continuous, complete for all 66) by PTEN group as the response-based check instead. Does the supporting evidence still stand?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-6aa740a01b5e"
+      },
+      {
+        "to": "bd08-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You counted every sample with PTEN = 0 in data_cna.txt as copy-number intact. Count the samples whose column in data_cna.txt is 0 for every gene, tabulate them by bait version, and compare the number of -2 calls per sample across bait versions. Also list the sample that has both PTEN = -2 and a PTEN missense call and say what that implies about the reliability of the deletion calls. Then rerun the primary comparison with the all-zero samples removed from the reference group. Does direction or interval change?",
+        "from": [
+          "sl-biodsa-test-a454da1906c5",
+          "sl-biodsa-test-e802b73a3131"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-56700e10b4a7"
+      },
+      {
+        "to": "bd08-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your adjusted models used regimen, bait version, ECOG, brain metastases and number of sites, but not IMMUNE_TREATMENT or CHEMOTHERAPY. Collapse each to yes/no, cross-tabulate against your PTEN loss-of-function flag (Fisher exact), check whether either is related to PFS, and say whether the tables show if these treatments preceded the BRAF inhibitor. If either is imbalanced, does including it change the direction or interval of the PTEN estimate?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-1dd1404682b4"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "According to curated functional resources (saturation-mutagenesis phosphatase-activity and protein-abundance screens, ClinVar, OncoKB), which PTEN missense substitutions are classed as loss of function, and specifically how are substitutions at residues R15, P38, V53, G132, G165, Y177 and P204 classified?",
+          "why": "Both teams left missense-only carriers as a judgement call (all in the reference group, or all in the altered group). Knowing which missense variants are established as inactivating lets the teams build a principled intermediate definition instead of bracketing.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In discrete gene-level copy-number tables produced from targeted hybrid-capture sequencing panels and distributed in cBioPortal format, where only the values -2, 0 and 2 appear, what does a 0 mean: 'assessed and neither amplified nor deeply deleted', or can it also stand for samples in which copy number was not evaluable (low purity, no matched normal, older panel version)? How is non-evaluability normally recorded?",
+          "why": "Both teams counted every 0 as PTEN intact. If 0 can also mean 'not evaluable', part of the reference group is unclassified and should be handled by restriction rather than counted as wild-type.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When the proportional-hazards assumption fails in a two-group comparison of progression-free survival with a small group and possibly crossing Kaplan-Meier curves, which summary measures are recommended for stating the direction of the difference (restricted mean survival time, landmark survival proportions, weighted log-rank tests), and how is the truncation time for restricted mean survival time chosen?",
+          "why": "Both teams found the proportional-hazards test failing or borderline yet led with a single hazard ratio; the hypothesis speaks of 'increased' PFS, which could be read on a mean or landmark scale.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "According to curated functional resources (saturation-mutagenesis phosphatase-activity and protein-abundance screens, ClinVar, OncoKB), which PTEN missense substitutions are classed as loss of function, and specifically how are substitutions at residues R15, P38, V53, G132, G165, Y177 and P204 classified?",
+          "answer": "Partly settled (OncoKB read directly; per-variant screen scores and ClinVar not retrieved). OncoKB: PTEN deletion = Oncogenic / Loss-of-function; truncating mutations = Likely Oncogenic / Likely Loss-of-function; of about 180 curated PTEN alterations 167 are oncogenic, 9 neutral, 4 inconclusive, so a missense variant counts as inactivating only if individually curated or at a recurrence hotspot. Per residue: P38L = Likely Oncogenic, Loss-of-function (hotspot residue, reported in melanoma); P38S = not individually reviewed but hotspot, Likely Oncogenic, Likely Loss-of-function (P38F/H/L are curated). G132D = Likely Oncogenic, Loss-of-function (loss of lipid and protein phosphatase activity, reduced stability, dominant negative); G132S and G132V = Likely Oncogenic, Likely Loss-of-function (read from the gene-page list). G165E = Oncogenic, Loss-of-function; G165R = Likely Oncogenic, Loss-of-function; G165V is curated as oncogenic. Y177C = Likely Oncogenic, Likely Loss-of-function (hotspot; reduced phosphatase activity in the yeast saturation screen); Y177D is curated as likely oncogenic. P204S = statistically significant hotspot, Likely Oncogenic, but no biological effect (loss of function) is stated; the P204L page failed to load. V53: no curated entry; the V53A page says not reviewed, Unknown Oncogenic Effect, so V53 substitutions are variants of unknown significance. R15: R15K and R15S appear in OncoKB's curated PTEN list, but their variant pages failed to load twice and the label is not legible in the gene-page capture, so their class (probably likely oncogenic) is unconfirmed; other R15 substitutions are not curated by name. Screens: the lipid-phosphatase saturation screen scored 7,244 single-amino-acid variants and found 2,273 with reduced activity, 1,789 of them missense (cut-offs quoted in the follow-up paper: wild-type-like fitness score > -1.11, truncation-like < -2.13, hypomorphic in between; this cut-off text came from a search excerpt of a page whose fetched text was truncated). The abundance screen (VAMP-seq) covers about 4,100 missense variants. Scores for the seven residues live in supplementary tables / MaveDB and were not retrieved; ClinVar was not consulted. Usable intermediate definition: truncating OR deep deletion OR missense that OncoKB calls oncogenic/likely oncogenic (P38, G132, G165, Y177 firmly; P204S and R15K/S as a weaker tier), leaving V53 and other uncurated missense as unknown (reference group, or excluded in a sensitivity analysis).",
+          "sources": [
+            "https://www.oncokb.org/gene/PTEN",
+            "https://www.oncokb.org/gene/PTEN/P38L",
+            "https://www.oncokb.org/gene/PTEN/P38S",
+            "https://www.oncokb.org/gene/PTEN/G132D",
+            "https://www.oncokb.org/gene/PTEN/G165E",
+            "https://www.oncokb.org/gene/PTEN/G165R",
+            "https://www.oncokb.org/gene/PTEN/Y177C",
+            "https://www.oncokb.org/gene/PTEN/P204S",
+            "https://www.oncokb.org/gene/PTEN/V53A",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5986715/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8518224/"
+          ],
+          "confidence": "medium (high for P38L/P38S, G132D, G165E/R, Y177C, V53 and P204S in OncoKB; low for R15 and for anything from the screens' per-variant scores or ClinVar, which were not read)",
+          "deliveries": {
+            "bd08-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-8e8c18481294"
+            },
+            "bd08-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-48e9c9221559"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: According to curated functional resources (saturation-mutagenesis phosphatase-activity and protein-abundance screens, ClinVar, OncoKB), which PTEN missense substitutions are classed as loss of function, and specifically how are substitutions at residues R15, P38, V53, G132, G165, Y177 and P204 classified? ANSWER: Partly settled (OncoKB read directly; per-variant screen scores and ClinVar not retrieved). OncoKB: PTEN deletion = Oncogenic / Loss-of-function; truncating mutations = Likely Oncogenic / Likely Loss-of-function; of about 180 curated PTEN alterations 167 are oncogenic, 9 neutral, 4 inconclusive, so a missense variant counts as inactivating only if individually curated or at a recurrence hotspot. Per residue: P38L = Likely Oncogenic, Loss-of-function (hotspot residue, reported in melanoma); P38S = not individually reviewed but hotspot, Likely Oncogenic, Likely Loss-of-function (P38F/H/L are curated). G132D = Likely Oncogenic, Loss-of-function (loss of lipid and protein phosphatase activity, reduced stability, dominant negative); G132S and G132V = Likely Oncogenic, Likely Loss-of-function (read from the gene-page list). G165E = Oncogenic, Loss-of-function; G165R = Likely Oncogenic, Loss-of-function; G165V is curated as oncogenic. Y177C = Likely Oncogenic, Likely Loss-of-function (hotspot; reduced phosphatase activity in the yeast saturation screen); Y177D is curated as likely oncogenic. P204S = statistically significant hotspot, Likely Oncogenic, but no biological effect (loss of function) is stated; the P204L page failed to load. V53: no curated entry; the V53A page says not reviewed, Unknown Oncogenic Effect, so V53 substitutions are variants of unknown significance. R15: R15K and R15S appear in OncoKB's curated PTEN list, but their variant pages failed to load twice and the label is not legible in the gene-page capture, so their class (probably likely oncogenic) is unconfirmed; other R15 substitutions are not curated by name. Screens: the lipid-phosphatase saturation screen scored 7,244 single-amino-acid variants and found 2,273 with reduced activity, 1,789 of them missense (cut-offs quoted in the follow-up paper: wild-type-like fitness score > -1.11, truncation-like < -2.13, hypomorphic in between; this cut-off text came from a search excerpt of a page whose fetched text was truncated). The abundance screen (VAMP-seq) covers about 4,100 missense variants. Scores for the seven residues live in supplementary tables / MaveDB and were not retrieved; ClinVar was not consulted. Usable intermediate definition: truncating OR deep deletion OR missense that OncoKB calls oncogenic/likely oncogenic (P38, G132, G165, Y177 firmly; P204S and R15K/S as a weaker tier), leaving V53 and other uncurated missense as unknown (reference group, or excluded in a sensitivity analysis). HOW SURE: medium (high for P38L/P38S, G132D, G165E/R, Y177C, V53 and P204S in OncoKB; low for R15 and for anything from the screens' per-variant scores or ClinVar, which were not read). SOURCES: https://www.oncokb.org/gene/PTEN, https://www.oncokb.org/gene/PTEN/P38L, https://www.oncokb.org/gene/PTEN/P38S, https://www.oncokb.org/gene/PTEN/G132D, https://www.oncokb.org/gene/PTEN/G165E, https://www.oncokb.org/gene/PTEN/G165R, https://www.oncokb.org/gene/PTEN/Y177C, https://www.oncokb.org/gene/PTEN/P204S, https://www.oncokb.org/gene/PTEN/V53A, https://pmc.ncbi.nlm.nih.gov/articles/PMC5986715/, https://pmc.ncbi.nlm.nih.gov/articles/PMC8518224/."
+        },
+        {
+          "question": "In discrete gene-level copy-number tables produced from targeted hybrid-capture sequencing panels and distributed in cBioPortal format, where only the values -2, 0 and 2 appear, what does a 0 mean: 'assessed and neither amplified nor deeply deleted', or can it also stand for samples in which copy number was not evaluable (low purity, no matched normal, older panel version)? How is non-evaluability normally recorded?",
+          "answer": "Not fully settled by the web. By the format definition 0 is 'diploid / no change' (-2 deep loss, -1 single-copy loss, 1 low-level gain, 2 high-level amplification), so in a table with only -2/0/2 a 0 formally means 'no deep deletion or amplification called' and also absorbs hemizygous loss and low-level gain. Non-evaluability is meant to be recorded differently: the agreed convention is NA for a missing measurement in a discrete CNA file, NA in the 'cna' column of the gene panel matrix for a sample not profiled, and absence from the required _cna case list. However the format does not enforce this, and no page read states whether a particular panel pipeline writes 0 for samples whose copy number could not be evaluated. AACR GENIE staff say that which samples were really profiled for CNA is not reliably recorded (centre CNA files are optional; the matrix 'cna' column is inferred from presence in the CNA file and 'is not completely accurate'). A gene panel matrix that has only a 'mutations' column declares nothing about CNA profiling. So 0 cannot be shown to mean 'assessed and intact'. Describe it as 'no deep deletion called', and add a restriction sensitivity analysis (for example samples with at least one non-zero CNA call in any gene, or check the result does not hinge on samples whose CNA column is all zeros). The cBioPortal file-format and FAQ pages were fetched but their text was cut off before the copy-number sections; the value definitions were read from the docs text quoted in GitHub issue 4664.",
+          "sources": [
+            "https://docs.cbioportal.org/file-formats/",
+            "https://github.com/cBioPortal/cbioportal/issues/4664",
+            "https://github.com/cBioPortal/cbioportal/issues/1702",
+            "https://github.com/cBioPortal/cbioportal/issues/10871",
+            "https://www.synapse.org/Synapse:syn7222066/discussion/threadId=11267"
+          ],
+          "confidence": "medium for the convention (0 = no change; NA / gene panel matrix / case list for not profiled); low on whether 0 hides non-evaluable samples in any specific panel dataset",
+          "deliveries": {
+            "bd08-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-29d1bcd192fe"
+            },
+            "bd08-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-c97ab593b89d"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In discrete gene-level copy-number tables produced from targeted hybrid-capture sequencing panels and distributed in cBioPortal format, where only the values -2, 0 and 2 appear, what does a 0 mean: 'assessed and neither amplified nor deeply deleted', or can it also stand for samples in which copy number was not evaluable (low purity, no matched normal, older panel version)? How is non-evaluability normally recorded? ANSWER: Not fully settled by the web. By the format definition 0 is 'diploid / no change' (-2 deep loss, -1 single-copy loss, 1 low-level gain, 2 high-level amplification), so in a table with only -2/0/2 a 0 formally means 'no deep deletion or amplification called' and also absorbs hemizygous loss and low-level gain. Non-evaluability is meant to be recorded differently: the agreed convention is NA for a missing measurement in a discrete CNA file, NA in the 'cna' column of the gene panel matrix for a sample not profiled, and absence from the required _cna case list. However the format does not enforce this, and no page read states whether a particular panel pipeline writes 0 for samples whose copy number could not be evaluated. AACR GENIE staff say that which samples were really profiled for CNA is not reliably recorded (centre CNA files are optional; the matrix 'cna' column is inferred from presence in the CNA file and 'is not completely accurate'). A gene panel matrix that has only a 'mutations' column declares nothing about CNA profiling. So 0 cannot be shown to mean 'assessed and intact'. Describe it as 'no deep deletion called', and add a restriction sensitivity analysis (for example samples with at least one non-zero CNA call in any gene, or check the result does not hinge on samples whose CNA column is all zeros). The cBioPortal file-format and FAQ pages were fetched but their text was cut off before the copy-number sections; the value definitions were read from the docs text quoted in GitHub issue 4664. HOW SURE: medium for the convention (0 = no change; NA / gene panel matrix / case list for not profiled); low on whether 0 hides non-evaluable samples in any specific panel dataset. SOURCES: https://docs.cbioportal.org/file-formats/, https://github.com/cBioPortal/cbioportal/issues/4664, https://github.com/cBioPortal/cbioportal/issues/1702, https://github.com/cBioPortal/cbioportal/issues/10871, https://www.synapse.org/Synapse:syn7222066/discussion/threadId=11267."
+        },
+        {
+          "question": "When the proportional-hazards assumption fails in a two-group comparison of progression-free survival with a small group and possibly crossing Kaplan-Meier curves, which summary measures are recommended for stating the direction of the difference (restricted mean survival time, landmark survival proportions, weighted log-rank tests), and how is the truncation time for restricted mean survival time chosen?",
+          "answer": "There is no consensus single method under non-proportional hazards; the hazard ratio becomes a hard-to-interpret average and the log-rank test loses power when curves cross. Guidance is to report model-free summaries with the Kaplan-Meier curves: (1) restricted mean survival time (area under the survival curve up to tau), contrasted as a difference or ratio of RMST or a ratio of restricted mean time lost; it gives an absolute effect with a clear sign even when curves cross. (2) Survival proportions at fixed landmark/milestone times (e.g. 6- or 12-month PFS) and the median. (3) Weighted log-rank tests (early-emphasis Wilcoxon, late-emphasis, max-combo) are tests only: they give no effect size, a late-emphasis test can favour a group whose curve lies below the other, and a max-combo test can reject in both directions on the same data, so they should not be used to state direction. Tau should be fixed before looking at results, with a stated rationale, as a clinically relevant time horizon; choosing tau to maximise significance exaggerates the effect, and showing the RMST difference over a range of tau is the recommended sensitivity analysis. If there is no censoring, the ordinary mean survival time can be used instead of RMST. The widely used software default of tau = the smaller of the two groups' largest observed times was not confirmed in the text read (the survRM2 vignette was cut off before that passage). The remark that a post hoc tau exaggerates significance came from a search excerpt of the JCO commentary, whose fetched text was cut off before that passage. For a claim of 'increased PFS', report the RMST difference with confidence interval at a pre-set tau plus landmark PFS proportions, and say whether the direction agrees across them.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7001779/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC9081686/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8802494/",
+            "https://cran.r-project.org/web/packages/survRM2/vignettes/survRM2-vignette3-2.html"
+          ],
+          "confidence": "high for the measures and the pre-specification rule for tau; low for the 'minimum of the largest observed times' default, which was not confirmed",
+          "deliveries": {
+            "bd08-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-9cb3145808fe"
+            },
+            "bd08-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-2c7d94881807"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When the proportional-hazards assumption fails in a two-group comparison of progression-free survival with a small group and possibly crossing Kaplan-Meier curves, which summary measures are recommended for stating the direction of the difference (restricted mean survival time, landmark survival proportions, weighted log-rank tests), and how is the truncation time for restricted mean survival time chosen? ANSWER: There is no consensus single method under non-proportional hazards; the hazard ratio becomes a hard-to-interpret average and the log-rank test loses power when curves cross. Guidance is to report model-free summaries with the Kaplan-Meier curves: (1) restricted mean survival time (area under the survival curve up to tau), contrasted as a difference or ratio of RMST or a ratio of restricted mean time lost; it gives an absolute effect with a clear sign even when curves cross. (2) Survival proportions at fixed landmark/milestone times (e.g. 6- or 12-month PFS) and the median. (3) Weighted log-rank tests (early-emphasis Wilcoxon, late-emphasis, max-combo) are tests only: they give no effect size, a late-emphasis test can favour a group whose curve lies below the other, and a max-combo test can reject in both directions on the same data, so they should not be used to state direction. Tau should be fixed before looking at results, with a stated rationale, as a clinically relevant time horizon; choosing tau to maximise significance exaggerates the effect, and showing the RMST difference over a range of tau is the recommended sensitivity analysis. If there is no censoring, the ordinary mean survival time can be used instead of RMST. The widely used software default of tau = the smaller of the two groups' largest observed times was not confirmed in the text read (the survRM2 vignette was cut off before that passage). The remark that a post hoc tau exaggerates significance came from a search excerpt of the JCO commentary, whose fetched text was cut off before that passage. For a claim of 'increased PFS', report the RMST difference with confidence interval at a pre-set tau plus landmark PFS proportions, and say whether the direction agrees across them. HOW SURE: high for the measures and the pre-specification rule for tau; low for the 'minimum of the largest observed times' default, which was not confirmed. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC7001779/, https://pmc.ncbi.nlm.nih.gov/articles/PMC9081686/, https://pmc.ncbi.nlm.nih.gov/articles/PMC8802494/, https://cran.r-project.org/web/packages/survRM2/vignettes/survRM2-vignette3-2.html."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd08-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd08-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd08-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd08-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd08-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 82.84154674992897,
+      "cost_usd": 0.1496759,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 88.58628745796159,
+      "cost_usd": 0.15687230000000002,
+      "error": null
+    },
+    {
+      "agent": "bd08-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 147.02525508299004,
+      "cost_usd": 0.2921254,
+      "error": null
+    },
+    {
+      "agent": "bd08-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 204.70179766695946,
+      "cost_usd": 0.3230192,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 186.42966383404564,
+      "cost_usd": 0.3890045,
+      "error": null
+    },
+    {
+      "agent": "bd08-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 188.161557708052,
+      "cost_usd": 0.501666,
+      "error": null
+    },
+    {
+      "agent": "bd08-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 254.340383291943,
+      "cost_usd": 0.5413981999999999,
+      "error": null
+    },
+    {
+      "agent": "bd08-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 266.8262947499752,
+      "cost_usd": 0.44422189999999995,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

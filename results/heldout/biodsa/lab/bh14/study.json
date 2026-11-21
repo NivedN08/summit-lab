@@ -1,0 +1,371 @@
+{
+  "study": "bh14",
+  "status": "replicated",
+  "final": {
+    "agent": "bh14-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh14/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh14-library": "opus",
+    "bh14-team-a": "opus",
+    "bh14-team-b": "opus",
+    "bh14-team-c": "opus",
+    "bh14-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "bh14-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh14/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh14-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh14/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh14-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh14/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh14-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh14/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh14-team-a",
+        "bh14-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh14-team-a",
+        "bh14-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The bh14 tables are an MSK-IMPACT prostate cancer cohort whose clinical files hold outcomes (OS/PFS), Gleason, stage, MSI score/type and TMB, but apparently no immunotherapy-treatment or PSA-response column, so PSA50 after checkpoint blockade likely cannot be computed directly. Under this task's labelling convention, a missing response variable is not by itself grounds for 'Not verifiable' when the hypothesis concerns this study's cancer type and measurements (prostate, MSI, TMB). First grep every clinical column for treatment/ICB/PSA fields; if none exists, decide True/False from the closest variables plus established biology / the study's reported finding, and state explicitly which kind of evidence decided the label.",
+      "from": [
+        "sl-lab-57a818d3afb0"
+      ],
+      "reason": "Prevents a wrong 'Not verifiable' answer, which is graded as wrong, and tells the team to check for response columns before concluding.",
+      "fact_ids": {
+        "team-a": "sl-lab-a5ef9b7e123d"
+      }
+    },
+    {
+      "text": "MSI status in MSK-IMPACT comes from MSIsensor: score >=10 = Instable (MSI-H), 3 to <10 = Indeterminate, <3 = Stable. The library saw roughly 2148 Stable, 55 Instable and 47 Indeterminate samples. Define MSI-H as Instable only and exclude Indeterminate from both arms, with a sensitivity analysis that includes them. dMMR can be supported by MLH1/MSH2/MSH6/PMS2 alterations in the mutation, CNA and SV tables; MSH2 structural rearrangements are common in prostate dMMR.",
+      "from": [
+        "sl-lab-c2a2f876ea8e"
+      ],
+      "reason": "Lumping Indeterminate cases into MSI-H or MSS would blur the two groups the hypothesis compares.",
+      "fact_ids": {
+        "team-a": "sl-lab-a1d68318a90d"
+      }
+    },
+    {
+      "text": "Define TMB-H/MSS as MSI Type == Stable AND TMB >=10 mut/Mb (the FDA/KEYNOTE-158 cutoff), using the provided per-Mb nonsynonymous TMB column. Do not use raw mutation counts from data_mutations.txt, because samples were run on panels of different sizes (IMPACT341/410/468; see data_gene_panel_matrix.txt). Keep the MSI-H and TMB-H/MSS groups mutually exclusive: MSI-H tumours are almost always TMB-high, so letting them into the TMB-H group makes the comparison circular. Cross-tabulate MSI Type against TMB>=10. In the TMB-H/MSS group, check for POLE mutations and sample type (primary vs metastasis), and report POLE-driven cases separately.",
+      "from": [
+        "sl-lab-7ff6a54bc18a",
+        "sl-lab-f3c4e986b080"
+      ],
+      "reason": "How the comparison groups are defined decides what is being compared. A wrong definition makes any result meaningless.",
+      "fact_ids": {
+        "team-a": "sl-lab-440c064c85f2"
+      }
+    },
+    {
+      "text": "Some patients contribute several samples (primary and metastasis). Count unique patients per group, not samples, and look for patients whose samples disagree on MSI/TMB. Collapse to one sample per patient (e.g. any Instable / highest MSI score) before comparing groups.",
+      "from": [
+        "sl-lab-67fe692afe82"
+      ],
+      "reason": "Counting samples inflates group sizes and can place one patient in both groups.",
+      "fact_ids": {
+        "team-a": "sl-lab-9e065026c66e"
+      }
+    },
+    {
+      "text": "The groups are small (tens of MSI-H patients and few TMB-H/MSS patients), and any outcome proxy available here (OS/PFS) is not measured after checkpoint blockade and is confounded by stage and disease state. Report the n per group and use exact tests or log-rank with confidence intervals. Do not treat a noisy or non-significant proxy result as decisive against established clinical evidence on PSA response to checkpoint blockade in these molecular subgroups. Weigh that evidence yourselves, and say in your reasoning when it decided the label.",
+      "from": [
+        "sl-lab-1cfb7727656e"
+      ],
+      "reason": "Stops the team from reading an underpowered, non-ICB survival proxy as a direct test of PSA50 response. The library's statement of which way the literature points is left out so that the briefing does not suggest an answer.",
+      "fact_ids": {
+        "team-a": "sl-lab-2a2f0ce3d51b"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams define MSI-H/dMMR solely as MSI_TYPE == 'Instable' and TMB-H/MSS as MSI_TYPE == 'Stable' with TMB >= 10, without testing whether dMMR (MMR gene loss by mutation, deep deletion or rearrangement) should move patients between groups.",
+      "Both teams assume the label can be taken from outside clinical evidence on PSA50 after checkpoint blockade, and neither checks whether the 33-patient PFS subset is really a checkpoint-treated group or something else (e.g. post-prostatectomy recurrence; the PFS_STATUS values are 'Recurred/Progressed' and 'DiseaseFree').",
+      "Both treat the TMB>=10 cut-off as fixed across four IMPACT panels (341/410/468/505) and across matched and unmatched samples, without checking whether panel or unmatched status inflates TMB in the TMB-H/MSS group.",
+      "Both drop the 47 'Indeterminate' MSI samples (21 with TMB>=10 by team A's count) from both groups without testing whether they look like MSI-H (MSI score, MMR alteration) or like MSS."
+    ],
+    "unused_evidence": [
+      "data_sv.txt and data_CNA.txt: MSH2/MSH6/MLH1/PMS2 structural rearrangements and deep deletions are a common route to dMMR in prostate cancer. Neither team used them, and they could reclassify 'Stable/TMB-H' patients as dMMR (or confirm the groups).",
+      "MSI_SCORE (continuous) was not inspected for TMB-H/MSS patients near the Instable threshold.",
+      "SAMPLE_TYPE (Primary vs Metastasis), GENE_PANEL and SOMATIC_STATUS (5 Unmatched) were not used to check what drives TMB-H in the MSS group.",
+      "The PFS subset (33 patients): team A did not use it at all; team B used it but did not check its composition (MSI group, sample type, stage) against a treatment-cohort interpretation."
+    ],
+    "unresolved_weak_points": [
+      "Team A: label rests entirely on outside clinical evidence. This was reported, not resolved, and team A did not check what the PFS-recorded subset is.",
+      "Team B: the TMB-H/MSS PFS group is n=4 and the PFS subset's ICB-treated status is presumed, not documented. Reported, not resolved.",
+      "Team B found 23 MSI-H without an MMR mutation and 31 MSS with one, but resolved this by choosing MSI_TYPE without checking CNA/SV MMR loss.",
+      "The teams' MSI-H counts differ (53 vs 55), which suggests a sample-vs-patient or discordant-sample handling difference that neither reconciled."
+    ],
+    "second_readings": [
+      "'MSI-H/dMMR' can mean MSI-H by sequencing OR dMMR by MMR gene loss, which is a wider group than MSI_TYPE == Instable; 'TMB-H/MSS' would then mean TMB-H without either.",
+      "'Higher PSA50 response rate' could mean a numerically higher proportion or a statistically supported difference; with small groups these may diverge.",
+      "The comparison may be meant only among patients who actually received checkpoint blockade, not the whole genomic cohort, so whole-cohort group sizes are not the relevant denominators."
+    ],
+    "verdict": "Moderate trust. The cancer type and molecular groups clearly match the hypothesis, so 'Not verifiable' is unlikely, but neither team has PSA50 data and both rest the label on outside evidence cited only in general terms. Team B's PFS proxy also rests on an untested assumption about who that subset is, and neither team used the CNA/SV evidence that defines dMMR in prostate cancer.",
+    "questions": [
+      {
+        "to": "bh14-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate the 33 patients with PFS recorded by MSI_TYPE, TMB>=10, SAMPLE_TYPE and stage. Are they enriched for the hypermutated groups (consistent with a checkpoint-treated subset) or not, and does that change whether and how you use the data rather than outside evidence alone?",
+        "from": [
+          "sl-lab-cf04b3d0751a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-3cb2fd3f5278"
+      },
+      {
+        "to": "bh14-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For your 19 TMB-H/MSS patients, check data_CNA.txt (deep deletions) and data_sv.txt (rearrangements) for MSH2, MSH6, MLH1 and PMS2, plus their MSI_SCORE values. How many would count as dMMR, and does reclassifying them change your group definitions or label reasoning?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-49f5620146ec"
+      },
+      {
+        "to": "bh14-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your MSI-H count is 53 and the other team's is 55. Reconcile the count at patient level (multi-sample patients, discordant MSI calls), and check whether the 21 Indeterminate TMB>=10 patients look MSI-H-like on MSI_SCORE or MMR alteration. Does this change your groups?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-79a94be197e0"
+      },
+      {
+        "to": "bh14-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Check whether TMB-H in the MSS group depends on GENE_PANEL or SOMATIC_STATUS (unmatched samples). Do any of those patients drop below TMB 10 under a panel-aware view, and does that affect your conclusion?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-7ce6302a4c0b"
+      },
+      {
+        "to": "bh14-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: PFS_STATUS values are 'Recurred/Progressed' and 'DiseaseFree'. Tabulate the 33 PFS patients by SAMPLE_TYPE, stage, Gleason and MSI/TMB group, and say what evidence (if any) shows that this is a checkpoint-treated cohort rather than, e.g., a post-surgery recurrence set. Does the result change whether you can use the PFS comparison at all?",
+        "from": [
+          "sl-lab-ccae1a26fc99"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-995ca0aa6314"
+      },
+      {
+        "to": "bh14-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You found that MSI_TYPE and MMR mutation calls disagree. Add MMR deep deletions from data_CNA.txt and MSH2/MSH6/MLH1/PMS2 rearrangements from data_sv.txt. How many 'TMB-H/MSS' patients have genomic dMMR, and does an MSI-H-or-dMMR grouping change your group sizes or the PFS comparison?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-fb7892f73f7b"
+      },
+      {
+        "to": "bh14-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: With n=4 in the TMB-H/MSS PFS group, report the log-rank test and confidence intervals for the PFS difference, and say whether the label would change if the PFS result were dropped and only outside evidence remained.",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-e23851484f2a"
+      },
+      {
+        "to": "bh14-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your MSI-H count is 55 while the other team has 53. Recount at patient level, resolve patients with discordant MSI across samples, and check whether Indeterminate TMB>=10 patients are MSI-H-like on MSI_SCORE. Do these change your groups?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-eb8dd5abd91b"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In clinical targeted-panel genomic studies of prostate cancer, what genomic mechanisms (point mutations, deep deletions, structural rearrangements such as MSH2 inversions) most often cause mismatch-repair deficiency, and how do such studies usually define 'dMMR' compared with sequencing-based MSI-H?",
+          "why": "Both teams defined the dMMR group by sequencing MSI status alone and ignored CNA and SV evidence. If rearrangement-driven MMR loss is common, the group definitions may be wrong.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "What PSA50 response rates to PD-1 checkpoint blockade are reported in published prostate cancer series for MSI-H/dMMR tumours compared with tumours that have high tumour mutational burden but are microsatellite stable?",
+          "why": "Both teams decided the label from outside clinical evidence cited only in general terms. The reported comparison is what settles the direction.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In targeted-panel clinical genomic datasets that call MSI with MSIsensor, how is an 'Indeterminate' MSI call defined from the score, and are such cases usually treated as MSI-H, MSS, or excluded?",
+          "why": "Both teams excluded Indeterminate cases, many of which have high TMB. How they are handled could move patients between the compared groups.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": false,
+      "error": "ConnectionError: [Errno 8] nodename nor servname provided, or not known",
+      "findings": []
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh14-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh14-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh14-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh14-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh14-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 56.060685832984746,
+      "cost_usd": 0.18350460000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 37.27487275004387,
+      "cost_usd": 0.23111339999999997,
+      "error": null
+    },
+    {
+      "agent": "bh14-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 42.26323004101869,
+      "cost_usd": 0.164144,
+      "error": null
+    },
+    {
+      "agent": "bh14-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 47.29973475006409,
+      "cost_usd": 0.1710616,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 108.48376270895824,
+      "cost_usd": 0.3853502,
+      "error": null
+    },
+    {
+      "agent": "bh14-library",
+      "phase": "research",
+      "ok": false,
+      "seconds": 0.7360880374908447,
+      "cost_usd": null,
+      "error": "ConnectionError: [Errno 8] nodename nor servname provided, or not known"
+    },
+    {
+      "agent": "bh14-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 78.43912016705144,
+      "cost_usd": 0.33088480000000003,
+      "error": null
+    },
+    {
+      "agent": "bh14-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 108.45670495799277,
+      "cost_usd": 0.3942438,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

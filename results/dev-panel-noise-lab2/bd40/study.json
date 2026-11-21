@@ -1,0 +1,431 @@
+{
+  "study": "bd40",
+  "status": "replicated",
+  "final": {
+    "agent": "bd40-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd40/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd40-library": "opus",
+    "bd40-team-a": "opus",
+    "bd40-team-b": "opus",
+    "bd40-team-c": "opus",
+    "bd40-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd40-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd40/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd40-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd40/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd40-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd40/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd40-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd40/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd40-team-a",
+        "bd40-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd40-team-a",
+        "bd40-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "'Acquired' or 'new' alterations require comparing an earlier and a later tumour sample from the same patient. Keep only patients with 2 or more tumour samples. SAMPLE_TYPE (Primary/Metastasis/Local Recurrence) does not give the order in time: a 'Primary' can be sequenced after a metastasis. Order samples by their sample-ID suffix (T01 < T02 < ...) as well as by type, and flag patients where the two orderings disagree or where there are several later samples. A new alteration is one found in a later sample but absent from the patient's earliest sample. Run a sensitivity analysis with the other ordering. Never count alterations from single-sample patients as new.",
+      "from": [
+        "sl-dev-panel-noise-lab2-74d5e48a49e1"
+      ],
+      "reason": "This defines the unit of analysis. If samples are ordered wrongly, or single-sample patients are pooled in, the 'acquired' counts are wrong.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-ead58fcb6fc4"
+      }
+    },
+    {
+      "text": "Define FN-RMS and FP-RMS by fusion status, not by histology. About 20-40% of alveolar RMS (ARMS) are PAX-FOXO1 fusion-negative. In data_sv.txt, look for PAX3-FOXO1 or PAX7-FOXO1 (and PAX3/PAX7 with other partners) in any sample of each patient. Call a patient FP if a fusion is found in any of their samples and FN otherwise. Cross-tabulate this against ONCOTREE_CODE (ARMS/ERMS). Use histology only as a fallback, and report any ARMS cases without a fusion explicitly.",
+      "from": [
+        "sl-dev-panel-noise-lab2-4038ebcec5b7"
+      ],
+      "reason": "The hypothesis is about fusion status. Using ARMS/ERMS as a stand-in would put some patients in the wrong group.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-f379d4a36da4"
+      }
+    },
+    {
+      "text": "Paired samples were sequenced on different MSK-IMPACT panel versions (IMPACT410, 468, 505). An alteration in a gene that only the later, larger panel covers will look acquired, even though the earlier panel could not have detected it. Use data_gene_panel_matrix.txt to find each sample's panel. For each pair, count new alterations only in genes covered by both samples' panels (the intersection). Report how many apparent new alterations this removes, and compare FN with FP on the harmonised count.",
+      "from": [
+        "sl-dev-panel-noise-lab2-36989d8ad971"
+      ],
+      "reason": "Panel differences can inflate the 'new alteration' counts. If one group has more panel switches, this can flip the FN vs FP comparison.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-fed1253cb446"
+      }
+    },
+    {
+      "text": "'No common mutations' has two readings: (a) within each FN patient, no mutations shared between the early and later samples; (b) across FN patients, no gene acquired in 2 or more patients. Compute both. Compare genes recurrently acquired in FN patients with those in FP patients. The across-patient reading (b) is the more natural one. For 'True', both parts of the hypothesis must hold: FN acquire fewer new alterations, AND they have no recurrent acquired mutation. State which reading your evidence addresses.",
+      "from": [
+        "sl-dev-panel-noise-lab2-ea589a02d7f9"
+      ],
+      "reason": "The hypothesis has two parts and one of them is ambiguous. Teams must test both parts and avoid judging it on one reading only.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-5b140c5e6816"
+      }
+    },
+    {
+      "text": "There are only a few paired patients per group. One hypermutated or heavily altered relapse (for example after alkylating chemotherapy) can dominate pooled totals. Tabulate new-alteration counts per patient for FN and for FP, and check for outliers, including TMB_NONSYNONYMOUS of the later samples. Compare per-patient values, for example medians with a Mann-Whitney or permutation test. Report results with and without outliers. Judge the direction and consistency of the effect, not only p-values, since power is low.",
+      "from": [
+        "sl-dev-panel-noise-lab2-ce5061854a3d"
+      ],
+      "reason": "Pooled totals over very few patients can give the wrong direction. A per-patient comparison is needed.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-cb616d43de15"
+      }
+    },
+    {
+      "text": "'Alterations' includes mutations, copy-number changes (CNAs) and structural variants (SVs). Count new mutations, new high-level CNAs (only -2 or +2 in data_cna.txt) and new SVs separately for each pair. Low-level CNA calls (-1 or +1) depend on tumour purity, so a call present in only one sample may not be a real new event. Check the .seg log-ratios to confirm CNA changes. Report whether FN < FP holds for each alteration type.",
+      "from": [
+        "sl-dev-panel-noise-lab2-3b23f901b18e"
+      ],
+      "reason": "Counting CNAs naively adds noise driven by purity. Teams also need to know the claim covers all alteration types, not only mutations.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-148c9843c3e6"
+      }
+    },
+    {
+      "text": "Low tumour purity or coverage in one sample of a pair causes missed calls, so mutations that are really shared can look new. Compare TUMOR_PURITY and SAMPLE_COVERAGE between the paired samples. For each new mutation, check its allele fraction (t_alt_count/t_depth). Treat low-allele-fraction new mutations as uncertain when the earlier sample had purity of 30% or less. Report counts with and without these mutations, and check whether the FN vs FP difference persists.",
+      "from": [
+        "sl-dev-panel-noise-lab2-295554145bcc"
+      ],
+      "reason": "False 'new' mutations caused by purity can bias the per-group counts.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-ef77232a8497"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams take the sample marked Primary (or the lowest T-suffix) as the baseline and treat any alteration absent from it as 'acquired'. Neither team had collection dates, and neither tested whether an absent call is a true absence or a missed call. 12 of 42 samples have no rows at all in the mutation table.",
+      "Both teams pool mutations, discrete CNAs (+/-2) and SVs into one count of 'new alterations'. Neither team showed that the FN>FP direction holds for SNVs/indels alone, which is the narrower reading of 'alterations'.",
+      "Both teams treat FN/FP as equivalent to ERMS/ARMS. That makes fusion status perfectly confounded with histology, and possibly with differences in purity and panel between the groups.",
+      "Both teams read 'no common mutations' as gene recurrence across FN patients (e.g. TP53 in 4/10). They counted genes mutated at any time, not genes recurrently acquired at the later sample."
+    ],
+    "unused_evidence": [
+      "data_cna_hg19.seg segment log-ratios. Team A explicitly did not check them. They could show whether 'new' +/-2 calls reflect purity differences between paired samples rather than real gains.",
+      "t_alt_count/t_ref_count for the earlier sample at the positions of 'new' mutations. These show whether a variant was present at sub-threshold VAF before (i.e. not truly acquired). Team A checked VAF only when earlier purity was <=30%. Team B did not check it.",
+      "Samples with zero mutation rows (12 of 42). Neither team said whether they count as 'sequenced with no mutations' or as missing, and that choice changes the 'new mutation' counts.",
+      "SAMPLE_COVERAGE and TUMOR_PURITY per sample. Neither team used them as a covariate or as a balance check between the FN and FP groups."
+    ],
+    "unresolved_weak_points": [
+      "Team A named purity-driven CNA calls and unchecked seg log-ratios as its weakest point and did not resolve it.",
+      "Team B named purity sensitivity of CNA calls and the ordering by sample type/ID as weak points. Team B reported them but ran no ordering sensitivity and no purity check.",
+      "Both teams have only 10 patients per group. Neither ran a test that leaves out one patient at a time, or a robustness check without the CNA component."
+    ],
+    "second_readings": [
+      "'No common mutations' could mean no truncal mutations shared between the primary and the later sample within each FN patient. That differs from 'no gene recurrently acquired across FN patients'. The library flagged both readings, but neither team's notes report the within-patient shared-mutation result.",
+      "'Common mutations' could mean recurrently ACQUIRED mutations (new at the later sample), not genes mutated at any time point. TP53 mutated in 4/10 FN patients does not show that it was acquired.",
+      "'New alterations' could mean SNVs/indels only, not mutations+CNA+SV together."
+    ],
+    "verdict": "Moderate trust. Both teams find FN>FP in new alterations with checks on panel and ordering. But neither showed that the result holds for mutations alone or that it is robust to purity-driven CNA calls. The 'no common mutations' clause was settled on a cross-patient, any-time gene tally rather than on acquired or shared mutations.",
+    "questions": [
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Recompute the FN vs FP comparison using only new SNVs/indels, with no CNAs or SVs. Then recompute it after dropping each patient in turn. Does the FN>FP direction hold in every version, and if not, does that change your method?",
+        "from": [
+          "sl-dev-panel-noise-lab2-53f4ed2774ec"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-f576839e7d04"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For each FN patient, count the mutations shared between the earlier and later samples. Separately, list the genes that are newly acquired in two or more FN patients, as distinct from genes mutated at any time. Which reading of 'no common mutations' does each result address, and does either change your label?",
+        "from": [
+          "sl-dev-panel-noise-lab2-5b140c5e6816"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-8f97a6d89995"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For each 'new' +/-2 CNA call, check the seg.mean of the covering segment in the earlier sample, and compare tumour purity between the two samples. What share of new CNAs look like sub-threshold changes that were already present? Does excluding them change the FN vs FP result?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-8a7b777dfaac"
+      },
+      {
+        "to": "bd40-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: 12 of 42 samples have no rows in the mutation table. How did your code treat them: as zero mutations or as missing? Does treating them the other way change the FN vs FP per-patient counts?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-b6e860708633"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: TP53 is mutated in 4/10 FN patients. In how many of them was the mutation acquired at the later sample, and in how many was it already present at baseline? Also, for each FN patient, how many mutations are shared between the earlier and later samples? Does either answer change how you judge the 'no common mutations' part?",
+        "from": [
+          "sl-dev-panel-noise-lab2-1cb01cf93f5b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-a149ff9e867a"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Rerun the comparison counting only new SNVs/indels, and again counting only new CNAs. Then swap the baseline in patients where sample-type order and T-suffix order disagree. Does FN>FP hold in each version, and does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-0e033ae8072c"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: For each 'new' mutation, look up t_alt_count/t_depth at that position in the earlier sample where available, and look at the earlier sample's purity. For each 'new' CNA, check the earlier sample's seg.mean. How many 'new' events are plausibly missed calls rather than acquired ones, and does removing them change the result?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-25fd97165bf9"
+      },
+      {
+        "to": "bd40-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: 12 of 42 samples have no rows in the mutation table. How were they treated in your per-patient counts? If they are treated the other way (zero vs missing), do the medians you reported (5.5 vs 1.5) change direction?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-b0e04d911759"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In targeted-panel tumour sequencing pipelines, are mutations seen in one sample of a patient routinely genotyped at the same positions in the patient's other samples (e.g. 'called in another sample' or rescued at low VAF)? What does it mean when a variant appears in only one sample's mutation table?",
+          "why": "Whether absence from the earlier sample means true absence decides whether 'new mutation' counts are valid.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How are discrete copy-number calls (-2, -1, 0, 1, 2) typically derived from segment log-ratios in targeted-panel CNA pipelines, and how strongly does tumour purity affect whether a gain or deletion reaches the +/-2 threshold?",
+          "why": "Both teams count new +/-2 CNAs between samples of different purity. If the thresholds are purity-sensitive, many of those new events may be artifacts.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In targeted-panel tumour sequencing pipelines, are mutations seen in one sample of a patient routinely genotyped at the same positions in the patient's other samples (e.g. 'called in another sample' or rescued at low VAF)? What does it mean when a variant appears in only one sample's mutation table?",
+          "answer": "Not routinely, as far as the MSK-IMPACT methods describe. Each tumour is called independently against its matched normal (MuTect/Pindel/SomaticIndelDetector). Hotspot variants need depth >=20x, >=8 alt reads and VAF >=2%; non-hotspot variants need >=10 alt reads and VAF >=5%. The methods papers describe no joint genotyping of one sample's mutations in the patient's other samples. cBioPortal does support a separate 'uncalled' status (PROFILED_WITH_READS_BUT_UNCALLED, i.e. Mutation_Status 'UNCALLED' rows), but I saw this only in a search snippet and did not read the page. A variant listed in only one sample's table therefore means 'not called in the other sample', not 'proven absent'. It may sit below the 2%/5% VAF cutoff, the other sample may have low purity or coverage, or the gene may be off that sample's panel. Teams should check Mutation_Status for UNCALLED rows, drop them before counting, and treat 'new' mutations seen opposite a low-purity sample as uncertain. The web did not fully settle how this specific study's table was assembled.",
+          "sources": [
+            "https://www.jmdjournal.org/article/S1525-1578(15)00045-8/fulltext",
+            "https://doctors.anticancer.co.il/wp-content/uploads/2018/12/MSK-IMPACT.pdf",
+            "https://docs.cbioportal.org/file-formats/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd40-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-23f9dc77f5e3"
+            },
+            "bd40-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-9c071814197c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In targeted-panel tumour sequencing pipelines, are mutations seen in one sample of a patient routinely genotyped at the same positions in the patient's other samples (e.g. 'called in another sample' or rescued at low VAF)? What does it mean when a variant appears in only one sample's mutation table? ANSWER: Not routinely, as far as the MSK-IMPACT methods describe. Each tumour is called independently against its matched normal (MuTect/Pindel/SomaticIndelDetector). Hotspot variants need depth >=20x, >=8 alt reads and VAF >=2%; non-hotspot variants need >=10 alt reads and VAF >=5%. The methods papers describe no joint genotyping of one sample's mutations in the patient's other samples. cBioPortal does support a separate 'uncalled' status (PROFILED_WITH_READS_BUT_UNCALLED, i.e. Mutation_Status 'UNCALLED' rows), but I saw this only in a search snippet and did not read the page. A variant listed in only one sample's table therefore means 'not called in the other sample', not 'proven absent'. It may sit below the 2%/5% VAF cutoff, the other sample may have low purity or coverage, or the gene may be off that sample's panel. Teams should check Mutation_Status for UNCALLED rows, drop them before counting, and treat 'new' mutations seen opposite a low-purity sample as uncertain. The web did not fully settle how this specific study's table was assembled. HOW SURE: medium. SOURCES: https://www.jmdjournal.org/article/S1525-1578(15)00045-8/fulltext, https://doctors.anticancer.co.il/wp-content/uploads/2018/12/MSK-IMPACT.pdf, https://docs.cbioportal.org/file-formats/."
+        },
+        {
+          "question": "How are discrete copy-number calls (-2, -1, 0, 1, 2) typically derived from segment log-ratios in targeted-panel CNA pipelines, and how strongly does tumour purity affect whether a gain or deletion reaches the +/-2 threshold?",
+          "answer": "MSK-IMPACT computes GC-normalised tumour/normal coverage log-ratios and segments them by CBS. A whole gene counts as gained or lost at fold change >2.0 or <-2.0 with FDR-corrected P<0.05. In cBioPortal, +/-2 means amplification or deep deletion; GISTIC-based studies instead use a fixed low-level threshold (0.1-0.3) and sample-specific high-level thresholds. The fold-change cutoff is not corrected for purity, so purity matters a lot. A 2-copy homozygous loss at 50% purity gives exactly a 2-fold drop, right at the threshold, and anything below 50% purity misses it. At 30% purity, a 4-fold amplification shows only about 1.9-fold. MSK reports that coverage depth and tumour purity affect its CN calls, and the cBioPortal FAQ says purity and ploidy differences make the -2..2 calls prone to false positives and negatives. A +/-2 call present in a high-purity sample and absent in a lower-purity sample of the same patient may well be a purity artifact; check it against the seg log-ratios and the samples' purities.",
+          "sources": [
+            "https://www.jmdjournal.org/article/S1525-1578(15)00045-8/fulltext",
+            "https://www.sciencedirect.com/science/article/pii/S1525157818302447",
+            "https://docs.cbioportal.org/user-guide/faq/"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd40-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-4e2bd998e5ce"
+            },
+            "bd40-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-bd973338bda5"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How are discrete copy-number calls (-2, -1, 0, 1, 2) typically derived from segment log-ratios in targeted-panel CNA pipelines, and how strongly does tumour purity affect whether a gain or deletion reaches the +/-2 threshold? ANSWER: MSK-IMPACT computes GC-normalised tumour/normal coverage log-ratios and segments them by CBS. A whole gene counts as gained or lost at fold change >2.0 or <-2.0 with FDR-corrected P<0.05. In cBioPortal, +/-2 means amplification or deep deletion; GISTIC-based studies instead use a fixed low-level threshold (0.1-0.3) and sample-specific high-level thresholds. The fold-change cutoff is not corrected for purity, so purity matters a lot. A 2-copy homozygous loss at 50% purity gives exactly a 2-fold drop, right at the threshold, and anything below 50% purity misses it. At 30% purity, a 4-fold amplification shows only about 1.9-fold. MSK reports that coverage depth and tumour purity affect its CN calls, and the cBioPortal FAQ says purity and ploidy differences make the -2..2 calls prone to false positives and negatives. A +/-2 call present in a high-purity sample and absent in a lower-purity sample of the same patient may well be a purity artifact; check it against the seg log-ratios and the samples' purities. HOW SURE: high. SOURCES: https://www.jmdjournal.org/article/S1525-1578(15)00045-8/fulltext, https://www.sciencedirect.com/science/article/pii/S1525157818302447, https://docs.cbioportal.org/user-guide/faq/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd40-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd40-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd40-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd40-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd40-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 84.52999691700097,
+      "cost_usd": 0.40792940000000005,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 43.85856950003654,
+      "cost_usd": 0.15396579999999999,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 72.08615166705567,
+      "cost_usd": 0.2917858,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 71.79063575004693,
+      "cost_usd": 0.4371504,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 63.96074195904657,
+      "cost_usd": 0.2778946,
+      "error": null
+    },
+    {
+      "agent": "bd40-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 156.80716958304401,
+      "cost_usd": 0.6599586000000001,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 144.86760641692672,
+      "cost_usd": 0.47890320000000003,
+      "error": null
+    },
+    {
+      "agent": "bd40-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 168.05445195897482,
+      "cost_usd": 0.5631999999999999,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,373 @@
+{
+  "study": "bh39",
+  "status": "replicated",
+  "final": {
+    "agent": "bh39-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh39/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh39-library": "opus",
+    "bh39-team-a": "opus",
+    "bh39-team-b": "opus",
+    "bh39-team-c": "opus",
+    "bh39-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh39-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh39/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh39-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh39/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh39-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh39/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh39-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh39/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh39-team-a",
+        "bh39-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh39-team-a",
+        "bh39-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Count KRAS mutation frequency per patient, not per mutation row: collapse data_mutations.txt to unique Tumor_Sample_Barcode, map samples to PATIENT_ID through data_clinical_sample.txt, and call a patient mutated if they have at least one qualifying KRAS mutation. The denominator for each previous-treatment group is every sequenced patient in that group, including patients with no mutation in any gene.",
+      "from": [
+        "sl-lab-1277d2715ff1"
+      ],
+      "reason": "Patients can have several KRAS calls or several samples. Counting rows, or using only patients present in the mutation file, gives the wrong frequencies and the wrong denominators.",
+      "fact_ids": {
+        "team-a": "sl-lab-7f18330f3677"
+      }
+    },
+    {
+      "text": "Report the KRAS-mutated proportion in previously treated and in untreated patients, the odds ratio and a 2x2 Fisher exact test. With about 200 patients and KRAS in roughly 20-25% of them, a real difference can still give p>0.05. Decide on direction, size and significance together: p>0.05 alone does not make the label False. Say explicitly which kind of evidence decided the label.",
+      "from": [
+        "sl-lab-18b72d29dd04"
+      ],
+      "reason": "Teams could otherwise treat a non-significant p-value as evidence against the hypothesis, which this benchmark's convention does not support.",
+      "fact_ids": {
+        "team-a": "sl-lab-c49ecad685f6"
+      }
+    },
+    {
+      "text": "Treatment such as alkylator exposure can raise overall mutation burden, which can raise the mutation frequency of any gene without being specific to it. Compare TMB_NONSYNONYMOUS (or the per-patient mutation count) between the treatment groups. As a sensitivity analysis, fit a logistic regression of KRAS status on treatment plus log(TMB), or exclude hypermutators. Unadjusted Fisher comparisons are the usual primary analysis. Burden confounding is less likely for a hotspot oncogene like KRAS (low-confidence guidance, from domain knowledge).",
+      "from": [
+        "sl-lab-4feb57bd8147",
+        "sl-lab-8b9e3a56cad8"
+      ],
+      "reason": "This tests whether a treated-vs-untreated difference is specific to KRAS or a general burden effect, which affects how the result should be read.",
+      "fact_ids": {
+        "team-a": "sl-lab-f8eed618a417"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat every clinical sample as sequenced and count the 6 samples with no mutation rows as KRAS-wild-type (the library advised this). If those samples were not sequenced or failed QC, they inflate the denominators.",
+      "Both assume the sequencing platform and depth are the same in both treatment groups. The mutation table has Sequencing_Phase, Sequencer and t_depth columns, which suggest the samples may have been sequenced on more than one platform or in more than one phase.",
+      "Both assume the 17 patients with missing PREVIOUS_TREATMENT are missing at random and drop them.",
+      "Both use 'nonsynonymous KRAS' as the mutation definition and do not filter on read support or normal contamination."
+    ],
+    "unused_evidence": [
+      "Sequencing_Phase, Sequencer and Sequence_Source in data_mutations.txt (WGS vs WES, or study phase). If the treated patients were enriched in one phase that had higher coverage, detection rates differ and so does TMB. This could explain the TMB imbalance both teams found.",
+      "t_alt_count, t_depth, n_alt_count and Mutation_Status/Validation_Status on the KRAS calls (call quality, low-VAF subclonal calls).",
+      "PATIENT_DEATH_REASON and the other clinical fields were not used. They are probably irrelevant to the label."
+    ],
+    "unresolved_weak_points": [
+      "Team A: Fisher p is borderline (0.052-0.054) and falls to p=0.12 after TMB adjustment. They reported this but did not resolve it, and they never asked why TMB differs between the groups (platform or phase versus biology).",
+      "Team B: the same borderline p, and the exact CI it was asked for was not computed. Its stored facts (27.6% vs 15.4%) disagree slightly with its method note (26.7% vs 15.1%) and with team A's 27/101. The denominators have not been reconciled.",
+      "Neither team showed that the 6 samples without mutation rows were actually sequenced."
+    ],
+    "second_readings": [
+      "'More frequent' could mean the share of patients with any KRAS mutation (what both teams measured), or KRAS mutation counts or VAF per patient. Both readings point the same way here, but neither team checked the second one.",
+      "'Previously treated' is binary in the data, so there is no ambiguity about the time point. The study context (a finding of the source study) supports reading the hypothesis as the study's own directional finding, not as a claim of significance."
+    ],
+    "verdict": "I trust the agreed 'True' moderately to well. Both teams find the same direction under every variant definition, and the hypothesis matches a reported finding of the source study. The remaining risks are a platform or sequencing-phase confound (which the TMB imbalance hints at) and unreconciled denominators. Either could weaken the direction, but neither is likely to reverse it.",
+    "questions": [
+      {
+        "to": "bh39-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate Sequencing_Phase / Sequencer (per sample, from the mutation table) against PREVIOUS_TREATMENT. Is the treated group enriched in one platform or phase? If so, does stratifying the comparison by platform change the direction or the size of the KRAS odds ratio?",
+        "from": [
+          "sl-lab-783625a666fe"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-0ee9c918b40a"
+      },
+      {
+        "to": "bh39-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For the 6 samples with no mutation rows, is there evidence they were sequenced (e.g. a TMB_NONSYNONYMOUS value)? If they are dropped from the denominators instead of counted as wild-type, how do the 27/101 figure and the comparison group change?",
+        "from": [
+          "sl-lab-5ffa63df108d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-c05704d87e84"
+      },
+      {
+        "to": "bh39-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Check the KRAS calls' t_alt_count / t_depth and n_alt_count. Do any treated-group calls have very low VAF or normal-sample support, and does excluding them change the direction of the treated-vs-untreated difference?",
+        "from": [
+          "sl-lab-783625a666fe"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-4cd2537e59d1"
+      },
+      {
+        "to": "bh39-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your facts report 27.6% vs 15.4%, but your method note says 26.7% vs 15.1%. Recompute the exact numerators and denominators per group, and state which patients enter each. Does the reconciled table change any of your p-values or the direction?",
+        "from": [
+          "sl-lab-aa0ac245cb93"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-35c23088055c"
+      },
+      {
+        "to": "bh39-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate Sequencing_Phase / Sequencer against PREVIOUS_TREATMENT and against TMB. Is the TMB imbalance explained by platform? Does a platform-stratified comparison keep the KRAS excess in treated patients?",
+        "from": [
+          "sl-lab-162d3eb2e17f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-908caf3453ce"
+      },
+      {
+        "to": "bh39-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Compute the exact 95% CI for the difference or odds ratio you were asked for, and tabulate the KRAS VAF (t_alt_count/t_depth) per group. Do low-support calls drive the excess, and does removing them change the direction?",
+        "from": [
+          "sl-lab-bfe8ff71fd75"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-44606f1b2fa0"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "When tumour samples in one cohort were sequenced by both whole-genome and whole-exome sequencing, at different depths, what are the standard ways to adjust a comparison of mutation frequency between clinical groups for the platform (e.g. stratified Mantel-Haenszel, restricting to commonly covered regions)?",
+          "why": "Neither team considered platform heterogeneity. If the platform is unbalanced across groups, it could explain both the TMB imbalance and part of the gene-frequency difference.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In cBioPortal-style study exports, does a sample that appears in the clinical sample table but has no rows in the mutation MAF mean it was sequenced with no mutations, or that it was not profiled? Which file normally records the profiled-sample list?",
+          "why": "Both teams counted samples without mutation rows as wild-type. If those samples were not profiled, the denominators are wrong.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When tumour samples in one cohort were sequenced by both whole-genome and whole-exome sequencing, at different depths, what are the standard ways to adjust a comparison of mutation frequency between clinical groups for the platform (e.g. stratified Mantel-Haenszel, restricting to commonly covered regions)?",
+          "answer": "NOT WEB-SETTLED: the search gateway returned HTTP 403 on every call. From domain knowledge: (1) restrict mutation calls to regions both platforms cover, e.g. the exome target intersection; KRAS coding hotspots fall inside these anyway; (2) check whether platform is balanced across the clinical groups, then stratify by platform with a Cochran-Mantel-Haenszel test, or fit a logistic regression of mutation status on group + platform (optionally + log TMB); (3) normalise TMB per callable Mb in the shared target, not per genome. For KRAS hotspot frequency, the effect of platform or depth is usually small unless coverage is very low.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh39-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-e5ee214d9b64"
+            },
+            "bh39-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-71f4ec696dee"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When tumour samples in one cohort were sequenced by both whole-genome and whole-exome sequencing, at different depths, what are the standard ways to adjust a comparison of mutation frequency between clinical groups for the platform (e.g. stratified Mantel-Haenszel, restricting to commonly covered regions)? ANSWER: NOT WEB-SETTLED: the search gateway returned HTTP 403 on every call. From domain knowledge: (1) restrict mutation calls to regions both platforms cover, e.g. the exome target intersection; KRAS coding hotspots fall inside these anyway; (2) check whether platform is balanced across the clinical groups, then stratify by platform with a Cochran-Mantel-Haenszel test, or fit a logistic regression of mutation status on group + platform (optionally + log TMB); (3) normalise TMB per callable Mb in the shared target, not per genome. For KRAS hotspot frequency, the effect of platform or depth is usually small unless coverage is very low. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "In cBioPortal-style study exports, does a sample that appears in the clinical sample table but has no rows in the mutation MAF mean it was sequenced with no mutations, or that it was not profiled? Which file normally records the profiled-sample list?",
+          "answer": "NOT WEB-SETTLED: the search gateway returned HTTP 403. From domain knowledge of the cBioPortal format: the profiled-sample list is case_lists/cases_sequenced.txt (stable_id <study>_sequenced), and in newer studies also data_gene_panel_matrix.txt, where NA means not profiled. A sample in the sequenced list with no MAF rows is profiled and wild-type. A sample that is in data_clinical_sample.txt but not in the sequenced list was not profiled and should be left out of the denominator. With only the clinical and MAF files and no case lists, the files cannot confirm profiling. Look for a sequencing or platform column in the clinical table and compare the sample count with the unique MAF barcodes. In a single study's own sequencing cohort, all clinical samples are usually sequenced.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bh39-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-11037ea1d684"
+            },
+            "bh39-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-8646ae5f8d5b"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cBioPortal-style study exports, does a sample that appears in the clinical sample table but has no rows in the mutation MAF mean it was sequenced with no mutations, or that it was not profiled? Which file normally records the profiled-sample list? ANSWER: NOT WEB-SETTLED: the search gateway returned HTTP 403. From domain knowledge of the cBioPortal format: the profiled-sample list is case_lists/cases_sequenced.txt (stable_id <study>_sequenced), and in newer studies also data_gene_panel_matrix.txt, where NA means not profiled. A sample in the sequenced list with no MAF rows is profiled and wild-type. A sample that is in data_clinical_sample.txt but not in the sequenced list was not profiled and should be left out of the denominator. With only the clinical and MAF files and no case lists, the files cannot confirm profiling. Look for a sequencing or platform column in the clinical table and compare the sample count with the unique MAF barcodes. In a single study's own sequencing cohort, all clinical samples are usually sequenced. HOW SURE: medium. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh39-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh39-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh39-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh39-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh39-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 42.82444183295593,
+      "cost_usd": 0.15188439999999997,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 54.05653112498112,
+      "cost_usd": 0.18283159999999998,
+      "error": null
+    },
+    {
+      "agent": "bh39-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 60.67306837509386,
+      "cost_usd": 0.2174038,
+      "error": null
+    },
+    {
+      "agent": "bh39-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 56.82384612504393,
+      "cost_usd": 0.20254920000000004,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 80.9105874170782,
+      "cost_usd": 0.29357,
+      "error": null
+    },
+    {
+      "agent": "bh39-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 41.8812097919872,
+      "cost_usd": 0.13965139999999998,
+      "error": null
+    },
+    {
+      "agent": "bh39-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 84.43744558398612,
+      "cost_usd": 0.3658464,
+      "error": null
+    },
+    {
+      "agent": "bh39-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 126.59810599999037,
+      "cost_usd": 0.4446258,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

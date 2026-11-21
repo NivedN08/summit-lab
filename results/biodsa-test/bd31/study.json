@@ -1,0 +1,496 @@
+{
+  "study": "bd31",
+  "status": "replicated",
+  "final": {
+    "agent": "bd31-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd31/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd31-library": "fable",
+    "bd31-team-a": "fable",
+    "bd31-team-b": "fable",
+    "bd31-team-c": "fable",
+    "bd31-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd31-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd31/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd31-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd31/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd31-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd31/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd31-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd31/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd31-team-a",
+        "bd31-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd31-team-a",
+        "bd31-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The hypothesis is restricted to microsatellite-stable (MSS) tumours, and how MSS is defined can change the result: MSI-high tumours are predominantly right-sided and carry BRAF V600E and RNF43 frameshifts, so leaving MSI-high or POLE-hypermutated tumours in the cohort can create a right-sided enrichment that is not a property of MSS disease. The library's read of the sample table suggests MSI_STATUS can be NA while MSI_SCORE and a separate MOLECULAR_SUBTYPE column are filled, so one column alone may not define MSS (verify this in the data). Check: tabulate MSI_STATUS against MOLECULAR_SUBTYPE and look at MSI_SCORE and TMB_NONSYNONYMOUS within each group. Standard MSIsensor cutoffs for MSK-IMPACT are score <3 = MSS, 3 to <10 = indeterminate, >=10 = MSI-H; POLE-ultramutated tumours have very high TMB with a low MSI score. Define MSS explicitly (labelled MSS, or score <3 where the label is NA), exclude MSI-H and POLE/hypermutated cases, and rerun the comparison under a stricter and a looser MSS definition to show the conclusion does not depend on the choice.",
+      "from": [
+        "sl-biodsa-test-f738df6429ea"
+      ],
+      "reason": "The MSS restriction is part of the hypothesis and the filter directly moves the BRAF and RNF43 rates by side; a team that skips or mis-defines it would be testing a different claim.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-1c3c8d0dc8dd"
+      }
+    },
+    {
+      "text": "There is no single definition of right- versus left-sided colorectal cancer. The common rule is cecum through transverse colon = right and splenic flexure through rectum = left, but some studies drop transverse tumours, split the transverse colon, or treat rectum separately, so a side re-derived from the detailed site can disagree with a curated side variable. Check: cross-tabulate the curated side column (the library expects PRIMARY_TUMOR_LOCATION with Right/Left/other) against the detailed site column (the library expects PRIMARY_SITE: cecum, ascending, hepatic flexure, transverse, splenic flexure, descending, sigmoid, rectosigmoid, rectum), and count missing, unknown, or both/multiple-primary values. Use the curated side variable as the main grouping, exclude samples without a clear side, and run sensitivity analyses that exclude transverse-colon tumours and, separately, rectal tumours, to show the direction of each gene's effect is stable.",
+      "from": [
+        "sl-biodsa-test-16e3936783af"
+      ],
+      "reason": "The exposure variable of the hypothesis is tumour side; the grouping rule and the handling of ambiguous sites decide who is in each arm of every test.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-ed8221caff5f"
+      }
+    },
+    {
+      "text": "The unit of analysis should be the patient with metastatic CRC, not the sample. Sample IDs include -T01/-T02 suffixes, so some patients may have more than one sequenced tumour; the sample table mixes primary and metastasis specimens and has an MCRC_TYPE column that may include non-metastatic cases. Counting samples double-counts patients and breaks the independence that Fisher's test assumes. Check: count SAMPLE_IDs per PATIENT_ID; tabulate MCRC_TYPE, SAMPLE_TYPE and STAGE_AT_DIAGNOSIS; cross-tabulate SAMPLE_TYPE by side. Keep one sample per patient by a fixed rule (for example the first sample, or the one on the largest panel, or call a patient altered if any of their samples is), restrict to the metastatic-CRC cases, and confirm with a sensitivity analysis within primary-only and metastasis-only specimens.",
+      "from": [
+        "sl-biodsa-test-08c5449c331c"
+      ],
+      "reason": "The hypothesis is about mCRC patients; duplicated patients, non-metastatic cases or an imbalance of specimen type by side would bias the 2x2 tables and their p-values.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-15299f0d3496"
+      }
+    },
+    {
+      "text": "The hypothesis says 'oncogenic alterations', but the library's read of data_mutations.txt found no oncogenic/OncoKB annotation column (columns end at Annotation_Status), so counting every nonsynonymous mutation also counts passengers and variants of unknown significance, which are commonest in high-TMB tumours and can distort a right/left comparison. Check: for each of the six genes list the distinct HGVSp_Short values with counts and Variant_Classification, and see what share are known hotspots versus rare scattered missense. Classify with OncoKB-style rules: for the oncogenes count recurrent hotspot/known activating changes (KRAS codons 12/13/59/61/117/146; BRAF V600E and known non-V600 codons such as 469/594/596/601; PIK3CA 542/545/1047 and other recurrent sites; AKT1 E17K); for the tumour suppressors SMAD4 and RNF43 count truncating mutations (nonsense, frameshift, splice site) plus known hotspot missense (SMAD4 R361, P356, D351, G386, D537). Run the test both ways (oncogenic-only and any nonsynonymous) and report whether the conclusion holds in both.",
+      "from": [
+        "sl-biodsa-test-bc6fceee0248"
+      ],
+      "reason": "The data give no ready-made 'oncogenic' flag, so the team must build one; the choice of which variants count is the outcome definition for every gene.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-6c42f2024d0a"
+      }
+    },
+    {
+      "text": "'Alterations' covers more than point mutations. OncoKB and the cBioPortal default query also count deep deletions, amplifications and fusions/rearrangements, so a mutation-only analysis can undercount tumour suppressors lost by deletion (SMAD4, RNF43) and miss BRAF fusions. Check: in data_cna.txt read the rows for KRAS, BRAF, PIK3CA, AKT1, RNF43 and SMAD4 and count values of -2 (deep deletion) and 2 (amplification) (MSK-IMPACT files hold mainly -2/0/2, sometimes -1.5); in data_sv.txt count rows where Site1_Hugo_Symbol or Site2_Hugo_Symbol is one of the six genes. Define a gene as altered if it has an oncogenic mutation, or a deep deletion (tumour suppressors), or an amplification (oncogenes), or a structural variant, and report the mutation-only result beside the combined one. Do not count -1/+1 values or seg.mean shifts as alterations.",
+      "from": [
+        "sl-biodsa-test-72979ed7aa51"
+      ],
+      "reason": "It tells the team that the CNA and SV tables are part of the outcome definition, and how to use them without over-counting shallow copy changes.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-c72ec1105b0b"
+      }
+    },
+    {
+      "text": "Two of the six genes have variant classes that behave differently, so the variant definition can change a gene's result. RNF43 G659fs (a homopolymer frameshift) is reported almost only in MSI-H tumours, whereas other (N-terminal) RNF43 truncations are the ones seen in MSS tumours; BRAF V600E and non-V600 BRAF mutations are reported to have different site distributions and should not be assumed to behave alike. Check: within the MSS cohort tabulate RNF43 variants (G659fs versus other truncating versus missense) and BRAF variants (V600E versus non-V600) by side; any RNF43 G659fs in a tumour labelled MSS is a flag for a possibly misclassified MSI case. Report BRAF both as all-oncogenic and as V600E-only, report RNF43 as truncating-only, and re-check the MSI status of G659fs carriers before counting them.",
+      "from": [
+        "sl-biodsa-test-3ab72903bcd4"
+      ],
+      "reason": "It gives a concrete data-quality check on the MSS filter and prevents a pooled BRAF or RNF43 definition from hiding or creating a side difference.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-4e9fff962143"
+      }
+    },
+    {
+      "text": "The cohort mixes MSK-IMPACT panel versions (sample IDs end -IM3/-IM5/-IM6; data_gene_panel_matrix.txt gives IMPACT341/410/468). A gene not on a sample's panel is 'not profiled', not wild-type, and a sample with no panel entry must not be treated as wild-type. A published MSK-IMPACT gene table lists all six hypothesis genes (KRAS, BRAF, PIK3CA, AKT1, RNF43, SMAD4) as shared by IMPACT-341, -410 and -468, so no sample should be dropped from any gene's denominator on panel version alone; wrongly excluding IMPACT341 samples for RNF43 would shrink the cohort and lose power for a rare gene. Check: confirm every analysed sample has a non-NA 'mutations' entry in data_gene_panel_matrix.txt, confirm IMPACT341 samples carry RNF43 mutations at a rate similar to IM5/IM6 samples, and cross-tabulate panel version by right/left side. Use all profiled MSS samples as the denominator for all six genes; restrict RNF43 to IM5/IM6 only if the data show zero RNF43 events across all IM3 samples.",
+      "from": [
+        "sl-biodsa-test-3150b742894a"
+      ],
+      "reason": "Denominators determine the frequencies being compared; this settles whether per-gene denominators are needed and stops a team from either dropping valid samples or counting unprofiled ones as wild-type.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-6c4aa10cb24f"
+      }
+    },
+    {
+      "text": "The claim bundles six genes with very different prevalence in CRC (KRAS is common, AKT1 is rare, around 1 percent), so statistical power differs greatly per gene: a rare gene can miss p<0.05 purely for lack of events, and testing six genes without correction can produce a false positive. Treating one non-significant rare gene as contradiction, or one nominal p<0.05 as support, are both errors. Check: for each gene build the 2x2 table (altered/unaltered by right/left) among profiled MSS patients and report the right and left percentages, the odds ratio with 95 percent CI, the two-sided Fisher exact p and the Benjamini-Hochberg q across the six genes; note the direction of each effect and the expected cell counts. Judge the hypothesis on direction plus significance across all six genes together: support needs a right-sided excess in the genes (after correction where counts allow); contradiction needs evidence of no excess or a left-sided excess with CIs that exclude a meaningful right-sided effect; a wide CI on a rare gene is 'underpowered', not 'false'. Use Fisher's exact test rather than chi-square when any expected cell is below 5.",
+      "from": [
+        "sl-biodsa-test-5bfc1cb004f7"
+      ],
+      "reason": "It fixes the test, the multiplicity correction and the rule for turning six per-gene results into one label, which is where a multi-gene hypothesis is most easily misjudged.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-7c347e1c756a"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat a sample with no call in a gene as truly wild-type. Neither tested whether tumour content (purity) differs by side or specimen type: a low-purity sample yields false wild-type calls for every gene at once, so a purity imbalance (e.g. treated rectal primaries, biopsies vs resections) would produce a same-direction 'enrichment' across all six genes, which is exactly the pattern both teams report.",
+      "Both teams define 'oncogenic' from hand-written hotspot/truncating lists (Team B says its PIK3CA and SMAD4 codon lists are from memory) because the mutation file has no oncogenicity column. Both bracket this only from above with 'any nonsynonymous'; neither checked the list against recurrence in the data itself, and the two teams treat copy number differently (Team A: amplification of any of the four oncogenes; Team B: KRAS amplification only).",
+      "Both teams accept MOLECULAR_SUBTYPE == 'MSI Status' as meaning MSS. In the mCRC rows with that subtype, 314 samples have MSI_STATUS = NA, 5 are labelled MSI, 1 Inconclusive, 8 have no MSI score and 43 have a score of 3-10; the label-NA rows are disproportionately metastasis specimens (200 of 314, versus 313 of 646 labelled MSS), so 'MSS label present' and 'specimen type' are entangled.",
+      "Both teams pool primary-tumour specimens and metastasis specimens into one patient-level 2x2 table and treat specimen type as a nuisance to adjust for, although the right/left mix of specimen types differs (right: 132 primary / 123 metastasis samples; left: 313 / 386) and chemotherapy exposure of the sequenced specimen is tightly tied to specimen type (metastasis 390 of 519 exposed; primary 118 of 447).",
+      "Both teams read the claim as six separate per-gene tests that must all point right, with rare genes excused for low power; neither wrote down what label follows if one of the six fails in the cleanest subset."
+    ],
+    "unused_evidence": [
+      "t_ref_count / t_alt_count in data_mutations.txt (blank in only 45 of 18,117 rows): allow a per-sample variant-allele-fraction purity proxy. Neither team used them. They are the only way to test the wild-type-means-wild-type assumption.",
+      "data_cna_hg19.seg (segments for all 1,134 samples): neither team used it. It gives a second purity/quality proxy (amplitude of seg.mean) and a check on whether discrete -2/2 calls in data_cna.txt are equally callable in both sides and specimen types (relevant to SMAD4 and RNF43 deep deletions).",
+      "CHEMO_EXP_SEQ_SPECIMEN (right-sided samples 44% exposed, left-sided 56%) and SPECIMEN_TYPE (Biopsy vs Resection): neither team stratified on them. Both teams adjusted only for SAMPLE_TYPE and panel.",
+      "TUMOR_SAMPLE_HISTOLOGY (mucinous/signet-ring/PDC, NA for 320), STAGE_AT_DIAGNOSIS, TIME_TO_METASTASIS_MONTHS (synchronous vs metachronous), AGE_AT_DIAGNOSIS, SEX: unused. They do not change a crude association claim, but they describe who is in each side group.",
+      "MSI_SCORE in the 3-10 'indeterminate' band (43 samples) and TMB above 15 without a POLE label (15 samples): Team A ran a strict score<3 and TMB<25 cohort; Team B applied a TMB cap only to RNF43 and did not exclude the indeterminate band."
+    ],
+    "unresolved_weak_points": [
+      "Team A, SMAD4: reported, not resolved. The right-sided excess is OR 1.21 (p=0.55) in primary specimens and OR 3.24 in metastasis specimens with Breslow-Day p=0.006. A pooled CMH odds ratio is not a valid summary when homogeneity is rejected, and no cause was identified (alteration class, chemotherapy exposure, purity, MSS-label availability, patient selection for metastasis sequencing).",
+      "Team A, result record: PIK3CA and SMAD4 are reported with identical right%, left%, odds ratio and q value (22.8% vs 13.1%, OR 1.95, q=8e-4). This may be coincidence, but it is also what a reused column or copy error looks like and it was not checked.",
+      "Team B, oncogenic definition from memory: reported, not resolved; only bracketed by the any-nonsynonymous run.",
+      "Team B, SMAD4 and AKT1 subset fragility: reported as low power only. Team B did not test whether the SMAD4 odds ratio actually differs between primary and metastasis specimens, so it cannot tell 'underpowered' from 'effect absent in primaries'. Team B also ran no exclusion of rectum/rectosigmoid and no re-derived side.",
+      "Both teams, AKT1: 9 altered patients (7 right, 2 left). Exact test is appropriate and was used; the estimate stays imprecise and cannot be improved with this data."
+    ],
+    "second_readings": [
+      "Conjunctive reading: the claim names six genes joined by 'and'. Read strictly, every one of the six must be enriched; read loosely, the set as a whole. Both teams got all six significant in the main cohort, so the label only moves if SMAD4 (or AKT1) fails under a cleaner definition and the strict reading is taken.",
+      "'Right-sided primary site' is a property of the patient's primary tumour, while the alterations are measured in whichever specimen was sequenced. One reading compares patients (both teams); another restricts to primary-tumour specimens. SMAD4 behaves differently under the two.",
+      "'mCRC' can mean the whole study cohort or only non-early-stage cases; both teams tested both, no difference.",
+      "'Left-sided' may or may not include rectum, and transverse colon is split in the curated variable; Team A tested this, Team B only dropped transverse colon."
+    ],
+    "verdict": "Moderate-to-high trust in the direction of the agreed answer: both teams get a right-sided excess for all six genes under many cohort and definition changes, and the data structure (panels, CNA, SV coverage) is clean. It should not go out until three gaps are closed: SMAD4's unexplained primary-versus-metastasis heterogeneity, the untested assumption that tumour purity (false wild-type calls) is balanced by side, and Team A's identical PIK3CA/SMAD4 figures.",
+    "questions": [
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your result record gives PIK3CA and SMAD4 exactly the same figures (22.8% vs 13.1%, OR 1.95, q=8e-4). Print the raw 2x2 counts (altered/unaltered by right/left) for each of the six genes straight from the patient-level table, and for PIK3CA and SMAD4 also print the number of patients altered in both, in PIK3CA only and in SMAD4 only. Are these two genuinely different patient sets that happen to give the same counts, or was one gene's column or output reused? If anything was reused, rerun and say whether any gene's result or your label changes.",
+        "from": [
+          "sl-biodsa-test-5e3b7fbbccde"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-94bf159a213a"
+      },
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You found the SMAD4 odds ratio differs between primary and metastasis specimens (Breslow-Day p=0.006) and then reported a pooled CMH estimate, which assumes the odds ratio is common across strata. Find out why it differs. Within primary specimens and within metastasis specimens separately, tabulate SMAD4 by side split by alteration class (hotspot missense, truncating, deep deletion, SV), by CHEMO_EXP_SEQ_SPECIMEN, by SPECIMEN_TYPE (Biopsy/Resection) and by whether MSI_STATUS is labelled or NA (label-NA samples are disproportionately metastasis specimens, so your two SMAD4 heterogeneities may be one). For the patients with both a primary and a metastasis sample, report SMAD4 concordance. Does the result change which unit or stratum you rely on for SMAD4, and does SMAD4 still count as supporting the claim?",
+        "from": [
+          "sl-biodsa-test-d67ec0d167a2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-8045009ce86d"
+      },
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your comparison treats every sample with no call in a gene as wild-type. Test that. From t_ref_count and t_alt_count compute a per-sample purity proxy (for example the maximum or median variant allele fraction over all somatic calls; samples with no or very few calls flagged separately), optionally cross-checked against segment amplitude in data_cna_hg19.seg. Compare its distribution between right and left, between primary and metastasis specimens, and between rectal and other primaries. Then rerun the six tests excluding samples below a low-purity cut-off you fix in advance. Does the proxy differ by side, and does excluding low-purity samples change any gene's direction or significance, or your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-47916d303407"
+      },
+      {
+        "to": "bd31-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your oncogenic lists were chosen by hand and you bracketed them only with 'any nonsynonymous'. Check the lists against the data. For each of the six genes, list every protein change you classified as NOT oncogenic that occurs in two or more patients of the whole file, and every change you classified as oncogenic that occurs only once; separately count, by side, how many patients are called altered only through an amplification of BRAF, PIK3CA or AKT1 or only through an SV. Rerun the six tests (a) adding the recurrent excluded variants and (b) dropping amplification-only and SV-only calls. Does any gene's result, in particular SMAD4 or RNF43, change, and does that change your definition?",
+        "from": [
+          "sl-biodsa-test-6c42f2024d0a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-47cd5dd20fc7"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You report SMAD4 as not significant in primary-tumour specimens (p=0.14) and AKT1 as not significant in metastasis specimens, and call both 'underpowered'. Low power and a genuinely different effect are different things and you have not separated them. For each of the six genes report the right-vs-left odds ratio with 95% CI within primary specimens and within metastasis specimens, and test whether the two odds ratios differ (Breslow-Day or a side-by-specimen-type interaction term). Where they differ, split that gene's events by alteration class (hotspot missense, truncating, homozygous deletion, fusion) and by CHEMO_EXP_SEQ_SPECIMEN within each specimen type. Does any gene show a real difference between specimen types, and if so does a single pooled patient-level table remain the right method for it?",
+        "from": [
+          "sl-biodsa-test-82d8c2185e40"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-edad675eca08"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your comparison treats every sample with no call in a gene as wild-type. Test that. From t_ref_count and t_alt_count compute a per-sample purity proxy (for example the maximum or median variant allele fraction over all somatic calls; samples with no or very few calls flagged separately), optionally cross-checked against segment amplitude in data_cna_hg19.seg, which you did not use. Compare its distribution between right and left, between primary and metastasis specimens, and between biopsies and resections. Then rerun the six tests excluding samples below a low-purity cut-off you fix in advance. Does the proxy differ by side, and does excluding low-purity samples change any gene's direction or significance, or your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-24e404854ef8"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You used PRIMARY_TUMOR_LOCATION as given and your only site sensitivity was dropping transverse colon. 'Left' in this variable includes rectum and rectosigmoid (about a third of all samples), and the curated side disagrees with PRIMARY_SITE for some rows (transverse colon split both ways, a cecum coded Left). Rerun the six tests (a) excluding rectum and rectosigmoid, (b) with side re-derived from PRIMARY_SITE alone, and (c) in a strict MSS cohort that also drops samples with MSI_SCORE of 3 or more, samples with no MSI score, samples whose MSI_STATUS is 'MSI' or 'Inconclusive', and samples with TMB above a cap you fix in advance (you capped TMB for RNF43 only). Does any gene lose its right-sided excess in any of the three, and does that change your cohort definition?",
+        "from": [
+          "sl-biodsa-test-94946aeb16a2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-3d112608afeb"
+      },
+      {
+        "to": "bd31-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You say your PIK3CA and SMAD4 codon lists are from memory and that RNF43 was counted as truncating only, and you counted amplification for KRAS only. Check the lists against the data. For each of the six genes, list every protein change you classified as NOT oncogenic that occurs in two or more patients of the whole file, and every change you classified as oncogenic that occurs only once; separately count, by side, patients with a +2 call in BRAF, PIK3CA or AKT1 and no oncogenic mutation in that gene. Rerun the six tests (a) adding the recurrent excluded variants and (b) adding those amplifications. Does any gene's result change, and does that change your definition?",
+        "from": [
+          "sl-biodsa-test-cb3c6cbfc5d6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-d5d8df8411b5"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In OncoKB's curation rules and in the cBioPortal default 'altered' definition, are copy-number amplifications of the oncogenes BRAF, PIK3CA and AKT1 (as opposed to KRAS) annotated as oncogenic or likely oncogenic, and are homozygous deletions of the tumour suppressors SMAD4 and RNF43 annotated as oncogenic?",
+          "why": "The two teams count copy-number events differently for the oncogenes (one counts amplification of all four, the other of one only) and neither showed it knew the convention; this fixes which calls belong in 'oncogenic alteration'.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In colorectal cancer, how concordant are SMAD4 alterations (mutations and homozygous deletions) between a patient's primary tumour and matched metastases, and is SMAD4 loss reported to be more frequent in metastatic lesions than in primaries (acquired or selected during progression) in contrast to KRAS, BRAF and PIK3CA?",
+          "why": "One gene's side effect differs sharply between primary and metastasis specimens and neither team explained it; knowing whether this gene is expected to differ by specimen type tells the teams whether to pool specimens or analyse them separately.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In comparisons of mutation frequency between clinical groups using tumour-normal targeted panel sequencing, what is the standard way to guard against false wild-type calls from low tumour purity (for example a minimum tumour-content or variant-allele-fraction-based purity threshold), and are post-treatment rectal primaries or small biopsies known to have systematically lower tumour content?",
+          "why": "Both teams assume an absent call means wild-type; a purity imbalance between the side groups would create a same-direction excess in every gene, and the teams need an accepted cut-off to test it.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In OncoKB's curation rules and in the cBioPortal default 'altered' definition, are copy-number amplifications of the oncogenes BRAF, PIK3CA and AKT1 (as opposed to KRAS) annotated as oncogenic or likely oncogenic, and are homozygous deletions of the tumour suppressors SMAD4 and RNF43 annotated as oncogenic?",
+          "answer": "Yes to all. OncoKB (public API, data version v7.7) returns: BRAF Amplification = Oncogenic (gain-of-function); PIK3CA Amplification = Likely Oncogenic; AKT1 Amplification = Likely Oncogenic; KRAS Amplification = Likely Oncogenic; SMAD4 Deletion = Likely Oncogenic (loss-of-function, a curated variant). RNF43 Deletion is not a separately curated variant (variantExist=false) but is still returned as Likely Oncogenic through OncoKB's rule that a deletion is a truncating alteration in a tumour suppressor. cBioPortal's default query is 'MUT FUSION AMP HOMDEL', so it counts every amplification and deep deletion of a queried gene as altered whether or not it is a driver; the optional OQL DRIVER modifier restricts to OncoKB/CancerHotspots drivers. Consequence for the teams: amplification (2 in data_cna.txt) of all four oncogenes, not KRAS alone, and deep deletion (-2) of SMAD4 and RNF43 belong in 'oncogenic alteration'; gains (+1) and shallow deletions (-1) do not. Caveats: these are OncoKB's current annotations and the version in use when a given study was done may differ; I could not read the SOP's copy-number rule text itself (the page fetch returned only the table of contents), so the rule is taken from the per-gene API output and the two OncoKB variant pages.",
+          "sources": [
+            "https://public.api.oncokb.org/api/v1/annotate/copyNumberAlterations?hugoSymbol=BRAF&copyNameAlterationType=AMPLIFICATION",
+            "https://public.api.oncokb.org/api/v1/annotate/copyNumberAlterations?hugoSymbol=PIK3CA&copyNameAlterationType=AMPLIFICATION",
+            "https://public.api.oncokb.org/api/v1/annotate/copyNumberAlterations?hugoSymbol=AKT1&copyNameAlterationType=AMPLIFICATION",
+            "https://public.api.oncokb.org/api/v1/annotate/copyNumberAlterations?hugoSymbol=KRAS&copyNameAlterationType=AMPLIFICATION",
+            "https://public.api.oncokb.org/api/v1/annotate/copyNumberAlterations?hugoSymbol=SMAD4&copyNameAlterationType=DELETION",
+            "https://public.api.oncokb.org/api/v1/annotate/copyNumberAlterations?hugoSymbol=RNF43&copyNameAlterationType=DELETION",
+            "https://www.oncokb.org/gene/BRAF/Amplification",
+            "https://www.oncokb.org/gene/SMAD4/Deletion",
+            "https://docs.cbioportal.org/user-guide/oql/"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd31-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-f5ffb7226122"
+            },
+            "bd31-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-0791e5708fcf"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In OncoKB's curation rules and in the cBioPortal default 'altered' definition, are copy-number amplifications of the oncogenes BRAF, PIK3CA and AKT1 (as opposed to KRAS) annotated as oncogenic or likely oncogenic, and are homozygous deletions of the tumour suppressors SMAD4 and RNF43 annotated as oncogenic? ANSWER: Yes to all. OncoKB (public API, data version v7.7) returns: BRAF Amplification = Oncogenic (gain-of-function); PIK3CA Amplification = Likely Oncogenic; AKT1 Amplification = Likely Oncogenic; KRAS Amplification = Likely Oncogenic; SMAD4 Deletion = Likely Oncogenic (loss-of-function, a curated variant). RNF43 Deletion is not a separately curated variant (variantExist=false) but is still returned as Likely Oncogenic through OncoKB's rule that a deletion is a truncating alteration in a tumour suppressor. cBioPortal's default query is 'MUT FUSION AMP HOMDEL', so it counts every amplification and deep deletion of a queried gene as altered whether or not it is a driver; the optional OQL DRIVER modifier restricts to OncoKB/CancerHotspots drivers. Consequence for the teams: amplification (2 in data_cna.txt) of all four oncogenes, not KRAS alone, and deep deletion (-2) of SMAD4 and RNF43 belong in 'oncogenic alteration'; gains (+1) and shallow deletions (-1) do not. Caveats: these are OncoKB's current annotations and the version in use when a given study was done may differ; I could not read the SOP's copy-number rule text itself (the page fetch returned only the table of contents), so the rule is taken from the per-gene API output and the two OncoKB variant pages. HOW SURE: high. SOURCES: https://public.api.oncokb.org/api/v1/annotate/copyNumberAlterations?hugoSymbol=BRAF&copyNameAlterationType=AMPLIFICATION, https://public.api.oncokb.org/api/v1/annotate/copyNumberAlterations?hugoSymbol=PIK3CA&copyNameAlterationType=AMPLIFICATION, https://public.api.oncokb.org/api/v1/annotate/copyNumberAlterations?hugoSymbol=AKT1&copyNameAlterationType=AMPLIFICATION, https://public.api.oncokb.org/api/v1/annotate/copyNumberAlterations?hugoSymbol=KRAS&copyNameAlterationType=AMPLIFICATION, https://public.api.oncokb.org/api/v1/annotate/copyNumberAlterations?hugoSymbol=SMAD4&copyNameAlterationType=DELETION, https://public.api.oncokb.org/api/v1/annotate/copyNumberAlterations?hugoSymbol=RNF43&copyNameAlterationType=DELETION, https://www.oncokb.org/gene/BRAF/Amplification, https://www.oncokb.org/gene/SMAD4/Deletion, https://docs.cbioportal.org/user-guide/oql/."
+        },
+        {
+          "question": "In colorectal cancer, how concordant are SMAD4 alterations (mutations and homozygous deletions) between a patient's primary tumour and matched metastases, and is SMAD4 loss reported to be more frequent in metastatic lesions than in primaries (acquired or selected during progression) in contrast to KRAS, BRAF and PIK3CA?",
+          "answer": "Partly settled. SMAD4 is less concordant than KRAS/BRAF/PIK3CA, but it is not reported as more frequent in the metastasis than in the primary of the same metastatic patients. KRAS, BRAF and PIK3CA: median concordance 93.7%, 99.4% and 93% in a meta-analysis of 61 studies, and >90% in an MSK paired series. SMAD4: in 95 primary-metastasis pairs on a 170-gene panel it was mutated in 15% of primaries vs 14% of metastases, yet SMAD4 variant concordance was the lowest of the six most-mutated genes at 61% (average 85%), so discordance runs in both directions; in a 19-pair series SMAD4 was discordant in one pair. The enrichment is by stage, not by specimen: SMAD4 mutation was found in 7% of invasive primaries without distant metastasis, 35% of primaries with distant metastasis and 31% of distant metastases (Miyaki 1999, with the same mutation in primary and metastasis in four paired cases), and Smad4 protein loss was seen in 37% of primaries and their corresponding metastases (Losi 2007). Not settled: no source I read reported paired concordance for SMAD4 homozygous deletions specifically. Consequence for the teams: in a cohort where every patient is metastatic, the literature does not predict a large primary-vs-metastasis difference in SMAD4 frequency, so a sharp specimen-type difference is not an established biological pattern; keep both specimen types, run the right/left test stratified by specimen type alongside the pooled test, and check whether the difference sits in deep-deletion calls rather than mutations (that last suggestion is my inference, not from a source).",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8197329/",
+            "https://www.nature.com/articles/1202642",
+            "https://doi.org/10.3892/or.17.5.1095",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4431733/",
+            "https://www.thelancet.com/article/S2352-3964(19)30057-X/fulltext",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3417049/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC2360736/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd31-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-b45a2e98b1d9"
+            },
+            "bd31-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-3b7e61235ba8"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In colorectal cancer, how concordant are SMAD4 alterations (mutations and homozygous deletions) between a patient's primary tumour and matched metastases, and is SMAD4 loss reported to be more frequent in metastatic lesions than in primaries (acquired or selected during progression) in contrast to KRAS, BRAF and PIK3CA? ANSWER: Partly settled. SMAD4 is less concordant than KRAS/BRAF/PIK3CA, but it is not reported as more frequent in the metastasis than in the primary of the same metastatic patients. KRAS, BRAF and PIK3CA: median concordance 93.7%, 99.4% and 93% in a meta-analysis of 61 studies, and >90% in an MSK paired series. SMAD4: in 95 primary-metastasis pairs on a 170-gene panel it was mutated in 15% of primaries vs 14% of metastases, yet SMAD4 variant concordance was the lowest of the six most-mutated genes at 61% (average 85%), so discordance runs in both directions; in a 19-pair series SMAD4 was discordant in one pair. The enrichment is by stage, not by specimen: SMAD4 mutation was found in 7% of invasive primaries without distant metastasis, 35% of primaries with distant metastasis and 31% of distant metastases (Miyaki 1999, with the same mutation in primary and metastasis in four paired cases), and Smad4 protein loss was seen in 37% of primaries and their corresponding metastases (Losi 2007). Not settled: no source I read reported paired concordance for SMAD4 homozygous deletions specifically. Consequence for the teams: in a cohort where every patient is metastatic, the literature does not predict a large primary-vs-metastasis difference in SMAD4 frequency, so a sharp specimen-type difference is not an established biological pattern; keep both specimen types, run the right/left test stratified by specimen type alongside the pooled test, and check whether the difference sits in deep-deletion calls rather than mutations (that last suggestion is my inference, not from a source). HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC8197329/, https://www.nature.com/articles/1202642, https://doi.org/10.3892/or.17.5.1095, https://pmc.ncbi.nlm.nih.gov/articles/PMC4431733/, https://www.thelancet.com/article/S2352-3964(19)30057-X/fulltext, https://pmc.ncbi.nlm.nih.gov/articles/PMC3417049/, https://pmc.ncbi.nlm.nih.gov/articles/PMC2360736/."
+        },
+        {
+          "question": "In comparisons of mutation frequency between clinical groups using tumour-normal targeted panel sequencing, what is the standard way to guard against false wild-type calls from low tumour purity (for example a minimum tumour-content or variant-allele-fraction-based purity threshold), and are post-treatment rectal primaries or small biopsies known to have systematically lower tumour content?",
+          "answer": "Not fully settled: the web gives no single universal cut-off, but 20% and 30% tumour purity are the defensible thresholds for a sensitivity analysis. What I read: MSK-IMPACT's validated detection limit is about 2% variant allele fraction for hotspot and 5% for non-hotspot mutations (so a clonal heterozygous non-hotspot mutation needs roughly 10% purity; that conversion is my arithmetic, VAF = purity/2). In a paired colorectal study on a 425-gene panel, below 30% purity 86% of the missed mutations were high-frequency (VAF>10%) ones, against 8% above 30%. With an older KRAS assay, detection fell from 41% (>50% tumour cells) to 27% (20-50%) to 0% (<20%). A Delphi consensus requires a 'false negative cannot be excluded' warning on wild-type results from samples below the assay's neoplastic-cell threshold, and one clinical-sequencing paper recommends judging purity from the mutant allele fraction and copy-number changes in the specimen itself. A further colorectal paper has a figure titled 'Threshold of tumour purity for mutation calling' but the fetch cut off before the value. Suggested test for the teams (my recommendation from these sources, not a quoted standard): estimate purity per sample as about twice the highest or truncal (APC/TP53/KRAS) VAF from the read counts, compare its distribution between right and left, and rerun the gene tests excluding samples below 20% and below 30%. Second part: the web did not establish that post-treatment rectal primaries have systematically lower tumour content. One 17-patient pre/post chemoradiation exome study found treatment did not change the distribution of established mutations; it cites 9-20% complete pathological response, which makes lower residual tumour plausible but gives no purity figures. Biopsies were not shown to be worse: paired biopsy-vs-resection sequencing found all but 3.7% of resection mutations in the biopsy, and biopsy vs surgical material did not change KRAS detection. So the purity imbalance has to be tested in the data, not assumed. Confidence is medium for the thresholds and low for the post-treatment rectal and biopsy part.",
+          "sources": [
+            "https://www.jmdjournal.org/article/S1525-1578(15)00045-8/fulltext",
+            "https://ascopubs.org/doi/pdfdirect/10.1200/JCO.2022.40.16_suppl.e15557",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC10154864/",
+            "https://doi.org/10.1200/jco.2010.28.15_suppl.3571",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6851675/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6887630/",
+            "https://europepmc.org/article/MED/30741375",
+            "https://aacrjournals.org/clincancerres/article/25/18/5561/264501/Integrative-Molecular-Characterization-of"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd31-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-79bd92d09c09"
+            },
+            "bd31-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-5cba43d923f1"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In comparisons of mutation frequency between clinical groups using tumour-normal targeted panel sequencing, what is the standard way to guard against false wild-type calls from low tumour purity (for example a minimum tumour-content or variant-allele-fraction-based purity threshold), and are post-treatment rectal primaries or small biopsies known to have systematically lower tumour content? ANSWER: Not fully settled: the web gives no single universal cut-off, but 20% and 30% tumour purity are the defensible thresholds for a sensitivity analysis. What I read: MSK-IMPACT's validated detection limit is about 2% variant allele fraction for hotspot and 5% for non-hotspot mutations (so a clonal heterozygous non-hotspot mutation needs roughly 10% purity; that conversion is my arithmetic, VAF = purity/2). In a paired colorectal study on a 425-gene panel, below 30% purity 86% of the missed mutations were high-frequency (VAF>10%) ones, against 8% above 30%. With an older KRAS assay, detection fell from 41% (>50% tumour cells) to 27% (20-50%) to 0% (<20%). A Delphi consensus requires a 'false negative cannot be excluded' warning on wild-type results from samples below the assay's neoplastic-cell threshold, and one clinical-sequencing paper recommends judging purity from the mutant allele fraction and copy-number changes in the specimen itself. A further colorectal paper has a figure titled 'Threshold of tumour purity for mutation calling' but the fetch cut off before the value. Suggested test for the teams (my recommendation from these sources, not a quoted standard): estimate purity per sample as about twice the highest or truncal (APC/TP53/KRAS) VAF from the read counts, compare its distribution between right and left, and rerun the gene tests excluding samples below 20% and below 30%. Second part: the web did not establish that post-treatment rectal primaries have systematically lower tumour content. One 17-patient pre/post chemoradiation exome study found treatment did not change the distribution of established mutations; it cites 9-20% complete pathological response, which makes lower residual tumour plausible but gives no purity figures. Biopsies were not shown to be worse: paired biopsy-vs-resection sequencing found all but 3.7% of resection mutations in the biopsy, and biopsy vs surgical material did not change KRAS detection. So the purity imbalance has to be tested in the data, not assumed. Confidence is medium for the thresholds and low for the post-treatment rectal and biopsy part. HOW SURE: medium. SOURCES: https://www.jmdjournal.org/article/S1525-1578(15)00045-8/fulltext, https://ascopubs.org/doi/pdfdirect/10.1200/JCO.2022.40.16_suppl.e15557, https://pmc.ncbi.nlm.nih.gov/articles/PMC10154864/, https://doi.org/10.1200/jco.2010.28.15_suppl.3571, https://pmc.ncbi.nlm.nih.gov/articles/PMC6851675/, https://pmc.ncbi.nlm.nih.gov/articles/PMC6887630/, https://europepmc.org/article/MED/30741375, https://aacrjournals.org/clincancerres/article/25/18/5561/264501/Integrative-Molecular-Characterization-of."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd31-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd31-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd31-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd31-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd31-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 111.30501241597813,
+      "cost_usd": 0.2059747,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 89.2681330840569,
+      "cost_usd": 0.1453475,
+      "error": null
+    },
+    {
+      "agent": "bd31-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 162.31417949998286,
+      "cost_usd": 0.31300430000000007,
+      "error": null
+    },
+    {
+      "agent": "bd31-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 192.2709073330043,
+      "cost_usd": 0.3927082,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 182.0225714580156,
+      "cost_usd": 0.3944025,
+      "error": null
+    },
+    {
+      "agent": "bd31-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 184.89573070791084,
+      "cost_usd": 0.5589883,
+      "error": null
+    },
+    {
+      "agent": "bd31-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 207.2965538330609,
+      "cost_usd": 0.4297044,
+      "error": null
+    },
+    {
+      "agent": "bd31-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 258.85349787503947,
+      "cost_usd": 0.5294223,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

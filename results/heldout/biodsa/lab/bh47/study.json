@@ -1,0 +1,409 @@
+{
+  "study": "bh47",
+  "status": "replicated",
+  "final": {
+    "agent": "bh47-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh47/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh47-library": "opus",
+    "bh47-team-a": "opus",
+    "bh47-team-b": "opus",
+    "bh47-team-c": "opus",
+    "bh47-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "bh47-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh47/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh47-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh47/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh47-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh47/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh47-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh47/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh47-team-a",
+        "bh47-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh47-team-a",
+        "bh47-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "In data_mutations.txt (about 9,800 WGS mutation calls from about 40 DLBCL tumours with matched normals), the read-count columns t_ref_count, t_alt_count, n_ref_count and n_alt_count are reported to be empty. If so, you cannot compute VAF or cancer cell fraction from them, and you cannot run a direct clonal/subclonal reconstruction. Count the non-empty values yourself before you plan any VAF-based analysis.",
+      "from": [
+        "sl-lab-c10eb79d0b7e"
+      ],
+      "reason": "This tells the team early that the obvious direct test may not be possible, so they can check it before writing a VAF pipeline and then look for other variables.",
+      "fact_ids": {
+        "team-a": "sl-lab-4ca8b4296cf6"
+      }
+    },
+    {
+      "text": "Missing VAF or clonality columns is not by itself grounds for 'Not verifiable'. Under this benchmark's convention, that label applies only when the hypothesis concerns a disease or cohort the tables do not cover. Check CANCER_TYPE_DETAILED / ONCOTREE_CODE in data_clinical_sample.txt to see whether this cohort is DLBCL (GCB/ABC subtypes). If it is, the label has to be True or False, decided from the closest proxies in the data plus established DLBCL biology. Your reasoning should say which kind of evidence decided it.",
+      "from": [
+        "sl-lab-dd1f896808db",
+        "sl-lab-c10eb79d0b7e"
+      ],
+      "reason": "This stops the team from picking the wrong label category because a direct variable is absent, which is the most likely way to fail the exact-match grading.",
+      "fact_ids": {
+        "team-a": "sl-lab-967d958c0ec5"
+      }
+    },
+    {
+      "text": "data_clinical_sample.txt has two purity-type columns: EST_TUMOR_CELLULARITY (pathology estimate) and ALLELE_FREQUENCY_CELLULARITY (derived from VAF). A per-sample comparison of the two is the closest indirect proxy for subclonal structure in these tables. Low VAF can come from normal-cell contamination (impurity) as well as from subclonality, so do not read pathology purity alone as heterogeneity evidence, and present any such comparison only as an indirect proxy.",
+      "from": [
+        "sl-lab-07af4f713c7a"
+      ],
+      "reason": "This points to the one relevant variable pair in the data and warns against confusing impurity with heterogeneity.",
+      "fact_ids": {
+        "team-a": "sl-lab-8335c9a6438c"
+      }
+    },
+    {
+      "text": "Tumour WGS depth here is about 30x (TUMOR_GENOME_COVERAGE roughly 28-40; check per sample). At that depth, mutations below about 10-15% VAF are mostly not detected. So a weak or absent low-VAF/subclonal signal does not show that tumours are clonal, because shallow sequencing biases towards apparent clonality.",
+      "from": [
+        "sl-lab-8f71798fb841"
+      ],
+      "reason": "This keeps the team from reading a detection-sensitivity limit as evidence against heterogeneity.",
+      "fact_ids": {
+        "team-a": "sl-lab-3864f5d40c1b"
+      }
+    },
+    {
+      "text": "Check how many samples each patient has (PATIENT_ID vs SAMPLE_ID, SAMPLE_CLASS). If each patient has a single bulk tumour sample, the data cannot show multi-region or temporal heterogeneity directly. The fact that no multi-sample comparison is possible is not evidence either way. If the label then rests mainly on established DLBCL biology rather than on the tables, say so explicitly.",
+      "from": [
+        "sl-lab-d5d9f1435ca5"
+      ],
+      "reason": "This defines what the study design can and cannot show, so the team does not infer a conclusion from a design limitation.",
+      "fact_ids": {
+        "team-a": "sl-lab-bc0692a93bb8"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treated a pathology-vs-allele-frequency cellularity gap of more than 15 points as a hint of subclonality without using its sign. In several tumours the AF-based cellularity is HIGHER than the pathology estimate (e.g. 48 vs 64, 50 vs 69, 80 vs 100). That direction cannot come from low-VAF subclones, so 11/39 is not a heterogeneity count.",
+      "Both teams treated the 13 cell lines and 40 primary tumours as one cohort, or set the cell lines aside only informally. 'Intratumoral' applies to primary tumours. Cell lines have no pathology cellularity and are themselves clonally selected.",
+      "Both teams assumed the label must be decided from 'established biology plus the study's finding'. Neither team stated what the source study is likely to have reported on this point, or checked that its claim is not the reversed form ('rare' rather than 'common')."
+    ],
+    "unused_evidence": [
+      "data_mutations.txt Mutation_Status: 1014 rows are flagged 'somatic' (primary tumours only, 4 to 62 per tumour) or 'valid' (cell lines). The rest are blank. This looks like a validated or high-confidence subset of the calls. Neither team used it or asked what it means, for example whether blank rows are unvalidated or lower-confidence calls.",
+      "data_sv.txt: 56 fusions, all DNA_Support=No and RNA_Support=Yes. Neither team used it. It probably cannot speak to clonality, but nobody confirmed that.",
+      "data_clinical_patient.txt SUBTYPE (GCB/ABC/blank) and the per-sample TMB: neither team checked whether any proxy differs by subtype or by mutation burden.",
+      "The mutation table holds only coding/RNA SNVs, with no indels or noncoding WGS calls (Variant_Type is SNP only), even though the study is WGS. Neither team noted this filtered scope."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the lack of read counts, and so of any VAF/CCF, as their weakest point. Both only reported it and did not resolve it. The label rests on prior biology in both cases, so the two teams are not independent: they share one prior.",
+      "The cellularity-discordance proxy was computed but neither team interpreted its direction or set a threshold for 'common'. It was described as 'weak' and then given no weight."
+    ],
+    "second_readings": [
+      "'Common feature' could mean that most tumours show detectable subclonal structure (a per-tumour prevalence) or that heterogeneity occurs recurrently at all. The two readings need different evidence and thresholds.",
+      "'Intratumoral clonal heterogeneity' (subclones within one tumour sample) differs from inter-tumoral heterogeneity (different mutations across patients). The high variation in mutation burden and genes across samples could wrongly be read as support."
+    ],
+    "verdict": "The agreed answer is plausible, but both teams decided it from the same prior biology because the read counts are empty, so their agreement adds little. Their only in-data proxy (cellularity discordance) was used without its sign, and the Mutation_Status flag went unexamined. I trust the label moderately, depending on whether the study's own finding was 'common' rather than its reversal.",
+    "questions": [
+      {
+        "to": "bh47-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Split your 11/39 cellularity-discordant tumours by the sign of (ALLELE_FREQUENCY_CELLULARITY minus EST_TUMOR_CELLULARITY). How many have AF-based cellularity BELOW pathology, which is the direction that subclonality could produce? Does that count change how you describe or use this proxy?",
+        "from": [
+          "sl-lab-59eb8b93c2eb"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-1586510af5d5"
+      },
+      {
+        "to": "bh47-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate Mutation_Status in data_mutations.txt by sample and SAMPLE_CLASS ('somatic', 'valid', 'known_somatic', blank). What does the flag mark? Does restricting to, or contrasting with, the flagged subset change any check in your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-79ab6cb392e0"
+      },
+      {
+        "to": "bh47-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your label rests on 'the study's finding'. Write down the specific finding you assume the study reported about clonal heterogeneity, and say whether the hypothesis wording ('common') matches that finding or could be its reversal ('rare' or 'uncommon'). Does checking this change your confidence?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-dbd76adccc44"
+      },
+      {
+        "to": "bh47-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Restrict to the 40 primary tumours, excluding cell lines and samples without pathology cellularity, and report the signed difference AF-cellularity minus pathology cellularity per tumour. How many fall below pathology by more than your threshold, versus above? Does the result change how you weigh the proxy?",
+        "from": [
+          "sl-lab-83d8be3e2046"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-1b1409e7fb5c"
+      },
+      {
+        "to": "bh47-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Neither the Mutation_Status column (somatic/valid/known_somatic on 1014 rows) nor data_sv.txt (56 RNA-only fusions) appears in your method. Tabulate both per sample. Can either tell you anything about subclonal calls, and does the answer alter your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-88ed50711f5b"
+      },
+      {
+        "to": "bh47-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: State which reading of 'common feature' you tested: most tumours carry subclones, or heterogeneity occurs recurrently. Check whether your reasoning ever uses between-patient variation (mutation burden or gene differences across samples) as support. Does separating intratumoral from inter-tumoral evidence change your reasoning?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-cb90c300c9e9"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "When the tumour purity estimated from somatic variant allele frequencies is higher than the pathologist's estimate of tumour cellularity, what is the usual explanation, and can that direction indicate subclonal structure?",
+          "why": "Both teams count absolute purity discordance as a subclonality proxy. If only one direction is informative, the proxy count is wrong.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In whole-genome sequencing studies of diffuse large B-cell lymphoma, how often do individual tumours show subclonal mutation populations by VAF/cancer-cell-fraction analysis, and is intratumoral clonal heterogeneity generally described as common or uncommon?",
+          "why": "Both teams' label rests on established biology; this checks that prior directly.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In MAF files, what does the Mutation_Status field conventionally contain (e.g. 'somatic', 'valid', 'known_somatic'), and does a blank value imply an unvalidated call?",
+          "why": "This flag is the only per-call quality field filled in and neither team used it.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When the tumour purity estimated from somatic variant allele frequencies is higher than the pathologist's estimate of tumour cellularity, what is the usual explanation, and can that direction indicate subclonal structure?",
+          "answer": "Not settled from the web: every research call failed (HTTP 403), so this comes from domain knowledge. A VAF-derived purity above the pathology estimate usually comes from the pathologist underestimating cellularity (lymphoma cells mixed with reactive cells, a different section or region) or from copy-number gains or LOH that raise VAF. Subclonality lowers VAF-based purity, so the 'VAF higher' direction does not indicate subclonal structure. Only 'VAF lower than pathology' is a possible proxy, and impurity, copy number and caller sensitivity confound it. Counting absolute discordance in both directions overcounts.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bh47-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-43d415034b0d"
+            },
+            "bh47-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-2e25ccbd8748"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When the tumour purity estimated from somatic variant allele frequencies is higher than the pathologist's estimate of tumour cellularity, what is the usual explanation, and can that direction indicate subclonal structure? ANSWER: Not settled from the web: every research call failed (HTTP 403), so this comes from domain knowledge. A VAF-derived purity above the pathology estimate usually comes from the pathologist underestimating cellularity (lymphoma cells mixed with reactive cells, a different section or region) or from copy-number gains or LOH that raise VAF. Subclonality lowers VAF-based purity, so the 'VAF higher' direction does not indicate subclonal structure. Only 'VAF lower than pathology' is a possible proxy, and impurity, copy number and caller sensitivity confound it. Counting absolute discordance in both directions overcounts. HOW SURE: medium. SOURCES: none given."
+        },
+        {
+          "question": "In whole-genome sequencing studies of diffuse large B-cell lymphoma, how often do individual tumours show subclonal mutation populations by VAF/cancer-cell-fraction analysis, and is intratumoral clonal heterogeneity generally described as common or uncommon?",
+          "answer": "Not settled from the web: every research call failed (HTTP 403), so this comes from domain knowledge. Bulk WES/WGS studies of DLBCL using CCF/ABSOLUTE-type analysis (for example Chapuy et al. 2018 Nat Med; Morin et al. 2013 Blood; Juskevicius et al. 2016 Nat Commun on relapse evolution) report subclonal mutations in most tumours, including subclonal drivers. Intratumoral clonal heterogeneity is generally described as common. I could not confirm an exact per-tumour fraction.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bh47-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-8b49799f0268"
+            },
+            "bh47-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-80922e23ab62"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In whole-genome sequencing studies of diffuse large B-cell lymphoma, how often do individual tumours show subclonal mutation populations by VAF/cancer-cell-fraction analysis, and is intratumoral clonal heterogeneity generally described as common or uncommon? ANSWER: Not settled from the web: every research call failed (HTTP 403), so this comes from domain knowledge. Bulk WES/WGS studies of DLBCL using CCF/ABSOLUTE-type analysis (for example Chapuy et al. 2018 Nat Med; Morin et al. 2013 Blood; Juskevicius et al. 2016 Nat Commun on relapse evolution) report subclonal mutations in most tumours, including subclonal drivers. Intratumoral clonal heterogeneity is generally described as common. I could not confirm an exact per-tumour fraction. HOW SURE: medium. SOURCES: none given."
+        },
+        {
+          "question": "In MAF files, what does the Mutation_Status field conventionally contain (e.g. 'somatic', 'valid', 'known_somatic'), and does a blank value imply an unvalidated call?",
+          "answer": "Not settled from the web: every research call failed (HTTP 403), so this comes from domain knowledge of the TCGA/GDC MAF spec. Mutation_Status records the call's somatic or germline status (Somatic, Germline, LOH, Post-transcriptional modification, Unknown, None). Validation is recorded in the separate Validation_Status field (Valid, Invalid, Untested, Inconclusive, Redacted, Unknown) and in Verification_Status. A blank Mutation_Status means the status was not recorded. It does not imply the call is unvalidated, and it is not a per-call quality measure.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bh47-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-d87650e95a45"
+            },
+            "bh47-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-0991f6d3c1d4"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In MAF files, what does the Mutation_Status field conventionally contain (e.g. 'somatic', 'valid', 'known_somatic'), and does a blank value imply an unvalidated call? ANSWER: Not settled from the web: every research call failed (HTTP 403), so this comes from domain knowledge of the TCGA/GDC MAF spec. Mutation_Status records the call's somatic or germline status (Somatic, Germline, LOH, Post-transcriptional modification, Unknown, None). Validation is recorded in the separate Validation_Status field (Valid, Invalid, Untested, Inconclusive, Redacted, Unknown) and in Verification_Status. A blank Mutation_Status means the status was not recorded. It does not imply the call is unvalidated, and it is not a per-call quality measure. HOW SURE: medium. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh47-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh47-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh47-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh47-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh47-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 54.16463124996517,
+      "cost_usd": 0.18080439999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 34.052921875030734,
+      "cost_usd": 0.1933544,
+      "error": null
+    },
+    {
+      "agent": "bh47-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 36.27682633395307,
+      "cost_usd": 0.1674698,
+      "error": null
+    },
+    {
+      "agent": "bh47-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 52.80950891703833,
+      "cost_usd": 0.21966199999999997,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 71.16734366700985,
+      "cost_usd": 0.3691164,
+      "error": null
+    },
+    {
+      "agent": "bh47-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 72.0813337090658,
+      "cost_usd": 0.16261019999999998,
+      "error": null
+    },
+    {
+      "agent": "bh47-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 47.06841720803641,
+      "cost_usd": 0.2366332,
+      "error": null
+    },
+    {
+      "agent": "bh47-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 48.74020245799329,
+      "cost_usd": 0.204111,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

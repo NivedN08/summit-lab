@@ -1,0 +1,401 @@
+{
+  "study": "pf21",
+  "status": "replicated",
+  "final": {
+    "agent": "pf21-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/planted/lab/pf21/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "pf21-library": "opus",
+    "pf21-team-a": "opus",
+    "pf21-team-b": "opus",
+    "pf21-team-c": "opus",
+    "pf21-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "pf21-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/planted/lab/pf21/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "pf21-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/planted/lab/pf21/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "pf21-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/planted/lab/pf21/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "pf21-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/planted/lab/pf21/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "pf21-team-a",
+        "pf21-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "pf21-team-a",
+        "pf21-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The column description in data_clinical_patient.txt says PRIOR_CHEMOTHERAPY is reverse-coded: 1 = NOT received, 0 = received. Before any test, cross-tabulate it against PRIOR_CHEMO_CYCLES. Treated patients should have cycles > 0 and untreated patients should have 0. Then recode it to an explicit received/not-received variable. If the codes and cycles disagree for some patients, trust the documented coding plus cycles, report how many conflict, and run a sensitivity analysis with those patients excluded.",
+      "from": [
+        "sl-lab-d49dd2ab96c7"
+      ],
+      "reason": "If 1 is read as treated, the direction of the effect flips, and so does the True/False label.",
+      "fact_ids": {
+        "team-a": "sl-lab-870e483d1cb7"
+      }
+    },
+    {
+      "text": "PROLIFERATION_SCORE is a sample-level value, and patients can have several samples (e.g. -T1, -T2). Count samples per PATIENT_ID. Check the join between the patient and sample tables, and count missing or non-numeric scores. Then use one value per patient (aggregate it, or use a mixed model with a patient random effect). Report n per group after the merge.",
+      "from": [
+        "sl-lab-d92b8db15d1f"
+      ],
+      "reason": "Treating repeated samples as independent inflates n and can give false significance. Silent drops in the merge can bias the groups.",
+      "fact_ids": {
+        "team-a": "sl-lab-77a0cc81ae22"
+      }
+    },
+    {
+      "text": "Bulk-expression proliferation scores depend on tumour purity and stromal content. Compare TUMOR_PURITY and STROMAL_SCORE between the chemo groups and correlate each with PROLIFERATION_SCORE. If they differ or correlate, regress PROLIFERATION_SCORE on chemo status adjusted for purity (and stromal score), and base the conclusion on the adjusted coefficient.",
+      "from": [
+        "sl-lab-fa01750dc978"
+      ],
+      "reason": "A purity difference between the groups can create or hide a proliferation difference.",
+      "fact_ids": {
+        "team-a": "sl-lab-ad0685e6a6c5"
+      }
+    },
+    {
+      "text": "Check three possible confounders: SAMPLE_TYPE (primary vs metastasis, since pretreated samples are more often metastatic or recurrent), PROCESSING_BATCH and SITE. Cross-tabulate each against chemo status and compare proliferation across its levels. If any is linked to both, adjust for it or stratify by it, and check that the direction of the chemo effect holds within strata (Simpson's paradox). If batch and chemo status are almost perfectly confounded, say the effect cannot be separated. Report both the adjusted and the unadjusted estimates.",
+      "from": [
+        "sl-lab-fa54ef842dd0",
+        "sl-lab-7d8669111616",
+        "sl-lab-9111fdb86f01"
+      ],
+      "reason": "These variables can create, mask or reverse the apparent chemo effect.",
+      "fact_ids": {
+        "team-a": "sl-lab-0cf52614be8c"
+      }
+    },
+    {
+      "text": "Report the direction, effect size and 95% CI of the received-minus-not-received difference (adjusted where needed). Use a Welch t-test, or Mann-Whitney if the data are skewed or have outliers. Label True only if the treated group is clearly lower. Label False if the evidence shows it is not lower: either higher, or a tight CI around zero. 'Not verifiable' is only for missing variables, and both the exposure and the outcome are present in the data.",
+      "from": [
+        "sl-lab-c3f4b2d7cb1d"
+      ],
+      "reason": "This avoids mislabelling, for example deciding from the p-value alone or choosing Not verifiable when the variables exist.",
+      "fact_ids": {
+        "team-a": "sl-lab-c2a4cfd86754"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat the binary received/not-received contrast as the whole exposure; neither reports whether proliferation tracks PRIOR_CHEMO_CYCLES among treated patients (a dose-response check that would test whether the binary contrast is coherent).",
+      "Both teams assume PROLIFERATION_SCORE is on a common scale across processing batches and model the large batch shift (about 92 vs 120) as an additive offset; neither checks whether score spread or distribution shape differs by batch (a per-batch rescaling problem), which an additive batch term does not fix.",
+      "Both assume the sample was taken after the chemotherapy, so that it reflects the post-treatment tumour; the data hold no sample-collection date, and both treat this as an association question only.",
+      "Team A adjusts for STROMAL_SCORE and TUMOR_PURITY, which may themselves be affected by chemotherapy (possible mediators); both teams treat them only as confounders."
+    ],
+    "unused_evidence": [
+      "data_clinical_supplement.txt (ECOG_PS, BMI, FOLLOW_UP_MONTHS): neither team merged it. ECOG performance status is a plausible confounder of who gets chemotherapy (sicker or later-stage patients), which is the unmeasured confounding both teams named as their weakest point.",
+      "PRIOR_CHEMO_CYCLES was used only to check the coding, not as a graded exposure.",
+      "Patient-level labs (SERUM_ALBUMIN, HEMOGLOBIN, FASTING_GLUCOSE; the metadata says the site ran the blood tests) are unused. They are probably irrelevant to the outcome, but they show markers of general health that could relate to treatment history.",
+      "SEX was not used as a covariate by either team (Team B used age; Team A did not)."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named unmeasured confounding (for example stage or performance status) as their weakest point and left it there, even though ECOG_PS in the supplement file offers a partial check that neither ran.",
+      "Team A's adjustment for stromal score/purity, which could be post-treatment, was reported as robust without any check of whether those variables differ by chemo group."
+    ],
+    "second_readings": [
+      "'Lower proliferation score' can mean a lower mean or a lower typical (median) value. Both teams ran Welch and Mann-Whitney, so this reading is covered if the two tests agree.",
+      "'Patients who received prior chemotherapy' could be read as a graded exposure (more cycles) rather than a binary one. The binary reading is the natural one, so this is minor.",
+      "The comparison could be read within sample type (primary vs metastasis), since chemo-treated patients may contribute more metastatic samples. Both teams adjusted for sample type, but neither reported a stratum-specific direction."
+    ],
+    "verdict": "I trust the agreed answer fairly well. Both teams decoded the reverse-coded flag against cycles, used one sample per patient, and found the same direction in every batch with both parametric and rank tests. The untested points are an unused supplement file (ECOG), possible batch-scale differences and possible mediator adjustment, and none of these looks likely to reverse a consistent effect of about -13.",
+    "questions": [
+      {
+        "to": "pf21-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Merge data_clinical_supplement.txt (ECOG_PS, BMI) and cross-tabulate ECOG_PS against chemo status. Then add ECOG_PS to your adjusted model. Does the chemo coefficient keep its sign and approximate size, and does this change how you describe your weakest point?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-f32766ae1cee"
+      },
+      {
+        "to": "pf21-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Among treated patients only, regress PROLIFERATION_SCORE on PRIOR_CHEMO_CYCLES (with batch). Is there a monotone relation, a flat one, or an opposite one, and does that change your confidence in the binary contrast?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-093c9dee37d1"
+      },
+      {
+        "to": "pf21-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Compare STROMAL_SCORE and TUMOR_PURITY between the chemo groups, and refit the model without them. If chemotherapy shifts these variables, they may be mediators. Does the estimate change materially when they are dropped?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-8734d2dc60f9"
+      },
+      {
+        "to": "pf21-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Report the SD and quantiles of PROLIFERATION_SCORE by processing batch. Then repeat the group comparison on within-batch standardised (z-scored) or within-batch ranked scores. Does the direction hold if the batches differ in scale as well as location?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-debf4930a541"
+      },
+      {
+        "to": "pf21-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Merge data_clinical_supplement.txt, which your method did not use, and check whether ECOG_PS or BMI differ by chemo status. Adding them to your OLS: does the chemo effect keep its sign and approximate size?",
+        "from": [
+          "sl-lab-e36a0926256c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-2daba276e8d2"
+      },
+      {
+        "to": "pf21-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Within treated patients, fit PROLIFERATION_SCORE against PRIOR_CHEMO_CYCLES (adjusting for batch). Is the relation consistent with the binary contrast, and does the result change how you state the conclusion?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-ca9d035b994a"
+      },
+      {
+        "to": "pf21-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Report the per-batch SD of PROLIFERATION_SCORE and repeat the comparison on within-batch standardised or ranked scores. Is the effect still in the same direction in every batch?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-3d8172e0356f"
+      },
+      {
+        "to": "pf21-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Report the chemo-group difference separately for Primary and Metastasis samples, and give the chemo share in each sample type. Is the direction the same in both strata?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-ebcbb2016372"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "When a continuous assay score shows strong batch effects, under what conditions does including batch as a fixed effect in a linear model fail to remove the bias (for example batch-specific variance or scaling)? Is within-batch standardisation or ranking recommended instead?",
+          "why": "Both teams handled a large batch shift only as an additive offset. If batches differ in scale, a group comparison adjusted this way could still be distorted.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In observational comparisons of a post-treatment tumour biomarker between treated and untreated patients, should tumour purity and stromal content be adjusted for, or are they treated as mediators that bias the total-effect estimate?",
+          "why": "One team adjusted for stromal score and purity. Whether these are confounders or mediators decides whether that adjusted estimate answers the question asked.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When a continuous assay score shows strong batch effects, under what conditions does including batch as a fixed effect in a linear model fail to remove the bias (for example batch-specific variance or scaling)? Is within-batch standardisation or ranking recommended instead?",
+          "answer": "NOT SETTLED BY THE WEB: the research gateway returned HTTP 502/403 on all 4 calls, so no page was read. From standard methods knowledge (unverified here): a batch fixed effect removes only additive per-batch mean shifts. It does not correct batch-specific variance or multiplicative scaling. Those leave heteroscedastic residuals and can distort the group comparison when treatment groups are spread unevenly across batches. This is why ComBat models both location and scale batch effects. Recommended check: compare the score's SD in each batch. If the SDs differ, repeat the analysis on within-batch z-scores or within-batch ranks (or use a batch-stratified rank test such as van Elteren), use heteroscedasticity-robust SEs, and confirm the direction agrees with the fixed-effect result. If batch is nearly perfectly confounded with treatment, no adjustment can separate the two.",
+          "sources": [],
+          "confidence": "medium (well-established methods knowledge, but not verified from the web in this run)",
+          "deliveries": {
+            "pf21-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-eb1f2098e2f7"
+            },
+            "pf21-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-0f59c20237b8"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a continuous assay score shows strong batch effects, under what conditions does including batch as a fixed effect in a linear model fail to remove the bias (for example batch-specific variance or scaling)? Is within-batch standardisation or ranking recommended instead? ANSWER: NOT SETTLED BY THE WEB: the research gateway returned HTTP 502/403 on all 4 calls, so no page was read. From standard methods knowledge (unverified here): a batch fixed effect removes only additive per-batch mean shifts. It does not correct batch-specific variance or multiplicative scaling. Those leave heteroscedastic residuals and can distort the group comparison when treatment groups are spread unevenly across batches. This is why ComBat models both location and scale batch effects. Recommended check: compare the score's SD in each batch. If the SDs differ, repeat the analysis on within-batch z-scores or within-batch ranks (or use a batch-stratified rank test such as van Elteren), use heteroscedasticity-robust SEs, and confirm the direction agrees with the fixed-effect result. If batch is nearly perfectly confounded with treatment, no adjustment can separate the two. HOW SURE: medium (well-established methods knowledge, but not verified from the web in this run). SOURCES: none given."
+        },
+        {
+          "question": "In observational comparisons of a post-treatment tumour biomarker between treated and untreated patients, should tumour purity and stromal content be adjusted for, or are they treated as mediators that bias the total-effect estimate?",
+          "answer": "NOT SETTLED BY THE WEB: the gateway failed, so no page was read. From standard causal-inference knowledge (unverified here): if purity and stromal content are measured on the post-treatment sample and chemotherapy can change them (cell kill, fibrosis or stromal reaction), they are mediators or descendants of treatment. Adjusting for them is overadjustment (Schisterman et al. 2009): it estimates something like a direct effect rather than the total effect, and it can introduce collider bias. They are confounders only if they are pre-treatment characteristics that affect both treatment and the score. For the hypothesis as stated, the primary estimate should not adjust for purity or stroma; adjust only for real pre-treatment or technical confounders (batch, site, sample type). Report the purity-adjusted estimate as a sensitivity or explanatory analysis. This qualifies the earlier memory PITFALL that recommended basing the conclusion on the purity-adjusted coefficient.",
+          "sources": [],
+          "confidence": "medium (well-established principle, but not verified from the web in this run)",
+          "deliveries": {
+            "pf21-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-5dffa354d07c"
+            },
+            "pf21-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-94f8cfb498c4"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In observational comparisons of a post-treatment tumour biomarker between treated and untreated patients, should tumour purity and stromal content be adjusted for, or are they treated as mediators that bias the total-effect estimate? ANSWER: NOT SETTLED BY THE WEB: the gateway failed, so no page was read. From standard causal-inference knowledge (unverified here): if purity and stromal content are measured on the post-treatment sample and chemotherapy can change them (cell kill, fibrosis or stromal reaction), they are mediators or descendants of treatment. Adjusting for them is overadjustment (Schisterman et al. 2009): it estimates something like a direct effect rather than the total effect, and it can introduce collider bias. They are confounders only if they are pre-treatment characteristics that affect both treatment and the score. For the hypothesis as stated, the primary estimate should not adjust for purity or stroma; adjust only for real pre-treatment or technical confounders (batch, site, sample type). Report the purity-adjusted estimate as a sensitivity or explanatory analysis. This qualifies the earlier memory PITFALL that recommended basing the conclusion on the purity-adjusted coefficient. HOW SURE: medium (well-established principle, but not verified from the web in this run). SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "pf21-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "pf21-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "pf21-team-b",
+      "round": "challenge",
+      "reason": "agreed with pf21-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "pf21-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 54.18542741704732,
+      "cost_usd": 0.1717226,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 38.77947154198773,
+      "cost_usd": 0.13456459999999998,
+      "error": null
+    },
+    {
+      "agent": "pf21-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 38.323974124970846,
+      "cost_usd": 0.14932299999999998,
+      "error": null
+    },
+    {
+      "agent": "pf21-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 45.797640749951825,
+      "cost_usd": 0.18967060000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 45.20177608309314,
+      "cost_usd": 0.1927768,
+      "error": null
+    },
+    {
+      "agent": "pf21-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 48.5436165840365,
+      "cost_usd": 0.15951120000000002,
+      "error": null
+    },
+    {
+      "agent": "pf21-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 57.37351945892442,
+      "cost_usd": 0.24639080000000002,
+      "error": null
+    },
+    {
+      "agent": "pf21-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 57.617126791970804,
+      "cost_usd": 0.2817464,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

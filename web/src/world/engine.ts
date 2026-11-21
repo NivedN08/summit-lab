@@ -103,7 +103,7 @@ export class LabEngine {
     this.ctx = canvas.getContext("2d")!;
     this.staticCv = buildStatic();
     this.events = [...replay.run.events].sort((a, b) => replay.timeOf(a) - replay.timeOf(b));
-    // Heads' desks appear only in runs that had department heads (D-22).
+    // Heads' desks appear only in runs that had department heads (D-23).
     this.desks = replay.run.agents.some((a) => a.role === "head") ? [...DESKS, ...HEAD_DESKS] : DESKS;
     for (const a of replay.run.agents) {
       const home = this.homeOf(a.id, a.role, a.study);

@@ -1,0 +1,442 @@
+{
+  "study": "bd37",
+  "status": "refereed",
+  "final": {
+    "agent": "bd37-team-a",
+    "team": "team-a",
+    "round": "revise",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd37/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "recheck": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m01/prompts",
+    "reuse_first_round": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1"
+  },
+  "models": {
+    "director": "opus",
+    "bd37-library": "opus",
+    "bd37-team-a": "opus",
+    "bd37-team-b": "opus",
+    "bd37-team-c": "opus",
+    "bd37-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "bd37-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd37/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd37-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd37/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd37-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd37/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd37-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m01-r1/bd37/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd37-team-a",
+        "bd37-team-b"
+      ],
+      "fields": {
+        "label": false
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "bd37-team-a",
+        "bd37-team-b"
+      ],
+      "fields": {
+        "label": false
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The established comparator is in the data. data_clinical_sample.txt has PROGNOSTIC_MODEL ('Genomic Risk Model Classification': Low/Medium/High), filled for roughly three quarters of samples. data_clinical_patient.txt has IPI (0-5), its five factor columns (IPI_AGE, IPI_LDH, IPI_ECOG, IPI_ANNARBOR_STAGE, IPI_EXTRANODAL_SITES) and OS_MONTHS/OS_STATUS. Count the patients who have PROGNOSTIC_MODEL, IPI and OS all present, and compare the genomic model with IPI head to head on them. Testing single genes against survival does not answer the question.",
+      "from": [
+        "sl-dev-panel-noise-lab1-f4680360f8a5"
+      ],
+      "reason": "Without this the comparator is easy to miss, which leads to a wrong 'Not verifiable' or to an analysis that never compares against established methods.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-113cc6531856"
+      }
+    },
+    {
+      "text": "To show 'outperforms', it is not enough for both predictors to be significant on log-rank, or for one to have a smaller p-value. Fit Cox models OS~IPI, OS~genomic model and OS~IPI+genomic model on the same patients. Compare discrimination (Harrell's C) and AIC, and run likelihood-ratio tests of the combined model against each single model. Outperformance means a clearly higher C for the genomic model, with a paired CI for the difference that excludes 0. Adding information beyond IPI (significant LRT) is a weaker claim and should be reported as such.",
+      "from": [
+        "sl-dev-panel-noise-lab1-36bcfebcb127"
+      ],
+      "reason": "This sets the criterion that decides the label. P-value comparisons are the most likely error.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-818b4eebb067"
+      }
+    },
+    {
+      "text": "IPI and PROGNOSTIC_MODEL are missing for different patients. Compute every comparison on the intersection of patients with both predictors and valid OS. Get a paired CI for the difference in C by bootstrap, or with survival::concordance on both fits together. A C-index or p-value from different patient sets cannot be compared.",
+      "from": [
+        "sl-dev-panel-noise-lab1-5364b41e657a"
+      ],
+      "reason": "Unpaired comparisons on different subsets give results that cannot be interpreted.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-81eaf3f63178"
+      }
+    },
+    {
+      "text": "The genomic risk model was probably derived from this same cohort, so its performance here is in-sample and optimistic. IPI was defined externally. Check the column descriptions for training/validation information or a cohort split column. Treat a small in-sample advantage for the genomic model (C difference under about 0.03) as weak evidence. If you build your own gene-based model, use bootstrap optimism correction (at least 100 resamples, redoing selection each time) or cross-validation.",
+      "from": [
+        "sl-dev-panel-noise-lab1-6fa7b1b9962a"
+      ],
+      "reason": "Overfitting bias can make the genomic model look better than it is.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-b2d1e5002ce1"
+      }
+    },
+    {
+      "text": "The IPI column can be missing or inconsistent even when its factor columns exist. Recompute IPI as the sum of the five 0/1 factors and check it against the IPI column. Never treat a missing factor as 0. Tabulate IPI missingness by genomic-risk group. As a sensitivity analysis, also try the grouped IPI (0-1/2/3/4-5).",
+      "from": [
+        "sl-dev-panel-noise-lab1-9d2ecd1c3a5f"
+      ],
+      "reason": "Mishandling the comparator variable biases the head-to-head comparison.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-2a1b5164344a"
+      }
+    },
+    {
+      "text": "OS_STATUS is coded like '0:LIVING'/'1:DECEASED'; parse the leading digit to get the event indicator. The sample table has a CENSORED column that may disagree with OS_STATUS, so cross-tabulate the two. Use OS_STATUS with OS_MONTHS. Drop rows with missing or non-positive OS_MONTHS and report how many were excluded.",
+      "from": [
+        "sl-dev-panel-noise-lab1-e60f4042faca"
+      ],
+      "reason": "If the event coding is wrong, every survival result is wrong.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-fe63775d12b0"
+      }
+    },
+    {
+      "text": "Both predictors are coarse ordinal scores (3 genomic groups against 6 IPI levels), so many risk scores are tied. Score ties as 0.5 in Harrell's C, which is the survival::concordance default. Also compute Uno's IPCW C with a truncation time (for example 60 months). If the conclusion changes with the choice, report both and give little weight to small differences.",
+      "from": [
+        "sl-dev-panel-noise-lab1-f0e87f7c7072"
+      ],
+      "reason": "Tie handling and censoring can shift C enough to flip a close comparison.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-f4eaf5b0498f"
+      }
+    },
+    {
+      "text": "Check proportional hazards with cox.zph for the IPI and genomic-model fits, and plot KM curves for both. If the curves cross or PH fails, compare time-dependent C/AUC at fixed horizons (for example 2 and 5 years) instead of relying on a single HR.",
+      "from": [
+        "sl-dev-panel-noise-lab1-4d08b338a983"
+      ],
+      "reason": "When PH is violated, which model looks better can depend on follow-up length.",
+      "fact_ids": {
+        "team-a": "sl-m01-r1-5b4cbcb92a54"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "bd37-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team argued that comparing a 3-level score with a 6-level score is not like-for-like because ties affect the C-index differently, and ran a comparison with IPI collapsed to its standard risk groups as a main analysis rather than a sensitivity check. Check how your result behaves under that comparison in your data. Does it change your method or which comparison you treat as primary?",
+      "from": [
+        "sl-m01-r1-f4eaf5b0498f",
+        "sl-m01-r1-2a1b5164344a"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m01-r1-76aa2fc316a4"
+    },
+    {
+      "to": "bd37-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that C-index and AIC point in different directions and gave the likelihood-based measures weight in its decision. You noted the same split. State explicitly why one metric should define 'outperform' for this hypothesis, and check whether your label holds under each reasonable definition. Does that change your method or label?",
+      "from": [
+        "sl-m01-r1-818b4eebb067"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m01-r1-54089d7573f4"
+    },
+    {
+      "to": "bd37-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team built a cross-validated survival model from the mutation table alone, to see whether the genetic alterations themselves (not only the supplied risk labels) predict outcome out of sample. You did not test the raw alteration data. Does the hypothesis's wording ('the genetic alterations identified') require that check, and does it change your method?",
+      "from": [
+        "sl-m01-r1-b2d1e5002ce1"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m01-r1-7dc529582e96"
+    },
+    {
+      "to": "bd37-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team ran Schoenfeld residual tests and found that proportional hazards may not hold for one of the predictors, and so also compared discrimination at a fixed time horizon. Your notes do not record a PH check. Check this in your data. Does it change how much weight you can put on Cox AIC and on your C-index comparison?",
+      "from": [
+        "sl-m01-r1-5b4cbcb92a54"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m01-r1-3c28dd53e932"
+    },
+    {
+      "to": "bd37-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team distinguished 'outperforms an established method' (a paired difference in discrimination whose interval excludes zero, against the established score as it is normally used) from the weaker 'adds information beyond it' (a likelihood-ratio or AIC gain), and noted that a likelihood gain from labels derived on this same cohort is in-sample. Which of these does your evidence establish, and against which form of IPI? Does that change your method or label?",
+      "from": [
+        "sl-m01-r1-818b4eebb067",
+        "sl-m01-r1-b2d1e5002ce1"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m01-r1-2e71ee5c584f"
+    },
+    {
+      "to": "bd37-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team found that IPI missingness differs markedly between patients with and without a genomic risk label, that some OS rows are invalid, and recomputed IPI from its five factor columns to check the IPI column. You compared only event rates. Check these in your data. Do they change which patients you keep or your method?",
+      "from": [
+        "sl-m01-r1-81eaf3f63178",
+        "sl-m01-r1-2a1b5164344a"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-m01-r1-497e2cd18576"
+    }
+  ],
+  "warning_signs_to_team_c": [],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": {
+    "difference": "Same numbers on the same 618 patients. X counts the in-sample Cox likelihood/AIC advantage of the supplied PROGNOSTIC_MODEL (AIC 2085 vs 2119) as 'outperforming' IPI. Y says that advantage is in-sample because the labels were derived in this cohort. Y relies on the tied C-index and on cross-validated alteration models that lose to IPI (C 0.53-0.56 vs 0.68).",
+    "test": "Permutation optimism test (test.py). I permuted OS time and status jointly 30 times. Each time I fitted in-sample a 3-group risk label from the mutation and CNA features (258 features, top-30 screen, ridge Cox, cut to the genomic label's group proportions) and recorded its Cox LR chi2. I compared this to the observed LR chi2 of the genomic label (102.0) and of IPI (67.9).",
+    "expected_if_x": "Noise-fitted 3-group labels reach LR chi2 far below IPI's 68 and the 34-point gap. Then the in-sample likelihood advantage cannot be overfitting artefact and is real evidence of outperformance.",
+    "expected_if_y": "Noise-fitted in-sample labels reach LR chi2 comparable to IPI or to the genomic label. Then in-sample likelihood cannot show outperformance, and only discrimination and out-of-sample results count, which tie or lose.",
+    "outcome": "Labels fitted on pure noise reached LR chi2 mean 62.9, 95th percentile 83.3 and max 91.0. That is about IPI's 67.9 on average and approaches the genomic label's 102. The same procedure on the real survival gave 85.5, barely above the null 95th percentile. The published model also used more inputs, which means more optimism. So in-sample fitting alone produces an advantage of IPI-size, and X's only supporting evidence is not diagnostic.",
+    "pick": "Y",
+    "reason": "X's case rests entirely on in-sample likelihood. The permutation test shows in-sample label fitting inflates LR chi2 to IPI's level even on noise. The evidence that survives this (paired C-index, which ties, and out-of-sample alteration models, which lose to IPI) does not show the alterations outperforming the established IPI.",
+    "own_answer": null,
+    "picked_agent": "bd37-team-a",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "bd37-team-b",
+      "Y": "bd37-team-a"
+    }
+  },
+  "research": [
+    {
+      "round": "questions",
+      "questions": [
+        {
+          "question": "When comparing two prognostic scores with different numbers of levels (e.g. a 3-group classifier vs a 6-level ordinal index) for survival, what is the accepted way to establish that one 'outperforms' the other: difference in Harrell's/Uno's C with a paired CI, likelihood/AIC, net reclassification, or decision-curve analysis? Is collapsing the finer score to fewer groups considered a fair comparison?",
+          "why": "The teams differ on which metric and which coding of the established index should define outperformance; the methodological convention could settle this.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How does Harrell's C-index treat tied predictor values by default (e.g. in R survival::concordance and in Python lifelines), and how do ties bias C when a predictor has only a few levels?",
+          "why": "One team argued ties penalise the coarser score; knowing the default handling and its bias tells whether a grouped comparison is needed.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In the International Prognostic Index for aggressive lymphoma, what are the standard risk groups (how are scores 0-5 grouped), and is the IPI normally used as a grouped or continuous score when benchmarking new prognostic models?",
+          "why": "Determines which form of the established comparator is the proper benchmark, which the teams handled differently.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When comparing two prognostic scores with different numbers of levels (e.g. a 3-group classifier vs a 6-level ordinal index) for survival, what is the accepted way to establish that one 'outperforms' the other: difference in Harrell's/Uno's C with a paired CI, likelihood/AIC, net reclassification, or decision-curve analysis? Is collapsing the finer score to fewer groups considered a fair comparison?",
+          "answer": "No single mandated metric. Methodologists favour likelihood-based comparison: an LR chi-square test for nested models (does the new score add information to the IPI in a Cox model, and the reverse), and AIC/BIC for non-nested models. A difference between two C-indices is rank-based and has low power; if C is used, Harrell recommends a paired head-to-head comparison (Hmisc rcorrp.cens) over two separate Cs. Categorical NRI depends on arbitrary cut points and is discouraged. Decision curves measure clinical net benefit, not discrimination. Collapsing the finer comparator to fewer groups throws away information and lowers the bar for the new score, so it is not a fair comparison. DLBCL practice (Ruppert et al., Blood 2020) compared IPI, R-IPI and NCCN-IPI each in its standard grouping by C-index. It also used a nested test: NCCN-IPI categories stayed prognostic within each IPI group, but not the reverse.",
+          "sources": [
+            "https://www.fharrell.com/post/addvalue/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6460632/",
+            "https://doi.org/10.1182/blood.2019002729"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m01-r1-01ecf50a1c0f"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m01-r1-f8c379b33e46"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When comparing two prognostic scores with different numbers of levels (e.g. a 3-group classifier vs a 6-level ordinal index) for survival, what is the accepted way to establish that one 'outperforms' the other: difference in Harrell's/Uno's C with a paired CI, likelihood/AIC, net reclassification, or decision-curve analysis? Is collapsing the finer score to fewer groups considered a fair comparison? ANSWER: No single mandated metric. Methodologists favour likelihood-based comparison: an LR chi-square test for nested models (does the new score add information to the IPI in a Cox model, and the reverse), and AIC/BIC for non-nested models. A difference between two C-indices is rank-based and has low power; if C is used, Harrell recommends a paired head-to-head comparison (Hmisc rcorrp.cens) over two separate Cs. Categorical NRI depends on arbitrary cut points and is discouraged. Decision curves measure clinical net benefit, not discrimination. Collapsing the finer comparator to fewer groups throws away information and lowers the bar for the new score, so it is not a fair comparison. DLBCL practice (Ruppert et al., Blood 2020) compared IPI, R-IPI and NCCN-IPI each in its standard grouping by C-index. It also used a nested test: NCCN-IPI categories stayed prognostic within each IPI group, but not the reverse. HOW SURE: medium. SOURCES: https://www.fharrell.com/post/addvalue/, https://pmc.ncbi.nlm.nih.gov/articles/PMC6460632/, https://doi.org/10.1182/blood.2019002729."
+        },
+        {
+          "question": "How does Harrell's C-index treat tied predictor values by default (e.g. in R survival::concordance and in Python lifelines), and how do ties bias C when a predictor has only a few levels?",
+          "answer": "Both R survival::concordance (default timewt='n', which is Harrell's C) and lifelines.utils.concordance_index count a pair tied on the predictor (but not on time) as 1/2: C = (c + tx/2)/(c + d + tx). Pairs tied only on time are left out. A predictor with few levels therefore has many tied pairs, which pull its C toward 0.5 compared with a finer score that orders patients just as well. That is a real loss of discrimination from coarseness, not a computing artefact, so it does not justify coarsening the finer comparator. lifelines expects a higher score to mean longer survival, so pass the negative risk or hazard.",
+          "sources": [
+            "https://cran.r-project.org/web/packages/survival/vignettes/concordance.pdf",
+            "https://lifelines.readthedocs.io/en/latest/lifelines.utils.html"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m01-r1-f8321c10023b"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m01-r1-5dcc4508eb6a"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How does Harrell's C-index treat tied predictor values by default (e.g. in R survival::concordance and in Python lifelines), and how do ties bias C when a predictor has only a few levels? ANSWER: Both R survival::concordance (default timewt='n', which is Harrell's C) and lifelines.utils.concordance_index count a pair tied on the predictor (but not on time) as 1/2: C = (c + tx/2)/(c + d + tx). Pairs tied only on time are left out. A predictor with few levels therefore has many tied pairs, which pull its C toward 0.5 compared with a finer score that orders patients just as well. That is a real loss of discrimination from coarseness, not a computing artefact, so it does not justify coarsening the finer comparator. lifelines expects a higher score to mean longer survival, so pass the negative risk or hazard. HOW SURE: high. SOURCES: https://cran.r-project.org/web/packages/survival/vignettes/concordance.pdf, https://lifelines.readthedocs.io/en/latest/lifelines.utils.html."
+        },
+        {
+          "question": "In the International Prognostic Index for aggressive lymphoma, what are the standard risk groups (how are scores 0-5 grouped), and is the IPI normally used as a grouped or continuous score when benchmarking new prognostic models?",
+          "answer": "IPI gives 1 point each for age >60, LDH above normal, ECOG >=2, stage III/IV and more than one extranodal site, for a score of 0-5. The standard 4 groups are low 0-1, low-intermediate 2, high-intermediate 3 and high 4-5. The R-IPI regroups the same score into 3 groups: very good 0, good 1-2, poor 3-5. Benchmarking studies of DLBCL indices use the IPI in its standard 4-group form (OS C-index about 0.61-0.63 under R-CHOP). Neither study I read collapses the IPI to match a new model's number of groups. One coding was not explicitly confirmed: whether the full 0-5 score is commonly used as the comparator.",
+          "sources": [
+            "https://en.wikipedia.org/wiki/International_Prognostic_Index",
+            "https://haematologica.org/article/view/11097",
+            "https://doi.org/10.1182/blood.2019002729",
+            "https://www.tandfonline.com/doi/full/10.1080/16078454.2022.2147916"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m01-r1-95931b38c63f"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m01-r1-f06185ddbdcc"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In the International Prognostic Index for aggressive lymphoma, what are the standard risk groups (how are scores 0-5 grouped), and is the IPI normally used as a grouped or continuous score when benchmarking new prognostic models? ANSWER: IPI gives 1 point each for age >60, LDH above normal, ECOG >=2, stage III/IV and more than one extranodal site, for a score of 0-5. The standard 4 groups are low 0-1, low-intermediate 2, high-intermediate 3 and high 4-5. The R-IPI regroups the same score into 3 groups: very good 0, good 1-2, poor 3-5. Benchmarking studies of DLBCL indices use the IPI in its standard 4-group form (OS C-index about 0.61-0.63 under R-CHOP). Neither study I read collapses the IPI to match a new model's number of groups. One coding was not explicitly confirmed: whether the full 0-5 score is commonly used as the comparator. HOW SURE: high. SOURCES: https://en.wikipedia.org/wiki/International_Prognostic_Index, https://haematologica.org/article/view/11097, https://doi.org/10.1182/blood.2019002729, https://www.tandfonline.com/doi/full/10.1080/16078454.2022.2147916."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd37-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "bd37-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "bd37-team-b",
+      "round": "revise",
+      "reason": "the referee's test supported the other answer: X's case rests entirely on in-sample likelihood. The permutation test shows in-sample label fitting inflates LR chi2 to IPI's level even on noise. The evidence that survives this (paired C-index, which ties, and out-of-sample alteration models, which lose to IPI) does not show the alterations outperforming the established IPI."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 54.905876042088494,
+      "cost_usd": 0.2648852,
+      "error": null
+    },
+    {
+      "agent": "bd37-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 127.67707154189702,
+      "cost_usd": 0.4477442,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 83.52507241698913,
+      "cost_usd": 0.2825488,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 171.49273254198488,
+      "cost_usd": 0.4458752,
+      "error": null
+    },
+    {
+      "agent": "bd37-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 75.23868520895485,
+      "cost_usd": 0.25530420000000004,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": [],
+  "recheck": [],
+  "reused": {
+    "from": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1",
+    "memory_replayed": {
+      "writes": null,
+      "pass_downs": 8,
+      "note": "memory writes are replayed only with local memory"
+    },
+    "first_round_cost_usd": 1.114331,
+    "first_round_runs": 4
+  }
+}

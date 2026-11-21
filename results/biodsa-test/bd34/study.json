@@ -1,0 +1,289 @@
+{
+  "study": "bd34",
+  "status": "replicated",
+  "final": {
+    "agent": "bd34-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd34/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd34-library": "fable",
+    "bd34-team-a": "fable",
+    "bd34-team-b": "fable",
+    "bd34-team-c": "fable",
+    "bd34-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd34-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd34/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd34-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd34/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd34-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd34/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd34-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd34/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd34-team-a",
+        "bd34-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd34-team-a",
+        "bd34-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The hypothesis variable is mature miRNA EXPRESSION (abundance of miR-452, miR-766, miR-1180 in HCA, in HCC and in normal liver). In cBioPortal-style study folders, expression lives in its own files (mRNA/miRNA expression or z-score matrices), separate from the mutation (MAF), discrete CNA, segment (.seg), gene-panel-matrix and clinical-sample files; many studies ship without any expression file. Before any statistics, inventory what is actually there: list every file and every column, search all tables case-insensitively for 'MIR', 'hsa-', 'miR', 'expression', 'zscore', 'RPM', and establish whether a numeric per-sample abundance matrix exists. Then write down the exact column(s) that measure the hypothesis variable; if you cannot name one, you do not have a test of the hypothesis. Report in your reasoning which modalities are present and which are missing, and choose the label by applying the task's own label definitions to what you found.",
+      "from": [
+        "sl-biodsa-test-e9e151df2b67",
+        "sl-biodsa-test-37f25c3fc446"
+      ],
+      "reason": "The file list contains only DNA-level and clinical tables, so the first decision is whether the hypothesis variable is measured at all; an explicit inventory step prevents the team from launching into a test on a variable that is not the one the hypothesis names.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-40311c594c44"
+      }
+    },
+    {
+      "text": "Keep 'no measurement' and 'contradicting evidence' apart. Finding zero mutations or amplifications in MIR452/MIR766/MIR1180, or finding that these genes are simply absent from the tables, is absence of measurement, not evidence that the miRNAs are not upregulated. The opposite error is equally wrong: deciding from background knowledge that these miRNAs are reported as up (or not) in liver tumours. The label must rest only on what the supplied tables measure.",
+      "from": [
+        "sl-biodsa-test-37f25c3fc446"
+      ],
+      "reason": "The task's 'False' and 'Not verifiable' labels differ exactly on this point (relevant variable exists and contradicts, versus no relevant variable), and empty search results for the miRNA genes are easy to misread as a negative result.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-da7291b9f039"
+      }
+    },
+    {
+      "text": "The hypothesis needs a 'normal liver' comparison group. In tumour/normal targeted-panel studies (e.g. MSK-IMPACT) the matched normal (usually blood; it appears only as Matched_Norm_Sample_Barcode in the MAF) is used to filter germline variants and as the denominator of the tumour/normal log2 ratio; such normals do not get their own rows or columns in the CNA, seg or clinical sample tables. Check this in the data: tabulate the sample-type and diagnosis columns in data_clinical_sample.txt (e.g. SAMPLE_CLASS, ONCOTREE_CODE, CANCER_TYPE_DETAILED), record how many HCA, HCC and normal-liver samples exist as actual data columns/rows, and state the result. If there is no normal-liver arm, do not fabricate a baseline (e.g. 0 or 'diploid') and test tumours against it.",
+      "from": [
+        "sl-biodsa-test-51398bb29d42"
+      ],
+      "reason": "Whether a comparator arm exists is a separate requirement from whether expression is measured; a one-sample test of tumour values against an assumed baseline would look like a tumour-vs-normal test but is not one.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-6c3fef7c6dee"
+      }
+    },
+    {
+      "text": "DNA-level data are not a valid proxy for the level of a specific mature miRNA, in either direction. (a) Copy number: genome-wide studies find weak copy-number/expression correlation for miRNAs even inside copy-number-altered regions (in a TCGA analysis of 7 cancer types only about 80 of 971 miRNAs were mainly copy-number-driven), and tumour-vs-normal miRNA expression changes were not significantly related to miRNA copy number; so 'locus gained => miRNA up' and 'locus not gained => miRNA not up' are both unsound. (b) Host genes and machinery: status of a host gene (SEPT6/SEPTIN6 for miR-766, GABRE for miR-452/miR-224) or of upstream genes (DICER1, DROSHA, XPO5, TP53, CTNNB1) says nothing quantitative about these miRNAs; an estimated 35-50% of intronic miRNAs have independent promoters and promoter activity correlates with mature miRNA level only at about Spearman 0.25-0.27. (c) Coverage: a targeted DNA panel such as MSK-IMPACT assays exons/selected introns of a few hundred cancer genes and has no RNA component; data_cna.txt holds panel genes only and .seg segments are interpolated across large gaps between targeted genes. The loci are MIR452 at Xq28 (clustered with MIR224), MIR766 at Xq24 (intron of SEPT6) and MIR1180 at 17p11.2. Check whether Hugo_Symbol in data_cna.txt and data_mutations.txt contains ^MIR, GABRE, SEPT6/SEPTIN6 or B9D1; if not, say that the miRNA genes are not assayed even at DNA level, and do not report a segment value overlapping them (least of all a chrX value, which is confounded by sex and reference choice) as a measurement of the miRNA.",
+      "from": [
+        "sl-biodsa-test-fd43a3226ae5",
+        "sl-biodsa-test-8e7a0e7f0728",
+        "sl-biodsa-test-30790eecc644"
+      ],
+      "reason": "With only mutation, CNA and segment tables on hand, the tempting move is a substitute analysis from copy number or neighbouring-gene alterations; the team needs to know such a result cannot count as support for or against an expression claim, so that the label is not driven by a proxy.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-76e69c6ccc3c"
+      }
+    },
+    {
+      "text": "Only if a miRNA expression matrix with normal-liver samples does turn out to be present: the hypothesis is a conjunction of 6 contrasts (each of 3 miRNAs, HCA vs normal AND HCC vs normal), and the cohort is likely very small. Do not pool HCA and HCC into one 'tumour' group, do not rely on a single omnibus test, and do not skip multiple-testing correction; global median/quantile normalisation is unreliable on miRNA platforms where a large share of a few hundred features change. Check group sizes per diagnosis and the number of normal-liver samples, whether values are on a log scale, and report direction and adjusted p-value for each of the 6 contrasts using a rank-based or moderated test. The conjunction is supported only if all 6 contrasts are positive and significant.",
+      "from": [
+        "sl-biodsa-test-ba2566029cfb"
+      ],
+      "reason": "Contingency guidance: if the inventory unexpectedly finds usable expression data, the claim's structure (two tumour types, three miRNAs, 'significantly') dictates a per-contrast test design rather than a pooled comparison.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-ee69b2f4d90d"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 2,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams read 'upregulated' as mature miRNA expression (abundance) and treat a per-sample expression matrix as the only admissible variable; neither considered any other measurable sense of the word. I checked the file headers and agree no other sense is measurable here.",
+      "Both teams assume 'normal liver' must exist as its own sample rows/columns; both treat the matched normals named in the mutation file as germline references only. Neither showed what tissue those normals are, but they carry no per-sample measurements of their own in any table, so this does not matter.",
+      "Both teams assume that the task's 'Not verifiable' definition, not 'False', applies when the variable is absent. This follows the task's own wording of the labels.",
+      "Both teams used approximate hg19 coordinates from memory for the three miRNA loci when looking at the segment file; neither made the label depend on them."
+    ],
+    "unused_evidence": [
+      "Clinical columns SAMPLE_ORIGIN, COLLAB_ID, SAMPLE_COLLECTION_METHOD, SPECIMEN_PRESERVATION_TYPE and TISSUE_SITE were not tabulated by either team. They are filled only for sample 019 (the one IMPACT410 sample: Biopsy, Frozen, Liver, COLLAB_ID 9808_T). They describe specimen handling and cannot hold miRNA abundance, but neither team stated that they checked them for a non-tumour or normal-liver flag.",
+      "n_ref_count / n_alt_count in the mutation file (read counts in the matched normal at mutated positions) are the only normal-derived numbers in the data. They are DNA read depth at somatic variant sites, not expression; neither team used them and they should not.",
+      "num.mark in the segment file was not reported by either team for the segments overlapping the miRNA loci, although the library's note asked for it as the way to show those values are interpolated. Team B quoted group mean seg.mean values at those loci without it.",
+      "DICER1 is a row in the discrete CNA table (a miRNA-processing gene). Neither team used it, correctly: the library note already rules out machinery genes as a proxy for three named miRNAs.",
+      "The gene panel matrix lists a single profile column ('mutations'); it confirms no expression profile is registered for any sample. Both teams read it."
+    ],
+    "unresolved_weak_points": [
+      "Team A's weakest point (choice of 'Not verifiable' over 'False') is resolved by the task's own label definition: the data hold no expression variable and no normal-liver arm.",
+      "Both teams' locus coordinates were typed from memory and never verified. Reported, not resolved, but nothing in the label depends on them.",
+      "Team B reported group mean segment log-ratios at the chrX and chr17 loci and wrote that they 'show no gain anyway'. This is the one place where a DNA-level number sits next to the label. chrX log-ratios depend on patient sex and reference, and there is no sex column or patient table. Team B says it did not use the numbers, but the phrase should not appear as supporting evidence in the answer's reasoning."
+    ],
+    "second_readings": [
+      "'Upregulated' read as DNA-level gain of the miRNA loci: not a reasonable reading (the term refers to expression), and even under it the loci are not panel targets and there is no normal-liver sample to compare against.",
+      "'In both HCA and HCC': a conjunction over two tumour types and three miRNAs. Both teams read it this way; the reading is moot without expression data.",
+      "'Compared to normal liver': could mean adjacent non-tumour liver or unrelated healthy liver. Neither exists as a measured sample in any table, so both readings give the same label."
+    ],
+    "verdict": "High trust in the agreed answer. I confirmed from the file headers and rows that the five tables are DNA-level only (clinical sample attributes, discrete CNA for panel genes, segments, panel matrix, MAF), that all 19 samples are tumours (10 HCC, 9 adenoma) and that no miRNA symbol or expression column exists; the two questions are confirmatory and concern completeness of the inventory and the wording of the reasoning, not the label's basis.",
+    "questions": [
+      {
+        "to": "bd34-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You tabulated SAMPLE_CLASS, ONCOTREE_CODE, CANCER_TYPE_DETAILED, GENE_PANEL and SOMATIC_STATUS, but not SAMPLE_ORIGIN, COLLAB_ID, SAMPLE_COLLECTION_METHOD, SPECIMEN_PRESERVATION_TYPE or TISSUE_SITE. Tabulate these five columns over all 19 rows and state whether any value marks a sample as non-tumour or normal liver, or holds a numeric abundance. Does the result change your statement that there is no normal-liver arm and no expression variable, and so your method?",
+        "from": [
+          "sl-biodsa-test-13cf0ac847e5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-b2a8bf025327"
+      },
+      {
+        "to": "bd34-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You reported group mean seg.mean values at the three miRNA loci and wrote that they 'show no gain anyway'. For the segments you used, print num.mark and segment length per sample, and check whether any table gives patient sex (two of the loci are on chrX). Then read the reasoning in your answer.json: does the label stand on the absence of an expression table and of normal-liver samples alone, with those copy-number values removed as evidence in either direction? Does this check change your method or your wording?",
+        "from": [
+          "sl-biodsa-test-dd29eedd55ee"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-1d8dc191e0ca"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd34-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd34-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd34-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd34-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd34-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 55.99624566594139,
+      "cost_usd": 0.0973617,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 73.41919262497686,
+      "cost_usd": 0.10194260000000001,
+      "error": null
+    },
+    {
+      "agent": "bd34-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 64.31632629095111,
+      "cost_usd": 0.10595,
+      "error": null
+    },
+    {
+      "agent": "bd34-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 67.10608175001107,
+      "cost_usd": 0.1276466,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 72.54296945803799,
+      "cost_usd": 0.187906,
+      "error": null
+    },
+    {
+      "agent": "bd34-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 69.07234695798252,
+      "cost_usd": 0.14762519999999998,
+      "error": null
+    },
+    {
+      "agent": "bd34-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 60.22878300002776,
+      "cost_usd": 0.13407629999999998,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

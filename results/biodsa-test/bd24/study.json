@@ -1,0 +1,494 @@
+{
+  "study": "bd24",
+  "status": "replicated",
+  "final": {
+    "agent": "bd24-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd24/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd24-library": "fable",
+    "bd24-team-a": "fable",
+    "bd24-team-b": "fable",
+    "bd24-team-c": "fable",
+    "bd24-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "bd24-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd24/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd24-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd24/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd24-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd24/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd24-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd24/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd24-team-a",
+        "bd24-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd24-team-a",
+        "bd24-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The hypothesis is a compound claim with two parts: (1) Triple-WT is enriched for KIT mutations, and (2) Triple-WT is enriched for focal amplifications. Part 2 can be read two ways: focal amplification of KIT itself (4q12, usually co-amplified with PDGFRA and KDR) or focal amplifications of any gene as a general feature of the subtype. Under either reading, focal amplification is measured with copy-number assays (segmented copy number / GISTIC, array CGH, FISH), not with mutation sequencing. The library's reading of the file headers suggests the supplied files hold only point-mutation data: no data_cna, GISTIC or segment table, a single 'mutations' profile column in data_gene_panel_matrix.txt, and genome-wide ABSOLUTE_EXTRACT_PLOIDY as the only copy-number-like clinical field. Verify this yourself: list every file and every column and confirm whether any per-sample, per-gene or per-segment copy-number call exists. Write down which reading of part 2 you adopt, and record the status of each part separately (supported / contradicted / no variable). Then choose the label by reasoning explicitly from the task's label definitions about a partly testable conjunction: a conjunction is contradicted if a testable part is contradicted, whereas support for only one part leaves the other unexamined. State in the reasoning exactly which part the label rests on and which part could not be tested. Do not treat a mutation-only result as a test of the whole claim, and do not silently drop the amplification part.",
+      "from": [
+        "sl-biodsa-test-c9dcdff5b490",
+        "sl-biodsa-test-c8fc0ad5820d"
+      ],
+      "reason": "How the team handles the two halves of the claim, and whether copy-number data exist at all, determines both the scope of the analysis and how the label is justified.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-64131e7a1f5b"
+      }
+    },
+    {
+      "text": "Do not manufacture amplification evidence from the mutation file. (a) data_mutations.txt reportedly carries Oncotator columns TCGAscape_Amplification_Peaks, Tumorscape_Amplification_Peaks, TCGAscape_Deletion_Peaks and Tumorscape_Deletion_Peaks. These are static gene/region annotations copied from reference databases onto every variant in a locus; they are not copy-number calls for the sample carrying the variant, and they exist only for samples that happen to have a mutation in that gene. Check: for one gene, confirm the value is identical across all samples and variants and unrelated to subtype. (b) Variant allele fraction (t_alt_count / (t_alt_count + t_ref_count)) and sample-wide ABSOLUTE ploidy are not valid measures of focal amplification: focal events are defined from segment length and amplitude in segmented copy-number profiles, VAF depends jointly on purity, total copy number, mutant-allele multiplicity and clonality, and an amplified gene with no point mutation is invisible in a MAF. If no segment-level or gene-level copy-number values exist, do not report a peak-column, VAF or ploidy result as a test of the amplification part; at most mention it as an uninterpretable proxy.",
+      "from": [
+        "sl-biodsa-test-35733afdb837",
+        "sl-biodsa-test-43f35c30feac"
+      ],
+      "reason": "These columns look like copy-number evidence and could lead a team to score the amplification half from data that do not measure it.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-cef1b5fb0a6f"
+      }
+    },
+    {
+      "text": "Build the denominators and the KIT-mutated flag carefully. A MAF lists only samples that have at least one mutation, and this 274 MB MAF is large enough to include silent and possibly non-coding calls. Take denominators from data_clinical_sample.txt, restricted to samples listed as profiled in data_gene_panel_matrix.txt and having a non-missing subtype label; do not use the set of samples appearing in the MAF as the denominator. Select rows with Hugo_Symbol exactly equal to 'KIT' (a substring match would also catch KITLG) and tabulate their Variant_Classification. Count a sample as KIT-mutated only for protein-altering classes (Missense_Mutation, Nonsense_Mutation, Frame_Shift_Del, Frame_Shift_Ins, In_Frame_Del, In_Frame_Ins, Splice_Site, Nonstop_Mutation, Translation_Start_Site). Collapse multiple KIT variants in one sample to a single mutated/not flag, verify one sample per patient, and treat profiled samples with no KIT row as wild-type rather than missing.",
+      "from": [
+        "sl-biodsa-test-826260b489cd"
+      ],
+      "reason": "Wrong denominators or counting silent/non-coding KIT rows would change the per-subtype KIT frequencies that the whole test rests on.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-cece0a5ffaa1"
+      }
+    },
+    {
+      "text": "The subtype label is reported to be the MUTATION_TYPE column of data_clinical_sample.txt (categories in the style of BRAF hotspot / RAS hotspot / NF1 / Triple-WT). It is derived from the same mutation calls, and Triple-WT is a residual class defined by the absence of the other MAPK drivers, so the choice of comparison group changes the answer. Tabulate MUTATION_TYPE including NA, '-' and blank values, and confirm the exact spelling of the Triple-WT category. Use Triple-WT versus all other classified samples as the primary contrast, and also compute the KIT mutation frequency in every subtype separately as a sensitivity check: an enrichment should hold against each other subtype, not only against the pooled group. Exclude samples with no subtype label; do not fold them into either side.",
+      "from": [
+        "sl-biodsa-test-e7cd3fca65e7"
+      ],
+      "reason": "Group definition and choice of comparator directly determine the contrast being tested.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-a36c36b98668"
+      }
+    },
+    {
+      "text": "'Characterized by enrichment of KIT mutations' is a relative claim, not a majority claim. Even in the melanoma classes where KIT is a recognised driver (acral, mucosal, chronically sun-damaged) only roughly 10 to 30 percent of tumours carry a KIT mutation, and non-CSD cutaneous melanoma is below 5 percent. It is therefore an error to call the claim false because most Triple-WT tumours are KIT wild-type, and equally an error to call it true because a single KIT-mutant Triple-WT tumour exists. Report the KIT-mutated fraction in Triple-WT and in each other subtype with exact (Clopper-Pearson) confidence intervals, the fold difference or odds ratio, and the share of the cohort's KIT hotspot mutations that fall in Triple-WT compared with the share of samples that are Triple-WT. A low absolute frequency that is clearly higher than in every other subtype counts as enrichment; a Triple-WT rate equal to or lower than the other subtypes under both the any-protein-altering and the hotspot-only definitions, with adequate sample size, counts as contradiction; if the intervals are too wide to tell, say so.",
+      "from": [
+        "sl-biodsa-test-66050f070c6d"
+      ],
+      "reason": "Fixes the decision criterion in advance so the team does not judge the claim by absolute frequency.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-4e3ebab0bd06"
+      }
+    },
+    {
+      "text": "Triple-WT is a small subtype and KIT mutations are rare, so the 2x2 table (Triple-WT versus other subtypes, KIT mutated versus not) will have small or zero cells. Print the full 2x2 counts and the per-subtype proportions and check the expected cell counts; a chi-square test is invalid when expected counts are below 5. Use Fisher's exact test on KIT as the single pre-specified gene, and state before testing whether it is one- or two-sided ('enrichment' is directional). Report the odds ratio with an exact confidence interval (Haldane-Anscombe +0.5 correction if a cell is zero) together with the raw proportions. Judge supports / contradicts / inconclusive from direction and effect size together with the p-value, not from p < 0.05 alone: with small cells a non-significant p-value is not evidence against enrichment, and a significant p-value found by scanning many genes is not the same as a pre-specified test of KIT.",
+      "from": [
+        "sl-biodsa-test-8b7e60bfee42"
+      ],
+      "reason": "The choice of test and how a sparse-table p-value is read can flip the conclusion.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-1043e2742f0b"
+      }
+    },
+    {
+      "text": "Tumour mutation burden confounds a raw KIT comparison. In UV-driven cutaneous melanoma the burden is very high and differs strongly between genomic subtypes: the UV-high BRAF/RAS/NF1 groups carry many passenger mutations and Triple-WT tumours typically far fewer. Passenger KIT variants therefore accumulate in the comparator groups and raise their raw 'any protein-altering KIT mutation' frequency; this bias runs against the hypothesis, so a raw odds ratio near 1 must not be read as contradiction before passengers are separated from drivers. Fisher-type tests also assume every tumour has the same alteration probability, which fails when burden varies. Checks: compare TMB_NONSYNONYMOUS and UV_SIGNATURE across the subtype groups; list every KIT variant with its subtype, protein change and Protein_position, the MAF 'Hotspot' flag, whether it is a UV-type change (C>T at a dipyrimidine) and the sample's TMB; compare silent KIT mutation counts and the median TMB of KIT-mutated versus KIT-wild-type samples within each subtype (KIT-mutant comparator samples with very high TMB and non-hotspot positions are probable passengers). About 70 percent of genuine KIT driver mutations in melanoma fall in four hotspots: L576 (exon 11), K642 (exon 13), W557 to V560 (exon 11) and D816 to A829 (exon 17), for example L576P, K642E, W557/V559, D816, N822. Make the hotspot-restricted comparison and/or a TMB-stratified or TMB-adjusted comparison (for example logistic regression of KIT status on subtype adjusting for log TMB, Firth-penalised if cells are sparse) the primary analysis, report the any-protein-altering comparison as secondary, and if the two disagree explain which variants drive the difference.",
+      "from": [
+        "sl-biodsa-test-035bc5b0dc37",
+        "sl-biodsa-test-23777caa9e0f"
+      ],
+      "reason": "Without separating driver from passenger KIT variants, the raw frequency comparison can be distorted by subtype differences in mutation burden and give the wrong direction.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-6a6c4775a6b8"
+      }
+    },
+    {
+      "text": "data_mutsig.txt is a cohort-wide MutSig significance table: each gene's nonsilent mutation count is tested against a background mutation rate over ALL patients (columns n = nonsilent mutations, npat = patients with at least one nonsilent mutation, nsite = unique sites, nsil = silent mutations, p_cv / p_clust / p_cons / p / q). KIT's rank or q-value says only whether KIT is mutated above background in the whole cohort; it says nothing about enrichment in Triple-WT. A non-significant cohort-level q does not contradict a subtype-specific enrichment and a significant q does not prove it. Use the KIT row only as a cross-check: compare its npat with your own count of KIT-mutated samples from the MAF to validate your Variant_Classification filter. The enrichment claim must be tested by the subtype-stratified analysis from the MAF and the clinical table.",
+      "from": [
+        "sl-biodsa-test-8def3200b5d4"
+      ],
+      "reason": "Prevents the team from using the MutSig table as evidence for or against a subtype-specific claim, while giving it a legitimate use as a filter check.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-43aa74147d88"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat support for the KIT-mutation half as enough to label the whole compound claim, although both state the focal-amplification half has no variable in the five files. Neither tested this; both name it as the weakest point and both give confidence 0.62.",
+      "Both teams took every MAF row as a trustworthy somatic call. The MAF carries a per-row artefact flag (isArtifactMode = 1 on 6,416 of 263,007 SNV/DNP rows) that neither team's notes mention; with only 6 KIT-mutant Triple_WT patients, the result depends on each individual call being real.",
+      "Both teams use the pooled 'all other classified subtypes' contrast as primary and accept that enrichment is not shown against the NF1 subtype, attributing the NF1 KIT hits to hypermutation without a subtype-specific background calculation (the TMB-adjusted models are pooled over all comparators).",
+      "Both teams take the MUTATION_TYPE label as given for the primary analysis. Triple_WT is a residual class defined from the same mutation calls; team B checked that labelled BRAF/RAS samples carry the calls, but neither checked the 30 profiled, unlabelled samples in the same way in both teams (team A only folded them into the comparator).",
+      "Neither team's submitted notes say which reading of 'focal amplifications' was adopted (amplification of the KIT locus versus focal amplifications of any gene), although the library asked for this to be written down."
+    ],
+    "unused_evidence": [
+      "data_mutations.txt columns isArtifactMode (0: 256,591; 1: 6,416; blank on the 2,648 indel rows), oxoGCut, qox, pox, pox_cutoff: per-call artefact metrics. Neither team reported the values on the KIT rows it counted.",
+      "data_mutations.txt validation columns (Validation_Status, validation_tumor_sample, validation_alt_allele, Tumor_Validation_Allele1/2): Validation_Status is blank or '---' everywhere, so probably uninformative, but neither team reported looking at validation_tumor_sample / validation_alt_allele for the KIT rows.",
+      "Variant_Classification contains non-standard classes ('Frame_Shift' 42 rows, 'Targeted_Region' 703, 'Translation_Start_Site' 259, 'Splice_Region' 2,236) and indels come from a separately annotated block of 2,648 rows; neither team states whether any KIT row falls in these classes or how they were counted.",
+      "data_clinical_sample.txt SAMPLE_TYPE / REGIONAL_VS_PRIMARY / SITE_OF_PRIMARY_TUMOR and data_clinical_patient.txt UV_SIGNATURE / UV_RATE: team A used UV status descriptively; neither team checked whether the KIT contrast holds within sample type or UV class (probably does not change the direction, but untested).",
+      "data_mutsig.txt: used only as a cohort-wide cross-check by both teams; it holds per-gene coverage N and silent/non-silent counts that could give a background expectation for KIT, which neither team used for the NF1 comparison.",
+      "ABSOLUTE_EXTRACT_PLOIDY: a genome-wide value, correctly not used as a focal-amplification measure by team A; team B examined it as a proxy (p=0.08) and its answer leans on 'indirect evidence points the same way'."
+    ],
+    "unresolved_weak_points": [
+      "Both teams: the label for a conjunction with one untestable conjunct. Reported, not resolved; each says a stricter reader would choose a different label.",
+      "Both teams: enrichment not demonstrated against NF1 (team A 6/46 vs 2-3/28; team B 6/46 vs 3/28). Reported, not resolved.",
+      "Both teams: only 6 KIT-mutant Triple_WT patients, one of them hypermutated with two KIT calls. Team B showed the result survives excluding it; neither checked artefact flags on the six.",
+      "Team B: the VAF/depth/ploidy proxy for amplification is described as not a valid test, yet the answer cites it as pointing the same way; no negative control was run to show the proxy discriminates anything."
+    ],
+    "second_readings": [
+      "'KIT mutations and focal amplifications' may mean (a) KIT mutations and focal amplification of KIT (4q12), (b) KIT mutations and focal amplifications of any gene as a subtype feature. Neither is measurable from a MAF, but the teams should say which they scored.",
+      "'Characterized by enrichment' may mean enrichment relative to all other subtypes pooled, or relative to each other subtype. Under the second reading the NF1 comparison matters.",
+      "The claim is a conjunction. One reading scores it on the part the data can address; the other requires every part to be addressed before the claim counts as supported, and falls back on the task's definition of the third label when a part has no variable. The teams chose the first without showing that the task's label definitions favour it.",
+      "'Triple-WT subtype' may mean the study's MUTATION_TYPE label (46 samples) or the biological class re-derived for all profiled samples (team B: 55)."
+    ],
+    "verdict": "Moderate trust. The KIT-mutation half is consistently analysed by both teams but rests on six patients whose calls were never checked against the MAF's artefact flag and on an unresolved NF1 comparison; the agreed label itself depends on a shared, untested choice about how to score a two-part claim whose second part has no variable in the data, which both teams name as their weakest point.",
+    "questions": [
+      {
+        "to": "bd24-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: data_mutations.txt has a per-call flag isArtifactMode (1 on 6,416 SNV rows, 0 on 256,591, blank on the 2,648 indel rows) plus oxoGCut, qox and pox, and non-standard Variant_Classification values ('Frame_Shift', 'Targeted_Region', 'Splice_Region'). Print isArtifactMode, oxoGCut, Variant_Type and Variant_Classification for every KIT row you counted, in Triple_WT and in the comparators, and tabulate the share of isArtifactMode=1 rows by subtype. Is any counted KIT call flagged or in a non-standard class, and do your 2x2 counts or your method change if flagged rows are dropped?",
+        "from": [
+          "sl-biodsa-test-90c7052dfc6c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-fae9f0210b34"
+      },
+      {
+        "to": "bd24-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you reported that enrichment is not shown against the NF1 subtype but did not resolve it. For each subtype separately, compute the number of protein-altering KIT mutations expected by chance from that subtype's own background (for example its per-base non-silent rate times the KIT coding length times the number of samples, or the coverage N in the MutSig KIT row) and set it beside the observed count with an exact Poisson interval. Does the excess over background differ between Triple_WT and NF1, and does the result change which contrast you treat as primary or how firmly you state 'enrichment'?",
+        "from": [
+          "sl-biodsa-test-aaa56e97814d",
+          "sl-biodsa-test-4170b3cae07c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-b5fb4c2af2ed"
+      },
+      {
+        "to": "bd24-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: 30 profiled samples have no MUTATION_TYPE and 4 of them carry protein-altering KIT variants; you only folded them into the comparator. For these 30, tabulate from the MAF whether each carries a BRAF hotspot, RAS hotspot or NF1 mutation, and what distinguishes them from labelled samples (sample type, presence in the patient table, the two duplicated patients). If each is placed in the subtype its own calls indicate, what are the 2x2 counts, and does that change your denominator rule?",
+        "from": [
+          "sl-biodsa-test-f7134bdaa4d2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-41bdd2da211a"
+      },
+      {
+        "to": "bd24-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your weakest point is the label for a two-part claim, and it is reported but not resolved. Write down which reading of 'focal amplifications' you scored (KIT locus, or any gene). Then list, for each of the five files, every column whose value varies between samples and could reflect copy number, and record each part of the claim separately as supported, contradicted or no variable. Set that table against the task's three label definitions word by word: does the label you chose follow from the definitions when one part has no variable, and would your method of choosing the label change if the claim must be judged as a whole rather than on its testable part?",
+        "from": [
+          "sl-biodsa-test-64131e7a1f5b",
+          "sl-biodsa-test-c8fc0ad5820d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-f76a6479d791"
+      },
+      {
+        "to": "bd24-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: data_mutations.txt has a per-call flag isArtifactMode (1 on 6,416 SNV rows, 0 on 256,591, blank on the 2,648 indel rows) plus oxoGCut, qox and pox, and non-standard Variant_Classification values ('Frame_Shift', 'Targeted_Region', 'Splice_Region'). Print isArtifactMode, oxoGCut, Variant_Type and Variant_Classification for every KIT row you counted, in Triple_WT and in the comparators, and tabulate the share of isArtifactMode=1 rows by subtype. Is any counted KIT call flagged or in a non-standard class, and do your 2x2 counts or your method change if flagged rows are dropped?",
+        "from": [
+          "sl-biodsa-test-241fe9971983"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-69be33568898"
+      },
+      {
+        "to": "bd24-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your answer says the indirect evidence (KIT allele fraction, depth, ploidy) points the same way as the mutation result. Run the same within-sample allele-fraction rank and depth-ratio calculation as a negative control on other driver calls (the BRAF and RAS hotspot mutations in their own subtypes) and on KIT mutations in non-Triple_WT samples matched for tumour burden. If ordinary driver mutations show the same pattern, the proxy does not distinguish amplification. Given the result, how much weight does this proxy carry in your label, and does the label or your stated basis for it change if the proxy is given none?",
+        "from": [
+          "sl-biodsa-test-b597b369331c",
+          "sl-biodsa-test-43f35c30feac"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-449c024af965"
+      },
+      {
+        "to": "bd24-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your comparison against the NF1 subtype alone showed no difference (6/46 vs 3/28) and you attributed this to hypermutation without a subtype-specific calculation. For each subtype separately, compute the number of non-silent KIT mutations expected by chance from that subtype's own background (for example its per-base non-silent rate times the KIT coding length times the number of patients, or the coverage N in the MutSig KIT row) and set it beside the observed count with an exact Poisson interval. Does the excess over background differ between Triple_WT and NF1, and does the result change which contrast you treat as primary or how firmly you state 'enrichment'?",
+        "from": [
+          "sl-biodsa-test-241fe9971983"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-1f3679fda76a"
+      },
+      {
+        "to": "bd24-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your plan left the label rule open ('decide between True and Not verifiable based on whether the core claim can be evaluated') and your notes report the choice without resolving it. Write down which reading of 'focal amplifications' you scored (KIT locus, or any gene). Then list, for each of the five files, every column whose value varies between samples and could reflect copy number, and record each part of the claim separately as supported, contradicted or no variable. Set that table against the task's three label definitions word by word: does the label you chose follow from the definitions when one part has no variable, and would your method of choosing the label change if the claim must be judged as a whole rather than on its testable part?",
+        "from": [
+          "sl-biodsa-test-9a591d30863f",
+          "sl-biodsa-test-c8fc0ad5820d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-09be0b4368f4"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In mutation annotation files produced by the Broad Institute's Oncotator / Firehose pipeline, what do the columns isArtifactMode, oxoGCut, qox, pox and pox_cutoff mean, and is a row with isArtifactMode = 1 but oxoGCut = 0 considered a retained (passing) somatic call or a suspected artefact that analysts are advised to exclude?",
+          "why": "Neither team used these per-call flags. With very few mutated cases in the group of interest, whether a flagged call should be kept or dropped could change the counts, so the teams need the flag's defined meaning rather than a guess.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When a hotspot-restricted definition of activating KIT mutations is used in melanoma, which exons and codons are conventionally included (for example exon 9, 11, 13, 17 and 18 positions), and are in-frame insertions and deletions in exon 11 counted alongside missense substitutions?",
+          "why": "Both teams built their own hotspot lists by codon position. A standard definition would show whether any call counted, or left out, in either group falls outside the accepted activating set, and whether indel rows (annotated separately in the file) need to be included.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In somatic MAF files, what do the Variant_Classification values 'Targeted_Region' and 'Frame_Shift' (without _Ins or _Del) denote, and are they conventionally treated as protein-altering when counting non-silent mutations per gene?",
+          "why": "The mutation table contains these non-standard classes; the teams' protein-altering filters may or may not include them, which affects per-gene mutated-sample counts in a small-count comparison.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In mutation annotation files produced by the Broad Institute's Oncotator / Firehose pipeline, what do the columns isArtifactMode, oxoGCut, qox, pox and pox_cutoff mean, and is a row with isArtifactMode = 1 but oxoGCut = 0 considered a retained (passing) somatic call or a suspected artefact that analysts are advised to exclude?",
+          "answer": "These columns are the output of the Broad D-ToxoG / oxoG filter for 8-oxoguanine oxidation artefacts. What the pages I read establish: (1) Costello et al. 2013 define the filter: the artefact is a C>A / G>T transversion at low allele fraction, strongest in CCG>CAG context, seen as G>T only on read 1 and C>A only on read 2. Each call is scored by FoxoG (fraction of alt-supporting reads in the artefact read orientation) against MuTect tumor_lod (pass threshold tumor_lod > -10 + (100/3)*FoxoG); all non-C>A/G>T substitutions pass regardless. The authors estimate the filter removes only about 1.4% of true C>A mutations and leaves about 0.1% artefacts among passed calls. (2) The NCI GDC code that consumes the D-ToxoG output MAF (dtoxog_maf_to_vcf.py, 'extract the sites that failed') marks a record as 'Failed dToxoG' if and only if oxoGCut == '1'; it never consults isArtifactMode. So oxoGCut is the filter decision (1 = cut as a suspected oxoG artefact, 0 = passed), and isArtifactMode = 1 only says the substitution is of the artefact-mode type (C>A/G>T) and was therefore eligible for the test. A row with isArtifactMode = 1 and oxoGCut = 0 is a tested-and-retained passing somatic call and should be kept; only oxoGCut = 1 rows are the ones to exclude. The isArtifactMode reading is an inference from the column name plus the two sources, not a sentence I read in documentation. NOT settled by the web: no page I opened defines qox, pox or pox_cutoff. By name they are probably the per-call artefact p-value, its FDR-adjusted q-value and the per-sample p-value cutoff used to set oxoGCut, but that is unverified, so teams should not build their own filter on those three columns. A search snippet I did not open (RTCGA data summaries) showed oxoGCut with a single distinct value in released Firehose MAFs, consistent with cut rows already having been removed.",
+          "sources": [
+            "https://github.com/NCI-GDC/variant-filtration-tool/blob/main/gdc_filtration_tools/tools/dtoxog_maf_to_vcf.py",
+            "https://doi.org/10.1093/nar/gks1443",
+            "https://github.com/NCI-GDC/variant-filtration-tool"
+          ],
+          "confidence": "medium (high that oxoGCut = 1 is the failing flag and oxoGCut = 0 rows are retained; low for the exact definitions of qox, pox and pox_cutoff, which the web did not settle)",
+          "deliveries": {
+            "bd24-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-57e8faf53db4"
+            },
+            "bd24-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-35a17c14ce3c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In mutation annotation files produced by the Broad Institute's Oncotator / Firehose pipeline, what do the columns isArtifactMode, oxoGCut, qox, pox and pox_cutoff mean, and is a row with isArtifactMode = 1 but oxoGCut = 0 considered a retained (passing) somatic call or a suspected artefact that analysts are advised to exclude? ANSWER: These columns are the output of the Broad D-ToxoG / oxoG filter for 8-oxoguanine oxidation artefacts. What the pages I read establish: (1) Costello et al. 2013 define the filter: the artefact is a C>A / G>T transversion at low allele fraction, strongest in CCG>CAG context, seen as G>T only on read 1 and C>A only on read 2. Each call is scored by FoxoG (fraction of alt-supporting reads in the artefact read orientation) against MuTect tumor_lod (pass threshold tumor_lod > -10 + (100/3)*FoxoG); all non-C>A/G>T substitutions pass regardless. The authors estimate the filter removes only about 1.4% of true C>A mutations and leaves about 0.1% artefacts among passed calls. (2) The NCI GDC code that consumes the D-ToxoG output MAF (dtoxog_maf_to_vcf.py, 'extract the sites that failed') marks a record as 'Failed dToxoG' if and only if oxoGCut == '1'; it never consults isArtifactMode. So oxoGCut is the filter decision (1 = cut as a suspected oxoG artefact, 0 = passed), and isArtifactMode = 1 only says the substitution is of the artefact-mode type (C>A/G>T) and was therefore eligible for the test. A row with isArtifactMode = 1 and oxoGCut = 0 is a tested-and-retained passing somatic call and should be kept; only oxoGCut = 1 rows are the ones to exclude. The isArtifactMode reading is an inference from the column name plus the two sources, not a sentence I read in documentation. NOT settled by the web: no page I opened defines qox, pox or pox_cutoff. By name they are probably the per-call artefact p-value, its FDR-adjusted q-value and the per-sample p-value cutoff used to set oxoGCut, but that is unverified, so teams should not build their own filter on those three columns. A search snippet I did not open (RTCGA data summaries) showed oxoGCut with a single distinct value in released Firehose MAFs, consistent with cut rows already having been removed. HOW SURE: medium (high that oxoGCut = 1 is the failing flag and oxoGCut = 0 rows are retained; low for the exact definitions of qox, pox and pox_cutoff, which the web did not settle). SOURCES: https://github.com/NCI-GDC/variant-filtration-tool/blob/main/gdc_filtration_tools/tools/dtoxog_maf_to_vcf.py, https://doi.org/10.1093/nar/gks1443, https://github.com/NCI-GDC/variant-filtration-tool."
+        },
+        {
+          "question": "When a hotspot-restricted definition of activating KIT mutations is used in melanoma, which exons and codons are conventionally included (for example exon 9, 11, 13, 17 and 18 positions), and are in-frame insertions and deletions in exon 11 counted alongside missense substitutions?",
+          "answer": "There is no single standard list; the literature uses two conventions. Narrow (Dumaz et al. 2014, abstract): 70% of melanoma KIT mutations lie in four hotspots shown to be oncogenic drivers: L576 (exon 11), K642 (exon 13), W557-V560 (exon 11) and D816-A829 (exon 17, ending at the first codon of exon 18); the authors say testing should concentrate on these. Broad (clinical trials and reviews): any mutation in the screened exons 9, 11, 13, 17 and 18. Exons 11, 13 and 17 dominate: exon 11 is about 50-60% of cases (L576P alone about 30%; also V559A/D, W557R, D579H and deletions affecting W557/K558); exon 13 carries K642E (10-15%), plus V654A and S628N; exon 17 carries D816, D820Y and N822I/K/Y (about 5-10%); exon 18 entries in the reviews' catalogue are A829P, P838L and V852I. Exon 9 mutations are rare in melanoma (absent in the early Bastian series, 0-9% in trial cohorts). L576P and K642E together are over half of all melanoma KIT mutations and are the prototypical hotspots; outside them is a long tail of rare variants. Exon 11 in-frame indels: yes, they are counted as activating alongside missense substitutions. The 2025 review lists deletions affecting W557/K558 with the exon 11 substitutions as disrupting the juxtamembrane auto-inhibitory segment; Beadling et al. reported an exon 11 in-frame deletion and an exon 11 insertion/duplication in melanoma, Torres-Cabala two exon 11 insertions, and the pooled catalogue includes Y570_L576del (exon 11), Y503delinsFAH (exon 9) and R815_D816delinsS (exon 17). They are uncommon in melanoma, where KIT mutations are almost all missense (unlike GIST, where exon 11 in-frame deletions predominate). So In_Frame_Del / In_Frame_Ins rows in exon 11 belong in a hotspot count; frameshift and nonsense KIT calls are not activating.",
+          "sources": [
+            "https://doi.org/10.1097/cmr.0000000000000116",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC12650433/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7329741/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3935736/"
+          ],
+          "confidence": "medium (high for the exons, codons and inclusion of exon 11 in-frame indels; the web shows no single agreed 'standard' list, and for Dumaz et al. only the abstract was readable)",
+          "deliveries": {
+            "bd24-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-dc6043d797f9"
+            },
+            "bd24-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-068386b31cc1"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a hotspot-restricted definition of activating KIT mutations is used in melanoma, which exons and codons are conventionally included (for example exon 9, 11, 13, 17 and 18 positions), and are in-frame insertions and deletions in exon 11 counted alongside missense substitutions? ANSWER: There is no single standard list; the literature uses two conventions. Narrow (Dumaz et al. 2014, abstract): 70% of melanoma KIT mutations lie in four hotspots shown to be oncogenic drivers: L576 (exon 11), K642 (exon 13), W557-V560 (exon 11) and D816-A829 (exon 17, ending at the first codon of exon 18); the authors say testing should concentrate on these. Broad (clinical trials and reviews): any mutation in the screened exons 9, 11, 13, 17 and 18. Exons 11, 13 and 17 dominate: exon 11 is about 50-60% of cases (L576P alone about 30%; also V559A/D, W557R, D579H and deletions affecting W557/K558); exon 13 carries K642E (10-15%), plus V654A and S628N; exon 17 carries D816, D820Y and N822I/K/Y (about 5-10%); exon 18 entries in the reviews' catalogue are A829P, P838L and V852I. Exon 9 mutations are rare in melanoma (absent in the early Bastian series, 0-9% in trial cohorts). L576P and K642E together are over half of all melanoma KIT mutations and are the prototypical hotspots; outside them is a long tail of rare variants. Exon 11 in-frame indels: yes, they are counted as activating alongside missense substitutions. The 2025 review lists deletions affecting W557/K558 with the exon 11 substitutions as disrupting the juxtamembrane auto-inhibitory segment; Beadling et al. reported an exon 11 in-frame deletion and an exon 11 insertion/duplication in melanoma, Torres-Cabala two exon 11 insertions, and the pooled catalogue includes Y570_L576del (exon 11), Y503delinsFAH (exon 9) and R815_D816delinsS (exon 17). They are uncommon in melanoma, where KIT mutations are almost all missense (unlike GIST, where exon 11 in-frame deletions predominate). So In_Frame_Del / In_Frame_Ins rows in exon 11 belong in a hotspot count; frameshift and nonsense KIT calls are not activating. HOW SURE: medium (high for the exons, codons and inclusion of exon 11 in-frame indels; the web shows no single agreed 'standard' list, and for Dumaz et al. only the abstract was readable). SOURCES: https://doi.org/10.1097/cmr.0000000000000116, https://pmc.ncbi.nlm.nih.gov/articles/PMC12650433/, https://pmc.ncbi.nlm.nih.gov/articles/PMC7329741/, https://pmc.ncbi.nlm.nih.gov/articles/PMC3935736/."
+        },
+        {
+          "question": "In somatic MAF files, what do the Variant_Classification values 'Targeted_Region' and 'Frame_Shift' (without _Ins or _Del) denote, and are they conventionally treated as protein-altering when counting non-silent mutations per gene?",
+          "answer": "Targeted_Region is a legal value in the TCGA MAF v2.4.1 specification and is allowed in open-access somatic MAFs, but the spec gives it no precise definition (the nearest text is 'indels that overlap ... the targeted region of a genetic element of interest'). In vcf2maf it is the catch-all: 'Annotate everything else simply as a targeted region' (TFBS or regulatory-region ablation/amplification, feature elongation/truncation). Before a 2016 fix, complex in-frame delins that VEP labels protein_altering_variant also fell into it, so a Targeted_Region row can be a real coding change. Tools disagree on counting it: cBioPortal's default import filter removes only Silent, Intron, IGR, 3'UTR, 5'UTR, 3'Flank and 5'Flank, so Targeted_Region is kept and shown as a mutation; maftools' default non-silent list (Frame_Shift_Del, Frame_Shift_Ins, Splice_Site, Translation_Start_Site, Nonsense_Mutation, Nonstop_Mutation, In_Frame_Del, In_Frame_Ins, Missense_Mutation) excludes it and treats everything else as silent. So it is not conventionally in the protein-altering set, but it is not safely silent either; judge each row by its protein change and Variant_Type and report counts with and without it. Bare 'Frame_Shift' is not in the TCGA spec's enumerated values nor in cBioPortal's allowed list, and no page I read defines it: the web does not settle this one. By name it is a frameshift indel whose _Ins/_Del suffix is missing, which is biologically protein-altering (truncating), but any exact-match filter built from the standard list (maftools default included) would silently drop it. Recommended handling: count it as protein-altering for any-non-silent counts, never as an activating hotspot.",
+          "sources": [
+            "https://docs.gdc.cancer.gov/Encyclopedia/pages/Mutation_Annotation_Format_TCGAv2/",
+            "https://github.com/mskcc/vcf2maf/issues/33",
+            "https://github.com/cBioPortal/cbioportal/blob/master/docs/File-Formats.md",
+            "https://rdrr.io/bioc/maftools/src/R/read_maf_dt.R"
+          ],
+          "confidence": "medium for Targeted_Region (definitions and tool defaults read directly); low for bare Frame_Shift (non-standard value, not defined on any page read; interpretation is by name only)",
+          "deliveries": {
+            "bd24-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-0159ad433b64"
+            },
+            "bd24-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-902a965efaef"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In somatic MAF files, what do the Variant_Classification values 'Targeted_Region' and 'Frame_Shift' (without _Ins or _Del) denote, and are they conventionally treated as protein-altering when counting non-silent mutations per gene? ANSWER: Targeted_Region is a legal value in the TCGA MAF v2.4.1 specification and is allowed in open-access somatic MAFs, but the spec gives it no precise definition (the nearest text is 'indels that overlap ... the targeted region of a genetic element of interest'). In vcf2maf it is the catch-all: 'Annotate everything else simply as a targeted region' (TFBS or regulatory-region ablation/amplification, feature elongation/truncation). Before a 2016 fix, complex in-frame delins that VEP labels protein_altering_variant also fell into it, so a Targeted_Region row can be a real coding change. Tools disagree on counting it: cBioPortal's default import filter removes only Silent, Intron, IGR, 3'UTR, 5'UTR, 3'Flank and 5'Flank, so Targeted_Region is kept and shown as a mutation; maftools' default non-silent list (Frame_Shift_Del, Frame_Shift_Ins, Splice_Site, Translation_Start_Site, Nonsense_Mutation, Nonstop_Mutation, In_Frame_Del, In_Frame_Ins, Missense_Mutation) excludes it and treats everything else as silent. So it is not conventionally in the protein-altering set, but it is not safely silent either; judge each row by its protein change and Variant_Type and report counts with and without it. Bare 'Frame_Shift' is not in the TCGA spec's enumerated values nor in cBioPortal's allowed list, and no page I read defines it: the web does not settle this one. By name it is a frameshift indel whose _Ins/_Del suffix is missing, which is biologically protein-altering (truncating), but any exact-match filter built from the standard list (maftools default included) would silently drop it. Recommended handling: count it as protein-altering for any-non-silent counts, never as an activating hotspot. HOW SURE: medium for Targeted_Region (definitions and tool defaults read directly); low for bare Frame_Shift (non-standard value, not defined on any page read; interpretation is by name only). SOURCES: https://docs.gdc.cancer.gov/Encyclopedia/pages/Mutation_Annotation_Format_TCGAv2/, https://github.com/mskcc/vcf2maf/issues/33, https://github.com/cBioPortal/cbioportal/blob/master/docs/File-Formats.md, https://rdrr.io/bioc/maftools/src/R/read_maf_dt.R."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd24-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd24-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd24-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd24-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd24-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 121.85799308295827,
+      "cost_usd": 0.2429781,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 96.64847100002225,
+      "cost_usd": 0.1500033,
+      "error": null
+    },
+    {
+      "agent": "bd24-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 163.7521550420206,
+      "cost_usd": 0.30198,
+      "error": null
+    },
+    {
+      "agent": "bd24-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 207.55565195798408,
+      "cost_usd": 0.30421370000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 150.28196620894596,
+      "cost_usd": 0.3285916,
+      "error": null
+    },
+    {
+      "agent": "bd24-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 224.11948133306578,
+      "cost_usd": 0.6055688,
+      "error": null
+    },
+    {
+      "agent": "bd24-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 242.58651808300056,
+      "cost_usd": 0.41612390000000005,
+      "error": null
+    },
+    {
+      "agent": "bd24-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 292.0606264169328,
+      "cost_usd": 0.5880949,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

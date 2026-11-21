@@ -1,0 +1,355 @@
+{
+  "study": "bd32",
+  "status": "replicated",
+  "final": {
+    "agent": "bd32-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd32/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd32-library": "opus",
+    "bd32-team-a": "opus",
+    "bd32-team-b": "opus",
+    "bd32-team-c": "opus",
+    "bd32-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd32-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd32/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd32-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd32/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd32-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd32/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd32-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd32/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd32-team-a",
+        "bd32-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd32-team-a",
+        "bd32-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "'Associated DCIS and IDC-NST' refers to lesions from the same patient as the JP. Check PATIENT_ID/SAMPLE_ID in data_clinical_sample.txt to see which samples share a patient. If only one patient has JP, DCIS and IDC together, make the main comparison within that patient. It is a single matched trio, so describe it rather than test it statistically. Use JP samples from other patients only as context. Pooling them against one patient's DCIS/IDC mixes up patient with lesion type.",
+      "from": [
+        "sl-dev-panel-noise-lab2-2ade7208facb"
+      ],
+      "reason": "This sets which samples get compared. Pooling across patients would give a confounded result.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-b6ff2f44cee5"
+      }
+    },
+    {
+      "text": "data_cna_hg19.seg holds segment-level log2 copy ratios per sample, so copy-number burden can be computed from it directly. TMB_NONSYNONYMOUS and other mutation-count columns measure mutations, not copy number, and are not a stand-in for CNA burden.",
+      "from": [
+        "sl-dev-panel-noise-lab2-5140a5bfecf2"
+      ],
+      "reason": "This stops the team from using the wrong variable, or from wrongly deciding that no CNA data exist.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-12b75531cae4"
+      }
+    },
+    {
+      "text": "'Number of CNAs' can be measured several ways: raw segment count, count of segments with |seg.mean| above a threshold (try 0.1, 0.2 and 0.3), or length-weighted fraction of genome altered. These can rank samples differently, and when segment means are small a borderline threshold can flip the ranking. Compute several metrics and thresholds, report all of them, and only make a directional claim if the ordering holds across them. Otherwise say the result depends on the metric or threshold.",
+      "from": [
+        "sl-dev-panel-noise-lab2-f7385a2d5264",
+        "sl-dev-panel-noise-lab2-f7cb8be300ad"
+      ],
+      "reason": "The verdict could depend on the metric chosen, so the team needs to check that the result is robust.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-2b20449cac87"
+      }
+    },
+    {
+      "text": "Segmentation noise produces short segments with few markers (small num.mark) and neighbouring segments with nearly identical means. This inflates raw segment counts in noisier samples. Check num.mark per sample. Prefer counts of altered segments with enough markers, or length-weighted fraction of genome altered, over raw segment counts.",
+      "from": [
+        "sl-dev-panel-noise-lab2-a872c1aea6da"
+      ],
+      "reason": "Raw segment counts may reflect data quality rather than biology, which could produce a spurious difference between lesions.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-0bc3bdf541c9"
+      }
+    },
+    {
+      "text": "Low tumour purity, which is common in small in-situ or papillary lesions, pulls log2 ratios toward 0, so a fixed threshold misses CNAs in that sample. Compare the spread of seg.mean and the mutation VAFs (t_alt_count/(t_alt_count+t_ref_count) in data_mutations.txt) across the compared samples. If one sample looks much lower in purity, read its lower CNA count with caution.",
+      "from": [
+        "sl-dev-panel-noise-lab2-32d4705eed60"
+      ],
+      "reason": "Differences in purity can create or hide an apparent difference in CNA burden between lesion types.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-73ccd04a054c"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 4,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treated JuP1 and JuP2 as JP lesions, but the clinical table labels every sample, including JuP1/JuP2, only as 'Invasive Breast Carcinoma'; nothing in the data states the histology of JuP1/JuP2.",
+      "Both teams took seg.mean at face value as a log2 ratio centred on 0 with the same scale in every sample. Neither checked per-sample centring/ploidy, and neither checked whether a flat JP profile could come from low tumour purity rather than true copy-number neutrality.",
+      "Both teams counted CNAs as altered segments or FGA from a fixed |seg.mean| cutoff, and included chromosome 23 (X) segments without checking how the X is handled."
+    ],
+    "unused_evidence": [
+      "data_mutations.txt: neither team used the mutation calls (JP has 3 vs 42/35 in DCIS/IDC). These could serve as an independent check on whether the JP sample is low in tumour content, or on clonal relatedness to the DCIS/IDC.",
+      "Clinical TMB_NONSYNONYMOUS (JP 0.1 vs 1.4/1.17): unused as a purity or sanity signal.",
+      "num.mark per segment: team A only checked a >=10 filter, and neither weighted segments by marker support."
+    ],
+    "unresolved_weak_points": [
+      "Team A named JP purity as its weakest point and only reported it as a caveat (allele counts empty). It was not resolved.",
+      "Team B named n=1 and arbitrary cutoffs. It ran threshold sensitivity but did not check whether the 0.1 cutoff sits above the noise level of each sample."
+    ],
+    "second_readings": [
+      "'High number of CNAs' could be read in absolute terms (JP carries many CNAs), not only relative to DCIS/IDC. The comparative clause makes the relative reading primary, so this is a minor point.",
+      "'Associated DCIS and IDC-NST' refers only to lesions from the same patient (JuP3). JuP1/JuP2 cannot inform the comparison, and the label rests entirely on the single trio."
+    ],
+    "verdict": "Moderately high trust in 'False': both teams find JP lowest on every metric within the matched trio, and the raw segment counts point the same way. The main untested risk is that the JP sample has low tumour purity, which would argue for 'Not verifiable' rather than 'True'.",
+    "questions": [
+      {
+        "to": "bd32-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your weakest point was JP purity. Allele counts are empty, so can you use the per-sample spread of seg.mean on large segments (for example, whether JP shows any arm-level shifts at the same loci altered in DCIS/IDC, at reduced amplitude) to tell low purity apart from a truly copy-neutral genome? Does that result change whether 'False' or 'Not verifiable' is the right label?",
+        "from": [
+          "sl-dev-panel-noise-lab2-7b4fabc8c34c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-33f31fe12b60"
+      },
+      {
+        "to": "bd32-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Does anything in the data establish that JuP1 and JuP2 are JP lesions (the clinical table calls all samples 'Invasive Breast Carcinoma')? If not, does dropping them as context change your reasoning?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-43778f7cec11"
+      },
+      {
+        "to": "bd32-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Did you check whether the JuP3-JP profile is flat because of low tumour content? For example, compare the segment breakpoints and signs in JP with those in DCIS/IDC at the same loci. If JP shares the DCIS/IDC events at damped amplitude, does your count-based conclusion still hold?",
+        "from": [
+          "sl-dev-panel-noise-lab2-eca35683a4d9"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-10785f8e4d37"
+      },
+      {
+        "to": "bd32-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Estimate a per-sample noise level (for example, the SD of seg.mean for segments near 0, or the residual spread) and recompute the counts with sample-specific cutoffs, and also with chromosome 23 excluded. Does the JP < DCIS/IDC ordering survive, and does that change the method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-e278215fbe20"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In whole-exome copy-number segmentation, how does low tumour purity affect segment log2 ratios and the number of segments that exceed a fixed calling threshold, and what methods estimate purity from segmented log2 data alone when allele counts are missing?",
+          "why": "Both teams' 'False' assumes the JP sample's flat profile reflects biology. Neither team showed it knew how to rule out dilution by normal cells.",
+          "passed": false,
+          "reasons": [
+            "contains another team's value for \"label\""
+          ]
+        },
+        {
+          "question": "What thresholds on segment mean log2 ratio are conventionally used to call gains and losses from exome-derived segmentation, and should they be adjusted per sample for noise or ploidy?",
+          "why": "Both teams used fixed cutoffs of 0.1/0.2/0.3 without justification. The lowest cutoff gave a tie for JP.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "What thresholds on segment mean log2 ratio are conventionally used to call gains and losses from exome-derived segmentation, and should they be adjusted per sample for noise or ploidy?",
+          "answer": "No single standard exists. (1) GISTIC2 default noise thresholds are -ta/-td = 0.1, so |log2| > 0.1 counts as gain or loss. Broad Firehose/TCGA runs use 0.1, and some (e.g. low-pass) runs use 0.3. (2) CNVkit 'call -m threshold' defaults to -1.1 / -0.25 / 0.2 / 0.7: deep deletion < -1.1, loss < -0.25, gain >= 0.2, amplification >= 0.7. These are set to work down to about 50% purity and favour sensitivity. (3) For genemetrics, the CNVkit docs suggest 0.1 or 0.2 if you will filter downstream, otherwise 0.3. In a pure diploid sample a single-copy gain is +0.585 and a single-copy loss is -1.0. Purity, ploidy and subclonality shrink these values toward 0. On adjustment: tool authors and teaching material say thresholds should depend on the sample. CNVkit's author advises rescaling with --purity/--ploidy (clonal method), or moving the cutoffs closer to 0 when purity is low or unknown, plus filtering segments by confidence interval (segmetrics --ci, call --filter ci). GISTIC sets its high-level thresholds per sample from arm-level median copy number, which approximates hemizygous level given purity and ploidy. The CRUK copy-number lecture describes per-sample thresholds based on each sample's variability. So 0.1/0.2/0.3 are all defensible conventions (0.1 is GISTIC's default, about 0.2-0.25 is CNVkit's). A comparison that ties or flips across them is threshold-sensitive and should not be read as a clear difference unless per-sample noise or purity is accounted for.",
+          "sources": [
+            "https://broadinstitute.github.io/gistic2/",
+            "https://cnvkit.readthedocs.io/en/stable/calling.html",
+            "https://www.biostars.org/p/242323/",
+            "https://biology.stackexchange.com/questions/34704/how-copy-number-variation-thresholds-are-defined-in-gistic",
+            "https://bioinformatics-core-shared-training.github.io/cruk-summer-school-2017/Day2/copy_number_lecture.pdf"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd32-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-49c37e98613f"
+            },
+            "bd32-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-17b7d32ccd4c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What thresholds on segment mean log2 ratio are conventionally used to call gains and losses from exome-derived segmentation, and should they be adjusted per sample for noise or ploidy? ANSWER: No single standard exists. (1) GISTIC2 default noise thresholds are -ta/-td = 0.1, so |log2| > 0.1 counts as gain or loss. Broad Firehose/TCGA runs use 0.1, and some (e.g. low-pass) runs use 0.3. (2) CNVkit 'call -m threshold' defaults to -1.1 / -0.25 / 0.2 / 0.7: deep deletion < -1.1, loss < -0.25, gain >= 0.2, amplification >= 0.7. These are set to work down to about 50% purity and favour sensitivity. (3) For genemetrics, the CNVkit docs suggest 0.1 or 0.2 if you will filter downstream, otherwise 0.3. In a pure diploid sample a single-copy gain is +0.585 and a single-copy loss is -1.0. Purity, ploidy and subclonality shrink these values toward 0. On adjustment: tool authors and teaching material say thresholds should depend on the sample. CNVkit's author advises rescaling with --purity/--ploidy (clonal method), or moving the cutoffs closer to 0 when purity is low or unknown, plus filtering segments by confidence interval (segmetrics --ci, call --filter ci). GISTIC sets its high-level thresholds per sample from arm-level median copy number, which approximates hemizygous level given purity and ploidy. The CRUK copy-number lecture describes per-sample thresholds based on each sample's variability. So 0.1/0.2/0.3 are all defensible conventions (0.1 is GISTIC's default, about 0.2-0.25 is CNVkit's). A comparison that ties or flips across them is threshold-sensitive and should not be read as a clear difference unless per-sample noise or purity is accounted for. HOW SURE: high. SOURCES: https://broadinstitute.github.io/gistic2/, https://cnvkit.readthedocs.io/en/stable/calling.html, https://www.biostars.org/p/242323/, https://biology.stackexchange.com/questions/34704/how-copy-number-variation-thresholds-are-defined-in-gistic, https://bioinformatics-core-shared-training.github.io/cruk-summer-school-2017/Day2/copy_number_lecture.pdf."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd32-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd32-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd32-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd32-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd32-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 88.91630704200361,
+      "cost_usd": 0.3953354,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 54.15283554198686,
+      "cost_usd": 0.16858560000000003,
+      "error": null
+    },
+    {
+      "agent": "bd32-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 30.505674415966496,
+      "cost_usd": 0.10604240000000001,
+      "error": null
+    },
+    {
+      "agent": "bd32-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 101.57044091704302,
+      "cost_usd": null,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 52.13788016594481,
+      "cost_usd": 0.18233180000000004,
+      "error": null
+    },
+    {
+      "agent": "bd32-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 70.31714033405297,
+      "cost_usd": 0.29161519999999996,
+      "error": null
+    },
+    {
+      "agent": "bd32-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 90.28647258295678,
+      "cost_usd": 0.34235299999999996,
+      "error": null
+    },
+    {
+      "agent": "bd32-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 101.01546920789406,
+      "cost_usd": 0.3769968,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

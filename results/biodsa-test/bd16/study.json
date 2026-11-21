@@ -1,0 +1,403 @@
+{
+  "study": "bd16",
+  "status": "replicated",
+  "final": {
+    "agent": "bd16-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd16/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd16-library": "fable",
+    "bd16-team-a": "fable",
+    "bd16-team-b": "fable",
+    "bd16-team-c": "fable",
+    "bd16-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd16-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd16/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd16-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd16/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd16-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd16/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd16-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd16/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd16-team-a",
+        "bd16-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd16-team-a",
+        "bd16-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Tumour purity (the fraction of the bulk sample that is tumour cells) can drive both variables in a TERT-promoter-mutation vs TERT-mRNA comparison, so check it before interpreting any difference. Low purity lowers variant allele fraction, so somatic calls (including TERT promoter calls) are missed; it also dilutes the mRNA of a tumour-cell-specific gene such as TERT, which normal brain and immune cells do not express. Low-purity samples therefore tend to land in the 'no promoter call' group with low TERT expression for reasons unrelated to promoter biology, which can create or enlarge an apparent 'mutant is higher' difference. This acts in the OPPOSITE direction to the bias from hidden mutants sitting in the no-call group (which shrinks the difference), so neither a positive nor a null result is automatically safe: a difference seen in called mutants should not be credited as 'seen despite dilution' until purity has been checked. Check: the clinical tables are reported to have no purity column (confirm by scanning their headers), so build a per-sample purity proxy from the data: (i) the amplitude of clonal arm-level copy-number events in data_cna_hg19.seg, e.g. absolute seg.mean of chromosome 10 loss or chromosome 7 gain, or of a CDKN2A deep deletion; (ii) the variant allele fraction, t_alt_count / (t_alt_count + t_ref_count), of the sample's other clonal mutations in data_mutations.txt; (iii) TMB_NONSYNONYMOUS. Compare the proxy between promoter-called and no-call samples, and correlate it with TERT expression. If the groups differ in the proxy, or the proxy correlates with TERT expression: keep the unadjusted comparison as the headline result, then add a purity-adjusted check (rank regression or a logistic model with the proxy as covariate, or restriction to samples above a purity-proxy threshold) and state whether the direction and size of the difference hold. Do not present a difference that vanishes after adjustment as proof of promoter-driven elevation, and do not present a null found in low-purity data as support for 'no correlation'.",
+      "from": [
+        "sl-biodsa-test-28bba317a24d"
+      ],
+      "reason": "This is the only library finding the team does not yet hold, and it changes how the result must be read: the guidance the team already has says misclassification in the no-call group biases toward zero, so a mutant-vs-rest difference would look conservative. Purity confounding pushes the other way and could manufacture that difference, so the team needs a purity-proxy comparison and an adjusted sensitivity analysis before settling on a label.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-2d5aec94c2bd"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams concluded that the absence of TERT promoter calls means 'promoter not assayed / not loaded' rather than 'assayed and none found'. Neither showed this from the data: team A leaned on an outside expected prevalence, team B on the outside statement that exome capture does not cover the promoter. The mutation file itself was not interrogated for what territory was callable (it does hold 5'UTR, 5'Flank, 3'Flank, Intron and RNA rows, plus is_coding / is_flank / categ / DISTANCE / gc_content / t_depth columns).",
+      "Both teams used outside knowledge asymmetrically: accepted to declare the promoter unassayed, refused when it would link IDH/G-CIMP status to promoter status. The rule for when outside knowledge may enter was never written down before the result was seen.",
+      "Both teams read 'mRNA expression' as TERT mRNA only and 'elevated' as mutant-versus-non-mutant within the cohort; neither stated or tested another reading.",
+      "Both teams read the label rule 'the data hold no relevant variables or tables' as 'one of the two needed variables is missing'. The data do hold a mutation table and a TERT mRNA row, so the label depends on how that rule is read; neither team tested whether its label survives the other reading.",
+      "The two teams were not fully independent: the lab's own passed-down notes (library pitfalls and the director's notes to team A) already said that zero promoter rows plus no clinical TERT column implies the label both teams chose, so agreement partly reflects a shared prior."
+    ],
+    "unused_evidence": [
+      "Mutation-file annotation columns is_coding, is_flank, categ, DISTANCE, gc_content, t_depth/n_depth and the split into two row sources (13,957 rows with Broad annotation, 2,368 rows with those columns blank, the latter from 34 samples whose SAMPLE_TYPE is also blank). They can show from inside the data whether upstream/non-coding territory was ever in the call set. Neither team cited them.",
+      "mRNA rows for other telomere-maintenance genes (TERC, ATRX, DAXX are all present in the RNA-seq table). Team B dropped the ATRX proxy because the mutation file has only one ATRX mutation, but did not look at ATRX/DAXX expression; team A looked at none of them.",
+      "The two z-score expression files (reference = all samples; reference = diploid samples). Both teams only confirmed the TERT row exists. They are the study's own definition of 'elevated' relative to a reference group.",
+      "data_cna_hg19.seg: used by neither team (only the gene-level GISTIC and linear values at TERT). Segment breakpoints at chr5p15.33 could mark focal events next to TERT; this bears on other routes of TERT activation, not on promoter mutation status, so it is unlikely to change the label.",
+      "Clinical IDH1_MUTATION (31 mutants among 423 with a value) and G_CIMP_METHYLATION (42 G-CIMP among 532): team A took IDH status from the exome file only (8 mutants among 146); the clinical columns cover more samples. EXPRESSION_SUBTYPE, METHYLATION_STATUS and AGE were not used by team A.",
+      "RPPA tables: no TERT, ATRX or DAXX antibody; correctly irrelevant."
+    ],
+    "unresolved_weak_points": [
+      "Team A named the choice between its label and a proxy-based answer as its weakest point and did not resolve it: it declined to build any proxy and gave no pre-stated criterion for when a recorded variable would count as 'relevant'.",
+      "Team B named the same point (a reader accepting IDH1/G-CIMP as a stand-in could reach the opposite label), reported it with confidence 0.6, and did not resolve it: no check of how well any recorded variable could separate promoter-mutant from promoter-wild-type tumours, and the proxy group is 8 tumours.",
+      "Team A listed purity confounding and 'null is not support' as not testable; that is reported, not resolved, but it only matters if a mutant group exists.",
+      "Team B left an internal discrepancy unexplained: TERT copy number versus mRNA is null on the GISTIC scale but nominally significant on the linear scale."
+    ],
+    "second_readings": [
+      "'mRNA expression' names no gene. Read as TERT mRNA (both teams) it needs promoter status; no other reading makes the claim testable without promoter status, so this does not open a new route.",
+      "'Elevated' could mean higher than in non-mutant tumours (both teams) or higher than a reference (the z-score files). Either way promoter status is needed.",
+      "'Do not correlate' is a negative claim. If the no-call samples were taken as truly wild-type there would be no mutant group and no correlation could be computed; the teams did not say which label that situation maps to.",
+      "The label rule can be read strictly (a mutation table and an expression table exist, so the claim must be judged True or False) or by variable (the specific promoter-status variable is absent). The task's own example (no mutational-burden variable) fits the by-variable reading the teams used."
+    ],
+    "verdict": "Moderate-to-high trust in the agreed answer: I confirmed from the file layout that every mutation row is GRCh37, chromosome labels are uniform, no row lies near the promoter hotspots and neither clinical table has a TERT field, so the missing variable is real. What remains untested is the step from 'no calls' to 'not assayed' (argued from outside knowledge only), the unresolved proxy question both teams named, and the fact that the lab's own passed-down notes pointed both teams to this label, so the agreement is less independent than it looks.",
+    "questions": [
+      {
+        "to": "bd16-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You concluded the promoter was 'not assayed or not loaded' from an outside expected prevalence, not from the files. Run this check on data_mutations.txt: cross-tabulate Variant_Classification against is_coding, is_flank and categ; for every 5'Flank, 5'UTR, 3'Flank, Intron and RNA row list DISTANCE, gc_content and t_depth; and do it separately for the rows with Broad annotation and the rows where those columns are blank (34 samples). Does the file itself show whether upstream, GC-rich territory was inside the call set? Then state whether your label would be the same under 'promoter never assayed' and under 'assayed, no mutation found in any sample', and whether the result changes your method.",
+        "from": [
+          "sl-biodsa-test-12b5d112cdd1"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-86179be549ee"
+      },
+      {
+        "to": "bd16-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your weakest point (label versus a proxy-based answer) was reported, not resolved, and your context analysis took IDH status from the exome file only. Run this check: using the clinical IDH1_MUTATION and G_CIMP_METHYLATION columns, restrict to RNA-seq samples that are IDH-wild-type and non-G-CIMP, and describe the TERT mRNA distribution there (share at zero, whether it splits into two groups); then test whether any recorded variable marks the low/zero group (ATRX, DAXX and TERC mRNA rows, EXPRESSION_SUBTYPE, METHYLATION_STATUS, AGE, TERT copy number). Before reading the result, write down what a recorded variable would have to show to count as a 'relevant variable' for promoter status. Does the result change your method?",
+        "from": [
+          "sl-biodsa-test-60e62ac1ec88"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-5019282676e7"
+      },
+      {
+        "to": "bd16-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The task's label rule speaks of 'relevant variables or tables', and the hypothesis says 'elevated mRNA expression' without naming a gene or a reference. Run this check: list each table and column the claim could draw on under each reading (TERT mRNA versus other genes; elevated versus non-mutant tumours versus elevated against the reference in the two z-score files, whose TERT rows you only confirmed exist), and for each reading say whether a promoter-status variable is still required. Is there any reading under which the data can judge the claim, and does that change your method?",
+        "from": [
+          "sl-biodsa-test-99d5dd8ede6b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-8eeb9c3817a0"
+      },
+      {
+        "to": "bd16-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your statement that exome capture does not assay the promoter comes from outside the files. Run this check on data_mutations.txt: cross-tabulate Variant_Classification against is_coding, is_flank and categ; for every 5'Flank, 5'UTR, 3'Flank, Intron and RNA row list DISTANCE, gc_content and t_depth; and repeat separately for your two mutation sources (257 and 34 samples). Does the file itself show whether upstream, GC-rich territory was inside the call set of either source? Then state whether your label would be the same under 'promoter never assayed' and under 'assayed, no mutation found in any sample', and whether the result changes your method.",
+        "from": [
+          "sl-biodsa-test-1c3be4c942f2",
+          "sl-biodsa-test-3ecc4a769daa"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-9ec78cceca67"
+      },
+      {
+        "to": "bd16-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your weakest point is that a reader accepting IDH1/G-CIMP as a stand-in could reach a different label; you reported it at confidence 0.6 without resolving it. Run this check: within RNA-seq samples that are IDH1-wild-type and non-G-CIMP, describe the TERT mRNA distribution (share at zero, whether it splits into two groups) and test whether any recorded variable marks the low/zero group (ATRX, DAXX and TERC mRNA rows, which you did not use when you dropped the ATRX mutation proxy; METHYLATION_STATUS; AGE; TERT copy number). Before reading the result, write down what a recorded variable would have to show to count as a 'relevant variable' for promoter status, and say why outside knowledge is admitted for 'the promoter was not assayed' but not for the proxy. Does the result change your method?",
+        "from": [
+          "sl-biodsa-test-4b39112c36f2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-55c2741ebc53"
+      },
+      {
+        "to": "bd16-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Two loose ends in your record. (1) TERT copy number versus mRNA is null on the GISTIC scale but nominally significant on the linear scale: check whether that is carried by a few samples (inspect the linear values and the chr5p15.33 segments in data_cna_hg19.seg for those samples) and say whether it matters for the claim. (2) Your plan named the z-score files but your method used only log2(RSEM+1): check what 'elevated' means against the reference in each z-score file for TERT and whether any reading of 'elevated mRNA expression' can be judged without a promoter-status variable. Does either result change your method?",
+        "from": [
+          "sl-biodsa-test-34068575ac77"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-1295231756e1"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "Do the whole-exome capture designs in common use around 2009-2013 (for example Agilent SureSelect All Exon versions) include bait coverage of the TERT core promoter hotspot positions (the C228T and C250T sites, about 124 and 146 bp upstream of the start codon), and do exome-derived somatic call sets from that period usually report calls there?",
+          "why": "Both teams asserted, without data, that a missing promoter call in an exome-profiled sample means 'not assayed'. Whether exome capture reaches those positions decides if no-call samples are unknown or wild-type.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In MAF files produced by the Broad Institute MutSig / Oncotator pipeline, what do the columns is_coding, is_flank and categ mean, and does a file in which every row has is_coding = 1 and is_flank = 0 indicate that calls outside coding territory (including promoters) were filtered out before the file was released?",
+          "why": "These columns exist in the mutation table and neither team used them. If they mark a coding-only filter, they give in-data proof that promoter calls were excluded by design rather than absent.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In adult diffuse high-grade gliomas, how accurately do IDH-wild-type status, absence of the G-CIMP methylation phenotype, or retained ATRX expression predict the presence of a TERT promoter mutation (reported sensitivity, specificity and the fraction of IDH-wild-type tumours that are promoter-wild-type)?",
+          "why": "Both teams named the proxy question as their weakest point and left it open. Published misclassification rates would show whether any recorded variable can defensibly stand in for promoter status.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "Do the whole-exome capture designs in common use around 2009-2013 (for example Agilent SureSelect All Exon versions) include bait coverage of the TERT core promoter hotspot positions (the C228T and C250T sites, about 124 and 146 bp upstream of the start codon), and do exome-derived somatic call sets from that period usually report calls there?",
+          "answer": "Exome data of the 2009-2013 era do not give usable genotypes at the TERT promoter hotspots (hg19 chr5:1295228 C228T, chr5:1295250 C250T), so a sample with exome sequencing and no promoter call is 'not assayed / unknown', not wild-type. Evidence read: (a) Agilent's 2021 announcement of SureSelect Human All Exon V8 advertises that V8 'covers the TERT promoter and hard-to-capture exons that are omitted by other exomes on the market', i.e. earlier designs did not target it (no V1-V4/50Mb bait BED file was inspected, so the literal bait statement is inferred, not checked). (b) The TCGA glioblastoma 2013 paper used Agilent SureSelect Human All Exon 50 Mb for its 291 exomes but genotyped the TERT promoter only from whole-genome sequencing: of 42 WGS cases just 25 had adequate promoter coverage (>10 reads), 21 of 25 mutant (15 C228T, 6 C250T). (c) The TCGA pan-glioma 2016 paper took TERT promoter calls from targeted sequencing (n=287) plus WGS (n=42), not exomes, and lists promoter status as unknown for 434 of 520 IDH-wild-type cases. (d) The promoter is >80% GC; even a targeted panel with baits on it missed all 17 Sanger-confirmed mutations in 25 glioblastomas at auto-filter settings (mean depth about 21). (e) Independently of coverage, TCGA open-access somatic MAF policy excludes unvalidated calls classed 5'Flank/UTR/Intron/IGR, so exome-derived public call sets of that period do not report promoter calls.",
+          "sources": [
+            "https://www.agilent.com/about/newsroom/presrel/2021/02jun-ca21013.html",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3910500/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4754110/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8756133/",
+            "https://docs.gdc.cancer.gov/Encyclopedia/pages/Mutation_Annotation_Format_TCGAv2/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd16-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-a8a13f4715a5"
+            },
+            "bd16-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-f8376e50bda5"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Do the whole-exome capture designs in common use around 2009-2013 (for example Agilent SureSelect All Exon versions) include bait coverage of the TERT core promoter hotspot positions (the C228T and C250T sites, about 124 and 146 bp upstream of the start codon), and do exome-derived somatic call sets from that period usually report calls there? ANSWER: Exome data of the 2009-2013 era do not give usable genotypes at the TERT promoter hotspots (hg19 chr5:1295228 C228T, chr5:1295250 C250T), so a sample with exome sequencing and no promoter call is 'not assayed / unknown', not wild-type. Evidence read: (a) Agilent's 2021 announcement of SureSelect Human All Exon V8 advertises that V8 'covers the TERT promoter and hard-to-capture exons that are omitted by other exomes on the market', i.e. earlier designs did not target it (no V1-V4/50Mb bait BED file was inspected, so the literal bait statement is inferred, not checked). (b) The TCGA glioblastoma 2013 paper used Agilent SureSelect Human All Exon 50 Mb for its 291 exomes but genotyped the TERT promoter only from whole-genome sequencing: of 42 WGS cases just 25 had adequate promoter coverage (>10 reads), 21 of 25 mutant (15 C228T, 6 C250T). (c) The TCGA pan-glioma 2016 paper took TERT promoter calls from targeted sequencing (n=287) plus WGS (n=42), not exomes, and lists promoter status as unknown for 434 of 520 IDH-wild-type cases. (d) The promoter is >80% GC; even a targeted panel with baits on it missed all 17 Sanger-confirmed mutations in 25 glioblastomas at auto-filter settings (mean depth about 21). (e) Independently of coverage, TCGA open-access somatic MAF policy excludes unvalidated calls classed 5'Flank/UTR/Intron/IGR, so exome-derived public call sets of that period do not report promoter calls. HOW SURE: medium. SOURCES: https://www.agilent.com/about/newsroom/presrel/2021/02jun-ca21013.html, https://pmc.ncbi.nlm.nih.gov/articles/PMC3910500/, https://pmc.ncbi.nlm.nih.gov/articles/PMC4754110/, https://pmc.ncbi.nlm.nih.gov/articles/PMC8756133/, https://docs.gdc.cancer.gov/Encyclopedia/pages/Mutation_Annotation_Format_TCGAv2/."
+        },
+        {
+          "question": "In MAF files produced by the Broad Institute MutSig / Oncotator pipeline, what do the columns is_coding, is_flank and categ mean, and does a file in which every row has is_coding = 1 and is_flank = 0 indicate that calls outside coding territory (including promoters) were filtered out before the file was released?",
+          "answer": "In MutSig output MAFs (final_analysis_set.maf style) is_coding, is_flank and categ are helper columns MutSig adds itself; they are labels derived from Variant_Classification, not a record of a filter. MutSig2CV source (add_helper_is_fields.m): is_coding is TRUE when the mutation type matches indel|read-through|de novo|start|stop|missense|nonsense|silent|splice|synon|frame|shift|nonstop and is forced FALSE when it matches IGR|flank|UTR|intron|promoter|unknown|non-coding|mismatch|^RNA; is_flank is defined simply as NOT is_coding (so it means 'any non-coding call', and a promoter/5'Flank row would be is_coding=0, is_flank=1). categ is the index of the mutation-context category used in the background model: in MutSigCV 1.x 1=CpG transitions, 2=CpG transversions, 3=C:G transitions, 4=C:G transversions, 5=A:T transitions, 6=A:T transversions, 7=null+indel; in MutSig2CV the categories are discovered per run (default k=5) and defined in mutcategs.txt, so the numbering is run-specific. MutSig itself does NOT strip non-coding calls inside gene footprints (it keeps them as effect 'ncd' for background-rate estimation and drops only intergenic/unknown-gene rows, rows outside target intervals, duplicate patients, blacklisted sites and poorly covered genes); it uses each patient's fraction of is_flank rows to infer the coverage model: 0 = 'coding only' (fracflank < 0.03), 1 = exome + 100 bp flanks, 2 = all capture, 3 = WGS. Therefore a table in which every row has is_coding=1 and is_flank=0 means the MAF fed to MutSig was already coding-only ('TCGA coding only' scheme): non-coding calls, promoters included, were removed or never called upstream. That matches TCGA open-access policy (GDC TCGA MAF v2 spec): a .somatic.maf may contain unvalidated somatic calls only from coding regions and splice sites, and Variant_Classification 3'UTR, 3'Flank, 5'UTR, 5'Flank, IGR, Intron is not allowed unless validated. So the columns are valid in-data evidence that the table is coding-only by construction and that absence of TERT promoter rows is uninformative; confirm directly by tabulating Variant_Classification (no 5'Flank/UTR/Intron/IGR rows). They cannot tell whether a promoter call was made and then filtered or never made. The column categ_ignoring_null_categ was not found documented.",
+          "sources": [
+            "https://github.com/getzlab/MutSig2CV/blob/master/src/add_helper_is_fields.m",
+            "https://github.com/getzlab/MutSig2CV/blob/master/src/impute_callschemes.m",
+            "https://github.com/getzlab/MutSig2CV/blob/master/src/MutSig_2CV_v3_11_core.m",
+            "https://github.com/getzlab/MutSig2CV",
+            "https://www.genepattern.org/modules/docs/MutSigCV/1/",
+            "https://docs.gdc.cancer.gov/Encyclopedia/pages/Mutation_Annotation_Format_TCGAv2/"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd16-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-c16f75474d0d"
+            },
+            "bd16-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-c61bb2bd35de"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In MAF files produced by the Broad Institute MutSig / Oncotator pipeline, what do the columns is_coding, is_flank and categ mean, and does a file in which every row has is_coding = 1 and is_flank = 0 indicate that calls outside coding territory (including promoters) were filtered out before the file was released? ANSWER: In MutSig output MAFs (final_analysis_set.maf style) is_coding, is_flank and categ are helper columns MutSig adds itself; they are labels derived from Variant_Classification, not a record of a filter. MutSig2CV source (add_helper_is_fields.m): is_coding is TRUE when the mutation type matches indel|read-through|de novo|start|stop|missense|nonsense|silent|splice|synon|frame|shift|nonstop and is forced FALSE when it matches IGR|flank|UTR|intron|promoter|unknown|non-coding|mismatch|^RNA; is_flank is defined simply as NOT is_coding (so it means 'any non-coding call', and a promoter/5'Flank row would be is_coding=0, is_flank=1). categ is the index of the mutation-context category used in the background model: in MutSigCV 1.x 1=CpG transitions, 2=CpG transversions, 3=C:G transitions, 4=C:G transversions, 5=A:T transitions, 6=A:T transversions, 7=null+indel; in MutSig2CV the categories are discovered per run (default k=5) and defined in mutcategs.txt, so the numbering is run-specific. MutSig itself does NOT strip non-coding calls inside gene footprints (it keeps them as effect 'ncd' for background-rate estimation and drops only intergenic/unknown-gene rows, rows outside target intervals, duplicate patients, blacklisted sites and poorly covered genes); it uses each patient's fraction of is_flank rows to infer the coverage model: 0 = 'coding only' (fracflank < 0.03), 1 = exome + 100 bp flanks, 2 = all capture, 3 = WGS. Therefore a table in which every row has is_coding=1 and is_flank=0 means the MAF fed to MutSig was already coding-only ('TCGA coding only' scheme): non-coding calls, promoters included, were removed or never called upstream. That matches TCGA open-access policy (GDC TCGA MAF v2 spec): a .somatic.maf may contain unvalidated somatic calls only from coding regions and splice sites, and Variant_Classification 3'UTR, 3'Flank, 5'UTR, 5'Flank, IGR, Intron is not allowed unless validated. So the columns are valid in-data evidence that the table is coding-only by construction and that absence of TERT promoter rows is uninformative; confirm directly by tabulating Variant_Classification (no 5'Flank/UTR/Intron/IGR rows). They cannot tell whether a promoter call was made and then filtered or never made. The column categ_ignoring_null_categ was not found documented. HOW SURE: high. SOURCES: https://github.com/getzlab/MutSig2CV/blob/master/src/add_helper_is_fields.m, https://github.com/getzlab/MutSig2CV/blob/master/src/impute_callschemes.m, https://github.com/getzlab/MutSig2CV/blob/master/src/MutSig_2CV_v3_11_core.m, https://github.com/getzlab/MutSig2CV, https://www.genepattern.org/modules/docs/MutSigCV/1/, https://docs.gdc.cancer.gov/Encyclopedia/pages/Mutation_Annotation_Format_TCGAv2/."
+        },
+        {
+          "question": "In adult diffuse high-grade gliomas, how accurately do IDH-wild-type status, absence of the G-CIMP methylation phenotype, or retained ATRX expression predict the presence of a TERT promoter mutation (reported sensitivity, specificity and the fraction of IDH-wild-type tumours that are promoter-wild-type)?",
+          "answer": "No recorded variable (IDH-wild-type, non-G-CIMP, ATRX retained) is an accurate stand-in for TERT promoter (TERTp) status in glioblastoma; none of the papers read reports a formal sensitivity/specificity for these proxies, but their counts give the error rates. Fraction of IDH-wild-type GBM that is TERTp-wild-type: 14.7% (16/109, panel sequencing); 16.9% of all GBM are TERTp-wt/IDH-wt (44/260), 'about 20%'; TCGA pan-glioma assayed cases 19 wt vs 67 mutant among IDH-wt (22% wt); editorial summary 'up to 80%' of IDH-wt GBM mutant. So calling every IDH-wt/non-G-CIMP sample 'mutant' is wrong for roughly 15-22% of them. In the other direction IDH-mutant non-codeleted astrocytic tumours are TERTp-mutant in only about 5% (8/154), and all 4 TERTp-wt cases among 25 WGS-genotyped TCGA GBMs carried ATRX+IDH1+TP53 mutations and were G-CIMP-enriched, so IDH-mutant/G-CIMP is a fairly clean 'wild-type' label, but it is a tiny group in GBM (about 5-10%) and it misses most true wild-types: in one cohort 16 of about 27-28 TERTp-wt grade IV tumours were IDH-wt (derived specificity of 'IDH-wt => mutant' only about 40%, sensitivity near 100%, PPV about 85%). ATRX: loss of ATRX is specific for TERTp-wt (0/80 TERTp-mutant IDH-wt GBMs had ATRX loss by IHC; ATRX mutation 6/93 mutant vs 6/16 wt) but insensitive: only 22-31% of TERTp-wt/IDH-wt GBMs show ATRX loss (8/37; 4/13), i.e. 70-78% of them retain ATRX. G-CIMP has no separate published figures in the pages read; it tracks IDH mutation. The TERTp-wt/IDH-wt group is also not a low-TERT control: 50% (19/38) carry rearrangements upstream of TERT with raised TERT mRNA and 38.5% are ALT-positive. A proxy comparison therefore tests IDH/G-CIMP/ATRX status against TERT expression, not promoter mutation, and can serve only as a clearly labelled sensitivity analysis. The TCGA pan-glioma paper reports TERT RNA-seq expression as a 91% sensitive / 95% specific surrogate for TERTp mutation, but using expression to define the mutation group is circular for a mutation-vs-expression hypothesis.",
+          "sources": [
+            "https://link.springer.com/article/10.1186/s40478-018-0613-2",
+            "https://www.nature.com/articles/s41467-018-04448-6",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4754110/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3910500/",
+            "https://doi.org/10.1093/neuonc/noz025"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd16-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-8052b14c92b6"
+            },
+            "bd16-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-dde42b8b107b"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In adult diffuse high-grade gliomas, how accurately do IDH-wild-type status, absence of the G-CIMP methylation phenotype, or retained ATRX expression predict the presence of a TERT promoter mutation (reported sensitivity, specificity and the fraction of IDH-wild-type tumours that are promoter-wild-type)? ANSWER: No recorded variable (IDH-wild-type, non-G-CIMP, ATRX retained) is an accurate stand-in for TERT promoter (TERTp) status in glioblastoma; none of the papers read reports a formal sensitivity/specificity for these proxies, but their counts give the error rates. Fraction of IDH-wild-type GBM that is TERTp-wild-type: 14.7% (16/109, panel sequencing); 16.9% of all GBM are TERTp-wt/IDH-wt (44/260), 'about 20%'; TCGA pan-glioma assayed cases 19 wt vs 67 mutant among IDH-wt (22% wt); editorial summary 'up to 80%' of IDH-wt GBM mutant. So calling every IDH-wt/non-G-CIMP sample 'mutant' is wrong for roughly 15-22% of them. In the other direction IDH-mutant non-codeleted astrocytic tumours are TERTp-mutant in only about 5% (8/154), and all 4 TERTp-wt cases among 25 WGS-genotyped TCGA GBMs carried ATRX+IDH1+TP53 mutations and were G-CIMP-enriched, so IDH-mutant/G-CIMP is a fairly clean 'wild-type' label, but it is a tiny group in GBM (about 5-10%) and it misses most true wild-types: in one cohort 16 of about 27-28 TERTp-wt grade IV tumours were IDH-wt (derived specificity of 'IDH-wt => mutant' only about 40%, sensitivity near 100%, PPV about 85%). ATRX: loss of ATRX is specific for TERTp-wt (0/80 TERTp-mutant IDH-wt GBMs had ATRX loss by IHC; ATRX mutation 6/93 mutant vs 6/16 wt) but insensitive: only 22-31% of TERTp-wt/IDH-wt GBMs show ATRX loss (8/37; 4/13), i.e. 70-78% of them retain ATRX. G-CIMP has no separate published figures in the pages read; it tracks IDH mutation. The TERTp-wt/IDH-wt group is also not a low-TERT control: 50% (19/38) carry rearrangements upstream of TERT with raised TERT mRNA and 38.5% are ALT-positive. A proxy comparison therefore tests IDH/G-CIMP/ATRX status against TERT expression, not promoter mutation, and can serve only as a clearly labelled sensitivity analysis. The TCGA pan-glioma paper reports TERT RNA-seq expression as a 91% sensitive / 95% specific surrogate for TERTp mutation, but using expression to define the mutation group is circular for a mutation-vs-expression hypothesis. HOW SURE: medium. SOURCES: https://link.springer.com/article/10.1186/s40478-018-0613-2, https://www.nature.com/articles/s41467-018-04448-6, https://pmc.ncbi.nlm.nih.gov/articles/PMC4754110/, https://pmc.ncbi.nlm.nih.gov/articles/PMC3910500/, https://doi.org/10.1093/neuonc/noz025."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd16-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd16-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd16-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd16-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd16-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 93.49834120902233,
+      "cost_usd": 0.217204,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 79.69057391595561,
+      "cost_usd": 0.1286579,
+      "error": null
+    },
+    {
+      "agent": "bd16-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 144.77570129197557,
+      "cost_usd": 0.25019830000000004,
+      "error": null
+    },
+    {
+      "agent": "bd16-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 117.11988312506583,
+      "cost_usd": 0.2097555,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 190.26125529094134,
+      "cost_usd": 0.3979455,
+      "error": null
+    },
+    {
+      "agent": "bd16-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 288.65069162496366,
+      "cost_usd": 0.7550072999999998,
+      "error": null
+    },
+    {
+      "agent": "bd16-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 268.86719008302316,
+      "cost_usd": 0.5248607,
+      "error": null
+    },
+    {
+      "agent": "bd16-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 244.59478174999822,
+      "cost_usd": 0.49179449999999997,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,455 @@
+{
+  "study": "sc28",
+  "status": "replicated",
+  "final": {
+    "agent": "sc28-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc28/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc28-library": "opus",
+    "sc28-team-a": "opus",
+    "sc28-team-b": "opus",
+    "sc28-team-c": "opus",
+    "sc28-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc28-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc28/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "pct_negative": 95.74
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc28-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc28/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "pct_negative": 95.74
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc28-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc28/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "pct_negative": 95.74
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc28-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc28/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "pct_negative": 95.74
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc28-team-a",
+        "sc28-team-b"
+      ],
+      "fields": {
+        "pct_negative": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc28-team-a",
+        "sc28-team-b"
+      ],
+      "fields": {
+        "pct_negative": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The input file 156261674.node is an AnnData h5ad file without the .h5ad extension, so load it with anndata.read_h5ad (extension-based readers such as sc.read may fail to recognise it). According to the file header, X is a CSC sparse matrix of int32 raw counts, 11693 cells x 27946 genes with 14122787 stored entries, and obs, var, layers, obsm and uns are empty apart from index names. Confirm these on load (integer-valued, non-negative X, no .raw, no layers) before starting.",
+      "from": [
+        "sl-sc-test-f20cfcaa941c"
+      ],
+      "reason": "The team needs to know how to open the file and what the untouched input looks like, so that any later change in shape or data type is noticed.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-e0be4b92df1f"
+      }
+    },
+    {
+      "text": "Do not add any step the task does not list. Filtering cells or genes (e.g. tutorial defaults min_genes=200 / min_cells=3) or subsetting to highly variable genes before normalize -> log1p -> scale changes both the numerator and the denominator of the percent-negative figure. Genes that are zero in every cell scale to exactly 0, which is not negative, so they dilute the percentage and dropping them raises it. CHECK: count all-zero genes and all-zero cells, and confirm the scaled matrix still has the input shape (11693 x 27946 per the file header). Report the figure on the full unfiltered matrix with denominator n_obs*n_vars; a filtered variant belongs only in a sensitivity note.",
+      "from": [
+        "sl-sc-test-2ec278346c1c"
+      ],
+      "reason": "Habitual QC filtering is the most likely way to get a different number from the one the three-step task defines.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-a85299f3dde6"
+      }
+    },
+    {
+      "text": "Scaling produces negative values only when it zero-centers. With zero_center=False (often used to keep the matrix sparse) there are no negatives at all, and the library reports that in recent scanpy the default for zero_center can depend on the active settings preset. Pass zero_center=True explicitly and record scanpy.__version__. CHECK after scaling: adata.X is a dense ndarray, X.min() < 0, and per-gene means are about 0 for genes not affected by clipping. If the output is sparse, min >= 0, or gene means are clearly non-zero, rerun with explicit zero_center=True on a densified float matrix or compute the z-score manually with numpy.",
+      "from": [
+        "sl-sc-test-f8a33d92ff34"
+      ],
+      "reason": "A silent non-centering scale would make the reported percentage meaningless (zero), and the default may not be what the team assumes.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-aedd33b020a8"
+      }
+    },
+    {
+      "text": "A correct max_value=10 clip never changes the sign of a value, so the percentage of negative values must be identical with max_value=10 and with max_value=None; use that as a test. Tools and versions differ on whether the lower side is also clipped at -10 (recent scanpy clips dense zero-centered arrays on both sides; older scanpy clips only the upper side), but this does not affect signs. A wrong hand-written clip such as np.clip(X, 0, 10), or clipping before centering, destroys the negatives. Clipping makes some gene means slightly non-zero; that is expected and not a bug. CHECK: X.max() <= 10 and X.min() < 0 after scaling. If clipping changes the percentage, the clip is wrong: use sc.pp.scale(adata, zero_center=True, max_value=10) or np.clip(X, -10, 10) applied after centering and dividing.",
+      "from": [
+        "sl-sc-test-41980bf81210"
+      ],
+      "reason": "Gives a cheap invariance test for the clipping step and warns against the one clipping mistake that would change the answer.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-3a77e9ca0727"
+      }
+    },
+    {
+      "text": "Count negatives over every entry of the dense scaled matrix: pct = 100 * (X < 0).sum() / (n_obs * n_vars), strictly < 0 (not <= 0), expressed as a percentage (0-100, not a fraction), and rounded to 2 decimals only at the very end. Do not count on a sparse matrix's .data or divide by the number of stored entries: after zero-centering, most negatives come from the entries that were zeros in the count matrix, each of which becomes -mean/std in any gene with a non-zero mean. CROSS-CHECK without densifying: for each gene with mean > 0, negatives = (n_cells - number of non-zero entries in that gene) + number of non-zero log-normalised entries below the gene mean; genes with mean 0 contribute none. The dense count and this gene-wise count must agree to 2 decimals. As a consistency bound, the result cannot exceed 100 minus the share of entries belonging to all-zero genes, and a result far below the matrix's own fraction of zeros needs an explanation before it is reported.",
+      "from": [
+        "sl-sc-test-8462ceeddc2d",
+        "sl-sc-test-989455c4e7fd"
+      ],
+      "reason": "The answer is a single ratio, so the denominator, the strictness of the comparison and the handling of implicit zeros decide it; the independent gene-wise count lets the team verify its own number.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-587343bce2fa"
+      }
+    },
+    {
+      "text": "normalize_total, log1p and scale all modify the matrix in place, so re-running a cell or starting from an object that has already been processed silently applies normalisation or the log twice. Use the natural log (scanpy's default log1p, no base argument); a different base changes values but should not be used here. CHECK: start from the file freshly loaded from disk, run the three steps exactly once, in order, in a single script, and after log1p confirm X.max() is at most log1p(10000) = 9.21 (a much smaller maximum suggests a double log; a larger one suggests normalisation was not applied).",
+      "from": [
+        "sl-sc-test-79c05c75b489"
+      ],
+      "reason": "Double application is silent and would shift which entries fall below their gene mean; the range check catches it.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-3622a4e7df03"
+      }
+    },
+    {
+      "text": "The sign of each scaled value is the sign of (log-normalised value minus gene mean), so any error in the library-size step changes which non-zero entries end up negative. Pass target_sum=1e4 explicitly (if left as None, scanpy uses the median library size instead) and keep exclude_highly_expressed=False. CHECK: count cells with zero total counts, and verify that every non-empty cell sums to 10000 after normalize_total and before log1p. If there are empty cells, keep them (the task does not ask for filtering) but confirm they do not produce NaN or inf through division by zero.",
+      "from": [
+        "sl-sc-test-32c09796d5f1"
+      ],
+      "reason": "Ensures the normalisation actually is the target_sum=10000 one the task specifies and that empty cells cannot corrupt the matrix. (The library's claim about a specific scanpy version bug in the median computation was not verifiable and is left out; passing target_sum explicitly makes it irrelevant.)",
+      "fact_ids": {
+        "team-a": "sl-sc-test-e2ad22f205cb"
+      }
+    },
+    {
+      "text": "Zero-variance genes need explicit attention. Documented scanpy behaviour is to set a standard deviation of 0 to 1, so constant genes become exactly 0 after centering; a hand-rolled z-score instead computes 0/0 = NaN, and some scanpy versions have reportedly produced NaN for near-constant genes. NaN < 0 is False, so NaNs are silently counted as non-negative. CHECK: np.isnan(X).sum() is 0 after scaling, and the number of exact zeros in the scaled matrix equals n_cells times the number of all-zero genes. If NaNs or unexpected zeros appear, treat constant genes as scaled value 0 (std set to 1) and say so in the notes.",
+      "from": [
+        "sl-sc-test-0ab4afa8bb18"
+      ],
+      "reason": "NaNs would be miscounted without any error, and the exact-zero count is a simple integrity check on the scaled matrix.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-7d32b0353525"
+      }
+    },
+    {
+      "text": "Zero-centering requires a dense matrix: 11693 x 27946 is roughly 1.3 GB in float32 and 2.6 GB in float64, plus temporaries. If memory runs out, do not subsample cells or switch to zero_center=False; instead count negatives gene-wise or in column chunks. Precision and convention differences (float32 vs float64; ddof=1 in scanpy vs ddof=0 in sklearn's StandardScaler) do not change signs except for entries essentially equal to the gene mean. CHECK: compare the float32 scanpy result with a float64 numpy or gene-wise recomputation and confirm they agree at 2 decimals. If they differ at the second decimal, report the value from the standard scanpy path and note the float64 value.",
+      "from": [
+        "sl-sc-test-3ed2c964fc7e"
+      ],
+      "reason": "An out-of-memory failure could push the team into a shortcut that changes the answer, and the precision comparison tells them whether the 2-decimal figure is stable.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-61a1f875b1fd"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 7,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams ran the same three scanpy calls on the same toolkit, so their agreement is one implementation run twice, not two independent computations. Only team A cross-checked with a separate float64 gene-wise count, and it reported 'the same value' without stating the precision or the integer count of negatives.",
+      "Both assumed the rounded figure is safe. The unrounded figure both report (4 decimals) lies only about 0.0006 percentage points above the half-way point between two 2-decimal values. On 11693 x 27946 = 326,772,578 entries that is roughly 2,000 entries. Neither team stated this margin or counted how many entries sit close enough to their gene mean to change sign under another precision, version or summation order.",
+      "Both scaled each gene over all cells pooled as one group. The cell names carry four sample prefixes (sample1 to sample4, about 2,500 to 3,300 cells each); neither team mentioned them.",
+      "Both assumed no filtering is intended and took 'expression matrix' to mean every entry of the dense scaled matrix (denominator n_obs * n_vars)."
+    ],
+    "unused_evidence": [
+      "The file has no obs or var columns, no layers, no uns, no raw: only X (int32 CSC), cell names and gene names. The one piece of structure neither team used is the sample prefix in the cell names (4 samples).",
+      "Gene names include 13 MT- genes and Ensembl-ID-only genes; no team used them, and the task lists no step that would need them."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weak point (whether a QC filter before normalization is expected) and neither measured it: no team recorded how many cells or genes a common filter would remove or how far the figure would move. Team A noted the data already look pre-filtered (no all-zero genes, no empty cells), which bears on it but was not followed up.",
+      "Team B recorded no pitfall checks, no scanpy version, no explicit zero_center setting, no clip-versus-no-clip test and no independent recomputation; its result rests on a single run."
+    ],
+    "second_readings": [
+      "'Z-score scaling per gene' could be read as per gene within each sample, since the cells come from four samples; the task text does not mention samples, so the pooled reading is the plain one, but the size of the difference is unknown.",
+      "'Values in the expression matrix' could be read as stored (non-zero) values only rather than all entries; after zero-centered scaling the matrix is dense, so the all-entries reading is the natural one.",
+      "'Full normalization pipeline' could be read as including standard QC filtering first; the task lists exactly three steps, so this reading is weak."
+    ],
+    "verdict": "I trust the agreed method highly: the task spells out all three steps and their parameters, the file holds nothing but raw integer counts, and a correct clip cannot change signs. The one real risk is the rounding: the unrounded figure lies about 2,000 entries from a 2-decimal boundary and both teams used the same implementation, so the second decimal needs an exact-count confirmation before it goes out.",
+    "questions": [
+      {
+        "to": "sc28-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your unrounded figure sits very close to the half-way point between two 2-decimal values; the gap is on the order of 2,000 entries out of 326,772,578. You wrote that the float64 gene-wise count gave 'the same value'. Report the exact integer count of negative entries from the scanpy float32 path and from the float64 path, the difference between them, and how many entries would have to change sign to move the rounded figure. Also count the non-zero entries whose scaled value is within float32 rounding error of zero. Is the 2-decimal figure safe against precision, summation order and scanpy version? Does that change your method or what you report?",
+        "from": [
+          "sl-sc-test-e1f5428f5c57",
+          "sl-sc-test-3ed2c964fc7e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-9f3aea96faf1"
+      },
+      {
+        "to": "sc28-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: the cell names carry four sample prefixes (sample1 to sample4) and your notes do not mention them. Check what in the task text supports scaling each gene over all cells pooled rather than within each sample, and compute how far the percentage moves if the three steps (or only the scaling step) are run within each sample. Is the difference large enough to matter at 2 decimals, and does that change your method?",
+        "from": [
+          "sl-sc-test-e1f5428f5c57"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-bf02f4134bff"
+      },
+      {
+        "to": "sc28-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you named the possible expectation of a filtering step as your only open point and observed that the data already look pre-filtered (no all-zero genes, no empty cells). Check the minimum number of genes detected per cell and the minimum number of cells per gene: would a common tutorial filter remove any cells or genes at all here, and if so how many, and how far would the figure move? Does the result settle your weak point, and does it change your method?",
+        "from": [
+          "sl-sc-test-a85299f3dde6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-bc32b5af0da6"
+      },
+      {
+        "to": "sc28-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your unrounded figure sits very close to the half-way point between two 2-decimal values; the gap is on the order of 2,000 entries out of 326,772,578, and your result rests on a single scanpy run. Recompute the count of negative entries without scanpy's scale (gene by gene in float64 from the log-normalized values), and report the exact integer counts from both paths, their difference, and how many entries would have to change sign to move the rounded figure. Does that change your method or what you report?",
+        "from": [
+          "sl-sc-test-70727548eedb",
+          "sl-sc-test-42c47f715cc6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-6818cce828e0"
+      },
+      {
+        "to": "sc28-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your notes record no scanpy version, no explicit zero-centering setting and no test of the clip. Check which scanpy version and settings preset ran, whether the scaled matrix is a dense array of the input shape with no NaN and a negative minimum, whether log1p ran exactly once (maximum after log at most log1p(10000)), and whether the percentage is identical with and without max_value=10. Does any of these change your method?",
+        "from": [
+          "sl-sc-test-42c47f715cc6",
+          "sl-sc-test-f8a33d92ff34",
+          "sl-sc-test-41980bf81210"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-bfd7a8a32f8c"
+      },
+      {
+        "to": "sc28-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: the cell names carry four sample prefixes (sample1 to sample4) and your notes do not mention them. Check what in the task text supports scaling each gene over all cells pooled rather than within each sample, and compute how far the percentage moves if the three steps (or only the scaling step) are run within each sample. Is the difference large enough to matter at 2 decimals, and does that change your method?",
+        "from": [
+          "sl-sc-test-42c47f715cc6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-14d9c7ebf976"
+      },
+      {
+        "to": "sc28-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you named a possible QC filter before normalization as your weakest point and did not measure it. Check the minimum number of genes detected per cell and the minimum number of cells per gene: would a common tutorial filter remove any cells or genes here, and if so how many, and how far would the figure move? Does the result settle your weak point, and does it change your method?",
+        "from": [
+          "sl-sc-test-2ec278346c1c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-87e1d2ef92c2"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In scanpy's sc.pp.scale with zero_center=True applied to a sparse matrix that came from integer counts through normalize_total and log1p, what floating-point dtype does the densified matrix have, and in what precision are the per-gene mean and standard deviation computed and subtracted? Has this changed between scanpy 1.9, 1.10 and 1.11+?",
+          "why": "The agreed figure sits very close to a rounding boundary, so whether a small number of entries near their gene mean can change sign between versions or precisions decides whether the second decimal is stable.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When a task specifies only library-size normalization, log1p and per-gene z-score scaling for a single-cell matrix whose cells come from several samples, is the scanpy convention (sc.pp.scale) to scale each gene over all cells pooled, and does any standard scanpy or Seurat workflow scale within sample by default?",
+          "why": "Neither team used the sample labels encoded in the cell names; knowing whether any default workflow scales per sample tells the teams whether the pooled reading is the only conventional one.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In scanpy's sc.pp.scale with zero_center=True applied to a sparse matrix that came from integer counts through normalize_total and log1p, what floating-point dtype does the densified matrix have, and in what precision are the per-gene mean and standard deviation computed and subtracted? Has this changed between scanpy 1.9, 1.10 and 1.11+?",
+          "answer": "normalize_total casts integer counts to float32 (X.astype(np.float32)), and log1p keeps float32. In 1.9, 1.10 and 1.11, _get_mean_var accumulates the per-gene mean and variance in float64 (sparse kernels and dense np.mean use dtype=np.float64; variance is ddof=1; std==0 is set to 1). In 1.11.x, scale_array accepts CSR/CSC directly and does `x -= mean` on the sparse matrix. scipy runs that as x.todense() - mean, so float32 minus float64 gives a float64 dense result (dematrix turns it into an ndarray). For 1.9/1.10, the sparse path is believed to densify with toarray() (staying float32) and then subtract the float64 mean in place, computing in float64 and storing in float32. I could not read that branch directly because the fetched pages were truncated. So the densified dtype does change: float32 in 1.9/1.10, likely; float64 in 1.11+, from the source I read. In every version, though, the sign of each scaled entry is the sign of (float32 log value - float64 mean), because a nonzero float64 difference does not round to zero in float32. Dividing by std and clipping at +/-10 cannot flip a sign. The count of negatives should therefore be the same across versions and precisions, except for entries exactly equal to their gene mean, which are vanishingly rare. A shift at the second decimal should not come from this source.",
+          "sources": [
+            "https://raw.githubusercontent.com/scverse/scanpy/1.11.x/src/scanpy/preprocessing/_scale.py",
+            "https://raw.githubusercontent.com/scverse/scanpy/1.10.x/src/scanpy/preprocessing/_scale.py",
+            "https://raw.githubusercontent.com/scverse/scanpy/1.9.x/scanpy/preprocessing/_utils.py",
+            "https://raw.githubusercontent.com/scverse/scanpy/1.11.x/src/scanpy/preprocessing/_utils.py",
+            "https://github.com/scverse/scanpy/blob/1.10.x/src/scanpy/preprocessing/%5Fnormalization.py",
+            "https://github.com/scipy/scipy/blob/v1.16.0/scipy/sparse/_base.py"
+          ],
+          "confidence": "medium (high for float64 mean/var and float32 normalize_total; medium for the exact 1.9/1.10 densify path, which I saw only partly)",
+          "deliveries": {
+            "sc28-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-9169684714f2"
+            },
+            "sc28-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-7b98694367e8"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In scanpy's sc.pp.scale with zero_center=True applied to a sparse matrix that came from integer counts through normalize_total and log1p, what floating-point dtype does the densified matrix have, and in what precision are the per-gene mean and standard deviation computed and subtracted? Has this changed between scanpy 1.9, 1.10 and 1.11+? ANSWER: normalize_total casts integer counts to float32 (X.astype(np.float32)), and log1p keeps float32. In 1.9, 1.10 and 1.11, _get_mean_var accumulates the per-gene mean and variance in float64 (sparse kernels and dense np.mean use dtype=np.float64; variance is ddof=1; std==0 is set to 1). In 1.11.x, scale_array accepts CSR/CSC directly and does `x -= mean` on the sparse matrix. scipy runs that as x.todense() - mean, so float32 minus float64 gives a float64 dense result (dematrix turns it into an ndarray). For 1.9/1.10, the sparse path is believed to densify with toarray() (staying float32) and then subtract the float64 mean in place, computing in float64 and storing in float32. I could not read that branch directly because the fetched pages were truncated. So the densified dtype does change: float32 in 1.9/1.10, likely; float64 in 1.11+, from the source I read. In every version, though, the sign of each scaled entry is the sign of (float32 log value - float64 mean), because a nonzero float64 difference does not round to zero in float32. Dividing by std and clipping at +/-10 cannot flip a sign. The count of negatives should therefore be the same across versions and precisions, except for entries exactly equal to their gene mean, which are vanishingly rare. A shift at the second decimal should not come from this source. HOW SURE: medium (high for float64 mean/var and float32 normalize_total; medium for the exact 1.9/1.10 densify path, which I saw only partly). SOURCES: https://raw.githubusercontent.com/scverse/scanpy/1.11.x/src/scanpy/preprocessing/_scale.py, https://raw.githubusercontent.com/scverse/scanpy/1.10.x/src/scanpy/preprocessing/_scale.py, https://raw.githubusercontent.com/scverse/scanpy/1.9.x/scanpy/preprocessing/_utils.py, https://raw.githubusercontent.com/scverse/scanpy/1.11.x/src/scanpy/preprocessing/_utils.py, https://github.com/scverse/scanpy/blob/1.10.x/src/scanpy/preprocessing/%5Fnormalization.py, https://github.com/scipy/scipy/blob/v1.16.0/scipy/sparse/_base.py."
+        },
+        {
+          "question": "When a task specifies only library-size normalization, log1p and per-gene z-score scaling for a single-cell matrix whose cells come from several samples, is the scanpy convention (sc.pp.scale) to scale each gene over all cells pooled, and does any standard scanpy or Seurat workflow scale within sample by default?",
+          "answer": "Yes, pooled. sc.pp.scale computes each gene's mean and std over all cells (or only over a mask_obs subset if one is given) and has no batch or sample argument. Seurat ScaleData defaults to split.by = NULL, which centers and scales each feature over all cells; per-group scaling happens only if split.by is set. Neither default workflow scales within sample, so the pooled reading is the conventional one. I did not check how Seurat v5 handles split layers.",
+          "sources": [
+            "https://satijalab.org/seurat/reference/scaledata",
+            "https://raw.githubusercontent.com/scverse/scanpy/1.11.x/src/scanpy/preprocessing/_scale.py"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc28-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-7b5fc47ec8d8"
+            },
+            "sc28-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-00c54031d3e3"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a task specifies only library-size normalization, log1p and per-gene z-score scaling for a single-cell matrix whose cells come from several samples, is the scanpy convention (sc.pp.scale) to scale each gene over all cells pooled, and does any standard scanpy or Seurat workflow scale within sample by default? ANSWER: Yes, pooled. sc.pp.scale computes each gene's mean and std over all cells (or only over a mask_obs subset if one is given) and has no batch or sample argument. Seurat ScaleData defaults to split.by = NULL, which centers and scales each feature over all cells; per-group scaling happens only if split.by is set. Neither default workflow scales within sample, so the pooled reading is the conventional one. I did not check how Seurat v5 handles split layers. HOW SURE: high. SOURCES: https://satijalab.org/seurat/reference/scaledata, https://raw.githubusercontent.com/scverse/scanpy/1.11.x/src/scanpy/preprocessing/_scale.py."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc28-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc28-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc28-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc28-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc28-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 39.75363645795733,
+      "cost_usd": 0.12637500000000002,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 94.34232462500222,
+      "cost_usd": 0.1333246,
+      "error": null
+    },
+    {
+      "agent": "sc28-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 37.34236854198389,
+      "cost_usd": 0.0904616,
+      "error": null
+    },
+    {
+      "agent": "sc28-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 50.69217304198537,
+      "cost_usd": 0.14824920000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 92.62925129104406,
+      "cost_usd": 0.1870135,
+      "error": null
+    },
+    {
+      "agent": "sc28-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 139.5678096669726,
+      "cost_usd": 0.6040110000000001,
+      "error": null
+    },
+    {
+      "agent": "sc28-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 70.85079229192343,
+      "cost_usd": 0.22960819999999998,
+      "error": null
+    },
+    {
+      "agent": "sc28-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 58.94903783395421,
+      "cost_usd": 0.25281859999999995,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

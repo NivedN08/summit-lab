@@ -1,0 +1,423 @@
+{
+  "study": "sc07",
+  "status": "replicated",
+  "final": {
+    "agent": "sc07-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab2/sc07/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "sc07-library": "opus",
+    "sc07-team-a": "opus",
+    "sc07-team-b": "opus",
+    "sc07-team-c": "opus",
+    "sc07-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc07-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab2/sc07/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc07-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab2/sc07/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc07-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab2/sc07/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc07-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab2/sc07/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "answer": "A"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc07-team-a",
+        "sc07-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc07-team-a",
+        "sc07-team-b"
+      ],
+      "fields": {
+        "answer": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Measure 'variance explained in PC1' by each categorical factor as R2 (eta-squared): regress the PC1 cell scores on the one-hot encoded factor (one-way ANOVA, PC1 ~ C(factor)), R2 = between-group SS / total SS of PC1, done separately for cytokine, donor, cell type and treatment. Do not use correlation with integer-coded labels or the PC's explained-variance ratio.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-dd5fd58e288b"
+      ],
+      "reason": "The wrong metric produces a meaningless ranking; this defines the core computation.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-6cbc44758f95"
+      }
+    },
+    {
+      "text": "The design is likely unbalanced (cell-type composition may differ by donor or cytokine), so marginal, sequential (Type-I) and adjusted (Type-II) R2 can rank factors differently. Crosstab cell_type x donor and cell_type x cytokine. Report marginal (one-factor-at-a-time) R2 as the primary answer; if Type-II gives a different order, flag it.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-0609fa71ea74"
+      ],
+      "reason": "Fixes which R2 variant to rank on, so a confounded design does not silently change the answer.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-9a94047987cb"
+      }
+    },
+    {
+      "text": "Plain R2 rises with the number of levels: a 91-level cytokine factor picks up some variance by chance, but a 2-level treatment factor cannot. Compare R2 with adjusted R2 and with a permutation null (shuffled labels) for each factor. With very many cells the inflation is usually small, so check it rather than assume it.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-ddd5a7f52ad5"
+      ],
+      "reason": "Cytokine and donor/cell type may be close, and level-count inflation could flip their order.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-5ca26fae53a7"
+      }
+    },
+    {
+      "text": "Treatment (PBS vs cytokine) is probably a coarsening of the cytokine factor (PBS is one cytokine level), so R2(treatment) <= R2(cytokine) by construction. Confirm with a crosstab. Do not enter treatment after cytokine in a joint sequential model (it would get 0); use marginal R2 for each.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-f1bb87947ea3"
+      ],
+      "reason": "Explains the structural relationship between two of the factors and prevents a modelling error.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-44a9adb55172"
+      }
+    },
+    {
+      "text": "Check whether X holds raw counts or log-normalized values. PC1 of unnormalized counts often tracks sequencing depth. Use the standard pipeline (normalize_total 1e4, log1p, ~2000 HVGs, scale max_value=10, PCA) before regressing PC1, then correlate PC1 with total counts / genes detected. If depth correlation stays high, report it and check whether depth differs by donor or cell type.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-de81e119c062"
+      ],
+      "reason": "Preprocessing decides what PC1 captures and so which factor it aligns with.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-00413845d621"
+      }
+    },
+    {
+      "text": "Check that the ranking holds by recomputing the PC1 factor R2 under at least two reasonable settings (e.g. HVG+scaling vs no scaling, or a different subsample seed). If the top factor changes, report the standard scanpy pipeline as primary and note the instability.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-063d33f0f992"
+      ],
+      "reason": "A ranking that only holds under one pipeline is not trustworthy.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-7b74fce941d1"
+      }
+    },
+    {
+      "text": "The h5ad is large (~1.6 GB). If you subsample, stratify (e.g. equal cells per sample or per cytokine x donor) and compare factor level counts before and after. Otherwise use backed mode or full data with sparse/arpack PCA. Naive random subsampling can distort the design and bias per-factor R2.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-506f645327ac"
+      ],
+      "reason": "Practical memory constraint whose naive workaround can bias the result.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-2e03094c2549"
+      }
+    },
+    {
+      "text": "Sanity-check the R2 ranking against PC1's top-loading genes. Lineage markers (CD3E, CD14, MS4A1, NKG7) point to cell type, interferon/cytokine-response genes point to cytokine, and sex/HLA genes (XIST, RPS4Y1, HLA) point to donor. If the loadings disagree with the R2 ranking, recheck the preprocessing.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab2-738b5818a6c5"
+      ],
+      "reason": "Gives an independent biological check on the computed ranking.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab2-07f7a645a602"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat each of ~100k cells as an independent observation and compute cell-level one-way eta^2; cells are clustered within 1092 donor x cytokine samples, so 'variance explained' could instead be read at the sample (pseudobulk) level.",
+      "Both teams used one pipeline family (total-count 1e4, log1p, 2000 HVG, scale, PCA on all cells); HVGs were not chosen per donor/batch and no QC filter (mito %, gene_count) was applied before PCA.",
+      "Both teams take the obs 'cell_type' (18 fine labels) as the cell-type factor as given; a coarser grouping (lineage) or the fine labels could change only cell-type R2, which is far ahead either way.",
+      "Both teams assume PBS counts as one of the '91 cytokines', so treatment is nested in cytokine and cytokine R2 >= treatment R2 by construction."
+    ],
+    "unused_evidence": [
+      "obs 'sample' (1092 levels = donor x cytokine) was not used, e.g. to aggregate or to test sample-level variation on PC1.",
+      "Split-pool barcode wells bc1_well/bc2_well/bc3_well (and bc*_wind) are technical plate/well identifiers; neither team checked whether PC1 carries a well/plate effect that is aliased with donor or cytokine.",
+      "QC columns pct_counts_MT, total_counts_MT, gene_count, tscp_count, mread_count were used only for one depth correlation (team A); neither team checked whether a low-quality/high-MT subpopulation drives part of PC1 or the donor term.",
+      "var 'n_cells' was not used to filter rarely detected genes before HVG selection."
+    ],
+    "unresolved_weak_points": [
+      "Team A: cytokine vs treatment order rests on R2 values near the permutation null; reported, partially resolved via adjusted R2, but the ordering is also guaranteed by nesting, so it is not an independent confirmation.",
+      "Team B: donor eta^2 may reflect donor cell-type composition; team B only reported this. Team A showed donor Type-II R2 (0.002) still exceeds cytokine (0.0006), which resolves the ordering under that model, but neither team checked donor vs cytokine at the pseudobulk level."
+    ],
+    "second_readings": [
+      "'Variance explained in PC1' could mean PCA on pseudobulk profiles (per sample, or per sample x cell type) rather than on single cells; at sample level the cell-type factor can disappear or change scale, and donor vs cytokine could reorder.",
+      "'Cytokine identity (which of 91 cytokines)' could be read as excluding PBS (cytokine-treated cells only); team B checked this and found the ranking unchanged."
+    ],
+    "verdict": "High trust in A: the gaps are large (cell type ~0.96, donor ~0.10, cytokine ~0.002, treatment ~0.0002), cytokine >= treatment holds by nesting, and team A's Type-II check keeps donor above cytokine. The remaining risk is a pseudobulk reading of the task, which might reorder donor vs cytokine. Neither team has tested it.",
+    "questions": [
+      {
+        "to": "sc07-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Aggregate cells to pseudobulk per donor x cytokine x cell_type (using obs 'sample' plus cell_type), run PCA on the pseudobulk, and compute R2 of PC1 on each factor. Does the order of donor vs cytokine match the cell-level result, and if not, does that change which level you report?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab2-85fa1ee3a859"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-beab17881891"
+      },
+      {
+        "to": "sc07-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Compute R2 of PC1 on the split-pool barcode wells (bc1_well, bc2_well, bc3_well) and crosstab bc1_well against donor and cytokine. If a well/plate factor explains part of PC1 and is aliased with donor, does that change how you interpret the donor term?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-dcde26b96107"
+      },
+      {
+        "to": "sc07-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Remove cells with high pct_counts_MT or very low gene_count (pick a threshold from the distributions), rerun HVG/PCA, and recompute the four R2 values. Does the ranking or PC1's gene content change?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-165c8144ce38"
+      },
+      {
+        "to": "sc07-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your plan listed a cell-level vs pseudobulk robustness check, but your submitted checks do not include it. Run PCA on pseudobulk per donor x cytokine x cell_type and recompute R2 of PC1 per factor. Does the ranking hold?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab2-84acc66bf7d5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-2560a0746b9b"
+      },
+      {
+        "to": "sc07-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Compute Type-II (adjusted for the other factors) R2 for donor and cytokine on PC1 alongside your marginal eta^2. Does donor still exceed cytokine once cell-type composition by donor is accounted for, and does that change your method?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-0919774f989b"
+      },
+      {
+        "to": "sc07-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check PC1's top-loading genes and its correlation with pct_counts_MT and log1p_total_counts, and test R2 of PC1 on bc1_well. If technical covariates or wells explain a sizable share of PC1, does that change how you assign variance to donor?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab2-4675f5baa301"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "When single-cell studies report the 'variance explained' in a principal component by categorical metadata (e.g. donor, cell type, perturbation), is this usually computed as R2 from a linear model of cell-level PC scores, or on pseudobulk profiles? Which tools (e.g. scater getVarianceExplained, variancePartition) do which by default?",
+          "why": "Settles whether the cell-level eta^2 both teams used is the conventional quantity, or whether a sample-level reading could rank donor and the perturbation factor differently.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In split-pool combinatorial barcoding single-cell protocols, what does the first-round barcode well encode (sample identity or something else), and is it a recognized source of technical batch effects?",
+          "why": "Shows whether the unused barcode-well columns can confound the donor or perturbation terms on PC1.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "When single-cell studies report the 'variance explained' in a principal component by categorical metadata (e.g. donor, cell type, perturbation), is this usually computed as R2 from a linear model of cell-level PC scores, or on pseudobulk profiles? Which tools (e.g. scater getVarianceExplained, variancePartition) do which by default?",
+          "answer": "Cell-level is the convention for PC-variance-explained. scater getExplanatoryPCs (which calls getVarianceExplained) regresses each PC on each colData variable separately over all columns (cells, in an SCE) and reports percent R2, i.e. marginal one-way R2 (eta^2 for a factor). variancePartition fits a linear mixed model on whatever columns it is given; it was designed for bulk samples, and its single-cell use goes through dreamlet, which first aggregates to pseudobulk (sample x cell type) and analyses each cell type separately. In that setup cell type is not a factor within an assay, so a pseudobulk reading cannot rank cell type against donor in the same way. The cell-level eta^2 the teams used is the standard quantity for this question.",
+          "sources": [
+            "https://rdrr.io/bioc/scater/man/getVarianceExplained.html",
+            "https://rdrr.io/bioc/scater/man/getExplanatoryPCs.html",
+            "https://bioconductor.org/packages/release/bioc/vignettes/variancePartition/inst/doc/variancePartition.html",
+            "https://bioconductor.org/packages/release/bioc/vignettes/dreamlet/inst/doc/dreamlet.html"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc07-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab2-b51625d24ffe"
+            },
+            "sc07-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab2-c92a1627798d"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When single-cell studies report the 'variance explained' in a principal component by categorical metadata (e.g. donor, cell type, perturbation), is this usually computed as R2 from a linear model of cell-level PC scores, or on pseudobulk profiles? Which tools (e.g. scater getVarianceExplained, variancePartition) do which by default? ANSWER: Cell-level is the convention for PC-variance-explained. scater getExplanatoryPCs (which calls getVarianceExplained) regresses each PC on each colData variable separately over all columns (cells, in an SCE) and reports percent R2, i.e. marginal one-way R2 (eta^2 for a factor). variancePartition fits a linear mixed model on whatever columns it is given; it was designed for bulk samples, and its single-cell use goes through dreamlet, which first aggregates to pseudobulk (sample x cell type) and analyses each cell type separately. In that setup cell type is not a factor within an assay, so a pseudobulk reading cannot rank cell type against donor in the same way. The cell-level eta^2 the teams used is the standard quantity for this question. HOW SURE: medium. SOURCES: https://rdrr.io/bioc/scater/man/getVarianceExplained.html, https://rdrr.io/bioc/scater/man/getExplanatoryPCs.html, https://bioconductor.org/packages/release/bioc/vignettes/variancePartition/inst/doc/variancePartition.html, https://bioconductor.org/packages/release/bioc/vignettes/dreamlet/inst/doc/dreamlet.html."
+        },
+        {
+          "question": "In split-pool combinatorial barcoding single-cell protocols, what does the first-round barcode well encode (sample identity or something else), and is it a recognized source of technical batch effects?",
+          "answer": "The round-1 well barcode is added by in-cell reverse transcription and is the sample-specific barcode (Parse: 'the first sample-specific barcodes are added by in-cell reverse transcription'), so it encodes sample/condition identity. In Parse/SPLiT-seq v2 each well also holds paired oligo-dT and random-hexamer barcodes, which are collapsed to the same cell. Because the well is nested within sample (donor x condition), it is confounded with donor and perturbation by design and cannot be separated from them as an independent covariate. The pages I read mention sample-quality bias in split barcoding, but none of them describes round-1 wells as a recognized independent technical batch effect. The web did not settle the batch-effect part.",
+          "sources": [
+            "https://resources.parsebiosciences.com/hubfs/Marketing%20Assets%20(External%20Files)/Technical%20Brochures/Evercode%20WT%20Tech%20Brochure%20v4.pdf",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC11010347/",
+            "https://combine-lab.github.io/alevin-fry-tutorials/2022/split-seq/",
+            "https://biosails.github.io/pheniqs/splitseq_vignette"
+          ],
+          "confidence": "high on what the well encodes; low on batch effects",
+          "deliveries": {
+            "sc07-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab2-0bdeb534c7ed"
+            },
+            "sc07-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab2-f199eb23bfe4"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In split-pool combinatorial barcoding single-cell protocols, what does the first-round barcode well encode (sample identity or something else), and is it a recognized source of technical batch effects? ANSWER: The round-1 well barcode is added by in-cell reverse transcription and is the sample-specific barcode (Parse: 'the first sample-specific barcodes are added by in-cell reverse transcription'), so it encodes sample/condition identity. In Parse/SPLiT-seq v2 each well also holds paired oligo-dT and random-hexamer barcodes, which are collapsed to the same cell. Because the well is nested within sample (donor x condition), it is confounded with donor and perturbation by design and cannot be separated from them as an independent covariate. The pages I read mention sample-quality bias in split barcoding, but none of them describes round-1 wells as a recognized independent technical batch effect. The web did not settle the batch-effect part. HOW SURE: high on what the well encodes; low on batch effects. SOURCES: https://resources.parsebiosciences.com/hubfs/Marketing%20Assets%20(External%20Files)/Technical%20Brochures/Evercode%20WT%20Tech%20Brochure%20v4.pdf, https://pmc.ncbi.nlm.nih.gov/articles/PMC11010347/, https://combine-lab.github.io/alevin-fry-tutorials/2022/split-seq/, https://biosails.github.io/pheniqs/splitseq_vignette."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc07-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc07-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc07-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc07-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc07-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 93.42994479194749,
+      "cost_usd": 0.4216058000000001,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 33.367687582969666,
+      "cost_usd": 0.12837340000000003,
+      "error": null
+    },
+    {
+      "agent": "sc07-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 62.62815066706389,
+      "cost_usd": 0.12123180000000001,
+      "error": null
+    },
+    {
+      "agent": "sc07-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 68.25017733301502,
+      "cost_usd": 0.17598980000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 50.56720995798241,
+      "cost_usd": 0.2603392,
+      "error": null
+    },
+    {
+      "agent": "sc07-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 59.22821333294269,
+      "cost_usd": 0.31265980000000004,
+      "error": null
+    },
+    {
+      "agent": "sc07-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 75.35198375000618,
+      "cost_usd": 0.30519840000000004,
+      "error": null
+    },
+    {
+      "agent": "sc07-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 85.93554308300372,
+      "cost_usd": 0.2047756,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

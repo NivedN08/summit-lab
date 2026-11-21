@@ -1,0 +1,201 @@
+{
+  "study": "bd14",
+  "status": "replicated",
+  "final": {
+    "agent": "bd14-team-a",
+    "team": "team-a",
+    "round": "analysis",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd14/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd14-library": "opus",
+    "bd14-team-a": "opus",
+    "bd14-team-b": "opus",
+    "bd14-team-c": "opus",
+    "bd14-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd14-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd14/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd14-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd14/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd14-team-a",
+        "bd14-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The hypothesis requires a community-level income exposure (e.g. census-tract or zip-level median income, area deprivation index) measured per patient. Before modelling, search every header and every '#' description line of all provided files for income, socioeconomic, deprivation, zip, tract, county, or other geographic identifiers. Do not substitute proxies such as race, smoking, PSA or disease extent for income. If an area-level income variable is present, model it with standard errors clustered by area (or a multilevel model), because patients from the same area are not independent.",
+      "from": [
+        "sl-dev-panel-noise-lab1-83067de3ba68",
+        "sl-dev-panel-noise-lab1-46a52a282575"
+      ],
+      "reason": "Whether the exposure variable exists determines whether the claim can be tested at all, and using a proxy in its place would test a different hypothesis.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-9802362fb2d3"
+      }
+    },
+    {
+      "text": "Self-reported RACE is a social category, not a measure of genetic ancestry. The hypothesis asks for adjustment for both race and ancestry, so look separately for a genetic-ancestry estimate (e.g. percent African/European ancestry, ancestry principal components). Do not report an ancestry adjustment when only RACE was used.",
+      "from": [
+        "sl-dev-panel-noise-lab1-4e467a01c9d4"
+      ],
+      "reason": "This stops the team from counting a race-only model as the race-plus-ancestry adjustment that the hypothesis specifies.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-9f037a26797c"
+      }
+    },
+    {
+      "text": "Use the curated 8Q_ARM column in data_clinical_sample.txt as the 8q-gain outcome. If you recompute arm calls from data_cna_hg19.seg, use an arm-level rule (e.g. at least 70% of the arm covered by segments above about 0.2 log2), check agreement with the curated column, and prefer the curated column where they disagree.",
+      "from": [
+        "sl-dev-panel-noise-lab1-eca2af725fb4"
+      ],
+      "reason": "Calling 8q gain with a naive log2 threshold ignores purity, ploidy and panel coverage, so the outcome would be misclassified.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-5484498ded35"
+      }
+    },
+    {
+      "text": "Some patients have more than one sample (e.g. T01 and T02). Count SAMPLE_ID per PATIENT_ID, then keep one sample per patient or use patient-clustered models when relating patient-level variables to 8q status.",
+      "from": [
+        "sl-dev-panel-noise-lab1-ca019d1f328f"
+      ],
+      "reason": "Duplicate samples inflate n and break the independence assumption.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-49ae13fc1058"
+      }
+    },
+    {
+      "text": "The frequency of 8q gain differs strongly by sample type (metastatic vs primary), disease extent and Gleason score. In any exposure model, adjust or stratify for SAMPLE_TYPE, DISEASE_EXTENT and Gleason score.",
+      "from": [
+        "sl-dev-panel-noise-lab1-3ff0bb231da0"
+      ],
+      "reason": "These are major confounders of any association with 8q gain.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-2fa2ff096bfb"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 0,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed that a missing exposure column means the hypothesis cannot be tested at all, and that no field could stand in for, or link to, community-level income (for example a geographic or institution field). My own header audit backs this: the patient table has PATIENT_ID, ages, RACE, SMOKING, PSA, M_STAGE, VITAL_STATUS and DISEASE_EXTENT, and nothing geographic.",
+      "Both teams treated self-reported RACE as the only ancestry-related information and did not ask whether genetic ancestry could be derived from the genomic files."
+    ],
+    "unused_evidence": [
+      "data_mutations.txt carries population allele-frequency columns (AFR_MAF, EUR_MAF, EAS_MAF, ExAC_AF_*) and dbSNP_RS. These annotate each variant, not each patient. Somatic tumour-normal panel calls cannot give a patient-level ancestry estimate, so this cannot rescue the missing income exposure.",
+      "The 8Q_ARM column has 120 'Not called' and 5 'Loss' samples. This matters only if a model were fitted, and none can be.",
+      "SMOKING, PSA and DISEASE_EXTENT exist and could tempt someone to use them as socioeconomic proxies. Both teams rightly declined to."
+    ],
+    "unresolved_weak_points": [
+      "Team A searched only the first lines (headers and descriptions) of each file, not the values. My case-insensitive grep of all files for 'income' and 'ancestr' found 0 hits, and no column is plausibly geographic, so this weak point is effectively resolved.",
+      "Team B said income might sit under a name it did not search for. It reviewed every clinical header. My review of all 7 files' headers found no candidate, so the point is resolved."
+    ],
+    "second_readings": [
+      "'Adjusting for race and ancestry' could be read as needing race only, with ancestry treated as a synonym. Even so, the exposure (community-level average income) is absent, so the label does not depend on this reading.",
+      "One could read the claim as testable through a proxy such as race-stratified 8q rates. That would test a different hypothesis, and the label definitions point to Not verifiable when the relevant variable is absent."
+    ],
+    "verdict": "I trust the agreed Not verifiable label highly. No file in the data holds an income, socioeconomic or geographic variable, confirmed by both teams' header audits and by my full-text grep and column review. The genomic annotation columns cannot supply a patient-level exposure, so no check I could ask for would plausibly change the label.",
+    "questions": []
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd14-team-b",
+      "round": "analysis",
+      "reason": "agreed with bd14-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd14-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 66.16647987498436,
+      "cost_usd": 0.2299774,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 37.688519667019136,
+      "cost_usd": 0.1224112,
+      "error": null
+    },
+    {
+      "agent": "bd14-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 46.17471670801751,
+      "cost_usd": 0.10687060000000001,
+      "error": null
+    },
+    {
+      "agent": "bd14-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 56.211068292031996,
+      "cost_usd": 0.17002459999999997,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 62.455276958993636,
+      "cost_usd": 0.22122460000000002,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

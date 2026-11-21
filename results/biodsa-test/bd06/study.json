@@ -1,0 +1,479 @@
+{
+  "study": "bd06",
+  "status": "replicated",
+  "final": {
+    "agent": "bd06-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd06/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd06-library": "fable",
+    "bd06-team-a": "fable",
+    "bd06-team-b": "fable",
+    "bd06-team-c": "fable",
+    "bd06-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd06-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd06/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd06-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd06/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd06-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd06/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd06-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd06/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd06-team-a",
+        "bd06-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd06-team-a",
+        "bd06-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "CORRECTION to my earlier briefing item on building the BRCA2 wild-type group (the one saying the patient table has 78 rows and the sample table 77, so one patient looked un-sequenced): that count was wrong. The library recounted and reports that data_clinical_patient.txt and data_clinical_sample.txt each have 78 data rows, PATIENT_ID equals SAMPLE_ID one-to-one, there is exactly one sample per patient, and all 78 SAMPLE_IDs occur as Tumor_Sample_Barcode in data_mutations.txt. So do not go looking for an un-sequenced patient to drop, and do not shrink the wild-type group on that basis: every patient was sequenced, and a patient with no qualifying BRCA2 row is BRCA2 wild-type. Still assert in code that the three ID sets are identical before merging, and say so if they are not. According to the library, the only patients who should leave the survival analysis are the 2 with a blank OS_MONTHS (OS_STATUS before that exclusion: 46 '0:LIVING', 32 '1:DECEASED'); confirm these counts yourself and report whether either dropped patient is BRCA2-mutant.",
+      "from": [
+        "sl-biodsa-test-8cce74ea6ec6",
+        "sl-biodsa-test-559ef95986e1"
+      ],
+      "reason": "The earlier briefing passed down a wrong row count that would make the team hunt for, or wrongly exclude, a patient and mis-size the wild-type group; the team can only learn of the library's correction if it is passed down.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-e5457346fc16"
+      }
+    },
+    {
+      "text": "The FILTER column of data_mutations.txt is not uniform: the library counted 1,002 of 13,866 rows with FILTER = 'common_variant' (the rest '.'). The annotation tool (vcf2maf) adds this tag when a variant is seen in population databases (ExAC/gnomAD, roughly 10 or more alleles in some subpopulation), meaning the call is probably an inherited polymorphism that leaked into the somatic list rather than a true somatic mutation; pipelines such as AACR GENIE remove such calls. With only a handful of BRCA2-mutant patients, one patient placed in the mutant group because of a harmless polymorphism can change the result. Before looking at survival, list every BRCA2 row with FILTER, the population-frequency columns (ExAC_AF, GMAF, dbSNP_RS, Existing_variation; confirm which exist) and the tumour variant allele fraction (a fraction near 0.5 or 1.0 together with a population frequency points to germline). This refines the primary definition in my earlier briefing: primary mutant group = patients with at least one protein-altering BRCA2 call whose FILTER is not 'common_variant'. Keeping the flagged calls is a labelled sensitivity analysis; report which patients move between groups and how the p-value and direction change, and if the two versions disagree say so plainly instead of choosing the one that is significant.",
+      "from": [
+        "sl-biodsa-test-ae7228a93805"
+      ],
+      "reason": "This changes who is in the mutant group; the team would not look at the FILTER column unprompted, and one misassigned patient matters in a group this small.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-62389d6c2ee6"
+      }
+    },
+    {
+      "text": "Data-specific addition to my earlier item on silent and non-coding BRCA2 rows: the library reports that this mutation file is unfiltered and holds, among 13,866 rows, 3,362 Silent, 93 Splice_Region, 79 Intron, 57 RNA and 14 3'UTR rows. Note Splice_Region in particular, which my earlier list did not name: cBioPortal-style analyses keep Splice_Site as a mutation but usually treat Splice_Region as silent. List every BRCA2 row with Variant_Classification, HGVSp_Short and IMPACT, and count the patients whose only BRCA2 row is Silent, Splice_Region, Intron, RNA or UTR. Those patients are BRCA2 wild-type in the primary analysis (mutant = Missense_Mutation, Nonsense_Mutation, Frame_Shift_Ins/Del, In_Frame_Ins/Del, Splice_Site, Nonstop_Mutation, Translation_Start_Site); counting them as mutant is a sensitivity analysis only.",
+      "from": [
+        "sl-biodsa-test-3ea10e71efcf",
+        "sl-biodsa-test-fd4a8bc2125f"
+      ],
+      "reason": "About a quarter of the rows in this file are silent or non-coding, so a row-count definition of 'BRCA2-mutant' would misclassify patients here; the Splice_Region rule was missing from the earlier briefing.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-5bc4c80e5d45"
+      }
+    },
+    {
+      "text": "The mutation table comes from matched tumour-normal exome sequencing (the library reports all 78 samples as PLATFORM 'WXS', SOMATIC_STATUS 'Matched'), so it lists somatic calls only. Inherited (germline) BRCA2 carriers cannot be identified from it, and a somatic BRCA2 variant on one allele does not by itself show the gene is inactivated (across cancers, well under half of BRCA1/2 alterations in cancer types not classically linked to BRCA are biallelic). The data therefore test 'somatic BRCA2 mutation present versus absent', which is the only reading of the hypothesis they allow. Confirm there is no germline or zygosity/loss-of-heterozygosity column; for each BRCA2 call record the variant type, the tumour variant allele fraction, and whether the same patient has two BRCA2 hits. Label the analysis as somatic BRCA2 mutation status, state this limitation in the reasoning, and make no claim about germline carriers or BRCA2 loss of function. This limitation does not mean the mutation or survival variables are absent from the data.",
+      "from": [
+        "sl-biodsa-test-1e09e42ba8dd"
+      ],
+      "reason": "It fixes what exposure the data can actually test and stops the team either over-claiming about BRCA2 loss of function or mistaking the germline gap for missing variables when choosing the label.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-021e3e350bc1"
+      }
+    },
+    {
+      "text": "Caveat on the permutation log-rank test my earlier briefing recommended for the small mutant group: a plain label-permutation test is valid only when the two groups have the same censoring (follow-up) distribution, and with small groups and unequal follow-up or heavy censoring it can be mis-sized. Censoring is heavy here (the library counts 46 of 78 patients censored, 32 deaths). Short or unequal follow-up can also make a group appear to survive longer simply because its deaths have not yet been observed. Compare follow-up between BRCA2-mutant and wild-type patients: the range of censoring times among LIVING patients in each group and the reverse Kaplan-Meier median follow-up (swap the event indicator), and note whether mutant patients are mostly censored early. If follow-up clearly differs or the mutant patients are nearly all censored early, report the asymptotic log-rank p, the permutation p and, if available, an exact test designed for unequal follow-up (Heinze 2003) side by side, treat disagreement among them as a sign the result is fragile, and describe the comparison as limited by follow-up instead of reading a flat mutant curve as longer survival. Likewise, plot both Kaplan-Meier curves with numbers at risk, do not rest any conclusion on curve tails or medians supported by only one or two patients at risk (the mutant median may not be estimable), and if the curves cross say that the single log-rank/hazard-ratio summary depends on time.",
+      "from": [
+        "sl-biodsa-test-752f1ad93cd0",
+        "sl-biodsa-test-b7b123479166"
+      ],
+      "reason": "The earlier briefing presented the permutation test as the small-sample remedy without its validity condition; unequal or short follow-up in a tiny mutant group could make the team misread both the p-value and the direction.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-8dd910ea4fed"
+      }
+    },
+    {
+      "text": "Concrete detail for the hypermutation and covariate checks in my earlier briefing (taken by the library from the table contents, not from a survival analysis; confirm it): the cohort has 78 patients and 32 deaths in total, so by the roughly 10-events-per-variable rule a Cox model can carry at most about 3 covariates, and fewer once the 2 patients with blank OS_MONTHS are dropped. The sample table's DNA_REPAIR_STATUS column (19 'Def', 59 'NonDef') is the available marker of mismatch-repair deficiency / hypermutation, alongside TMB_NONSYNONYMOUS; CLONAL_LABEL marks 9 'Ultraclonal' samples. Use DNA_REPAIR_STATUS as the stratifier when checking whether BRCA2 mutations are hypermutation passengers (stratified log-rank test, or restriction to 'NonDef'), expect the restricted mutant group to be very small, and keep this as a sensitivity analysis beside the unadjusted primary comparison.",
+      "from": [
+        "sl-biodsa-test-08ab55eb5a0b",
+        "sl-biodsa-test-a22ac2fdf748",
+        "sl-biodsa-test-80a01e498cbf"
+      ],
+      "reason": "It tells the team which column to stratify on and how few covariates the event count supports, so the confounding check is done the same pre-chosen way instead of by trying several adjustment sets.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-a1ae1dac6cdd"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams fixed 'BRCA2 mutation' as any protein-altering somatic call (4 patients: 3 missense, 1 frameshift) and treated every other definition as a sensitivity analysis that cannot move the label. Neither tested whether the missense calls are plausibly functional; the label rests on a group in which 2 of 3 evaluable carriers have missense calls of unknown significance.",
+      "Both dropped the two LIVING patients with blank OS_MONTHS (one is a BRCA2 missense carrier, PGM15) as if missing at random, without bounding what any admissible follow-up time for that carrier would do to the comparison.",
+      "Both treated the single truncating carrier (PGM63, stage 4, died at 6 months) as an n=1 artefact, but their exact/permutation p-values for it disagree and fall on opposite sides of 0.05 (team A exact vs team B Monte-Carlo two-sided); neither explained the difference or tested that patient against same-stage peers.",
+      "Both assumed overall survival (OS_MONTHS / OS_STATUS, all-cause death, time from diagnosis) is the survival quantity and that censoring is non-informative and similar between groups, although team A's own reverse-KM shows much shorter follow-up among carriers.",
+      "Both used the same family of tests (log-rank / Cox, two-sided) for a directional claim ('shorter'); neither stated the one-sided result for the stated direction."
+    ],
+    "unused_evidence": [
+      "Functional-impact columns in the mutation file (SIFT, PolyPhen, MA:FImpact / MA:FIS, CLIN_SIG, DOMAINS) were not used by either team. They are populated for the BRCA2 missense rows and differ between them (one call is predicted deleterious/probably damaging, two are predicted tolerated/benign). They exist to separate likely-functional from likely-neutral variants, which is exactly the definition both teams left untested.",
+      "EBV_STATUS (37 Positive / 41 Negative) and EBV_PRESENT in the patient table: a large, balanced, biologically distinct subgroup that neither team cross-tabulated against BRCA2 status or used as a stratifier.",
+      "LOCATION (26 Antrum / 26 Body / 26 Cardia: a design-balanced sampling factor), SUBTYPE (38 D / 40 I), GRADE, CDH1_STATUS, TP53_MUTATION, ARID1A_MUTATION and CLONAL_LABEL were not related to BRCA2 status by team B and only partly by team A.",
+      "CLIN_T/N/M_STAGE are blank for about 49-50 of 78 patients, while STAGE is complete; neither team asked whether STAGE is a reliable prognostic coding here even though team B's stage positive control failed (p=0.17).",
+      "tumor_var_freq (0.05-0.16 for all six BRCA2 rows) was noted by both but not used; t_depth is 0 and t_alt_count is '.' on these rows, so the read support behind the calls cannot be checked from counts."
+    ],
+    "unresolved_weak_points": [
+      "Team A: named power and the truncating-only n=1 result as its weakest point and said it did not fit the planned Firth-penalised Cox for it ('the exact test stands in'). Reported, not resolved; the plan promised Firth if Cox was unstable and Cox did fail to converge.",
+      "Team B: named power, and reported that its own positive control (stage vs OS) was not significant. That was reported as confirmation of low power rather than investigated as a possible sign that the survival fields or the stage coding are not behaving as expected. Not resolved.",
+      "Team B: its adjusted Cox carries three covariates on a comparison with 3 carriers and 1 death, and its adjusted HR sits on the other side of 1 from the unadjusted HR and from team A's one-covariate-at-a-time range. Which covariate moves it, and whether that model is stable, was not examined.",
+      "Both: the disagreement between the two exact p-values for the truncating-only definition was never reconciled, because the teams were blind to each other."
+    ],
+    "second_readings": [
+      "'BRCA2 mutations' could mean (a) any protein-altering somatic call (the reading both used), (b) every BRCA2 row including silent ones, as a simple per-gene mutated/not-mutated count would give (both ran this as sensitivity), or (c) only inactivating or predicted-damaging mutations, which here reduces to a single evaluable patient. Reading (c) is the only one under which the teams' own numbers approach significance in the hypothesised direction.",
+      "'Significantly shorter' is directional: it can be read as a one-sided test of mutant-worse, or as two conditions (direction and two-sided significance). Both teams used the second; the label does not obviously differ, but neither stated it.",
+      "'Survival' is taken as overall survival from diagnosis; the data hold no disease-free or progression endpoint, so there is no competing reading in the data.",
+      "'Gastric cancer patients' is taken as the whole cohort; a third of tumours are cardia and nearly half are EBV-positive, so a reading restricted to a subgroup is possible but not suggested by the wording."
+    ],
+    "verdict": "I trust the agreed answer fairly well: the two teams reproduce each other's primary numbers, every definition with more than one evaluable carrier shows no shorter survival, and the one dropped carrier is recorded as living so can hardly add evidence for 'shorter'. The residual risk is the damaging/truncating-only reading, which rests on one stage 4 patient and for which the teams' exact p-values disagree across 0.05; that discrepancy and the unused functional-impact and EBV columns should be closed before reporting.",
+    "questions": [
+      {
+        "to": "bd06-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For the truncating-only definition (one patient, PGM63) you report an exact log-rank p below 0.05, while the other team's permutation p for the same patient is above 0.05. Write down exactly how your exact p is defined (test statistic, one- or two-sided, how tied death times and censored patients with shorter follow-up are ranked), list the patients whose statistic is at least as extreme as PGM63's, and then repeat the enumeration within STAGE = 4 patients only. Also fit the Firth-penalised Cox you planned for this case. Does the reconciled, within-stage result change your statement that this definition is an n=1 artefact, or your method for choosing the label?",
+        "from": [
+          "sl-biodsa-test-6ea583f4f0d5",
+          "sl-biodsa-test-3afe398cf212"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-2e675fd93db6"
+      },
+      {
+        "to": "bd06-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The mutation file has SIFT, PolyPhen, MA:FImpact / MA:FIS and CLIN_SIG columns that your method did not use. Tabulate them for the four protein-altering BRCA2 calls, state which patients would form a 'predicted damaging or truncating' group, and how many of them are evaluable for survival. Is that group different from your truncating-only sensitivity group, and does this evidence change which definition you regard as matching the hypothesis wording, or leave your pre-specified primary definition in place?",
+        "from": [
+          "sl-biodsa-test-72e28d47b873"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-7628903bedf8"
+      },
+      {
+        "to": "bd06-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: PGM15 is a BRCA2 carrier recorded as LIVING with blank OS_MONTHS and was dropped. Run a bounding check: put PGM15 back as a censored observation at the shortest and at the longest follow-up time observed in the cohort (and do the same for PGM56 in the wild-type group), and re-run the primary log-rank and exact test at each extreme. Does the primary result move across either extreme, and does that change your handling of blank survival times?",
+        "from": [
+          "sl-biodsa-test-72e28d47b873",
+          "sl-biodsa-test-8ff8b7193b8a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-ee495ce5cc94"
+      },
+      {
+        "to": "bd06-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: EBV_STATUS (37 Positive / 41 Negative) and LOCATION (three equal groups of 26) were not used. Cross-tabulate BRCA2 status against EBV_STATUS and LOCATION, check whether EBV_STATUS is itself associated with overall survival in this cohort, and re-run the primary comparison stratified by EBV_STATUS. Also state the one-sided p-value for the hypothesised direction (mutant worse). Does either result change your method or your wording of the conclusion?",
+        "from": [
+          "sl-biodsa-test-cef04fa1d22f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-76f7ca84dc78"
+      },
+      {
+        "to": "bd06-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your truncating-only p-value comes from 5000 random permutations, but with one carrier among 76 evaluable patients there are only 76 possible assignments (and 70,300 for three carriers), so the test can be enumerated exactly. The other team's exact p for the same single patient is below 0.05 and yours is above it. Replace the Monte-Carlo test with full enumeration, state the statistic, sidedness and tie handling, list which patients are at least as extreme as PGM63, and repeat within STAGE = 4 patients only. Does the exact, within-stage result change how you treat this definition or how you choose the label?",
+        "from": [
+          "sl-biodsa-test-3afe398cf212",
+          "sl-biodsa-test-6ea583f4f0d5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-554f6496304a"
+      },
+      {
+        "to": "bd06-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your adjusted Cox model has three covariates (age, stage, log10 TMB) for a comparison with 3 carriers and 1 death, and its BRCA2 hazard ratio lies on the opposite side of 1 from your unadjusted estimate. Refit adding one covariate at a time, report the BRCA2 coefficient, its standard error and any convergence warning at each step, and state how STAGE was coded (numeric or categorical). Which covariate moves the estimate, is the three-covariate model stable, and does this change which adjusted analysis you report?",
+        "from": [
+          "sl-biodsa-test-c52cde989f48"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-193a7e4c323d"
+      },
+      {
+        "to": "bd06-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your positive control (stage vs overall survival) was not significant, and you read that as low power. Check the alternative that the survival fields or the stage coding are not behaving as expected: compare STAGE 4 with STAGE 1-3 as a binary factor, tabulate deaths and median follow-up of LIVING patients by stage, and note that CLIN_T/N/M_STAGE are blank for about two thirds of patients while STAGE is complete. Do the survival data order patients by stage in the expected direction, and does the answer change your confidence in, or your method for, the BRCA2 comparison? In the same run, put the dropped carrier PGM15 back as censored at the shortest and at the longest observed follow-up and report whether the primary result moves.",
+        "from": [
+          "sl-biodsa-test-1266a61dcd13"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-522fd924b65c"
+      },
+      {
+        "to": "bd06-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your method did not use the SIFT, PolyPhen, MA:FImpact / MA:FIS and CLIN_SIG columns of the mutation file, nor EBV_STATUS (37 Positive / 41 Negative) in the patient table. Tabulate the functional-impact columns for the four nonsynonymous BRCA2 calls and say which patients would form a 'predicted damaging or truncating' group and how many are evaluable; then cross-tabulate BRCA2 status against EBV_STATUS and re-run the primary comparison stratified by it. Does either piece of evidence change your definition of the mutant group or your method?",
+        "from": [
+          "sl-biodsa-test-688ac501a18d"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-79ce830261fe"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "For an exact (full-enumeration) or permutation log-rank test in which one of the two groups contains a single subject, how is the two-sided p-value conventionally defined (ordering by the chi-square statistic versus doubling a one-sided tail), how are tied event times handled, and is the permutation log-rank test valid when the censoring (follow-up) distributions differ between the groups? What do standard implementations (for example R coin::logrank_test with distribution = 'exact' or 'approximate') do by default?",
+          "why": "The two teams computed an exact and a Monte-Carlo permutation p-value for the same single-patient subgroup and obtained values on opposite sides of the conventional threshold; the definition and defaults decide which is correct.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When a Cox model has monotone likelihood because one covariate group consists of a single subject who has an early event, what does Firth's penalised partial likelihood (for example R coxphf) report as the hazard ratio, profile-likelihood confidence interval and p-value, and how do methodological sources recommend interpreting a nominally significant result that rests on a single subject?",
+          "why": "One team planned a Firth-penalised fit for exactly this situation and did not run it; knowing how the method behaves and how such a result should be read tells the teams whether it could alter their treatment of that subgroup.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Are in-silico missense predictions (SIFT, PolyPhen-2, MutationAssessor functional impact score) considered reliable for classifying somatic missense variants in large DNA-repair tumour-suppressor genes such as BRCA1/2 as functionally damaging, according to variant-interpretation guidance (ACMG/AMP, ENIGMA), and what conventions do tumour-sequencing survival studies use when defining a gene as 'mutated' (all nonsynonymous, truncating only, or predicted-deleterious only)?",
+          "why": "Neither team used the functional-prediction columns available to them; whether a predicted-damaging definition is a defensible reading of 'mutation' determines if that alternative grouping deserves weight against the any-nonsynonymous definition both teams used.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "For an exact (full-enumeration) or permutation log-rank test in which one of the two groups contains a single subject, how is the two-sided p-value conventionally defined (ordering by the chi-square statistic versus doubling a one-sided tail), how are tied event times handled, and is the permutation log-rank test valid when the censoring (follow-up) distributions differ between the groups? What do standard implementations (for example R coin::logrank_test with distribution = 'exact' or 'approximate') do by default?",
+          "answer": "Two-sided definition. R coin defines the two-sided p-value as P(|c(T)| >= |c(t)|): relabellings are ordered by the absolute standardised statistic, with ties counted as at least as extreme (>=). It does not double a tail. The standardisation uses the permutation mean and variance, which are the same for every relabelling, so this is an ordering by |O - E|. It matches a chi-square ordering only if the variance is not recomputed for each relabelling. Doubling, 2*min(upper tail, lower tail), is a second convention that appears in teaching notes (seen only as a search excerpt). Neither is wrong, but they differ when the permutation distribution is skewed, so each p-value must say which was used.\n\nTies. coin::logrank_test defaults to type = 'logrank' and ties.method = 'mid-ranks': subjects with the same event time share one risk set and get the same score. The alternatives are 'Hothorn-Lausen' and 'average-scores' (the StatXact method, which averages the scores of arbitrarily broken ties).\n\nReference distribution. exact() is available for univariate two-sample problems only (shift or split-up algorithm). approximate() draws nresample = 10000 relabellings by default. I did not see on the pages read that the default for logrank_test is the asymptotic distribution, or whether coin's Monte-Carlo p-value adds one to numerator and denominator; I believe the default is asymptotic and no add-one is applied, but that is from memory. An arXiv paper (search excerpt only) argues Monte-Carlo permutation p-values should use (b+1)/(m+1).\n\nValidity under unequal censoring. Wang, Lagakos and Gray (2010) state that standard permutation methods are valid at any sample size when the two censoring distributions are equal, and do not work well when they differ, in small samples or with heavy censoring. Heinze, Gnant and Schemper (2003) state that the exact complete-permutation test requires equal follow-up, that the asymptotic test does not keep its size when group sizes differ substantially, and propose exact tests that condition on realised follow-up.\n\nWhat this means for a one-patient group (my reasoning, not a quoted source). The full enumeration has only N equally likely outcomes, one per patient taking the lone mutant label, so p moves in steps of 1/N and cannot be below 1/N (2/N if doubled). Log-rank scores are right-skewed, so the opposite tail often holds nothing as extreme and the |Z|-ordered two-sided p equals the one-sided p, while doubling gives twice that. A correct Monte-Carlo run converges to the enumeration value under the same definition. A disagreement across 0.05 therefore points to a definitional difference: doubling versus |Z| ordering, > versus >= at tied statistics (including floating-point near-ties), ordering by a chi-square whose variance is recomputed per relabelling, or an add-one correction. The teams should recompute both under one stated definition; the coin-style |O - E| ordering with >= is the software default. Either way the test's validity still depends on comparable follow-up in the two groups.",
+          "sources": [
+            "https://search.r-project.org/CRAN/refmans/coin/html/SurvivalTests.html",
+            "https://search.r-project.org/CRAN/refmans/coin/html/NullDistribution.html",
+            "https://cran.r-project.org/web/packages/coin/vignettes/coin.pdf",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC2950789/",
+            "https://doi.org/10.1111/j.0006-341x.2003.00132.x",
+            "https://www.math.wustl.edu/~sawyer/handouts/survrank.pdf",
+            "https://arxiv.org/abs/1603.05766v1"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd06-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-65f135954f09"
+            },
+            "bd06-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-6e111277a21c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: For an exact (full-enumeration) or permutation log-rank test in which one of the two groups contains a single subject, how is the two-sided p-value conventionally defined (ordering by the chi-square statistic versus doubling a one-sided tail), how are tied event times handled, and is the permutation log-rank test valid when the censoring (follow-up) distributions differ between the groups? What do standard implementations (for example R coin::logrank_test with distribution = 'exact' or 'approximate') do by default? ANSWER: Two-sided definition. R coin defines the two-sided p-value as P(|c(T)| >= |c(t)|): relabellings are ordered by the absolute standardised statistic, with ties counted as at least as extreme (>=). It does not double a tail. The standardisation uses the permutation mean and variance, which are the same for every relabelling, so this is an ordering by |O - E|. It matches a chi-square ordering only if the variance is not recomputed for each relabelling. Doubling, 2*min(upper tail, lower tail), is a second convention that appears in teaching notes (seen only as a search excerpt). Neither is wrong, but they differ when the permutation distribution is skewed, so each p-value must say which was used.\n\nTies. coin::logrank_test defaults to type = 'logrank' and ties.method = 'mid-ranks': subjects with the same event time share one risk set and get the same score. The alternatives are 'Hothorn-Lausen' and 'average-scores' (the StatXact method, which averages the scores of arbitrarily broken ties).\n\nReference distribution. exact() is available for univariate two-sample problems only (shift or split-up algorithm). approximate() draws nresample = 10000 relabellings by default. I did not see on the pages read that the default for logrank_test is the asymptotic distribution, or whether coin's Monte-Carlo p-value adds one to numerator and denominator; I believe the default is asymptotic and no add-one is applied, but that is from memory. An arXiv paper (search excerpt only) argues Monte-Carlo permutation p-values should use (b+1)/(m+1).\n\nValidity under unequal censoring. Wang, Lagakos and Gray (2010) state that standard permutation methods are valid at any sample size when the two censoring distributions are equal, and do not work well when they differ, in small samples or with heavy censoring. Heinze, Gnant and Schemper (2003) state that the exact complete-permutation test requires equal follow-up, that the asymptotic test does not keep its size when group sizes differ substantially, and propose exact tests that condition on realised follow-up.\n\nWhat this means for a one-patient group (my reasoning, not a quoted source). The full enumeration has only N equally likely outcomes, one per patient taking the lone mutant label, so p moves in steps of 1/N and cannot be below 1/N (2/N if doubled). Log-rank scores are right-skewed, so the opposite tail often holds nothing as extreme and the |Z|-ordered two-sided p equals the one-sided p, while doubling gives twice that. A correct Monte-Carlo run converges to the enumeration value under the same definition. A disagreement across 0.05 therefore points to a definitional difference: doubling versus |Z| ordering, > versus >= at tied statistics (including floating-point near-ties), ordering by a chi-square whose variance is recomputed per relabelling, or an add-one correction. The teams should recompute both under one stated definition; the coin-style |O - E| ordering with >= is the software default. Either way the test's validity still depends on comparable follow-up in the two groups. HOW SURE: medium. SOURCES: https://search.r-project.org/CRAN/refmans/coin/html/SurvivalTests.html, https://search.r-project.org/CRAN/refmans/coin/html/NullDistribution.html, https://cran.r-project.org/web/packages/coin/vignettes/coin.pdf, https://pmc.ncbi.nlm.nih.gov/articles/PMC2950789/, https://doi.org/10.1111/j.0006-341x.2003.00132.x, https://www.math.wustl.edu/~sawyer/handouts/survrank.pdf, https://arxiv.org/abs/1603.05766v1."
+        },
+        {
+          "question": "When a Cox model has monotone likelihood because one covariate group consists of a single subject who has an early event, what does Firth's penalised partial likelihood (for example R coxphf) report as the hazard ratio, profile-likelihood confidence interval and p-value, and how do methodological sources recommend interpreting a nominally significant result that rests on a single subject?",
+          "answer": "What the method reports. Firth's penalised partial likelihood always gives a finite hazard ratio where the ordinary estimate diverges and its Wald interval covers the whole real line. coxphf by default (pl = TRUE, alpha = 0.05) reports profile penalised likelihood confidence limits and penalised likelihood-ratio p-values; Wald versions are available but Heinze and Schemper (2001) and the coxphf manual say the profile and likelihood-ratio versions are preferable. The manual warns the profile limits and p-values can fail to converge and suggests maxstep = 0.1 and maxit = 500 in that case.\n\nWhen it applies. By the definition in the manual and the paper, monotone likelihood occurs when at every event time the subject who fails has the highest (or always the lowest) covariate value in the risk set. For a one-patient group that holds only if that patient's death is the first event. If any wild-type death comes earlier, the ordinary Cox estimate is finite and Firth only shrinks it slightly.\n\nNumbers and interpretation: not settled by the web. The sources I read give no numerical result for a one-subject group and no explicit recommendation on reading a nominally significant result that rests on one subject. The nearest guidance is a general note (Yoneoka and Saito 2015) that fewer than about 10 events per variable marks unreliable Cox inference and that p-values should not be over-relied on.\n\nMy reasoning, not a quoted source. Penalisation repairs the estimate but adds no information. If the lone mutant has the first of N at-risk events, the unpenalised likelihood-ratio statistic is 2*ln(N) (about 8.7 for N = 76, chi-square p about 0.003), and the penalised version will be somewhat smaller, so a Firth fit would probably look nominally significant. That p-value rests on a chi-square approximation with one informative subject, whereas the exact permutation p cannot be below 1/N. A Firth fit would therefore give a large finite hazard ratio with a very wide, asymmetric interval and would not change how the subgroup should be treated: report it as a sensitivity analysis beside the exact test, and describe the result as resting on one patient.",
+          "sources": [
+            "https://georgheinze.r-universe.dev/coxphf/doc/manual.html",
+            "https://doi.org/10.1111/j.0006-341x.2001.00114.x",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4375289/"
+          ],
+          "confidence": "medium for how the method behaves; low for the interpretation, which the web did not settle",
+          "deliveries": {
+            "bd06-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-60107c4b8612"
+            },
+            "bd06-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-c48d760032bb"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a Cox model has monotone likelihood because one covariate group consists of a single subject who has an early event, what does Firth's penalised partial likelihood (for example R coxphf) report as the hazard ratio, profile-likelihood confidence interval and p-value, and how do methodological sources recommend interpreting a nominally significant result that rests on a single subject? ANSWER: What the method reports. Firth's penalised partial likelihood always gives a finite hazard ratio where the ordinary estimate diverges and its Wald interval covers the whole real line. coxphf by default (pl = TRUE, alpha = 0.05) reports profile penalised likelihood confidence limits and penalised likelihood-ratio p-values; Wald versions are available but Heinze and Schemper (2001) and the coxphf manual say the profile and likelihood-ratio versions are preferable. The manual warns the profile limits and p-values can fail to converge and suggests maxstep = 0.1 and maxit = 500 in that case.\n\nWhen it applies. By the definition in the manual and the paper, monotone likelihood occurs when at every event time the subject who fails has the highest (or always the lowest) covariate value in the risk set. For a one-patient group that holds only if that patient's death is the first event. If any wild-type death comes earlier, the ordinary Cox estimate is finite and Firth only shrinks it slightly.\n\nNumbers and interpretation: not settled by the web. The sources I read give no numerical result for a one-subject group and no explicit recommendation on reading a nominally significant result that rests on one subject. The nearest guidance is a general note (Yoneoka and Saito 2015) that fewer than about 10 events per variable marks unreliable Cox inference and that p-values should not be over-relied on.\n\nMy reasoning, not a quoted source. Penalisation repairs the estimate but adds no information. If the lone mutant has the first of N at-risk events, the unpenalised likelihood-ratio statistic is 2*ln(N) (about 8.7 for N = 76, chi-square p about 0.003), and the penalised version will be somewhat smaller, so a Firth fit would probably look nominally significant. That p-value rests on a chi-square approximation with one informative subject, whereas the exact permutation p cannot be below 1/N. A Firth fit would therefore give a large finite hazard ratio with a very wide, asymmetric interval and would not change how the subgroup should be treated: report it as a sensitivity analysis beside the exact test, and describe the result as resting on one patient. HOW SURE: medium for how the method behaves; low for the interpretation, which the web did not settle. SOURCES: https://georgheinze.r-universe.dev/coxphf/doc/manual.html, https://doi.org/10.1111/j.0006-341x.2001.00114.x, https://pmc.ncbi.nlm.nih.gov/articles/PMC4375289/."
+        },
+        {
+          "question": "Are in-silico missense predictions (SIFT, PolyPhen-2, MutationAssessor functional impact score) considered reliable for classifying somatic missense variants in large DNA-repair tumour-suppressor genes such as BRCA1/2 as functionally damaging, according to variant-interpretation guidance (ACMG/AMP, ENIGMA), and what conventions do tumour-sequencing survival studies use when defining a gene as 'mutated' (all nonsynonymous, truncating only, or predicted-deleterious only)?",
+          "answer": "Reliability: no, not on their own. Ernst et al. (2018, read) tested SIFT, PolyPhen-2, Align-GVGD and MutationTaster2 on 236 expert-classified BRCA1/2 missense variants. PolyPhen-2 had sensitivity 0.67 and specificity 0.67; SIFT had sensitivity 1.00 but poor specificity; all tools produced an unacceptable share of false positives, and combining them did not fix this. The authors conclude the tools are not suitable to predict pathogenicity of BRCA1/2 variants of uncertain significance and that SIFT and MutationTaster2 are usable at most to predict benignity.\n\nGuidance. The AMP/ASCO/CAP 2017 somatic guideline says missense prediction tools have moderate specificity (about 60 to 80 percent) and tend to over-predict deleterious impact. Under ACMG/AMP, concordant in-silico tools count only as supporting evidence, a likelihood ratio of about 2. Both statements were seen as search excerpts; the guideline page returned only front matter when opened. The ENIGMA BRCA1/2 expert-panel paper also returned only front matter, so I cannot quote its computational-evidence rules. I found nothing on MutationAssessor for BRCA1/2 specifically.\n\nConventions for 'mutated'. The web did not show one agreed convention. cBioPortal's default gene query counts every stored mutation (it stores non-synonymous calls) and offers truncating-only or driver-only as explicit restrictions (search excerpt). In cBioPortal-curated BRCA2 alterations, 83.6 percent of driver mutations are truncating, while missense variants make up 96.7 percent of variants of unknown significance (search excerpt).\n\nWhat this means for the teams. A SIFT/PolyPhen 'predicted damaging' grouping is not a validated definition of a functionally damaging BRCA2 mutation and deserves little weight against the any-nonsynonymous definition, which matches the hypothesis wording and the cBioPortal default. It can be run as a labelled sensitivity analysis. Truncating-only is the better-founded alternative definition.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5870501/",
+            "https://ncbi.nlm.nih.gov/pmc/articles/PMC5707196/",
+            "https://doi.org/10.1038/s41436-021-01265-z",
+            "https://www.cell.com/ajhg/fulltext/S0002-9297(24)00257-X",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8161351/",
+            "https://docs.cbioportal.org/user-guide/oql/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd06-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-a14867061676"
+            },
+            "bd06-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-37870e6beb15"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Are in-silico missense predictions (SIFT, PolyPhen-2, MutationAssessor functional impact score) considered reliable for classifying somatic missense variants in large DNA-repair tumour-suppressor genes such as BRCA1/2 as functionally damaging, according to variant-interpretation guidance (ACMG/AMP, ENIGMA), and what conventions do tumour-sequencing survival studies use when defining a gene as 'mutated' (all nonsynonymous, truncating only, or predicted-deleterious only)? ANSWER: Reliability: no, not on their own. Ernst et al. (2018, read) tested SIFT, PolyPhen-2, Align-GVGD and MutationTaster2 on 236 expert-classified BRCA1/2 missense variants. PolyPhen-2 had sensitivity 0.67 and specificity 0.67; SIFT had sensitivity 1.00 but poor specificity; all tools produced an unacceptable share of false positives, and combining them did not fix this. The authors conclude the tools are not suitable to predict pathogenicity of BRCA1/2 variants of uncertain significance and that SIFT and MutationTaster2 are usable at most to predict benignity.\n\nGuidance. The AMP/ASCO/CAP 2017 somatic guideline says missense prediction tools have moderate specificity (about 60 to 80 percent) and tend to over-predict deleterious impact. Under ACMG/AMP, concordant in-silico tools count only as supporting evidence, a likelihood ratio of about 2. Both statements were seen as search excerpts; the guideline page returned only front matter when opened. The ENIGMA BRCA1/2 expert-panel paper also returned only front matter, so I cannot quote its computational-evidence rules. I found nothing on MutationAssessor for BRCA1/2 specifically.\n\nConventions for 'mutated'. The web did not show one agreed convention. cBioPortal's default gene query counts every stored mutation (it stores non-synonymous calls) and offers truncating-only or driver-only as explicit restrictions (search excerpt). In cBioPortal-curated BRCA2 alterations, 83.6 percent of driver mutations are truncating, while missense variants make up 96.7 percent of variants of unknown significance (search excerpt).\n\nWhat this means for the teams. A SIFT/PolyPhen 'predicted damaging' grouping is not a validated definition of a functionally damaging BRCA2 mutation and deserves little weight against the any-nonsynonymous definition, which matches the hypothesis wording and the cBioPortal default. It can be run as a labelled sensitivity analysis. Truncating-only is the better-founded alternative definition. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC5870501/, https://ncbi.nlm.nih.gov/pmc/articles/PMC5707196/, https://doi.org/10.1038/s41436-021-01265-z, https://www.cell.com/ajhg/fulltext/S0002-9297(24)00257-X, https://pmc.ncbi.nlm.nih.gov/articles/PMC8161351/, https://docs.cbioportal.org/user-guide/oql/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd06-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd06-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd06-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd06-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd06-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 193.07884616591036,
+      "cost_usd": 0.37916300000000003,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 126.99697941693012,
+      "cost_usd": 0.20260700000000004,
+      "error": null
+    },
+    {
+      "agent": "bd06-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 117.09464116708841,
+      "cost_usd": 0.19178320000000001,
+      "error": null
+    },
+    {
+      "agent": "bd06-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 169.48433883301914,
+      "cost_usd": 0.32456270000000004,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 156.36553337506484,
+      "cost_usd": 0.3507561,
+      "error": null
+    },
+    {
+      "agent": "bd06-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 197.54622579191346,
+      "cost_usd": 0.4854948,
+      "error": null
+    },
+    {
+      "agent": "bd06-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 249.2883884999901,
+      "cost_usd": 0.38834599999999997,
+      "error": null
+    },
+    {
+      "agent": "bd06-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 257.2546295829816,
+      "cost_usd": 0.4440273,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

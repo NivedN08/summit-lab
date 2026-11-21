@@ -1,0 +1,469 @@
+{
+  "study": "bd17",
+  "status": "replicated",
+  "final": {
+    "agent": "bd17-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd17/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m03/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bd17-library": "opus",
+    "bd17-team-a": "opus",
+    "bd17-team-b": "opus",
+    "bd17-team-c": "opus",
+    "bd17-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "bd17-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd17/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd17-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd17/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd17-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd17/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd17-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd17/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd17-team-a",
+        "bd17-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd17-team-a",
+        "bd17-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Sample IDs are formatted differently across tables (the clinical table uses IDs like s_YJ_her_003_P1, while data_cna.txt columns use IDs like YJ-her-004-P). A naive join silently drops samples, including the paired research samples. Compare the SAMPLE_ID sets in the clinical table, data_cna.txt, the seg file and the gene panel matrix, and count the unmatched IDs. Harmonise them (underscore vs hyphen, the s_ prefix, case, suffixes) before any analysis, and report how many pairs survive.",
+      "from": [
+        "sl-m03-r1-c6b9ab2f5358"
+      ],
+      "reason": "If the join fails, the key paired samples disappear without any error, and the result can be wrong or empty.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-46e1c2207d5d"
+      }
+    },
+    {
+      "text": "The claim is about selection within a patient over time, but most samples are unpaired. A pooled comparison of ERBB2 rates before and after treatment mixes up selection with the question of which patients were rebiopsied. Count the patients who have both a pre-treatment and a post-treatment sample (IMPACT_PRE_POST) with ERBB2 copy-number data for both, and tabulate ERBB2 status within each pair. Base the main inference on the paired patients and use unpaired comparisons only as support.",
+      "from": [
+        "sl-m03-r1-a12eee50a530"
+      ],
+      "reason": "This sets the correct unit of analysis for a within-patient selection claim.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-8ad6477e41f4"
+      }
+    },
+    {
+      "text": "'Acquired trastuzumab resistance' requires the post sample to have been taken after trastuzumab exposure and progression. POST-TX may mean post-chemotherapy only. Use TREATMENT / DETAILS_FIRST_LINE_COMMENTS to confirm that the patient received trastuzumab before the post sample. Use HER2_RESPONSE (initial CR/PR/SD followed by progression) and HER2_TTP_ON_1ST_LINE_MONTHS to tell acquired resistance from primary resistance. Restrict the main analysis to trastuzumab-exposed patients who progressed. Patients never given trastuzumab can serve as a comparison group for the ERBB2 loss rate.",
+      "from": [
+        "sl-m03-r1-b87b8f439ae5"
+      ],
+      "reason": "This defines the exposure and outcome in the way the hypothesis specifies, and gives a control group.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-5670140aaa38"
+      }
+    },
+    {
+      "text": "The clinical HER2 fields (IHC_HER2, HER2_FISH, HER2_IHC_OR_FISH) may hold one diagnostic result per patient, copied onto every sample. Within patients that have several samples, check whether these values ever differ between samples. If they are identical, use the per-sample genomic ERBB2 measures (HER2_IMPACT, HER2_IMPACT_LR, data_cna.txt, seg) for the change over time, and use the clinical HER2 fields only to confirm baseline HER2 positivity.",
+      "from": [
+        "sl-m03-r1-e3baeff45ccc"
+      ],
+      "reason": "Using a copied patient-level field would hide any change between timepoints.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-ddc3a419af31"
+      }
+    },
+    {
+      "text": "Discrete CNA calls (data_cna.txt, where 2 = amplification) and HER2_IMPACT are thresholded. A drop from 2 to 1 can be a modest change in log ratio rather than loss of the amplified clone. For each pair, compare the discrete call with the continuous HER2_IMPACT_LR and the seg.mean over ERBB2 (chr17, about 39.68-39.73 Mb in hg19), and check that the three sources agree. Define loss on the continuous scale, for example a log ratio falling to near-diploid, and run a sensitivity analysis over thresholds.",
+      "from": [
+        "sl-m03-r1-7b48d75c6894"
+      ],
+      "reason": "How 'loss of amplification' is defined directly decides how many losses are counted.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-7d9a858870f9"
+      }
+    },
+    {
+      "text": "Low tumour purity in a post-treatment biopsy can make ERBB2 look non-amplified, which mimics loss of the amplified clone. For every apparent loss, look at the continuous ERBB2 log ratio, the sample's fraction of genome altered and its other CNAs. A flat genome with low FGA suggests low purity. Count a loss as real only if other clonal CNAs are still visible while ERBB2 is neutral, and flag or exclude low-purity samples.",
+      "from": [
+        "sl-m03-r1-4374d9451961"
+      ],
+      "reason": "This separates true subclonal selection from a technical artefact.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-14813a9d8c6e"
+      }
+    },
+    {
+      "text": "Pre-treatment samples are mostly primary tumours, and post-treatment samples are often metastases. ERBB2 discordance can therefore reflect spatial heterogeneity rather than selection under trastuzumab. Within the pairs, cross-tabulate SAMPLE_TYPE / SITE_OF_TISSUE_BIOPSY against IMPACT_PRE_POST. Look for patients with several pre-treatment regions (e.g. P1, P2) that already disagree on ERBB2. Report losses separately by the type of site comparison, and treat pre-existing heterogeneity as the baseline that selection would act on.",
+      "from": [
+        "sl-m03-r1-f23c8fa96419"
+      ],
+      "reason": "This confounder affects whether a discordance can be attributed to treatment.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-2399749f3e68"
+      }
+    },
+    {
+      "text": "To tell whether a post-treatment sample without ERBB2 amplification comes from a non-amplified subclone of the same tumour, rather than an unrelated tumour or a sample mix-up, compare the mutations (data_mutations.txt, limited to genes covered per data_gene_panel_matrix.txt) and CNAs in each pair. Shared truncal alterations support shared clonal origin. Also note any other resistance alterations that appear after treatment (e.g. MET/EGFR/KRAS/CCNE1 amplification, PIK3CA or ERBB2 mutation), because ERBB2 loss is only one of several routes to resistance.",
+      "from": [
+        "sl-m03-r1-eb4a21c38ec3"
+      ],
+      "reason": "This tests the 'selection of a subclone' part of the claim, not just a change in ERBB2 status.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-09030590ef42"
+      }
+    },
+    {
+      "text": "The hypothesis is a negative claim ('not associated'). With only a few pairs, a non-significant test is not evidence of no association. Report the number and fraction of trastuzumab-exposed pairs that lose ERBB2 amplification, next to the loss rate in a comparison group (patients not exposed to trastuzumab, or discordance between pre-treatment regions). Weigh the label on effect size and counts, not on the p-value alone.",
+      "from": [
+        "sl-m03-r1-1b310879dac1"
+      ],
+      "reason": "With a small n and a hypothesis phrased as a negative, it is easy to draw the wrong conclusion from a p-value.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-8427aee9ff0d"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treated 'not associated with acquired resistance' as testable by counting ERBB2-amplification loss events in post-progression samples only; neither compared loss rates between patients with acquired resistance (initial PR/SD then progression) and those without (primary refractory, or no progression at rebiopsy), so 'association' was inferred from the fact that post samples were taken at progression.",
+      "Both assumed an ERBB2-amplified-to-non-amplified change between a pre and a post sample means a non-amplified subclone was selected from the same tumour, without checking with shared truncal mutations that the two samples are clonally related, or whether a non-amplified subpopulation was already detectable before treatment (e.g. low or heterogeneous IHC, intermediate log ratio).",
+      "Both assumed the seg file cannot resolve focal ERBB2. Both used ERBB2 coordinates of about chr17:39.68-39.73 Mb, which are hg38 positions. The file is hg19, where ERBB2 lies at about chr17:37.84-37.88 Mb, and focal segments with high seg.mean are visible there (e.g. a 37.856-37.884 Mb segment at 3.15). So the seg file was ruled out on a coordinate error, not because of its resolution.",
+      "Both treated every pre/post pair as the same unit, whatever the time between biopsies, the biopsy site, or whether the post sample came after first-line trastuzumab or after later lines."
+    ],
+    "unused_evidence": [
+      "data_cna_hg19.seg at the correct hg19 ERBB2 locus. It gives a third, continuous ERBB2 measure and whole-genome segment profiles that can show clonal relatedness and purity in each loss pair.",
+      "data_mutations.txt. Neither team used shared truncal mutations (or their VAF) to show the pre and post samples come from the same clone, and neither checked new resistance drivers (PIK3CA, ERBB2 mutations, MET/EGFR/KRAS/CCNE1 amplification) that compete with ERBB2 loss as explanations. The library had flagged this.",
+      "data_sv.txt (contains an ERBB2 rearrangement record) and the gene-panel matrix (pairs on different IMPACT panels) were not mentioned.",
+      "Sample-level HER2 Treatment Status, HER2 Response, HER2 Vital Status and Somatic Status (most samples are Unmatched, i.e. no matched normal) were not used to define acquired versus primary resistance or to judge how reliable the calls are."
+    ],
+    "unresolved_weak_points": [
+      "Team A: the clonality of the 2 loss events was named as unchecked and left unchecked, and the P-0000444 liver-vs-primary heterogeneity was reported but not resolved.",
+      "Team B: 'no proper control group'. The association with resistance was inferred from the timing of sampling and never tested against patients without acquired resistance. Untreated controls were n=2.",
+      "Both: 2-3 events in about 22-24 pairs, with no stated rate of ERBB2 discordance expected from site differences alone, so it is unclear whether this beats chance discordance."
+    ],
+    "second_readings": [
+      "Reading 1: 'associated' means that ERBB2-non-amplified subclone selection occurs at acquired resistance in at least some patients (any documented events would contradict the claim). Reading 2: it means the loss is more frequent in acquired-resistance patients than in a comparison group, which needs a comparator and enough power. Under reading 2, 2/24 events with no comparator may not settle it.",
+      "'Acquired' resistance means initial benefit (PR/SD) then progression, which is a subset of trastuzumab-treated progressors. Primary refractory patients are a different scope.",
+      "'Selection for a subclone' is narrower than 'loss of amplification'. It implies the non-amplified clone pre-existed and is related to the original tumour."
+    ],
+    "verdict": "Moderate trust. Both teams found the same few documented ERBB2-loss events, which makes the direction plausible. But neither confirmed clonal relatedness, neither used a comparator for 'association with acquired resistance', and both dismissed the seg file using hg38 coordinates on hg19 data. Those gaps could weaken the evidence enough to move the label toward Not verifiable.",
+    "questions": [
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: data_cna_hg19.seg is on hg19, where ERBB2 sits at about chr17:37.84-37.88 Mb, not 39.68-39.73 Mb (hg38). Re-extract seg.mean at the hg19 locus for all samples, including the two loss pairs, and recheck its agreement with HER2_IMPACT_LR. Does this change your reliability assessment of the losses, or of any pair you called concordant?",
+        "from": [
+          "sl-m03-r1-95c85799d2f6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-b96e7c27cfaf"
+      },
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: For each ERBB2-loss pair, list the somatic mutations in data_mutations.txt (restricted to genes covered by both samples' panels) that the pre and post samples share or hold privately. Are they clonally related, and does either post sample gain an alternative resistance driver? Does that result change whether the events count as 'selection of a non-amplified subclone'?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-ec4527249290"
+      },
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate ERBB2 loss separately for pairs whose first-line trastuzumab response was PR/SD followed by progression (acquired resistance) versus pairs with PD as best response or no documented progression, and estimate the rate of ERBB2 discordance between different-site samples that is not explained by treatment. Does a comparison between these groups support the claimed association, or only show that the events occur?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-b2107ccd75a6"
+      },
+      {
+        "to": "bd17-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: In the pre-treatment samples of the loss patients, is there any sign that a non-amplified subpopulation already existed (intermediate HER2_IMPACT_LR relative to FGA/purity, heterogeneous or low IHC)? Does the answer change whether 'selection for a subclone' rather than de novo loss is supported?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-fb8c890901fa"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your seg check reported seg.mean about 0 at ERBB2 for P-0000444-T01. Which coordinates did you use? The file is hg19, where ERBB2 is at about chr17:37.84-37.88 Mb. Re-extract at the hg19 locus. Does the seg file then agree with HER2_IMPACT_LR, and does it confirm or weaken each loss pair?",
+        "from": [
+          "sl-m03-r1-ef52e4c89a5e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-4b53a2c14698"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: For each loss pair, check clonal relatedness through shared somatic mutations in data_mutations.txt (on genes covered by both panels) and check purity through FGA and other CNAs in the post sample. Are the post samples the same tumour lineage with real ERBB2 loss? Does this change how you weigh the 2-3 events?",
+        "from": [
+          "sl-m03-r1-076bdb7a4ae3"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-7337d5a4d122"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Using HER2_RESPONSE and HER2 Treatment Status, split the trastuzumab-treated pairs into acquired resistance (PR/SD then progression) versus others, and compare ERBB2 loss rates between the groups. Can 'association with acquired resistance' be shown with a comparator rather than inferred from the timing of sampling? Does the result change the label or only the confidence?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-1dc3870869b6"
+      },
+      {
+        "to": "bd17-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your third case lost HER2 by IHC/FISH but not by IMPACT. Check its HER2_IMPACT_LR, seg.mean at the hg19 ERBB2 locus and any ERBB2 record in data_sv.txt. Is it a genomic loss or a change in protein or sampling, and should it count as an event?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-m03-r1-630ad44b157a"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In MSK-IMPACT style cBioPortal copy-number segment files labelled hg19, what are the standard genomic coordinates of ERBB2, and how do they differ from hg38 coordinates?",
+          "why": "Both teams dismissed the segment file as unable to resolve focal amplification, apparently because they used coordinates from the wrong genome build.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In paired pre/post-treatment tumour sequencing studies, what evidence is usually required to call loss of an oncogene amplification 'selection of a pre-existing subclone' rather than spatial heterogeneity, low purity or a different primary tumour?",
+          "why": "The hypothesis is specifically about subclone selection. Neither team defined the criteria that separate selection from other explanations of discordance.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How often does HER2/ERBB2 amplification status differ between the primary tumour and a metastasis in untreated gastroesophageal or other HER2-positive cancers?",
+          "why": "Without a baseline rate of site discordance, 2-3 loss events in about 24 pairs cannot be judged as more than chance, and the data hold almost no untreated control.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In MSK-IMPACT style cBioPortal copy-number segment files labelled hg19, what are the standard genomic coordinates of ERBB2, and how do they differ from hg38 coordinates?",
+          "answer": "hg19/GRCh37: chr17 about 37,844,000-37,885,000 (Ensembl GRCh37 ~37,844,167-37,884,915). hg38/GRCh38: chr17 about 39,688,000-39,731,000, roughly 1.84 Mb higher. Query data_cna_hg19.seg at ~37.84-37.89 Mb. Earlier lab notes that gave '39.68-39.73 Mb hg19' used hg38 coordinates, which would miss the amplicon. NOT WEB-VERIFIED: the research gateway returned HTTP 403 on every call (2 attempts); this comes from recalled reference annotation.",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bd17-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-bd4f7baff31f"
+            },
+            "bd17-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-370f7a191902"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In MSK-IMPACT style cBioPortal copy-number segment files labelled hg19, what are the standard genomic coordinates of ERBB2, and how do they differ from hg38 coordinates? ANSWER: hg19/GRCh37: chr17 about 37,844,000-37,885,000 (Ensembl GRCh37 ~37,844,167-37,884,915). hg38/GRCh38: chr17 about 39,688,000-39,731,000, roughly 1.84 Mb higher. Query data_cna_hg19.seg at ~37.84-37.89 Mb. Earlier lab notes that gave '39.68-39.73 Mb hg19' used hg38 coordinates, which would miss the amplicon. NOT WEB-VERIFIED: the research gateway returned HTTP 403 on every call (2 attempts); this comes from recalled reference annotation. HOW SURE: medium. SOURCES: none given."
+        },
+        {
+          "question": "In paired pre/post-treatment tumour sequencing studies, what evidence is usually required to call loss of an oncogene amplification 'selection of a pre-existing subclone' rather than spatial heterogeneity, low purity or a different primary tumour?",
+          "answer": "No formal standard exists. Usual evidence: (a) shared truncal mutations/clonal CNAs between the pre- and post-treatment samples, which rules out a different primary or a sample swap; (b) adequate post-treatment purity, with other clonal CNAs still present while ERBB2 is neutral, which rules out low purity; (c) pre-treatment evidence of ERBB2 heterogeneity (heterogeneous FISH/IHC, multi-region discordance, or a subclonal amplification/non-amplified subclone found by cancer cell fraction analysis); (d) comparison of the same or matched sites, or with untreated site-discordance rates, which addresses spatial heterogeneity. Without (c), loss after treatment fits selection but does not prove it. Not web-verified (gateway down).",
+          "sources": [],
+          "confidence": "medium",
+          "deliveries": {
+            "bd17-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-fef7815ad8d6"
+            },
+            "bd17-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-97c89401db48"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In paired pre/post-treatment tumour sequencing studies, what evidence is usually required to call loss of an oncogene amplification 'selection of a pre-existing subclone' rather than spatial heterogeneity, low purity or a different primary tumour? ANSWER: No formal standard exists. Usual evidence: (a) shared truncal mutations/clonal CNAs between the pre- and post-treatment samples, which rules out a different primary or a sample swap; (b) adequate post-treatment purity, with other clonal CNAs still present while ERBB2 is neutral, which rules out low purity; (c) pre-treatment evidence of ERBB2 heterogeneity (heterogeneous FISH/IHC, multi-region discordance, or a subclonal amplification/non-amplified subclone found by cancer cell fraction analysis); (d) comparison of the same or matched sites, or with untreated site-discordance rates, which addresses spatial heterogeneity. Without (c), loss after treatment fits selection but does not prove it. Not web-verified (gateway down). HOW SURE: medium. SOURCES: none given."
+        },
+        {
+          "question": "How often does HER2/ERBB2 amplification status differ between the primary tumour and a metastasis in untreated gastroesophageal or other HER2-positive cancers?",
+          "answer": "Recalled from the literature, not web-verified: in untreated gastroesophageal cancer, primary-metastasis HER2 discordance is usually reported at about 5-15%. In breast cancer it is about 5-10% overall, with loss in roughly 10-25% of HER2-positive cases. Rates are higher after trastuzumab; post-trastuzumab HER2 loss in gastroesophageal cancer is reported at roughly 30% or more. So 2-3 losses in ~24 pairs (~8-13%) does not clearly exceed the untreated site-discordance baseline. Exact figures are uncertain because the gateway was down.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bd17-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-0854d5f57153"
+            },
+            "bd17-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-m03-r1-4b6406b90028"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How often does HER2/ERBB2 amplification status differ between the primary tumour and a metastasis in untreated gastroesophageal or other HER2-positive cancers? ANSWER: Recalled from the literature, not web-verified: in untreated gastroesophageal cancer, primary-metastasis HER2 discordance is usually reported at about 5-15%. In breast cancer it is about 5-10% overall, with loss in roughly 10-25% of HER2-positive cases. Rates are higher after trastuzumab; post-trastuzumab HER2 loss in gastroesophageal cancer is reported at roughly 30% or more. So 2-3 losses in ~24 pairs (~8-13%) does not clearly exceed the untreated site-discordance baseline. Exact figures are uncertain because the gateway was down. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd17-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd17-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd17-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd17-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd17-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 100.49745012493804,
+      "cost_usd": 0.26674600000000004,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 59.02353624999523,
+      "cost_usd": 0.2598008,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 78.52806366700679,
+      "cost_usd": 0.2877976,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 100.83052154106554,
+      "cost_usd": 0.300327,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 89.36520895804279,
+      "cost_usd": 0.2810308,
+      "error": null
+    },
+    {
+      "agent": "bd17-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 49.48307829198893,
+      "cost_usd": 0.1678106,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 85.79120045795571,
+      "cost_usd": 0.3333068,
+      "error": null
+    },
+    {
+      "agent": "bd17-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 98.4906179580139,
+      "cost_usd": 0.466518,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

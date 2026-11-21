@@ -1,0 +1,394 @@
+{
+  "study": "sc01",
+  "status": "replicated",
+  "final": {
+    "agent": "sc01-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab1/sc01/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "sc01-library": "opus",
+    "sc01-team-a": "opus",
+    "sc01-team-b": "opus",
+    "sc01-team-c": "opus",
+    "sc01-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc01-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab1/sc01/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "mural_nuclei": 0,
+        "interpretation": 3
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc01-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab1/sc01/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "mural_nuclei": 0,
+        "interpretation": 3
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc01-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab1/sc01/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "mural_nuclei": 0,
+        "interpretation": 5
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc01-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-sc-lab1/sc01/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "mural_nuclei": 0,
+        "interpretation": 5
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc01-team-a",
+        "sc01-team-b"
+      ],
+      "fields": {
+        "mural_nuclei": true,
+        "interpretation": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc01-team-a",
+        "sc01-team-b"
+      ],
+      "fields": {
+        "mural_nuclei": true,
+        "interpretation": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "In the provided h5ad (illumina_pipseeker.h5ad, ~19,259 nuclei x 32,227 genes, samples 3M/21M1/21M2), var_names are Ensembl IDs (ENSMUSG...) and gene symbols are in var['gene_symbol']. Map every one of the 33 panel symbols through var['gene_symbol'], print any that are missing or duplicated, and report how many genes each panel actually averages over. Also confirm X holds raw integer counts before normalize_total(1e4)+log1p, and tabulate cluster x sample_id to note any single-sample clusters (keep the specified workflow; no integration is requested).",
+      "from": [
+        "sl-dev-panel-noise-sc-lab1-be68220a7243",
+        "sl-dev-panel-noise-sc-lab1-756e6f98942f"
+      ],
+      "reason": "A naive symbol lookup silently drops or misassigns markers and changes panel means. Normalizing data that is already normalized changes the clusters. Either error would corrupt the nuclei count.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab1-b35e0bcf2f61"
+      }
+    },
+    {
+      "text": "A raw mean of log-normalized panel genes reflects each gene's expression level and detectability as well as cell identity. One undetected gene in a 4-gene panel cuts that panel's mean by about 25%, and panels with abundant genes score high everywhere. snRNA-seq also under-detects short, mainly cytoplasmic transcripts and favours long genes. For every cluster, print a cluster x gene table with the per-gene mean and the fraction of nuclei expressing each panel gene, not just the panel mean. Also record each panel gene's overall detection rate across all nuclei. As a sensitivity check, compare the panel-mean assignments with z-scored per-gene scores or sc.tl.score_genes.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab1-8579deda25f1",
+        "sl-dev-panel-noise-sc-lab1-703461f8f440"
+      ],
+      "reason": "Panel means alone cannot tell apart the competing explanations offered (scoring artifact, depletion, fibroblast absorption, resolution). The per-gene table is the evidence the interpretation has to rest on.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab1-c8ef58041021"
+      }
+    },
+    {
+      "text": "A lineage that wins no cluster is not necessarily absent from the data. To weigh the explanations, look at nuclei that express mural-specific genes. Pdgfrb is shared with perivascular fibroblasts and Acta2 is mostly a vSMC marker. More specific pericyte markers are Rgs5, Kcnj8, Abcc9, Higd1b, Ndufa4l2, Notch3 and Vtn. Count nuclei co-expressing these, for example Rgs5>0 together with Kcnj8 or Higd1b >0. Check whether they concentrate in one cluster that has low Col1a1/Dcn, or whether they are spread inside Col1a1/Dcn-high fibroblast clusters, or scattered or absent. Each pattern supports a different option in the task (scoring/assignment, fibroblast absorption, or rarity/depletion/resolution), so decide from the observed pattern.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab1-745705db7ec5",
+        "sl-dev-panel-noise-sc-lab1-c273a5c11d86"
+      ],
+      "reason": "This gives a test based on the data that tells the five interpretation options apart, so the team does not pick one on prior plausibility.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab1-56c438030118"
+      }
+    },
+    {
+      "text": "Leiden results depend on the random seed and on scanpy defaults (HVG flavor, n_comps=50, n_neighbors=15, resolution 0.8), so small-cluster membership and per-lineage nuclei counts can shift. Record the exact parameters and seed used. Rerun with 2-3 seeds to see whether the lineage assignments and the mural count change.",
+      "from": [
+        "sl-dev-panel-noise-sc-lab1-f2280172772a"
+      ],
+      "reason": "The answer is an exact integer, so the team should know whether it is stable and state the parameters it was computed with.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-sc-lab1-8be19d65208b"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": true,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams used one preprocessing branch only: seurat-flavor HVGs on log data, default PCA, k=15 neighbours, no scaling stated. Neither tested whether scaling before PCA, seurat_v3 HVGs on raw counts, or a different n_pcs produces a cluster that the mural panel wins. They varied only the Leiden seed.",
+      "Both teams took the high Rgs5 in the ~211-nucleus neuron-assigned cluster as evidence of mural cells diluted by the panel mean. Team B itself says this may be neuronal or ambient Rgs5. Neither team checked pericyte-specific genes (Kcnj8, Higd1b, Abcc9, Vtn) in that cluster, and team A's own co-expression data puts pericyte-like nuclei mostly in the endothelial cluster, not there.",
+      "Both teams accepted option 3's causal claim that some mural genes are 'preferentially cytoplasmic' and so near zero in nuclei. Neither tested it. Low Acta2/Notch3/Pdgfrb detection could instead come from very few mural nuclei or from smooth-muscle Acta2 being a minor subtype.",
+      "Both teams assumed that, because no mural nuclei sit in fibroblast clusters, option 4 is ruled out. Neither considered that 'absorbed into another lineage's cluster' happened here with endothelium, which bears on how options 3, 4 and 5 differ."
+    ],
+    "unused_evidence": [
+      "uns['filtering'] says only an n_genes>1000 filter was applied, with no doublet, mitochondrial or UMI-outlier removal. Neither team checked whether the Rgs5-high neuron-assigned cluster or the mural-carrying endothelial cluster is driven by doublets or ambient RNA (n_genes, total_counts, co-expression with Snap25/Rbfox3 or Pecam1).",
+      "obs sample_id/age (3M adult vs 21M1/21M2 aged) were used only to flag batch clusters. Nobody checked whether the mural-like nuclei come from one sample, which would affect whether a small mural cluster could form at higher resolution.",
+      "Option 5 names a specific check (Leiden resolution 2.0). Neither team ran it, though it is the direct test that separates option 5 from option 3."
+    ],
+    "unresolved_weak_points": [
+      "Team A: choosing option 3 over 4 rests on about 59 pericyte-like nuclei. They reported this as thin and did not resolve it, for example by re-clustering or by checking whether those nuclei separate at higher resolution.",
+      "Team B: the Rgs5-high cluster may be neuronal Rgs5 rather than pericytes. They reported this and did not resolve it; yet that cluster is the main support for option 3's 'one mural marker remains highly expressed in a specific cluster'."
+    ],
+    "second_readings": [
+      "'Mean log-normalized expression for each panel' could mean the mean of per-gene cluster means, which both teams used. It could also mean the mean of per-nucleus panel scores, or scores computed on adata.raw versus an HVG-subset matrix. These agree for the arithmetic mean only if all panel genes are kept after HVG subsetting.",
+      "The interpretation question asks why the result occurs. That could be read as the direct mechanism, where the panel mean loses to another lineage (option 3), or as what would recover mural cells (option 5, higher resolution). Only one of these has been tested."
+    ],
+    "verdict": "The zero mural count looks robust to seed and is likely correct under the specified method. The interpretation is weaker. Option 3 was chosen without testing its 'cytoplasmic' premise, the cluster cited as its support may not be pericytes, and neither team ran the resolution-2.0 check that option 5 names.",
+    "questions": [
+      {
+        "to": "sc01-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Rerun Leiden at resolution 2.0 on the same graph, or sub-cluster the endothelial cluster that holds most Rgs5+Kcnj8/Higd1b+ nuclei. Does any resulting cluster win the mural panel by argmax, and how big is it? Does that change whether option 3 or option 5 better explains the zero?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab1-e58a237c6ca4"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-ce06c05b76b8"
+      },
+      {
+        "to": "sc01-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: In the Rgs5-high neuron-assigned cluster (~211 nuclei), what are the means and detection fractions of Kcnj8, Higd1b, Abcc9, Vtn, Pecam1, Snap25 and Rbfox3, and its median n_genes/total_counts compared with other neuron clusters? If it is neuronal or doublet rather than pericyte, does option 3's 'one mural marker highly expressed in a specific cluster' still have support?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab1-928d3a09b5c6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-18e3dd73a5a6"
+      },
+      {
+        "to": "sc01-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Test option 3's 'preferentially cytoplasmic' premise in the data. Compare detection of Pdgfrb, Notch3 and Acta2 in their expected non-mural compartments (e.g. Pdgfrb in fibroblast clusters) with detection of Rgs5 in the pericyte-like nuclei. Is the low panel mean explained by nuclear under-detection of specific genes, or simply by how few mural nuclei there are?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-03d3549bcfc9"
+      },
+      {
+        "to": "sc01-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Repeat the count with scaling before PCA and with seurat_v3 HVGs on raw counts, keeping everything else as specified. Does any cluster become mural-assigned, i.e. is the zero count robust to preprocessing choices the task leaves unspecified?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-6ae0ab16803c"
+      },
+      {
+        "to": "sc01-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: In your cluster 19 (Rgs5 ~2.5, neuron-assigned), check pericyte-specific genes (Kcnj8, Higd1b, Abcc9, Vtn), the neuronal genes Snap25/Rbfox3, and n_genes/total_counts against other neuron clusters. If these nuclei are not pericytes, does your evidence for interpretation 3 still hold?",
+        "from": [
+          "sl-dev-panel-noise-sc-lab1-c5938ec345a3"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-a54fec6c8c0d"
+      },
+      {
+        "to": "sc01-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Rerun Leiden at resolution 2.0, which option 5 explicitly names, and/or sub-cluster the endothelial cluster (~532 nuclei) that carries Rgs5/Notch3/Pdgfrb. Does a mural-winning cluster appear, and does that change your choice between options 3 and 5?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-c5233e6a1279"
+      },
+      {
+        "to": "sc01-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Count nuclei co-expressing Rgs5 with Kcnj8 or Higd1b and tabulate them by cluster and by sample_id. Do they concentrate in one cluster, are they spread across fibroblast clusters, or are they too few to form a cluster at all? Which option does that pattern support?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-e9756a064d23"
+      },
+      {
+        "to": "sc01-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Recompute panel scores two other ways: from adata.raw/full log-normalized matrix rather than any HVG subset, and as the mean of per-nucleus panel scores. Also repeat with scaling before PCA. Is the mural count still 0 under each variant?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-sc-lab1-a231323ab82f"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In single-nucleus RNA-seq of mouse tissues, which commonly used pericyte and vascular smooth muscle markers (e.g. Rgs5, Notch3, Pdgfrb, Acta2, Kcnj8, Higd1b) are known to be under-detected in nuclei relative to whole cells, and is this attributed to cytoplasmic transcript localization?",
+          "why": "Option 3 rests on some mural panel genes being preferentially cytoplasmic. Neither team showed evidence for or against this.",
+          "passed": false,
+          "reasons": [
+            "a number within 1 percent of another team's value for \"interpretation\""
+          ]
+        },
+        {
+          "question": "Is Rgs5 expressed in sensory neurons of mouse dorsal root ganglia, or is it considered specific to pericytes there?",
+          "why": "This decides whether the Rgs5-high neuron-assigned cluster supports the mural-dilution explanation or is neuronal expression.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In published single-cell or single-nucleus atlases of mouse peripheral sensory ganglia, do pericytes or mural cells usually form their own cluster, or do they co-cluster with endothelial cells or fibroblasts at standard Leiden resolutions?",
+          "why": "This helps separate options 1, 4 and 5 from option 3.",
+          "passed": false,
+          "reasons": [
+            "a number within 1 percent of another team's value for \"interpretation\""
+          ]
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "Is Rgs5 expressed in sensory neurons of mouse dorsal root ganglia, or is it considered specific to pericytes there?",
+          "answer": "Rgs5 is not a recognised DRG sensory-neuron gene. Mouse DRG work treats it as a pericyte/mural marker. In the Zeisel 2018 mouse nervous system atlas (mousebrain.org Rgs5 page), no DRG sensory neuron cluster (PSPEP/PSNP/PSNF etc.) expresses Rgs5 at trinarization >=0.95. The only neuronal clusters listed are weak: spinal inhibitory SCINH5 at 0.59 and sympathetic noradrenergic SYNOR3 at 0.67. By comparison, pericytes score 7-15 and arterial endothelium 24, and Rgs5 is a marker only of pericyte cluster PER1. DRG and TG scRNA-seq studies (Jager et al. 2022, Wellcome Open Res, Fig 1: 'Rgs5 = pericytes'; Mapps et al. 2022, Cell Reports: mural cells Rgs5/Vtn; TG 2023, Frontiers) use Rgs5 as the pericyte/mural marker. A Rgs5-high cluster assigned to neurons therefore points to mural nuclei (possibly with neuronal ambient signal) rather than true neuronal Rgs5. That supports the mural-dilution reading. Caveat: Rgs5 is not strictly pericyte-only, since it is also expressed in vSMCs and in arterial/capillary endothelium.",
+          "sources": [
+            "http://mousebrain.org/genes/Rgs5.html",
+            "https://pubmed.ncbi.nlm.nih.gov/35950162/",
+            "https://www.frontiersin.org/journals/molecular-neuroscience/articles/10.3389/fnmol.2023.1117065/full"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc01-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab1-62e3e8f8f113"
+            },
+            "sc01-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-sc-lab1-21be4e5a961c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Is Rgs5 expressed in sensory neurons of mouse dorsal root ganglia, or is it considered specific to pericytes there? ANSWER: Rgs5 is not a recognised DRG sensory-neuron gene. Mouse DRG work treats it as a pericyte/mural marker. In the Zeisel 2018 mouse nervous system atlas (mousebrain.org Rgs5 page), no DRG sensory neuron cluster (PSPEP/PSNP/PSNF etc.) expresses Rgs5 at trinarization >=0.95. The only neuronal clusters listed are weak: spinal inhibitory SCINH5 at 0.59 and sympathetic noradrenergic SYNOR3 at 0.67. By comparison, pericytes score 7-15 and arterial endothelium 24, and Rgs5 is a marker only of pericyte cluster PER1. DRG and TG scRNA-seq studies (Jager et al. 2022, Wellcome Open Res, Fig 1: 'Rgs5 = pericytes'; Mapps et al. 2022, Cell Reports: mural cells Rgs5/Vtn; TG 2023, Frontiers) use Rgs5 as the pericyte/mural marker. A Rgs5-high cluster assigned to neurons therefore points to mural nuclei (possibly with neuronal ambient signal) rather than true neuronal Rgs5. That supports the mural-dilution reading. Caveat: Rgs5 is not strictly pericyte-only, since it is also expressed in vSMCs and in arterial/capillary endothelium. HOW SURE: medium. SOURCES: http://mousebrain.org/genes/Rgs5.html, https://pubmed.ncbi.nlm.nih.gov/35950162/, https://www.frontiersin.org/journals/molecular-neuroscience/articles/10.3389/fnmol.2023.1117065/full."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc01-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc01-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc01-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc01-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc01-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 104.5391348330304,
+      "cost_usd": 0.4936178000000001,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 44.69196012499742,
+      "cost_usd": 0.1560624,
+      "error": null
+    },
+    {
+      "agent": "sc01-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 327.88656574999914,
+      "cost_usd": 0.23180820000000002,
+      "error": null
+    },
+    {
+      "agent": "sc01-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 409.98930437501986,
+      "cost_usd": 0.31782360000000004,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 71.6351854170207,
+      "cost_usd": 0.302518,
+      "error": null
+    },
+    {
+      "agent": "sc01-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 65.56486375001259,
+      "cost_usd": 0.36440300000000003,
+      "error": null
+    },
+    {
+      "agent": "sc01-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 467.8226532500703,
+      "cost_usd": 0.3901226,
+      "error": null
+    },
+    {
+      "agent": "sc01-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 518.4342136670602,
+      "cost_usd": 0.48195560000000004,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

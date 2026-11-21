@@ -1,0 +1,514 @@
+{
+  "study": "bd15",
+  "status": "replicated",
+  "final": {
+    "agent": "bd15-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd15/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd15-library": "fable",
+    "bd15-team-a": "fable",
+    "bd15-team-b": "fable",
+    "bd15-team-c": "fable",
+    "bd15-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd15-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd15/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd15-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd15/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd15-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd15/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd15-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd15/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd15-team-a",
+        "bd15-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd15-team-a",
+        "bd15-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Unit and denominator for mutation frequency: count distinct mutated samples, never mutation rows (a tumour with several hits in one gene counts once). Divide by all profiled samples listed in data_clinical_sample.txt, not by the samples that happen to appear in data_mutations.txt. Check this by comparing the set of Tumor_Sample_Barcode values in the MAF with SAMPLE_ID in the clinical sample table, and list the number of rows per sample per gene. State numerator and denominator explicitly for each of the four genes (EP300, PBRM1, USP28, CHUK).",
+      "from": [
+        "sl-biodsa-test-a6f531a3da25"
+      ],
+      "reason": "Counting rows or using only MAF-present samples as denominator inflates the per-gene frequency, which is the quantity the hypothesis is judged on.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-534ddc53384b"
+      }
+    },
+    {
+      "text": "The library reports that data_mutations.txt contains non-protein-altering rows (its first rows are Variant_Classification=Intron). Tabulate Variant_Classification for the whole file and for each of the four genes. Define a sample as mutated in a gene if it has at least one protein-altering variant (Missense_Mutation, Nonsense_Mutation, Frame_Shift_Del, Frame_Shift_Ins, In_Frame_Del, In_Frame_Ins, Splice_Site, Nonstop_Mutation, Translation_Start_Site) and exclude Silent, Intron, 3'UTR, 5'UTR, 3'Flank, 5'Flank, IGR and RNA. To learn which classes the study itself counted as nonsynonymous, recompute the per-sample nonsynonymous count and see whether its ratio to TMB_NONSYNONYMOUS in data_clinical_sample.txt is constant. Report the all-rows frequency only as a sensitivity figure.",
+      "from": [
+        "sl-biodsa-test-6b7469119bbe"
+      ],
+      "reason": "Counting intronic/silent/UTR rows as 'mutated' would inflate every gene's frequency, most for genes with long introns, and could change the verdict.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-c34f8cf56a44"
+      }
+    },
+    {
+      "text": "Gene lookup: the library reports that Entrez_Gene_Id is empty in this MAF, so Hugo_Symbol is the only key. Match symbols exactly after stripping whitespace and ignoring case; do not match by substring, which would pull in antisense or readthrough loci such as EP300-AS1. Also search for older aliases (EP300 = p300/KAT3B; PBRM1 = BAF180/PB1; CHUK = IKKA/IKK1/IKBKA/TCF16; USP28 has no common alias) and confirm hits by location in the Chromosome/Start_Position columns (EP300 22q13, PBRM1 3p21, USP28 11q23, CHUK 10q24). Merge true aliases and exclude antisense/readthrough symbols. If a gene has no rows under any name, record it as 0/n mutated samples rather than treating the gene as absent from the data: the mutation table is exome-wide, so absence of rows for a gene is an observation, not a missing variable.",
+      "from": [
+        "sl-biodsa-test-083242598ff8"
+      ],
+      "reason": "A wrong symbol match either misses a gene or over-counts it, and misreading 'no rows' as 'no data' would lead to the wrong kind of label.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-68d0d05aa5ea"
+      }
+    },
+    {
+      "text": "Samples are not all independent patients: the library reports that the clinical tables contain more than one tumour from the same person under separate IDs (for example Patient9 and Patient9_2). Find patients with more than one sample (via the patient ID column and by ID stem such as '_2'). For each of the four genes, check whether the mutated samples include such pairs and whether the identical variant (chromosome, position, alleles) appears in both. Report the frequency per patient (a patient is mutated if any of their tumours is) as well as per sample, and count an identical variant shared by tumours of one person once. If an identical variant recurs across many unrelated samples, inspect it as a possible germline or artefact call rather than counting it as recurrence.",
+      "from": [
+        "sl-biodsa-test-2f133df36349"
+      ],
+      "reason": "In a cohort this small, double-counting one person's related tumours can move a gene's frequency by several points; per-patient frequency is the safer basis.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-a203a74bf6b3"
+      }
+    },
+    {
+      "text": "The cohort is only a few dozen tumours, so each gene's frequency rests on a handful of samples and one or two samples shift it by several percentage points. 'Frequently' has no fixed threshold, and choosing the cutoff after seeing the numbers lets the label go either way. Fix the criterion for 'frequently mutated' before looking at the four genes' numbers (for example the gene's rank or percentile among all genes in this cohort and its frequency relative to accepted cutaneous SCC drivers), report k/n with a Wilson or Clopper-Pearson 95% interval for each gene (not a Wald interval), and check whether the verdict is the same under a stricter and a looser criterion and with plus or minus one mutated sample. If it flips, say so, and rest the label on the relative criterion (rank among all genes and versus positive-control genes) rather than on an absolute percent. The hypothesis is a conjunction: each of the four genes has to meet the criterion on its own.",
+      "from": [
+        "sl-biodsa-test-83f59750c0de"
+      ],
+      "reason": "The verdict depends on a threshold that the task does not define; pre-specifying it and testing its robustness prevents a label driven by a post-hoc cutoff or by one sample.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-fa9746c5f3c5"
+      }
+    },
+    {
+      "text": "Calibrate 'frequent' inside this cohort with controls run through the identical pipeline. Positive controls: established recurrently mutated cutaneous SCC genes (TP53, NOTCH1, NOTCH2, CDKN2A, HRAS, FAT1). Negative controls: known passengers (TTN, MUC16, an olfactory receptor gene) and, for each of the four hypothesis genes, a set of random genes of similar coding length. Place the four hypothesis genes on that scale and say whether they sit with the positive controls or with the length-matched random genes. If the positive controls themselves come out implausibly low or absent, treat it as a sign that the pipeline (filters, symbol matching, denominator) is wrong and fix it before answering.",
+      "from": [
+        "sl-biodsa-test-a50646aba272"
+      ],
+      "reason": "Without an in-cohort scale there is no way to say whether a given percent is 'frequent' for this tumour type, and the positive controls double as a check that the pipeline works.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-84be3ad1494d"
+      }
+    },
+    {
+      "text": "Background mutation versus prevalence (this extends any earlier note on background mutation). UV-driven cutaneous SCC has one of the highest mutation burdens of any cancer, so raw recurrence can arise from background alone: long, late-replicating or low-expressed genes (TTN, MUC16, RYR2, CSMD3, olfactory receptors) top frequency lists by chance. Rank all genes by fraction of samples with a protein-altering mutation and see where the four genes fall relative to such passengers and relative to coding length (mutated-sample fraction per kb of coding sequence, or nonsynonymous versus synonymous counts within the gene); if feasible compare with a simple expectation from each sample's burden and the gene's length (binomial/Poisson, or a dNdScv/MutSigCV-style test). However, any such formal selection test is badly underpowered here: published saturation analysis indicates 600 to 5000 samples per tumour type are needed to detect genes mutated in 2-20% of tumours, more at high background rates, and this cohort is a few dozen. A non-significant p- or q-value for a gene is therefore not evidence that the gene is rarely mutated. Run the same test on accepted drivers (TP53, NOTCH1, NOTCH2, CDKN2A, FAT1) in this cohort and note how many reach significance and at what mutated-sample fraction; compare effect sizes (observed/expected, dN/dS point estimate with interval), not only p-values. If known drivers at similar frequency also fail, report the selection test as inconclusive rather than negative and judge the claim on prevalence with a confidence interval and rank relative to controls. Keep 'significantly mutated' and 'frequently mutated' as separate statements, report both raw prevalence and whether it exceeds what burden and length predict, and state explicitly which definition the final label rests on.",
+      "from": [
+        "sl-biodsa-test-b7a868ea6d72",
+        "sl-biodsa-test-9c4edce44dab"
+      ],
+      "reason": "Two opposite errors are possible: calling a gene frequent on raw percent that passengers also reach, or rejecting a descriptive frequency claim because an underpowered driver test is non-significant. The team needs both halves to weigh the evidence correctly.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-df9f718cd87b"
+      }
+    },
+    {
+      "text": "The library reports that the cohort mixes subgroups with very different mutation burdens: the clinical tables have HERED_DISORDER (for example RDEB versus None), IMMUNE_STATUS, and TMB_NONSYNONYMOUS ranging from below 1 to above 50 per Mb. A pooled per-gene frequency may come entirely from a few hypermutated tumours or be diluted by a low-burden subgroup, and may describe neither subgroup. For each of the four genes, list the mutated samples with their TMB, HERED_DISORDER and IMMUNE_STATUS; compute frequency within each subgroup and within TMB strata; and test whether mutated status simply tracks TMB (Mann-Whitney of TMB in mutated versus unmutated samples, or logistic regression on log TMB). Report subgroup frequencies alongside the pooled one, state which population the claim about cutaneous SCC is being judged on, and treat mutations confined to the highest-TMB samples as weaker evidence that the gene is a recurrent target.",
+      "from": [
+        "sl-biodsa-test-56f4eea410ad"
+      ],
+      "reason": "The pooled frequency can be an artefact of cohort composition; knowing which subgroup carries the mutations changes how the pooled number should be read.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-ac474f1d511f"
+      }
+    },
+    {
+      "text": "Call quality, as a sensitivity check only (this revises any earlier note that suggested a filter of n_alt_count at most 1). The MAF has t_ref_count, t_alt_count, n_ref_count, n_alt_count and dbSNP_RS. For every protein-altering variant in the four genes compute tumour VAF = t_alt_count/(t_alt_count+t_ref_count), tumour depth, normal depth (n_ref_count+n_alt_count), n_alt_count and whether dbSNP_RS is filled, and check Matched_Norm_Sample_Barcode/Mutation_Status to see whether calls are tumour-normal or tumour-only. Rerun the frequencies with a conventional tumour-side filter (t_alt_count of at least 3 to 5, VAF at least 0.05) and report whether the conclusion survives. Do not drop variants in the main analysis: the deposited MAF is already the study's filtered call set. On the normal side, do not impose a hard n_alt_count = 0 filter: in skin cancer the matched normal is often adjacent skin, which carries UV-induced clonal mutations in cancer genes, or is contaminated by tumour cells, so alt reads in the normal can belong to real somatic mutations and a strict filter lowers per-gene frequency. Instead tabulate n_alt_count and normal depth across all rows and per sample, flag samples where many calls have n_alt_count > 0, and keep calls where normal VAF is far below tumour VAF. The opposite error also exists: where normal depth is below about 8-10 reads and tumour VAF is near 0.5, the call may be germline; treat those as possible germline in a sensitivity run. If normals look contaminated, say that the frequencies may be lower bounds.",
+      "from": [
+        "sl-biodsa-test-e29ff9a09a7c",
+        "sl-biodsa-test-26c89368b74b"
+      ],
+      "reason": "In a small cohort one or two low-confidence or wrongly filtered calls decide a gene's frequency; the team needs to know both which filters to test and which filter would wrongly remove real mutations in skin tumours.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-6a1c3946e046"
+      }
+    },
+    {
+      "text": "Secondary qualifier on the kind of mutations: counting mutated samples ignores what the mutations are. Genes that are real targets tend to show a pattern (the '20/20 rule': tumour suppressors have more than 20% inactivating mutations - nonsense, frameshift, splice site - spread along the gene; oncogenes have more than 20% missense at recurrent positions), whereas passengers show scattered missense in proportion to silent mutations. Recurrence at one position is not proof either, because UV creates passenger hotspots at inherently mutable sites. For each of the four genes tabulate protein-altering variants by class (truncating, missense, in-frame), count silent mutations in the same gene, compare the gene's truncating share with the cohort-wide truncating share among all protein-altering mutations (exact binomial test), list any amino-acid position hit in two or more patients, and note whether the changes are UV-type (C>T or CC>TT at dipyrimidines). Use this only as supporting or weakening evidence alongside prevalence and state it as a qualifier: the hypothesis as worded is about frequency and can be met on prevalence alone.",
+      "from": [
+        "sl-biodsa-test-cd4157100d76"
+      ],
+      "reason": "Gives the team a cheap extra line of evidence on whether observed prevalence looks like selection or background, while making clear it should not override the prevalence-based reading of the claim.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-ce46c26b4e33"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treated every row classed Splice_Site as protein-altering and as truncating. A structural read of the mutation table shows that about half of all Splice_Site rows (1,760 of 3,681 genome-wide) carry a protein change in HGVSp_Short, including synonymous ones (e.g. p.R1604R) and missense ones (e.g. p.H697R); these are exonic bases near an exon boundary, not canonical splice-disrupting changes. Neither team split the class, so both the mutated-sample counts and the truncating-share and nonsynonymous:silent tests (which rest on 4-7 truncating calls per gene) depend on an untested class definition. Team B noticed 'a few' such rows and did not follow it up.",
+      "Both teams used one genome-wide background (truncating share 11.7%, nonsynonymous:silent 2.27:1) for every gene, with no gene-specific codon composition, length or local mutation-rate term, and neither corrected the selection p-values for the number of genes that could have been tested.",
+      "Both teams settled the undefined word 'frequently' after seeing the per-gene numbers, and both moved away from the criterion written in their plan: team A's pre-registered primary rule (>=15% and top 5%) passes one gene of four, and team B's plan ('>=~10% and among top-ranked genes') met raw ranks of 134 to 1043. Neither tested how many other genes, including known passengers, would also be called 'frequently mutated' by the rule the label finally rests on.",
+      "Both judged the claim on the pooled 83-tumour cohort (57 sporadic, 25 RDEB, 1 XP) and treated the four genes as four separate single-gene claims; subgroup figures were reported but the decision rule was never applied within a subgroup.",
+      "Both assumed the calls are somatic. Matched_Norm_Sample_Barcode and Mutation_Status are empty; normal read counts exist but normal depth is low for some calls (1st percentile 8 reads, minimum 4 among protein-altering rows), and 14% of protein-altering rows carry a dbSNP ID."
+    ],
+    "unused_evidence": [
+      "Non-coding rows of the mutation table (35.5k intron, ~8k UTR, ~1k 5' flank, 2.3k IGR, 2.4k RNA): both teams filtered them out and never used them as a within-gene local background for the four genes, although both teams' weakest point is the lack of a gene-specific background.",
+      "HGVSp_Short on Splice_Site rows: separates exonic synonymous/missense changes near a boundary from intronic canonical splice-site changes; not used to refine the truncating definition.",
+      "dbSNP_RS and dbSNP_Val_Status (byFrequency / by1000genomes on about 4,500 protein-altering rows) and normal depth (n_ref_count + n_alt_count): team A ran a possible-germline and n_alt<=1 filter but no minimum normal depth; team B used none of these columns.",
+      "IMMUNE_STATUS (28 competent, 22 azathioprine-suppressed, 7 other suppressed, 26 N/A): team A stratified by it, team B did not; azathioprine exposure is a distinct mutational process from UV.",
+      "SITE, SEX and AGE_AT_SCC: unused by both; SITE (48 free-text values) is the only proxy for sun exposure. Unlikely to change the label.",
+      "Variant_Type: indels are 217 of 146,195 rows (0.15%), so frameshift calls are very sparse; neither team asked whether indel under-calling makes the truncating background and the per-gene frequencies lower bounds."
+    ],
+    "unresolved_weak_points": [
+      "Team A: named the threshold dependence (three genes below its own primary 15% cutoff; CHUK at exactly 10.0% per person and failing the looser rule with one fewer sample) and reported it, but resolved it only by switching to a relative criterion after seeing the data. The specificity of that relative criterion was not measured.",
+      "Team A: observed/expected of 1.0-1.9 from a uniform burden x length model used coding lengths typed from memory; reported, not resolved.",
+      "Team B: said its True label rests on selection evidence from 4-7 truncating calls per gene, a crude background and no multiple-testing correction; reported, not resolved. Its selection tests were not run on positive or negative control genes.",
+      "Team B: USP28 and CHUK fall to 7-8% under VAF>=0.2; reported, with no calibration against tumour purity or against how known drivers behave under the same filter.",
+      "Team B: recorded that no pitfalls were passed down (pitfalls_checked is empty), so the library's control-gene calibration and germline checks were not run by that team."
+    ],
+    "second_readings": [
+      "'Frequently': (a) absolute prevalence above some share of tumours, (b) high rank among all genes, or (c) mutated more often than background predicts (significantly/recurrently mutated). The teams' numbers do not point the same way under all three.",
+      "'Mutations ... affect': any mutation falling in the gene (including silent, intronic and UTR rows) versus protein-altering only versus truncating/loss-of-function only. Both teams took protein-altering.",
+      "Conjunction versus set: each of the four genes must individually be frequently mutated, or the four are named as a group of frequently hit genes (share of tumours with at least one of the four mutated). Neither team reported the set-level figure.",
+      "'In cutaneous squamous cell carcinoma': the pooled cohort, or sporadic UV-driven tumours only, or each aetiology separately (PBRM1 is 0/25 in RDEB).",
+      "Unit: per tumour (83) or per person (80); both teams reported both, and CHUK is the only gene that moves."
+    ],
+    "verdict": "Moderate trust. The mutated-tumour counts are reproduced independently by both teams, so the arithmetic is sound, but the label depends entirely on what 'frequently' means: both teams abandoned their planned threshold after seeing the numbers, and the selection evidence they fell back on shares two untested weaknesses (Splice_Site rows that are not truly splice-disrupting counted as truncating, and an uncorrected single genome-wide background). The answer should go out only after the specificity of the final decision rule and the Splice_Site split have been checked.",
+    "questions": [
+      {
+        "to": "bd15-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your pre-registered primary rule (>=15% of samples and top 5% of genes, all four genes must pass) was not met, and the label was then rested on a relative criterion chosen after the per-gene numbers were known. Write that final criterion down as an explicit rule, then apply it unchanged to (a) every gene in the mutation table, (b) your negative controls (TTN, MUC16, RYR2, CSMD3, olfactory receptors) and (c) 1,000 random sets of four genes matched to the four target genes on silent-mutation count or coding length. Report how many genes pass, whether the passengers pass, and what share of matched random four-gene sets pass as a conjunction. If the rule also passes passengers or a large share of random sets, does that change which criterion your label rests on, or the label itself?",
+        "from": [
+          "sl-biodsa-test-2538361b7be4",
+          "sl-biodsa-test-9b14b15198b2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-d36f3a8e10c9"
+      },
+      {
+        "to": "bd15-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your truncating-share and nonsynonymous:silent tests count every Splice_Site row as protein-altering and truncating. In this mutation table about half of all Splice_Site rows carry a protein change in HGVSp_Short, some synonymous and some missense, meaning they are exonic bases near an exon boundary rather than canonical splice-site changes. For EP300, PBRM1, USP28 and CHUK, and for your control genes, tabulate each Splice_Site row by whether HGVSp_Short is empty, synonymous or missense, then recompute the mutated-sample counts, the truncating share and the nonsynonymous:silent ratio with (i) only nonsense, frameshift and Splice_Site rows that have no protein change counted as truncating, and (ii) the synonymous-at-boundary rows moved to silent, using a background recomputed under the same definition. Do the counts, ranks or the selection evidence change, and does that change your method or label?",
+        "from": [
+          "sl-biodsa-test-7f771f9bcba6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-83d31066df6e"
+      },
+      {
+        "to": "bd15-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your observed/expected ratios (1.0 to 1.9) used a uniform burden x length model with coding lengths typed from memory, and you reported this without resolving it. The mutation table itself holds a gene-specific background you discarded: intron, UTR, flank and silent rows inside each gene. For each of the four genes and for your positive and negative controls, count protein-altering rows against the non-protein-altering rows (silent + intron + UTR + flank) in the same gene, compare that ratio with the genome-wide ratio and with the distribution of the ratio across all genes having a similar number of non-protein-altering rows, and state where the four genes fall. Does this in-data background agree with the uniform model or with your silent-count comparison, and does it change which evidence the label rests on?",
+        "from": [
+          "sl-biodsa-test-7f771f9bcba6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-3862ab20b066"
+      },
+      {
+        "to": "bd15-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You kept the pooled cohort as the population judged, although the cohort mixes 57 sporadic, 25 RDEB and 1 XP tumours and one gene has no mutated RDEB tumour. Apply your decision rule separately within the sporadic tumours and within the RDEB tumours, using ranks computed within each subgroup (not pooled ranks), and report for each subgroup whether each gene and the four-gene conjunction pass. Also report the share of tumours carrying a protein-altering mutation in at least one of the four genes, pooled and per subgroup. If the conjunction holds in one aetiology but not the other, which population does the claim 'in cutaneous squamous cell carcinoma' refer to in your answer, and does the label change under the other reading?",
+        "from": [
+          "sl-biodsa-test-cec60548af32"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-311dfa286ac7"
+      },
+      {
+        "to": "bd15-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your label rests on selection evidence (truncating enrichment p = 0.018 to 0.0001 from 4-7 truncating calls per gene) with one genome-wide background and no correction for the number of genes. Run the identical truncating-enrichment and nonsynonymous:silent tests on every gene that has at least as many protein-altering mutations as the least-mutated of the four target genes, and on accepted drivers (TP53, NOTCH1, NOTCH2, CDKN2A, FAT1, HRAS) and passengers (TTN, MUC16, RYR2, CSMD3, an olfactory receptor). Report how many genes genome-wide reach p-values as small as each target gene's, where the four rank in that empirical distribution, whether they survive a genome-wide false-discovery correction, and whether the known drivers pass while the passengers fail. If many unrelated genes reach the same p-values, or the test does not separate drivers from passengers, does that change what your label rests on?",
+        "from": [
+          "sl-biodsa-test-803f399a4b81"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-414677a9f44f"
+      },
+      {
+        "to": "bd15-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You noted that some splice-site rows carry a missense-style protein change and did not follow it up. In this mutation table about half of all Splice_Site rows have a protein change in HGVSp_Short, some synonymous and some missense, so they are exonic bases near an exon boundary, not canonical splice-site changes. For each of the four genes, list every row you counted as truncating with its Variant_Classification, Genome_Change_Reported and HGVSp_Short, then recompute the truncating fractions (6/19, 7/14, 4/10, 7/12) and the mutated-tumour counts with only nonsense, frameshift and Splice_Site rows that have no protein change counted as truncating, and with synonymous-at-boundary rows treated as silent; recompute the 11.7% background the same way. Does the truncating enrichment survive for each gene, and if it does not for one or more, does your label change?",
+        "from": [
+          "sl-biodsa-test-00444c5d3511"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-74ab5fbd4218"
+      },
+      {
+        "to": "bd15-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You reported that USP28 and CHUK fall to 7-8% under a VAF>=0.2 filter and left it unresolved. An absolute VAF cut confounds call reliability with tumour purity. For every protein-altering call in the four genes, divide its VAF by the median VAF of all protein-altering calls in the same tumour, and report how many calls are well below their tumour's own typical VAF. Then apply the same VAF>=0.10 and >=0.20 filters to accepted drivers (TP53, NOTCH1, NOTCH2, CDKN2A, FAT1, HRAS) and to all genes, and re-rank. Do the four genes lose proportionally more tumours than the known drivers and than the average gene, and if so does that change the frequency you rely on or the label?",
+        "from": [
+          "sl-biodsa-test-00444c5d3511",
+          "sl-biodsa-test-b3ecd811c32e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-544276bf8d2d"
+      },
+      {
+        "to": "bd15-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You recorded that no pitfalls were passed down and your method does not use the dbSNP_RS, dbSNP_Val_Status, n_ref_count or n_alt_count columns, while Matched_Norm_Sample_Barcode and Mutation_Status are empty and normal depth is as low as 4 reads for some calls. For every protein-altering call in the four genes, list dbSNP_RS, dbSNP_Val_Status, normal depth (n_ref_count + n_alt_count), n_alt_count and tumour VAF; then recount mutated tumours after dropping calls that have a population-frequency dbSNP validation status, any alternate reads in the normal, or normal depth below 10. Also say whether you define 'frequently' on the 57 sporadic tumours, the 25 RDEB tumours or the pooled 83, given that one gene is 0/25 in RDEB. Do any of the four counts change, and does the conjunction still hold in the population you name?",
+        "from": [
+          "sl-biodsa-test-fd7bcc5a2428"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-108a1e681383"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "Which variant annotation tool emits the Variant_Classification values START_CODON_SNP, START_CODON_INS, DE_NOVO_START_IN_FRAME and DE_NOVO_START_OUT_FRAME, and how does that tool define Splice_Site: how many bases either side of an exon boundary are included, are exonic bases included, and does a Splice_Site row that also reports a protein change (synonymous or missense) indicate an exonic variant whose effect on splicing is not established?",
+          "why": "Both teams counted all Splice_Site rows as protein-altering and truncating, and their selection evidence rests on a handful of truncating calls per gene; if the class includes exonic near-boundary variants by default, the truncating definition must be narrowed before the enrichment tests are trusted.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In cancer genome sequencing studies of high-mutation-burden, UV-driven tumours, is there an accepted convention for calling a gene 'frequently mutated' as distinct from 'significantly mutated' (for example a minimum share of tumours, or a requirement of excess over a background model such as dN/dS or MutSig-style tests), and how do such studies typically word and justify claims that a gene is frequently affected when its prevalence is modest relative to the many passenger genes mutated in a similar share of tumours?",
+          "why": "The hypothesis gives no threshold, both teams chose their final criterion after seeing the numbers, and the label changes depending on whether 'frequently' means absolute prevalence, rank among genes, or excess over background.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Under a UV-type mutational signature (C>T and CC>TT at dipyrimidines), what share of coding single- and double-base substitutions is expected to be nonsense under neutrality, how much does this expected share vary from gene to gene with codon composition, and how do dN/dS-based methods such as dNdScv account for this when testing a single gene for an excess of truncating mutations in a cohort of fewer than 100 tumours?",
+          "why": "Both teams tested truncating enrichment against a single genome-wide truncating fraction with no gene-specific term; knowing how variable the neutral expectation is between genes tells them whether per-gene p-values from that background can be relied on.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "Which variant annotation tool emits the Variant_Classification values START_CODON_SNP, START_CODON_INS, DE_NOVO_START_IN_FRAME and DE_NOVO_START_OUT_FRAME, and how does that tool define Splice_Site: how many bases either side of an exon boundary are included, are exonic bases included, and does a Splice_Site row that also reports a protein change (synonymous or missense) indicate an exonic variant whose effect on splicing is not established?",
+          "answer": "Tool: GATK Funcotator. These four uppercase names are Funcotator's internal class names, and its MAF writer (MafOutputRendererConstants) translates only some classes to MAF style (MISSENSE->Missense_Mutation, NONSENSE->Nonsense_Mutation, SPLICE_SITE->Splice_Site, START_CODON_DEL->Translation_Start_Site, INTRON->Intron, ...) while leaving START_CODON_SNP, START_CODON_INS, DE_NOVO_START_IN_FRAME and DE_NOVO_START_OUT_FRAME untranslated. A MAF that mixes 'Splice_Site'/'Intron' with those uppercase values is therefore Funcotator output (Oncotator writes Start_Codon_SNP, De_novo_Start_OutOfFrame instead). Splice_Site definition: any variant overlapping a window of --splice-site-window-size bases on either side of a splice site; the default is 2 (FuncotatorUtils.DEFAULT_SPLICE_SITE_WINDOW_SIZE = 2). In the source the window is [exonStart-2, exonStart+1] and [exonEnd-1, exonEnd+2], so yes, exonic bases are included: by default the first/last 2 exonic bases as well as the 2 intronic bases at each exon edge (the 5' end of the first exon and 3' end of the last exon are not checked). The splice check runs before start-codon and missense/nonsense/silent classification, so it overrides them (only NONSTOP is tested earlier). Protein change: for an exonic variant in the window Funcotator still sets codon change and protein change and records the coding consequence (MISSENSE, SILENT, NONSENSE, ...) in secondaryVariantClassification; for an intronic variant in the window the secondary class is INTRON, the codon change is a 'c.e<exon>+/-N' string, and no protein change is set. So yes: a Splice_Site row that reports a synonymous or missense protein change is an exonic variant within 2 bases of the exon edge, labelled by position alone; the tool makes no prediction of a splicing effect. Only Splice_Site rows without a protein change sit at the intronic +/-1,2 essential positions. Counting every Splice_Site row as truncating overstates truncating calls; the defensible narrow definition is intronic Splice_Site rows plus exonic ones whose own consequence is nonsense. Caveat: whether the dataset's depositor used the default window of 2 cannot be known from the web; the teams can check it from each row's distance to the exon edge.",
+          "sources": [
+            "https://github.com/broadinstitute/gatk/blob/master/src/main/java/org/broadinstitute/hellbender/tools/funcotator/dataSources/gencode/GencodeFuncotationFactory.java",
+            "https://github.com/broadinstitute/gatk/blob/master/src/main/java/org/broadinstitute/hellbender/tools/funcotator/mafOutput/MafOutputRendererConstants.java",
+            "https://github.com/broadinstitute/gatk/blob/master/src/main/java/org/broadinstitute/hellbender/tools/funcotator/FuncotatorUtils.java",
+            "https://gatk.broadinstitute.org/hc/en-us/articles/360035531732-Funcotator-Annotation-Specifications"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd15-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-b8da0995ef71"
+            },
+            "bd15-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-f6adfcb320d9"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Which variant annotation tool emits the Variant_Classification values START_CODON_SNP, START_CODON_INS, DE_NOVO_START_IN_FRAME and DE_NOVO_START_OUT_FRAME, and how does that tool define Splice_Site: how many bases either side of an exon boundary are included, are exonic bases included, and does a Splice_Site row that also reports a protein change (synonymous or missense) indicate an exonic variant whose effect on splicing is not established? ANSWER: Tool: GATK Funcotator. These four uppercase names are Funcotator's internal class names, and its MAF writer (MafOutputRendererConstants) translates only some classes to MAF style (MISSENSE->Missense_Mutation, NONSENSE->Nonsense_Mutation, SPLICE_SITE->Splice_Site, START_CODON_DEL->Translation_Start_Site, INTRON->Intron, ...) while leaving START_CODON_SNP, START_CODON_INS, DE_NOVO_START_IN_FRAME and DE_NOVO_START_OUT_FRAME untranslated. A MAF that mixes 'Splice_Site'/'Intron' with those uppercase values is therefore Funcotator output (Oncotator writes Start_Codon_SNP, De_novo_Start_OutOfFrame instead). Splice_Site definition: any variant overlapping a window of --splice-site-window-size bases on either side of a splice site; the default is 2 (FuncotatorUtils.DEFAULT_SPLICE_SITE_WINDOW_SIZE = 2). In the source the window is [exonStart-2, exonStart+1] and [exonEnd-1, exonEnd+2], so yes, exonic bases are included: by default the first/last 2 exonic bases as well as the 2 intronic bases at each exon edge (the 5' end of the first exon and 3' end of the last exon are not checked). The splice check runs before start-codon and missense/nonsense/silent classification, so it overrides them (only NONSTOP is tested earlier). Protein change: for an exonic variant in the window Funcotator still sets codon change and protein change and records the coding consequence (MISSENSE, SILENT, NONSENSE, ...) in secondaryVariantClassification; for an intronic variant in the window the secondary class is INTRON, the codon change is a 'c.e<exon>+/-N' string, and no protein change is set. So yes: a Splice_Site row that reports a synonymous or missense protein change is an exonic variant within 2 bases of the exon edge, labelled by position alone; the tool makes no prediction of a splicing effect. Only Splice_Site rows without a protein change sit at the intronic +/-1,2 essential positions. Counting every Splice_Site row as truncating overstates truncating calls; the defensible narrow definition is intronic Splice_Site rows plus exonic ones whose own consequence is nonsense. Caveat: whether the dataset's depositor used the default window of 2 cannot be known from the web; the teams can check it from each row's distance to the exon edge. HOW SURE: high. SOURCES: https://github.com/broadinstitute/gatk/blob/master/src/main/java/org/broadinstitute/hellbender/tools/funcotator/dataSources/gencode/GencodeFuncotationFactory.java, https://github.com/broadinstitute/gatk/blob/master/src/main/java/org/broadinstitute/hellbender/tools/funcotator/mafOutput/MafOutputRendererConstants.java, https://github.com/broadinstitute/gatk/blob/master/src/main/java/org/broadinstitute/hellbender/tools/funcotator/FuncotatorUtils.java, https://gatk.broadinstitute.org/hc/en-us/articles/360035531732-Funcotator-Annotation-Specifications."
+        },
+        {
+          "question": "In cancer genome sequencing studies of high-mutation-burden, UV-driven tumours, is there an accepted convention for calling a gene 'frequently mutated' as distinct from 'significantly mutated' (for example a minimum share of tumours, or a requirement of excess over a background model such as dN/dS or MutSig-style tests), and how do such studies typically word and justify claims that a gene is frequently affected when its prevalence is modest relative to the many passenger genes mutated in a similar share of tumours?",
+          "answer": "No accepted numeric convention exists. None of the papers read applies a field-wide threshold for 'frequently mutated'. Usage is: 'frequently/recurrently mutated' = descriptive prevalence (share of tumours with a non-silent mutation); 'significantly mutated' = statistical excess over a background model (MutSigCV or dNdScv q<0.1; InVEx q<=0.2 in melanoma). Any prevalence cut-off is set per study: one oral-SCC exome study defined 'significantly and frequently mutated' as q<0.1 AND >=5% of tumours, and listed separately genes that were 'frequently mutated' but 'showed no significant enrichment' (TTN 28.3%, PCLO 16.7%, CSMD3 14.2%, MUC16 12.5%), attributing them to very large genes. In UV-driven tumours raw prevalence is explicitly treated as uninformative. In 121 melanoma exomes (Hodis 2012), 515 genes carried non-silent mutations in >10% of tumours and 78 in >20%; about 85% of those mutations were UV-type and the authors concluded that many high-frequency gene mutations are UV passenger events. A uniform-background test there called 544 genes 'significantly' mutated, tracking silent mutation rate and low expression. Lawrence 2013 makes the same point across cancers (olfactory receptors, titin on 'significant' lists) and defines the goal as genes mutated 'more frequently than expected by random chance'. Wording and justification for modest-prevalence genes: studies state counts and percentages plainly ('11 melanomas (9%) harbored nonsynonymous PPP6C mutations'; ARID2 loss-of-function in 7%; p16INK4a loss-of-function in 12%) and rest the claim that the gene is a real target on a per-gene background test (intron/UTR or synonymous control), loss-of-function burden, clustering at hotspots, or pathway-level aggregation (13% of samples with a loss-of-function hit in any SWI/SNF component), not on prevalence. For the teams this means the label depends on which reading is chosen, and the literature supports both readings existing; a verdict should fix the criterion in advance, report prevalence with interval and the background-aware result side by side, and say which one it rests on.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3600117/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3919509/",
+            "https://www.thno.org/v07p1088.htm",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5720395/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd15-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-3ec3b9b7c608"
+            },
+            "bd15-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-3fb56bca04bb"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cancer genome sequencing studies of high-mutation-burden, UV-driven tumours, is there an accepted convention for calling a gene 'frequently mutated' as distinct from 'significantly mutated' (for example a minimum share of tumours, or a requirement of excess over a background model such as dN/dS or MutSig-style tests), and how do such studies typically word and justify claims that a gene is frequently affected when its prevalence is modest relative to the many passenger genes mutated in a similar share of tumours? ANSWER: No accepted numeric convention exists. None of the papers read applies a field-wide threshold for 'frequently mutated'. Usage is: 'frequently/recurrently mutated' = descriptive prevalence (share of tumours with a non-silent mutation); 'significantly mutated' = statistical excess over a background model (MutSigCV or dNdScv q<0.1; InVEx q<=0.2 in melanoma). Any prevalence cut-off is set per study: one oral-SCC exome study defined 'significantly and frequently mutated' as q<0.1 AND >=5% of tumours, and listed separately genes that were 'frequently mutated' but 'showed no significant enrichment' (TTN 28.3%, PCLO 16.7%, CSMD3 14.2%, MUC16 12.5%), attributing them to very large genes. In UV-driven tumours raw prevalence is explicitly treated as uninformative. In 121 melanoma exomes (Hodis 2012), 515 genes carried non-silent mutations in >10% of tumours and 78 in >20%; about 85% of those mutations were UV-type and the authors concluded that many high-frequency gene mutations are UV passenger events. A uniform-background test there called 544 genes 'significantly' mutated, tracking silent mutation rate and low expression. Lawrence 2013 makes the same point across cancers (olfactory receptors, titin on 'significant' lists) and defines the goal as genes mutated 'more frequently than expected by random chance'. Wording and justification for modest-prevalence genes: studies state counts and percentages plainly ('11 melanomas (9%) harbored nonsynonymous PPP6C mutations'; ARID2 loss-of-function in 7%; p16INK4a loss-of-function in 12%) and rest the claim that the gene is a real target on a per-gene background test (intron/UTR or synonymous control), loss-of-function burden, clustering at hotspots, or pathway-level aggregation (13% of samples with a loss-of-function hit in any SWI/SNF component), not on prevalence. For the teams this means the label depends on which reading is chosen, and the literature supports both readings existing; a verdict should fix the criterion in advance, report prevalence with interval and the background-aware result side by side, and say which one it rests on. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC3600117/, https://pmc.ncbi.nlm.nih.gov/articles/PMC3919509/, https://www.thno.org/v07p1088.htm, https://pmc.ncbi.nlm.nih.gov/articles/PMC5720395/."
+        },
+        {
+          "question": "Under a UV-type mutational signature (C>T and CC>TT at dipyrimidines), what share of coding single- and double-base substitutions is expected to be nonsense under neutrality, how much does this expected share vary from gene to gene with codon composition, and how do dN/dS-based methods such as dNdScv account for this when testing a single gene for an excess of truncating mutations in a cohort of fewer than 100 tumours?",
+          "answer": "Expected nonsense share: the web did not settle this. No page read gives a published figure for the neutral nonsense fraction under a UV signature, nor a gene-to-gene range. What follows on the numbers is my own genetic-code arithmetic, not a sourced value: 23 of the 549 possible single-base changes in sense codons are nonsense (4.2%); restricted to C>T at dipyrimidines with uniform codon usage and uniform flanks, about 5% are nonsense, 34% silent and 61% missense, i.e. roughly 7-8% of non-silent substitutions. That silent share matches the 2:1 nonsynonymous:synonymous ratio reported for melanoma exomes, which is some reassurance. Real codon usage and the uneven trinucleotide rates of UV will shift it. Gene-to-gene variation: UV-type single-base changes can create a stop only at Gln (CAA, CAG), Arg CGA and Trp TGG codons; CC>TT additionally turns TGG into TAA and can hit Gln/Arg codons across a codon boundary. A gene's neutral nonsense expectation therefore scales with its Gln, Trp and CGA content and flanking context, and can plausibly differ severalfold between genes; glutamine-rich proteins sit at the high end (from background knowledge, not read here, p300/EP300 has a glutamine-rich C-terminal region, so it deserves a specific check). No source quantified the spread. How dNdScv handles it (read in the paper's methods and the R source): a 192-rate trinucleotide substitution model, strand-aware, is fitted across all genes; each gene has its own L matrix giving the number of sites in each of the 192 classes whose mutation would be synonymous, missense, nonsense or essential-splice, so expected nonsense and splice counts are gene-specific by construction ('correcting for ... sequence composition (L)'). The gene's mutation rate combines its own synonymous count with a negative-binomial regression on epigenomic covariates across genes; in small datasets, where most genes have zero or few synonymous mutations, the across-gene (Gamma) term dominates. The default gene test treats truncating = nonsense + essential splice with one shared ratio (constrain_wnon_wspl=TRUE, 2-df likelihood-ratio test) for power. Defaults also drop samples with more than 3000 coding mutations and keep at most 3 mutations per gene per sample. Dinucleotide and complex substitutions are not part of dN/dS: rows with multi-base ref/alt are labelled MNV and go with indels into a separate negative-binomial model with CDS length as offset; if CC>TT is supplied as two adjacent single-base rows the function warns and counts them as two independent substitutions. The authors report that in melanoma the trinucleotide model is biased because the UV context extends beyond the +/-1 base (a pentanucleotide model removes the bias), and that a uniform-rate model run on neutralised melanoma genomes produced 368 false-positive genes while the per-gene models were calibrated. Nothing in these pages addresses small-count behaviour of the likelihood-ratio p-value specifically. Implication for the teams' test: a binomial test of a gene's truncating share against one cohort-wide fraction conditions on the gene's own mutation count, so it controls rate, but not composition. With a handful of truncating calls per gene, an expectation that is off by a factor of about 2 changes the p-value materially, so those per-gene p-values are approximate; a gene-specific expectation (dNdScv, or site counts from the gene's CDS under the cohort's trinucleotide spectrum) is needed before relying on them.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5720395/",
+            "https://github.com/im3sanger/dndscv/blob/master/R/dndscv.R",
+            "https://github.com/im3sanger/dndscv/blob/master/vignettes/dNdScv.Rmd",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3600117/"
+          ],
+          "confidence": "low",
+          "deliveries": {
+            "bd15-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-94137f1381c0"
+            },
+            "bd15-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-08ed0858d111"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Under a UV-type mutational signature (C>T and CC>TT at dipyrimidines), what share of coding single- and double-base substitutions is expected to be nonsense under neutrality, how much does this expected share vary from gene to gene with codon composition, and how do dN/dS-based methods such as dNdScv account for this when testing a single gene for an excess of truncating mutations in a cohort of fewer than 100 tumours? ANSWER: Expected nonsense share: the web did not settle this. No page read gives a published figure for the neutral nonsense fraction under a UV signature, nor a gene-to-gene range. What follows on the numbers is my own genetic-code arithmetic, not a sourced value: 23 of the 549 possible single-base changes in sense codons are nonsense (4.2%); restricted to C>T at dipyrimidines with uniform codon usage and uniform flanks, about 5% are nonsense, 34% silent and 61% missense, i.e. roughly 7-8% of non-silent substitutions. That silent share matches the 2:1 nonsynonymous:synonymous ratio reported for melanoma exomes, which is some reassurance. Real codon usage and the uneven trinucleotide rates of UV will shift it. Gene-to-gene variation: UV-type single-base changes can create a stop only at Gln (CAA, CAG), Arg CGA and Trp TGG codons; CC>TT additionally turns TGG into TAA and can hit Gln/Arg codons across a codon boundary. A gene's neutral nonsense expectation therefore scales with its Gln, Trp and CGA content and flanking context, and can plausibly differ severalfold between genes; glutamine-rich proteins sit at the high end (from background knowledge, not read here, p300/EP300 has a glutamine-rich C-terminal region, so it deserves a specific check). No source quantified the spread. How dNdScv handles it (read in the paper's methods and the R source): a 192-rate trinucleotide substitution model, strand-aware, is fitted across all genes; each gene has its own L matrix giving the number of sites in each of the 192 classes whose mutation would be synonymous, missense, nonsense or essential-splice, so expected nonsense and splice counts are gene-specific by construction ('correcting for ... sequence composition (L)'). The gene's mutation rate combines its own synonymous count with a negative-binomial regression on epigenomic covariates across genes; in small datasets, where most genes have zero or few synonymous mutations, the across-gene (Gamma) term dominates. The default gene test treats truncating = nonsense + essential splice with one shared ratio (constrain_wnon_wspl=TRUE, 2-df likelihood-ratio test) for power. Defaults also drop samples with more than 3000 coding mutations and keep at most 3 mutations per gene per sample. Dinucleotide and complex substitutions are not part of dN/dS: rows with multi-base ref/alt are labelled MNV and go with indels into a separate negative-binomial model with CDS length as offset; if CC>TT is supplied as two adjacent single-base rows the function warns and counts them as two independent substitutions. The authors report that in melanoma the trinucleotide model is biased because the UV context extends beyond the +/-1 base (a pentanucleotide model removes the bias), and that a uniform-rate model run on neutralised melanoma genomes produced 368 false-positive genes while the per-gene models were calibrated. Nothing in these pages addresses small-count behaviour of the likelihood-ratio p-value specifically. Implication for the teams' test: a binomial test of a gene's truncating share against one cohort-wide fraction conditions on the gene's own mutation count, so it controls rate, but not composition. With a handful of truncating calls per gene, an expectation that is off by a factor of about 2 changes the p-value materially, so those per-gene p-values are approximate; a gene-specific expectation (dNdScv, or site counts from the gene's CDS under the cohort's trinucleotide spectrum) is needed before relying on them. HOW SURE: low. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC5720395/, https://github.com/im3sanger/dndscv/blob/master/R/dndscv.R, https://github.com/im3sanger/dndscv/blob/master/vignettes/dNdScv.Rmd, https://pmc.ncbi.nlm.nih.gov/articles/PMC3600117/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd15-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd15-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd15-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd15-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd15-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 134.52704679197632,
+      "cost_usd": 0.2504399,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 137.36047962505836,
+      "cost_usd": 0.21259459999999997,
+      "error": null
+    },
+    {
+      "agent": "bd15-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 130.4696951659862,
+      "cost_usd": 0.27397520000000003,
+      "error": null
+    },
+    {
+      "agent": "bd15-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 215.49775699991733,
+      "cost_usd": 0.43952739999999996,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 183.20649637503084,
+      "cost_usd": 0.3839682,
+      "error": null
+    },
+    {
+      "agent": "bd15-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 411.08527020795736,
+      "cost_usd": 0.9413591000000001,
+      "error": null
+    },
+    {
+      "agent": "bd15-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 230.248069165973,
+      "cost_usd": 0.4777416,
+      "error": null
+    },
+    {
+      "agent": "bd15-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 246.0287750409916,
+      "cost_usd": 0.49389219999999995,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

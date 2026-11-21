@@ -216,7 +216,7 @@ def role_words(agent: dict | None, agent_id: str, run: dict) -> tuple[str, str]:
                f"team's, and may send it notes. The lab delivers a note only if it passes the leak check and draws "
                f"nothing from the other team: only the Director moves findings between teams.")
         return (f"the head of {what}",
-                f"You are the head of {what}, one of the lab's department heads (D-22). Like the Director you can "
+                f"You are the head of {what}, one of the lab's department heads (D-23). Like the Director you can "
                 f"read every department's memory, the other heads' notes and each study's event log; your "
                 f"scientists read only their own department. {job} You never see the grades.")
     if role == "library":

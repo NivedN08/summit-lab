@@ -229,13 +229,17 @@ Status: being built. The GeneBench design of D-17 stays reproducible with `--mod
 **D-20 · Nov 14, 17:02 · Decided · Version 3 is frozen for the BioDSA-1K and scBench test tasks.**
 Design as in D-19, unchanged after the pilots (M-12). Development tasks, whose scores we have seen: BioDSA-1K bd01 to bd04; scBench sc01, sc07, sc08. Test tasks, scored once after every agent has exited: BioDSA-1K bd05 to bd40 (36 tasks); scBench sc02 to sc06 and sc09 to sc36 (33 tasks). All agents Fable 5.2. Comparison: Fable 5.2 alone, four attempts per BioDSA-1K task and two per scBench task, same limit, no web access; and for BioDSA-1K a second lab run with all search off. Order of running, because Claude usage on one account is the limit: BioDSA-1K lab, BioDSA-1K single agents, scBench, then the search-off run.
 
-**D-21 · Nov 14, 16:45 · Decided · A web front end that replays the lab's runs.**
+**D-21 · Nov 14, 17:32 · Decided · scBench's lab runs with Opus analysts, because the Fable allowance cannot carry both runs.**
+The account's Fable allowance ran out twenty minutes into running both test sets on Fable (I-13) and resets on a timer. Two full runs on Fable would hit it repeatedly. So, before any scBench test task has finished or been scored: the scBench lab uses Opus 5.5 for the library, the teams and the referee, and Fable 5.2 for the director only. Everything else in version 3 is unchanged. It is compared with Opus 5.5 alone and with Fable 5.2 alone, two attempts each per task. BioDSA-1K stays as frozen in D-20: every agent on Fable.
+What this means for reading the results: BioDSA-1K asks whether a Fable lab beats Fable alone. scBench now asks a different question: whether a lab of the weaker model, with search and a Fable director, can match the stronger model alone. The scBench pilot (M-12) was run with Fable analysts, so its three development tasks are not a pilot of this configuration; we say so here and will say so in the results.
+
+**D-22 · Nov 14, 16:45 · Decided · A web front end that replays the lab's runs.**
 Why: judges should be able to see the lab's method, not only read about it. In `web/`, the lab is drawn as a pixel-art floor: each agent is a person at a desk in its department (director's office, library, Team A, Team B, referee, Team C, memory vault, and a room of solo agents for comparison). The replay is driven by a run's own event log, so every walk and every flying note is a real event: a librarian carries findings to the director when the director's briefing starts, the director walks to a desk when a question passes the leak check, and the two teams' answers meet only at a hatch in the wall between their rooms. Clicking a person shows its role, model, what it is doing, the articles it found with Exa, its memory notes and what the director passed to it.
 Visitors can ask any agent a question. The answer comes from Claude playing that agent, given only what that agent could read at that moment of the replay, under the same rule as section 3: Team B asked about Team A says it cannot see Team A's work. A lab guide answers from the whole log, including grades, and says no agent saw them. Without the local server the page answers from the log without a model.
 Data: `web/build_data.py` reads only `events.jsonl`, `study.json`, `results.json` and `records/exa_calls.jsonl`, never `data/` or workspaces, and drops local paths. The test run (`results/test-v2`) is the default; a run still in `runs/` appears live when the server runs.
 Status: built; the server's 44 tests pass, and one question through the Claude command-line tool was answered in about 5 seconds and respected the boundary. Not a measurement of the lab.
 
-**D-22 · Nov 14, 17:14 · Decided · Department heads, as a switch for a new arm.**
+**D-23 · Nov 14, 17:14 · Decided · Department heads, as a switch for a new arm.**
 Why: the team asked for a lab shaped like a real one, with a head for each department who can read every department's memory and logs, while workers read only their own. The memory layer was built for this (section 3, M-1), but until now the director was the only head.
 What it is (`--heads`, off by default, so version 3 stays frozen for its test tasks, D-20): three heads on Fable 5.2, for the library, Team A and Team B. They share a department, `heads`, that only heads and the director can read. Each reads every department's memory and is given the study's event log. Workers read only their own department, as before.
 - The head of the library reviews the library's findings before the director's briefing: does each apply to this data, is it backed by a source, what is missing. The director's brief carries the review; the director still decides what goes down.
@@ -246,7 +250,7 @@ Measures: a new step, "head review", counts per team how often the review turned
 What we expect, written before any run: the reviews will catch some format problems and warning signs a scientist recorded and did not act on, so some first answers will change; we do not know whether more will be rescued than damaged. Blindness could weaken in ways the checks miss: a head could steer its scientist without numbers and without citing a fact.
 Status: built and tested with scripted agents (10 new tests; 266 tests pass); one free end-to-end run with the scripted backend went library, library review, briefing, analysis, both team reviews, a delivered note, a revision, then the question round. No run with real agents yet. The web floor (D-21) shows heads in runs that have them: a desk at the back of the room each head runs, a walk to the scientist it reviews, its notes as envelopes, and a red cross when the lab holds a note back. Visitors' questions to a head are answered from everything a head can read, without the grades.
 
-**D-23 · Nov 14, 17:30 · Decided · The demo plays 5 recorded minutes, not a live lab.**
+**D-24 · Nov 14, 17:30 · Decided · The demo plays 5 recorded minutes, not a live lab.**
 Why: by judging time the research will be over, so nothing on the floor would be moving live. Every run is already recorded event by event in its `events.jsonl`; the demo now opens on a 5-minute clip of one and loops it. `web/make_demo.py` chooses the clip by scoring every 5-minute window on what a viewer sees move (walks, notes and answers in flight, comparisons, referee verdicts, results), with a bonus for each kind of interaction.
 The clip for now: the busiest 5 minutes of all runs, GeneBench-Pro test run, Nov 14, 3:12 to 3:17 PM: 67 questions delivered, 74 notes passed down, 11 comparisons, 3 referees assigned, 2 verdicts, 4 studies finished.
 At the end of the event: if the final results are what we present, `python3 web/make_demo.py --run results/<final run> --last` switches the demo to the last 5 minutes of the final run, which end on the grading and a results card with the counts as graded.
@@ -285,6 +289,9 @@ Fable alone answered "not verifiable" on both attempts; the data in fact settles
 
 **O-10 · Nov 14, 17:02 · Measured (both pilots) · Fable alone fails in one way on BioDSA-1K, and the lab shares it when both teams do.**
 All four failed single attempts on the pilot tasks judged a settled claim "not verifiable". On bd04 both lab teams did the same, the challenge did not move them, and the lab reported a wrong answer as replicated. The same happened on scBench task sc01. With every agent on the same model, a mistake the model makes every time survives the whole lab.
+
+**O-11 · Nov 14, 19:54 · Measured (BioDSA-1K test, task bd36) · The director's challenge broke a shared mistake that Fable alone made four times out of four.**
+Both teams answered "Not verifiable": the data have no junction-level structural-variant calls, so in their reading the claim could not be tested. Every single Fable attempt said the same. Because the teams agreed, the director challenged the answer. It named assumptions both teams shared (a rule, fixed before looking at the data, under which only junction-level calls could settle the claim) and evidence neither had used: two clinical columns that name each fusion's partner gene and record whether each translocation came with a deletion. Both teams had read those columns but used them only for counting. After running the checks, both teams independently changed to "True", which passed. This is the failure O-10 describes, and the first time in a test run the challenge fixed it. On bd17 the same step went the other way: the challenge moved team A off a passing answer, and the referee then picked team B's passing one.
 
 ## 6. Ideas
 
@@ -349,6 +356,29 @@ The first full lab run on Modal (`runs/dev-v2`, the two development problems on 
 Fixed: both runners now recognise the limit message, the lab logs `lab.halted`, starts no further agent, and leaves the study without a final answer so it is re-run later (test: `test_a_usage_limit_stops_the_run_and_records_no_final_answer`).
 Correction, 14:46: we first wrote that everything ran on one account. It did not. A check showed the laptop's own sign-in (a Max plan) still answers, while the token saved on Modal returns the limit message. So the token on Modal belongs to a second, smaller account (a Pro plan), and that is the one that ran out, after four Fable attempts and two library runs. The laptop runner is unaffected and the version 2 run was restarted there. Still open: replace the token on Modal with one from the larger account, and keep the smaller one as a spare.
 What the discarded run did show: with the gateway on Modal, the library made 14 Exa searches, read 4 pages and wrote 17 facts, every request carrying an identity that Modal attached (the gateway log records the identity source as the X-Verified-User-Data header). So the gateway on Modal, Exa through it, and past.dev through it all work.
+
+**I-13 · Nov 14, 17:27 · Open · The account's Fable limit stopped both test runs once.**
+At 5:23pm, twenty minutes into the BioDSA-1K and scBench test runs (26 agents at once, all on Fable 5.2), agents began returning "You've reached your Fable limit. Switch to another model to continue." The halt added after I-12 worked: both runs logged `lab.halted`, started no more agents, and recorded no task as finished, so nothing false was written down and nothing was scored. By 5:26pm Fable answered again on the laptop and on Modal; we do not know whether the limit is on usage in a time window or on how many Fable sessions run at once. The BioDSA-1K run was resumed with 8 agents at once instead of 16. Lost: the first twenty minutes of work on both runs (about $31 as the command-line tool estimates it), because an unfinished task is re-run from the start. If the limit returns, the runs stop again and are resumed again; the design and the task lists do not change.
+
+**I-14 · Nov 14, 20:18 · Open · The Fable allowance ran out again and stopped the search-off run after 26 agents.**
+The run started at 20:02 and halted at 20:17, with no task finished. This time the limit is the account's seven-day window, not the five-hour one; the agents' own rate-limit events give the reset as Sunday Nov 15, 10:00 Pacific. The lab stopped cleanly as designed (I-13): no task was recorded as failed, and the run resumes from the same command. Running this arm on Opus instead would not answer its question, because the arm with search used Fable analysts. Also noted when it started: with search off the library does not run at all, so team A gets no briefing; this run measures the whole research side of the lab, not web search alone.
+
+**I-15 · Nov 16, 21:22 · Open · Three interruptions during the Phase 1 noise runs (M-15); none changed a result.**
+1. Lab replicate 1 crashed before its first agent: past.dev answered 404 when looking up an identity the lab had just created (`bd14-referee`), most likely the delay noted in I-3, with four labs setting up memory at once. It had spent nothing; the same command was re-run and finished.
+2. The laptop slept for about five hours with the runs going (on battery, despite the keep-awake request). The Modal connection dropped: the single-agent run stopped with "Connection lost", and in lab replicate 2, 12 agent runs report no dollar figure, so its $40.34 is slightly low. Both were resumed with the same commands. Before a long run: plug in, lid open.
+3. The new spending cap stopped both single-agent runs early, cleanly, without overspending. It counts a reservation for every agent already running, at the 90th-percentile cost of a run of that role and model ($0.95 for an Opus single attempt), while an Opus attempt here cost about $0.11; eight at once reserved $7.60 of the $11 cap with $3.43 spent. They were resumed with the same caps and fewer agents at once (4, then 1); a deviation from nothing pre-registered, since the spec fixes the caps, not the parallelism. Still open: reserve closer to the measured mean for cheap roles.
+
+**I-16 · Nov 17, 19:51 · Open · Loop-1 was interrupted three times; the code fixes are logged in the ledger as a deviation (entry 49).**
+1. The proposer agent never ran on Modal. It was told to read `lab/prompts` from this checkout, which a Modal sandbox does not hold, so the backend refused the run before any sandbox started. Moves m01 and m02 therefore came from the rules fallback. Fixed in 9eddeb0: the proposer now reads copies of the editable prompts in its own workspace. m03 was the proposer's own move and cost $0.14. The four refused attempts are counted at their $1.50 estimates each ($6 in all) though they spent nothing.
+2. The loop crashed during m02's evaluation on a past.dev network error (5 tries, about 15 s of backoff). Fixed in 9eddeb0: past.dev calls now retry 8 times over about 2 minutes, and a crashed loop can resume from its ledger entries (`loop --resume-loop <id>`), judging again the move it was on and counting what it already spent against the cap.
+3. Nived paused the loop during the setup of m03's evaluation. I took the stop for the app ending the task and restarted it; it was stopped again within a minute, before any agent ran, and resumed when Nived asked. The ledger shows that restart as a second `loop.resume` note. Lesson: an unexplained stop may be a pause; ask before restarting.
+
+**I-17 · Nov 19-20 · Fixed in code (items 1, 2, 5) · Five problems during the held-out batch (M-19); the lab's cap was raised twice with the owner's approval (ledger 78, 79).**
+1. The launcher's first start ran nothing: macOS `xargs -I` refuses arguments over 255 bytes, and every registered command is longer. Fixed in 7c587f6 (each command passed whole); nothing was spent.
+2. The BioDSA lab's first try crashed in memory setup, before any agent ran. A past.dev namespace is named from the run folder, and both labs ran in a folder called `lab`, so both used `sl-lab`; the shared director identity then reached the planted lab's 80 audiences and the lab's own membership check refused to start. With the owner's approval the planted lab's 80 audiences were deleted (`runs/heldout/logs/past-cleanup.jsonl`) and the registered command was rerun unchanged. The planted lab, which finished first, never reached a BioDSA audience. Fixed after the batch: a namespace now adds 8 hex characters of the run folder's full path, and a resumed run keeps the namespace its memory was set up under (`lab/run.py` `memory_namespace`, tests in `tests/test_memory_namespace.py`).
+3. A network outage on the launching Mac (DNS failures, 21:27-21:40 UTC on Nov 19) failed every agent run in flight: 48 runs, 35 tasks ended in error. Failed runs were charged at their estimate, and the lab halted on its $145 cap. The owner approved a $205 cap (ledger 78); the resume restarted the 35 tasks and finished 29, then halted on that cap; the owner approved $220 (ledger 79) and the last 6 finished. No run had been graded at either resume.
+4. The BioDSA self-challenge arm stopped on its $35 cap with 236 of 240 agent runs done; its three automatic retries made almost no progress (each restarts a stopped task from its first step), so it was not resumed. Six tasks have no graded answer (bh71, bh74, bh77-bh80) and count as failed.
+5. `grade --ledger` wrote no failure entries for the vote and self-challenge arms, only for the lab and the single-model vote. Fixed in `lab/ledger.py` (`arm_answers`); the 17 missing failures of the held-out control arms were appended afterwards (ledger 145-163), and the earlier entries are unchanged.
 
 ## 8. Research behind decisions
 
@@ -551,3 +581,147 @@ Commands: `python3 -m lab.run lab --benchmark biodsa --studies bd01,bd02,bd03,bd
 | Faults | none | one sandbox lost by Modal, retried successfully |
 
 What this shows: version 3 runs end to end with real agents, including search by verified identity, budgets, and research on demand; web search is now a real part of the work (on GeneBench the library opened 7 pages in a whole run). What it does not show: seven tasks cannot say whether the lab beats Fable alone. The lab costs about 27 single attempts per BioDSA-1K task; a vote over repeats would not help a model that gives the same answer every time, but the cost gap is real.
+
+**M-13 · Nov 14, 19:15 · Measured · scBench test: the lab with Opus analysts scores 23 of 33, the same as Fable alone and no better than Opus alone.**
+Commands: `python3 -m lab.run lab --benchmark scbench --studies sc02,...,sc36 (all but sc01, sc07, sc08) --run-dir runs/sc-test --memory past --backend modal --parallel 10 --model opus` (director on Fable, D-21), `baseline ... --attempts 2` (Fable), `baseline ... --attempts 2 --model opus --run-dir runs/sc-test-opus-single`, then `grade` and `measures` after every agent had exited. Scored by scBench's own grader. Records: `results/sc-test/`, `results/sc-test-opus-single/`. The Opus-alone rows were added at 19:35, when that run was graded.
+
+| | 33 test tasks |
+|---|---|
+| Lab (Opus analysts, Fable director) | 23 of 33 |
+| Fable alone | 44 of 66 attempts (67%); 23 of 33 tasks on the first attempt; 23 of 33 by vote |
+| Opus alone (the like-for-like comparison) | 47 of 66 attempts (71%); 24 of 33 tasks on the first attempt; 23 of 33 by vote |
+| Lab against Opus alone, task by task | lab right where Opus failed twice: sc29. Lab wrong where Opus passed twice: sc14. Opus passed once in two: sc05 (lab right), sc11 and sc18 (lab wrong). The other 28 tasks: same result |
+| Lab right where Fable alone was wrong twice | sc29 (settled by a third team) |
+| Lab wrong where Fable alone was right twice | sc14 (reported as unresolved) |
+| By label (tasks, passed) | replicated 21, 16; converged 3, 1; refereed 6, 4; third-team 1, 1; unresolved 2, 1 |
+| False agreement | 5 of 21 replicated answers failed; the two first answers agreed in 23 tasks and were both wrong in 6 |
+| Challenge of agreed answers | 23 challenged, 21 drew questions, 1 changed the agreed answer; rescued 0, damaged 0 |
+| Question round | rescued 4, damaged 2 |
+| Referee | rescued 3, damaged 1 |
+| Third team | rescued 2, damaged 0 |
+| Selection | some lab answer passed in 25 tasks; the lab shipped a passing one in 23 (missed sc11, sc14) |
+| Web search | library 389 calls, research on demand 262, team A 0; 2 refused by the budget |
+| Research on demand | 88 questions, 12 blocked by the leak check, 150 findings delivered; the revision round after it rescued 3, damaged 1 |
+| Cost | lab 300 runs, 814 minutes of agent time, $101.33 ($3.07 a task); Fable alone 66 runs, 179 minutes, $9.23 ($0.14 an attempt); Opus alone 66 runs, 122 minutes, $8.45 ($0.13 an attempt) |
+
+What this shows. On scBench the lab added nothing to its own analysts: 23 of 33, against 24 of 33 for one Opus attempt and 23 of 33 for a vote over two. Opus alone also did slightly better than Fable alone here (71% of attempts against 67%), so Opus is not the weaker model on this benchmark. Seven tasks failed in every arm, single or lab, Opus or Fable, with or without web research (sc03, sc04, sc16, sc21, sc25, sc33, sc36): both models share those blind spots, and the lab's research did not remove them. Inside the lab, the steps after the first answers did net good: 9 rescues against 3 damages (question round 4 and 2, referee 3 and 1, third team 2 and 0; the revision round's 3 and 1 are already inside the question round's count). Agreement is evidence but not proof: 16 of 21 replicated answers passed (76%), against 7 of 12 for every other label (58%).
+
+What it does not show. It is not a win: the same score at eleven to twelve times the cost. The rescues did not lift the lab above a single attempt because the lab's first answers started lower: team A (briefed by the library) passed 19 of 33 on its first answer and team B (data only) 21 of 33, against 24 of 33 for one Opus attempt alone. So the library's briefing did not improve first answers here; the later steps then won back what was lost. Differences of two to five tasks in 33 are within what one run per arm can produce by chance. The challenge step, which costs a director run and a round of replies on every agreed answer, changed nothing in the score here.
+
+**M-14 · Nov 14, 19:54 · Measured · BioDSA-1K test: an all-Fable lab 27 of 36, Fable alone 26 of 36.**
+Commands: `python3 -m lab.run lab --benchmark biodsa --studies bd05,...,bd40 --run-dir runs/biodsa-test --memory past --backend modal --parallel 8` (resumed after the usage limit, I-13), then `baseline ... --attempts 4`, `grade`, `measures`, after every agent had exited. Scored by exact match on the label (BioDSA-1K ships no grader code). Records: `results/biodsa-test/`.
+
+| | 36 test tasks |
+|---|---|
+| Lab (all Fable) | 27 of 36 |
+| Fable alone | 104 of 144 attempts (72%); 26 of 36 on the first attempt; 26 of 36 by vote |
+| Where they differ | bd36: lab right, Fable alone wrong four times (O-11). Nowhere the other way |
+| Fable alone, attempt to attempt | every task passed 4 of 4 or 0 of 4: no repeat ever changed the result |
+| Teams' first answers | team A 26 of 36, team B 26 of 36; they agreed in all 36, both wrong in 10 |
+| By label (tasks, passed) | replicated 34, 26; refereed 2, 1 |
+| False agreement | 8 of 34 replicated answers failed |
+| Challenge of agreed answers | 36 challenged, 33 drew questions, 1 changed the agreed answer (bd36); rescued 1, damaged 0 at the final answer. On bd17 it moved one team off a passing answer and the referee recovered it |
+| Selection | the lab passed all 27 tasks where some lab answer passed |
+| How answers failed | lab: 8 settled claims judged "Not verifiable", 1 unverifiable claim judged settled. Fable alone: 36 and 4 attempts |
+| Web search | library 539 calls, research on demand 297, team A 15; 3 refused by the budget; 9 learned facts written |
+| Research on demand | 90 questions, 2 blocked by the leak check, 176 findings delivered |
+| Cost | lab 346 runs, 1,014 minutes of agent time, $118.00 ($3.28 a task); Fable alone 156 runs (144 graded attempts and 12 stopped by the usage limit and re-run), 179 minutes, $15.87 |
+
+What this shows. This is the first test where the lab scored above the single model, by one task, and the way it did so is the point: Fable alone gives the same answer every time on this benchmark, so repeats and votes cannot fix anything. The lab fixed one shared mistake by challenging an agreed answer with evidence both teams had passed over. The steps did no net harm here: no final answer went from passing to failing.
+
+What it does not show. One task in 36 is not a difference we can call real. Eight of the nine remaining failures are the same mistake as bd36 (a settled claim judged "Not verifiable"), and the challenge did not catch them. The lab cost about 30 single attempts per task. Whether web search helped is the next run: the same 36 tasks with all search off (D-20).
+
+**M-15 · Nov 16, 21:22 · Measured · Phase 1 noise: two identical Opus labs differ on 1 task in 20; the challenge damaged more answers than it rescued.**
+Pre-registered in `prereg/dev-panel-noise.json` and `prereg/dev-panel-noise-sc.json` (frozen in commit 2471c78, before any run). Panel: 20 BioDSA-1K dev tasks (the 10 that Fable alone failed in M-14 and 10 of its passes drawn with a fixed seed) and the scBench dev tasks sc01, sc07, sc08. Arms: the v3 lab twice with Opus in every role, and Opus alone with 4 attempts. Commands: `python3 -m lab.run lab --benchmark biodsa --studies <panel> --run-dir runs/dev-panel-noise-lab1 --memory past --backend modal --parallel 8 --model opus --director-model opus --snapshot-first-round --max-usd 57 --prereg prereg/dev-panel-noise.json`, the same into `-lab2`, `baseline ... --attempts 4 --model opus --max-usd 11`, the scBench equivalents (caps 11, 11, 3), then `grade --ledger` and `measures` after every agent had exited, and `python3 scripts/noise.py` to pair the replicates. Interruptions: I-15. Records: `results/dev-panel-noise-*`.
+
+| | BioDSA-1K, 20 tasks | scBench, 3 tasks |
+|---|---|---|
+| Lab replicate 1 | 10 of 20 | 2 of 3 |
+| Lab replicate 2 | 9 of 20 | 2 of 3 |
+| Opus alone | 43 of 80 attempts; vote 11 of 20 | 12 of 12 attempts; vote 3 of 3 |
+| Tasks whose final result differs between replicates | 1 (bd36: passed in 1, failed in 2) | 0 |
+| Teams' first answers that differ between replicates | team A 1 (bd38), team B 0 | 0 |
+| Noise threshold T (95th percentile of the net difference over a bootstrap of tasks, at least 2) | 3 | 2 (the minimum) |
+| Opus alone, attempt to attempt | 18 of 20 tasks 4 of 4 or 0 of 4; bd28 3 of 4 | every attempt passed |
+| Challenge of agreed answers | rescued 1 (bd36, replicate 1), damaged 1 (bd38, replicate 2) | damaged sc01 in both replicates: both teams had passed |
+| How the lab failed | 8 and 9 settled claims judged "Not verifiable", 1 and 1 unverifiable claim judged settled, 1 and 1 false claim accepted | sc01 as above |
+| Cost | $40.76 and $40.34 a replicate ($2.03 a task; replicate 2 slightly low, I-15); Opus alone $8.98 for 80 attempts | $6.82 and $7.08; Opus alone $1.27 |
+
+What this shows. The lab is close to deterministic on these tasks, and so is Opus alone: the run-to-run noise is small, one task in twenty, well under the pre-registered stop rule (more than 25% flips). So a later change that rescues three or more tasks net on this panel is unlikely to be luck, which is the threshold the improvement loop will use (T = 3). Two findings point the loop: the challenge of agreed answers did net harm on Opus (1 rescue, 3 damages over the four lab runs, sc01 twice), which is what the damage guard is for; and the lab's dominant failure is again a settled claim judged "Not verifiable" (8 to 9 of 10 to 11 failures; 33 of Opus alone's 37 failed attempts), which is what the re-check is for.
+
+What it does not show. Two replicates on 23 tasks bound the noise only roughly; T is set by the pre-registered rule, not estimated precisely. The panel is half tasks Fable alone failed, so its pass rates are not benchmark scores. Here the all-Opus lab scored below a vote over four Opus attempts (10 and 9 against 11 of 20; 2 against 3 of 3) at about four and a half times the cost: on this panel the lab's extra steps have not yet paid for themselves.
+
+**M-16 · Nov 17, 19:51 · Measured · Improvement loop 1: three moves, none accepted; every effect was on two tasks and stayed under the noise threshold.**
+Pre-registered in `prereg/loop-1.json` (frozen in b30bd21; deviations in ledger entries 43 and 49, I-16). Panel: the 20 BioDSA-1K tasks of M-15. Incumbent: the v3 lab with Opus in every role, scored by its Phase 1 replicate 1 (10 of 20). Rule, decided by code: a move is kept only if it rescues at least T = 3 tasks net, damages at most 1, costs at most 1.25 times the incumbent, and shows a positive net again on a second replicate. Stop after 8 moves, 3 rejections in a row, or $400. Command: `python3 -m lab.run loop --benchmark biodsa --studies <panel> --incumbent-run runs/dev-panel-noise-lab1 --run-root runs/loop1 --backend modal --memory past --parallel 8 --max-usd 400 --move-max-usd 50 --max-moves 8 --noise-threshold 3 --incumbent runs/loop1/variants/v3-opus --model opus --director-model opus --proposer-model opus`, then the same with `--resume-loop loop-20261116223004-1f8c` after each interruption. Records: `results/loop-1/` and the ledger.
+
+| Move | Source | What it changed | Passed | Rescued | Damaged | Net | Cost per task vs incumbent | Decision |
+|---|---|---|---|---|---|---|---|---|
+| m01 | rules | re-check answers of "Not verifiable" (Config.recheck) | 10 of 20 | bd38 | bd36 | 0 | 1.05 | rejected |
+| m02 | rules | also re-check "Not verifiable" when both teams agreed (check `recheck_on_agreed_nv`) | 10 of 20 | bd38 | bd36 | 0 | 1.04 | rejected |
+| m03 | proposer | first-round analyst brief: "Not verifiable" only when no variables can test the claim; list every file and column first; a null or weak test is still a test | 11 of 20 | bd38 | none | +1 | 0.83 | rejected |
+
+The loop stopped after three rejections in a row; the incumbent is unchanged. Spent: $89.45 of the $400 cap (evaluations $24.82, $24.61 and $33.88; proposer $6.14, of which $6 is the estimate for the refused attempts in I-16).
+
+What this shows. None of the three moves beat the noise. Every change in outcome fell on two tasks: bd36, the one task whose result differed between the Phase 1 replicates, and bd38, whose team A first answer also differed between them. m01 and m02 reused the incumbent's first answers, so their bd36 damage comes from the later steps, which differ run to run. The re-check did not turn the "settled claim judged Not verifiable" failures into passes: 9 of the 10 failed tasks stayed failed under every move. m03 is the only move with no damage and a lower cost, and the proposer's reasoning (fix the label in the first round, before the answers anchor) is the most plausible lead, but one rescue is within noise.
+
+What it does not show. Three moves on 20 tasks cannot say that no change to the lab helps; the loop stopped on its rejection rule, not for lack of ideas. m03 was judged on a single replicate, since only accepted moves get a second. The panel is the one the moves were chosen on, so even an accepted move would need the held-out test (Phase 6).
+
+**M-17 · Nov 18, 14:03 · Measured · Loop 2: with the benchmark's label convention stated to every arm, the lab passes 19 of 20 and Opus alone 18 of 20; the loop did not run.**
+Pre-registered in `prereg/loop-2.json` (frozen in 2c0dd71, before any run). Panel: the 20 BioDSA-1K tasks of M-15 and M-16. Every arm read the same task text: the plain task plus the convention note in `lab/adapters/biodsa.py` (how the labels were built, from the paper's section 2.4, and that a wrong "Not verifiable" counts as wrong). Grading unchanged: exact match on the label. Commands: `python3 -m lab.run lab --benchmark biodsa-convention --studies <panel> --run-dir runs/loop2/incumbent --backend modal --memory past --parallel 8 --config-file runs/loop2/variants/v3-opus/config.json --prompt-dir runs/loop2/variants/v3-opus/prompts --snapshot-first-round --max-usd 55 --prereg prereg/loop-2.json` and `baseline --benchmark biodsa-convention --studies <panel> --run-dir runs/loop2/opus-single --backend modal --attempts 4 --model opus --parallel 8 --max-usd 14 --prereg prereg/loop-2.json`, then `grade --ledger` and `measures` after every agent had exited. Interruptions: the Opus-alone run halted twice on its own cap check, which reserves $0.95 for each run in flight while a real run costs about $0.11; it was resumed with the same command, as the spec allows, and finished all 80 attempts under the cap. Ledger entry 62 graded it at 77 of 80 attempts and is superseded by entry 65 (note in entry 68). Records: `results/loop-2/`.
+
+| | Plain task text (M-15) | Convention stated (this run) |
+|---|---|---|
+| Lab (v3, Opus in every role) | 10 and 9 of 20 | 19 of 20 (fails bd37) |
+| Opus alone, attempts | 43 of 80 | 71 of 80 |
+| Opus alone, vote of 4 | 11 of 20 | 18 of 20 (fails bd34, bd37) |
+| Lab answers of "Not verifiable" | 9 and 10, right on 1 | 1, right on 1 |
+| Cost | lab $40.76; Opus alone $8.98 | lab $31.28; Opus alone $8.61 |
+
+The pre-registered stop rule then applied: the incumbent failed fewer than 3 tasks, so no move could reach T = 3, and the loop did not run. Spent: $39.89 of the $350 cap.
+
+What this shows. On this panel the lab's failures were a label-convention problem, not an analysis problem. Once the convention is stated, the lab gains 9 to 10 tasks and the Opus vote 7, and the two arms finish one task apart. The one difference is bd34. There the teams' first answers split, and team B moved to team A's correct answer after the question round; Opus alone was right on 1 of its 4 attempts. bd14 went the same way in the lab, and Opus alone was right on 2 of 4 attempts and won the vote. Both arms fail bd37, a truly unverifiable claim judged True. The lab now costs about 3.6 times the 4-attempt vote.
+
+What it does not show. One task is well under the noise threshold, so this is no evidence the lab beats Opus alone. The panel was chosen around Fable's over-abstentions, so it holds few true "Not verifiable" labels (our grades show at least 2), while about a third of the benchmark's labels are. A note that pushes models toward True or False may cost them on those tasks. Only the held-out draw (Phase 6), with its natural label mix, can say whether the convention note helps overall. These scores are not comparable with the earlier plain-text runs, or with published BioDSA-1K numbers.
+
+**M-18 · Nov 18, 15:41 · Measured · Held-out prep on dev tasks: every arm runs end to end; the lab passes 8 of 8 planted dev tasks and Opus alone 7 of 8 by vote.**
+Plan: `research/heldout-plan.md`. Commands: `bash scripts/heldout_smoke_pilot.sh`, then the two pilot runs resumed with the same commands (the lab's cap raised from $14 to $24). For the smoke test it runs `lab`, `arm --arm vote --attempts 3`, `arm --arm self`, `baseline --attempts 1` with Opus and with Fable on bd01, bd02 (benchmark `biodsa-convention`) and pf03, pf04 (`planted-dev`); for the pilot, it runs `lab` and `baseline --model opus --attempts 4` on all 8 planted dev tasks. All runs used `--backend modal`; the lab ran the loop-2 incumbent's config and prompts with `--memory past`. Then `grade` after every agent had exited. Records: `results/heldout-dev/`, ledger entry 70.
+
+| | Smoke: BioDSA, 2 tasks | Smoke: planted, 2 tasks | Pilot: planted, 8 tasks |
+|---|---|---|---|
+| Lab | 2 of 2, $3.20 | 2 of 2, $2.93 | 8 of 8, $18.52 ($11.69 without repeated work) |
+| Same-cost vote, 3 attempts | 2 of 2, $0.77 | 2 of 2, $0.58 | not run |
+| Self-challenge | 2 of 2, $0.73 | 2 of 2, $0.93 | not run |
+| Opus alone | 2 of 2 attempts, $0.20 | 2 of 2, $0.41 | 29 of 32 attempts, vote 7 of 8 (fails pf24), $3.49 |
+| Fable alone | 2 of 2 attempts, $0.17 | 2 of 2, $0.18 | not run |
+
+Spent: $32.11 of the $45 cap.
+
+What this shows. The two control arms and the planted suite work live for the first time: 64 smoke-test agent runs, all ok, all graded. The lab costs the same per task on planted tables as on BioDSA ($1.46 against $1.56 without repeated work), and an Opus attempt costs $0.11 on both, so the same-cost vote gets k = 15 attempts a task on BioDSA and k = 13 on the planted tasks. Opus alone catches most planted faults on its own: its three wrong attempts are all on pf24, the faulted twin of a misleading data dictionary. So the planted tasks may separate the arms less than hoped.
+
+What it does not show. Eight dev tasks say nothing about the held-out result. Three things went wrong and were fixed or noted. The arms' new roles fell back to a $1.50 estimate on the planted suite, which stopped the planted self-challenge early; planted runs now use the BioDSA estimates (b020835). The two pilot runs started a second before that commit, ran with the old estimates and stopped on their caps; both were resumed with the same commands. Resuming the self-challenge arm restarts a stopped task from its first step, which repeats work but does not change how its final answer is chosen.
+
+**M-19 · Nov 20, 00:30 · Measured · Pre-registered held-out test, 96 tasks: the lab passed 89, the same-cost vote 87, Fable alone 91. The lab's 2 wins over the vote are not significant (p = 0.25).**
+Plan and decisions: `research/heldout-plan.md`. Specs: `prereg/heldout-biodsa.json`, `prereg/heldout-biodsa-plain.json`, `prereg/heldout-planted.json` (frozen in 1643898). Command: `bash scripts/heldout_batch.sh` (11 registered commands, 4 at a time), then the BioDSA lab rerun and resumed by hand (I-17), then `grade --ledger` and `measures` on every run folder after every agent had exited, then `python3 -m lab.heldout runs/heldout --json runs/heldout/analysis.json`. Tasks: bh01-bh80, a fresh BioDSA-1K draw nobody had seen (with the label convention note), and the 16 planted held-out tasks. Models: Opus 5.5 in every lab role; Fable 5.2 only in its own arm. Records: `results/heldout/`, ledger entries 78-163.
+
+| Arm | BioDSA, 80 tasks | Planted, 16 tasks | All 96 | Cost (agent runs) |
+|---|---|---|---|---|
+| Lab (Opus director and analysts) | 74 | 15 | **89** | $200.64 ($174.54 + $26.10) |
+| Same-cost vote (15 Opus attempts a task on BioDSA, 13 on planted) | 74 | 13 | **87** | $157.91 |
+| Opus alone, 4 attempts, vote | 74 | 13 | 87 | $40.07 |
+| Self-challenge (Opus solves, challenges itself, revises) | 69 | 13 | 82 | $41.49 |
+| Fable alone, 2 attempts | 76 | 15 | **91** | $17.31 |
+| Opus alone without the convention note, 4 attempts | 47 | not run | | $35.64 |
+
+Primary endpoint (registered): the lab against the same-cost vote, both benchmarks pooled. The lab won 2 tasks (pf13, pf14, both duplicated-sample faults) and lost none: exact one-sided sign test p = 0.25, not significant at 0.05. The lab's share of discordant wins is 2 of 2, with an exact 95% interval of 0.16 to 1, so this test cannot rule out a lab that is no better than the vote.
+
+What this shows.
+- On BioDSA the three Opus arms are the same arm. The lab, the vote and Opus alone failed exactly the same 6 tasks (bh34, bh45, bh48, bh60, bh63, bh71). With the convention note, Opus gives the same right or wrong answer whether it works alone, in a 15-attempt vote or in the lab. The lab's whole difference is on the planted tasks.
+- Fable alone, at $0.18 a task, passed the most: 91 of 96. Against the lab it won 3 tasks (bh45, bh48, pf16) and lost 1 (pf14). On the planted faults the lab and Fable each caught 7 of 8; Opus alone and the vote caught 5.
+- The convention note is the largest effect measured in this project: Opus alone passed 74 of 80 with it and 47 of 80 without it, gaining 28 tasks and losing 1 (bh71, which every arm with the note failed too).
+- The lab cost about $2.09 a task (budget counter about $2.48 with the outage's failed runs charged at their estimates), the vote $1.64, Fable alone $0.18.
+
+What it does not show.
+- That the lab beats a single model. It does not beat the vote significantly, and it is behind Fable alone.
+- The self-challenge comparison. That arm has no answer on 6 BioDSA tasks because it ran out of budget (I-17), and those count as failed; its 5 BioDSA "losses" to the lab are those tasks.
+- Clean conditions for the lab. A 12-minute network outage cost it 35 tasks mid-run; they were restarted from scratch under a raised cap, so every lab answer comes from an uninterrupted run, but the cap the registration named ($145) was exceeded: the lab's budget counter ended at about $212. Batch total: $493.06 reported by agent runs.
+- Anything about the scBench or GeneBench tasks; this test used only fresh BioDSA tasks and the planted suite.

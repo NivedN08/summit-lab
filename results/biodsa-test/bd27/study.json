@@ -1,0 +1,502 @@
+{
+  "study": "bd27",
+  "status": "replicated",
+  "final": {
+    "agent": "bd27-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd27/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd27-library": "fable",
+    "bd27-team-a": "fable",
+    "bd27-team-b": "fable",
+    "bd27-team-c": "fable",
+    "bd27-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd27-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd27/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd27-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd27/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd27-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd27/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd27-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd27/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd27-team-a",
+        "bd27-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd27-team-a",
+        "bd27-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Before reading anything into an empty or non-empty NFKBIE lookup, establish whether data_mutations.txt can show promoter/non-coding variants at all. Many cBioPortal-style mutation files hold only coding calls (non-coding classes such as Silent, Intron, 3'UTR, 3'Flank, 5'UTR, 5'Flank, IGR and RNA are often dropped on import, with 5'Flank kept only for TERT), while other study files keep every call. Tabulate Variant_Classification over the whole file and per sample, and note whether 5'Flank, 5'UTR, IGR and Intron rows exist and in how many samples. If non-coding classes are present, the hypothesis is testable from the data (a promoter hit for the gene contradicts 'absent'; no hit in assayed samples supports it). If the file holds only coding classes, a lack of promoter rows is uninformative and the claim cannot be verified from these data.",
+      "from": [
+        "sl-biodsa-test-196dec8acca3"
+      ],
+      "reason": "This check decides which of the three labels is even reachable; skipping it is the main way an 'absent' claim gets labelled True or Not verifiable for the wrong reason.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-e30c436e81d5"
+      }
+    },
+    {
+      "text": "Promoter mutations are not labelled 'promoter' in a MAF. The usual annotation (VEP via vcf2maf) records an upstream variant (by default within 5 kb of the transcript start) as Variant_Classification 5'Flank, a 5' UTR variant as 5'UTR, and regulatory-region / TF-binding-site / intergenic variants as IGR. Searching for the word 'promoter', or only for 5'Flank, misses real promoter hits. For the gene of interest, pull every row with Variant_Classification in {5'Flank, 5'UTR, IGR, RNA, Intron} near its 5' end and inspect Consequence, DISTANCE (bp to the transcript for upstream variants), HGVSc (c.-N notation for 5'UTR) and cDNA_position. Count both 5'Flank rows and 5'UTR rows close to the transcription start as promoter mutations (promoter-hotspot studies in UV-exposed tumours define them as within a few hundred bp of the TSS, which often lies inside the annotated 5'UTR), and report the breakdown by class rather than a single yes/no on '5'Flank'.",
+      "from": [
+        "sl-biodsa-test-8dce6f320365"
+      ],
+      "reason": "Tells the team which rows operationally count as 'promoter mutations'; without it a keyword or single-class search would wrongly return nothing.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-743dc870b7bb"
+      }
+    },
+    {
+      "text": "Do not rely on Hugo_Symbol == NFKBIE alone. Each variant is assigned to one picked transcript by severity, so a variant upstream of the gene that also lies in an intron/UTR/exon of a neighbouring or antisense gene is filed under that other gene's symbol, and one beyond the annotator's upstream distance is filed as IGR with no useful symbol. Entrez_Gene_Id may also be 0 or blank, so ID lookups can fail. Do two things: (1) search the all_effects column (which lists every gene,consequence,transcript) for 'NFKBIE,upstream_gene_variant' and 'NFKBIE,5_prime_UTR_variant'; (2) derive the gene's locus from its own rows in the file (Chromosome, min/max Start_Position, NCBI_Build; strand from whether cDNA_position falls as genomic position rises) and pull ALL rows within about +/-5 kb of the gene's 5' end regardless of Hugo_Symbol. For a minus-strand gene the promoter lies at HIGHER genomic coordinates than the gene body. Coordinate-matched rows count as promoter mutations of the gene even if Hugo_Symbol names another gene. Derive coordinates from the file itself; do not apply remembered hg38 coordinates to a GRCh37 file.",
+      "from": [
+        "sl-biodsa-test-64d0b41f0811"
+      ],
+      "reason": "A symbol-only filter is the default approach and can miss promoter variants entirely; the search must be coordinate-based and build-aware.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-ef84ead03386"
+      }
+    },
+    {
+      "text": "There is no single agreed 'promoter' window, and a gene can have several annotated transcription start sites. A window measured from one picked transcript (or the DISTANCE column, which is distance to the picked transcript only) can exclude a variant at the promoter of another transcript of the same gene. Published promoter-mutation screens use windows from a few hundred bp up to +/-1 kb of a RefSeq TSS and include bases just downstream of the TSS. Take the gene's 5'-most coordinate from its own rows (considering all transcripts listed in all_effects, not only Transcript_ID), list every row within +/-1 kb with its signed offset to the TSS, and repeat with a narrow window (about -500..+100 bp) and a wide one (+/-5 kb). If hits appear at any reasonable window (within about 1 kb of a TSS, 5'Flank or 5'UTR) treat promoter mutations as present; if hits appear only several kb away, say that the conclusion depends on the window and report both; do not let a single narrow window decide 'absent'.",
+      "from": [
+        "sl-biodsa-test-0162c077c940"
+      ],
+      "reason": "The conclusion can flip with the window definition, so the team needs a defensible window and a sensitivity check agreed up front.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-fa9c380999d3"
+      }
+    },
+    {
+      "text": "Match promoter rows by genomic interval only, never by exact position, variant type or base change. In UV-exposed melanoma, promoter hotspot mutations often occur as C>T at several adjacent bases or as CC>TT dinucleotide changes, so one hotspot appears as SNP rows at neighbouring positions and as DNP rows whose Start_Position is one base off. Exact-position matching or Variant_Type == 'SNP' undercounts; counting rows instead of tumours overcounts (one tumour can carry two rows in the same promoter). Use interval overlap (Start_Position..End_Position) with the window, keep Variant_Type SNP, DNP, TNP, ONP, INS and DEL, and count distinct Tumor_Sample_Barcode / PATIENT_ID. Also, MAF alleles (Reference_Allele, Tumor_Seq_Allele2) are on the genome plus strand, while hotspots are usually described on the gene's own strand: for a minus-strand gene a UV-type C>T reads as G>A and CC>TT as GG>AA, and 'upstream' means higher genomic coordinate. Tumor_Seq_Allele1 often equals the reference, so read the mutant base from Tumor_Seq_Allele2. Work out the gene's strand from the file before filtering. Report distinct mutated tumours over assayed tumours, list the positions, and treat a cluster of nearby positions as one promoter event class.",
+      "from": [
+        "sl-biodsa-test-3196e5942912",
+        "sl-biodsa-test-b784ef6e42e1"
+      ],
+      "reason": "Prevents both under- and over-counting, and prevents discarding or missing rows because the alleles look 'wrong' for a UV signature on the plus strand.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-db466c10537b"
+      }
+    },
+    {
+      "text": "Run the gene/region query on the raw, unfiltered mutation table first. Standard clean-up steps silently delete exactly the rows that answer a promoter question: keeping only non-synonymous / protein-altering classes (the default in common MAF tools), requiring HGVSp or Protein_position to be non-empty, requiring FILTER == PASS, dropping rows with a dbSNP_RS id, or applying t_depth / t_alt_count thresholds when those columns are '.' or 0. Check how many rows each planned filter would remove and whether t_ref_count, t_alt_count and FILTER are actually populated. Apply no coding-only, depth or FILTER filter for this question; if read counts are missing, state that VAF-based QC was impossible rather than discarding rows.",
+      "from": [
+        "sl-biodsa-test-dcc90c1cd479"
+      ],
+      "reason": "Routine preprocessing habits would remove non-coding rows before the search and manufacture a false 'absent'.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-1a1800cd226a"
+      }
+    },
+    {
+      "text": "Make sure any hits are in tumours of the histology the claim names and are somatic. Study tables may mix pure and mixed subtypes or cohorts, and promoter SNPs at common polymorphic sites can slip through as 'somatic'. Join MAF Tumor_Sample_Barcode to data_clinical_sample.txt (use whichever of CANCER_TYPE_DETAILED, ONCOTREE_CODE, a detailed histology-category column and SOMATIC_STATUS exist) and confirm which samples are of the stated type and have a matched normal. For each candidate row look at Mutation_Status, Match_Norm_Seq_Allele, dbSNP_RS and any population-frequency columns (GMAF, ExAC_AF). Exclude a row only if it has appreciable population allele frequency or is flagged germline; a dbSNP id alone is not grounds for exclusion, since somatic hotspots also carry rs ids. Report results for all tumours of the stated type and, as a sensitivity check, for the pure-histology subset.",
+      "from": [
+        "sl-biodsa-test-43e5b32ae994"
+      ],
+      "reason": "The hypothesis is about one histology and about somatic mutations; mis-assigned samples or germline variants would distort the count in either direction.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-f47ad8242f70"
+      }
+    },
+    {
+      "text": "The denominator for an 'absent' claim is the samples actually assayed at the promoter, not every sample in the clinical table. Exome capture targets coding exons, so flanking promoter/5'UTR sequence is covered only incidentally and GC-rich promoters are a known low-coverage class; exome-only samples can lack calls there for technical reasons. Mixed designs (for example a gene-panel/platform column saying both exome and whole genome, or discovery vs validation cohorts) mean samples differ in what was assayed, and samples with no rows in the MAF may be unsequenced rather than wild-type. Compare sample IDs in the clinical tables with Tumor_Sample_Barcode in the MAF, count 5'Flank/5'UTR/IGR/Intron rows per sample, and tabulate by any cohort, gene-panel or platform column. Record n = tumours assayed at the region (those with non-coding calls) and k = tumours with a hit. Samples absent from the MAF are 'not profiled', not 'not mutated'. If k = 0 and the region was assayed, note that zero events in a small cohort is weak evidence of true absence: the upper 95% confidence bound on the true frequency is about 3/n (0 of 20 still allows about 14%), so state that bound in the reasoning. If k >= 1, report hits over assayed samples. In neither case should a significance test be used to choose the label.",
+      "from": [
+        "sl-biodsa-test-755a322d2920",
+        "sl-biodsa-test-09331664e16b"
+      ],
+      "reason": "Sets the right denominator and tells the team how to handle unprofiled or exome-only samples and how to phrase a zero-count result honestly.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-2f36d27f2ca8"
+      }
+    },
+    {
+      "text": "Keep 'present' separate from 'driver'. Recurrent promoter mutations in melanoma are frequently passenger hotspots produced by elevated UV damage at ETS-type motifs (TTCCG context), which tempts analysts to dismiss observed promoter hits as non-functional or to demand recurrence, statistical significance or expression evidence before counting them. A hypothesis worded as 'absent' is about occurrence only. Read the hypothesis wording, and list every somatic row in the promoter window with sample, position and alleles. The label should follow from whether validated somatic promoter mutations occur in tumours of the stated type, irrespective of whether they are drivers; passenger-hotspot biology may be mentioned as context but is not a reason to change the label.",
+      "from": [
+        "sl-biodsa-test-612ec85fc24e"
+      ],
+      "reason": "Fixes the decision rule to occurrence, so the label is not swayed by functional-significance arguments that the hypothesis does not make.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-bbf420b3b34c"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat the all_effects entry 'NFKBIE,upstream_gene_variant,ENST00000477930' as the main evidence that the chr6:44233400-44233439 cluster is 'promoter'. Neither tested how specific that annotation is. A look at the file structure shows that a same-gene upstream_gene_variant entry for some other transcript sits in the all_effects of roughly one in five ordinary coding rows, and the same six rows also carry 'TMEM151B,upstream_gene_variant'. The annotation alone therefore does not separate a promoter hit from any coding variant near a second transcript's start.",
+      "Both teams assume the alternate transcript's start lies just downstream of the cluster, but neither located it from the data. The Au2 row at chr6:44233109 is annotated on both transcripts (two different protein positions), which gives a way to bound where the shorter model starts relative to the cluster; neither team used it. Both also miscount: they say 7 of 8 NFKBIE rows carry the ENST00000477930 upstream annotation, but it is the 6 cluster rows (the 37M row's upstream entry is for a different transcript, and the Au2 row is missense on ENST00000477930).",
+      "Somatic status and call quality are assumed, not shown. Team A cites Match_Norm alleles equal to the reference; in this file those columns equal the reference in every row and t_depth/n_depth are 0 in every row, so they look like annotator defaults rather than observed normal genotypes. Team B ran no somatic or artefact check on the six rows at all.",
+      "Both teams treat the decision as two-way (False if the cluster is promoter, True if only labels count). Neither worked through the third label: if the cluster is read as coding on the picked transcript, is the region upstream of the transcript's 5' end (chr6:44233500) assayed, or would the strict reading lead to Not verifiable rather than True?"
+    ],
+    "unused_evidence": [
+      "DISTANCE column: populated for 192 rows including 48 of the 50 5'Flank rows. It shows how far upstream of transcript starts this call set actually reports variants, which bears on whether a true upstream NFKBIE promoter call could have appeared. Neither team used it.",
+      "TOTAL_MUTATIONS in the patient table: it equals the MAF row count for 18 of 20 samples and is one lower than the MAF row count for exactly two samples, 12M and Au7, both of which are carriers of the recurrent position. Neither team compared the two, so the provenance of the extra rows is unexamined.",
+      "File order and Center/Sequencer: rows are mostly gene-sorted within a sample after a short unsorted head, and the 44233400 rows of 35M, Au3 and Au7 sit in that unsorted head at the block start rather than in the sorted body (the 44233439 and 44233401 rows are in sorted position). 508 rows (the indels) have an empty Center, so more than one call source feeds the file. This is the only handle on provenance given that read counts are absent.",
+      "Feature_type / MOTIF_NAME: the annotator can emit RegulatoryFeature and MotifFeature records (3 rows), but no all_effects string in the file contains a regulatory consequence, so absence of a regulatory annotation at NFKBIE is uninformative; neither team noted this.",
+      "Per-transcript protein numbering inside all_effects (e.g. the Au2 row carries positions on both NFKBIE transcripts): usable to place the alternate start codon; unused.",
+      "Sample series (M vs Au) and COHORT=Discovery: carriers come from both series, which is relevant to a batch-artefact reading; neither team stated this as a check. Histology (Pure/Mixed) was used by team A only; HISTOLOGICAL_SUBTYPE, AGE, ANATOMIC_REGION do not bear on the label."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weakest point: whether the cluster counts as 'promoter' when the picked transcript labels it missense. Both only reported it. Their supporting evidence is the upstream_gene_variant entry (not shown to be specific), the position within about 100 bp of the picked transcript's 5' end (inside the transcript, not upstream of it), and for team A a search-result snippet about the gene's start site that was never opened.",
+      "Both teams said read counts are missing so the calls cannot be quality-checked, and stopped there. No substitute check was run (provenance against TOTAL_MUTATIONS, call source, batch split, whether the normal-allele columns are informative, what the other positions recurring in four or more samples are).",
+      "Team B's own positive control for promoter coverage (a well-known promoter hotspot in another gene) came back empty. Team B recorded this as a warning but did not say what a failed positive control implies for the label under the strict reading.",
+      "Team A's note that promoter coverage is incidental was closed with 'label depends only on k>=1', which holds only if the six rows are accepted as promoter mutations."
+    ],
+    "second_readings": [
+      "'Promoter mutations' can mean (a) mutations in the region immediately around the transcription start regardless of how the picked transcript labels them, or (b) mutations upstream of the annotated transcript start / labelled 5'Flank or 5'UTR. Under (b) the cluster is coding and the answer is not False.",
+      "Under reading (b) there are two further outcomes that neither team separated: True (region assayed, nothing called) or Not verifiable (an exome-derived call set that does not reach upstream of chr6:44233500 holds no variable for the promoter).",
+      "'Absent' is a claim about occurrence, so one validated somatic hit suffices; both teams read it this way and the library passed that reading down. The remaining exposure is whether the hits are validated somatic calls, not how many there are.",
+      "'In desmoplastic melanoma': all 20 samples are DESM (13 pure, 7 mixed); no second reading of the group changes anything."
+    ],
+    "verdict": "Moderate-to-good trust in the agreed label: a recurrent cluster at the extreme 5' end of the gene in 4 of 20 tumours from both sample series is real in the file and hard to square with 'absent'. But the step from 'cluster' to 'promoter mutation' rests on an annotation that is common among ordinary coding rows, on normal-allele columns that are constant defaults, and on an unexamined alternative (Not verifiable under the strict reading), so the teams should close those three gaps before it goes out.",
+    "questions": [
+      {
+        "to": "bd27-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your promoter reading leans on 'NFKBIE,upstream_gene_variant,ENST00000477930' in all_effects. Measure how specific that is: over all Missense/Silent/Nonsense rows in the file, count how many carry '<their own Hugo_Symbol>,upstream_gene_variant' for another transcript in all_effects, and list every other gene named with upstream_gene_variant in the six cluster rows. Also recount which of the 8 NFKBIE rows carry the ENST00000477930 upstream entry (your note says 7 but lists 6 rows). If the dual annotation is common among ordinary coding rows, what evidence for 'promoter' is left, and does that change your method or your confidence?",
+        "from": [
+          "sl-biodsa-test-41d774a2f0a9"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-8ab8c91aef00"
+      },
+      {
+        "to": "bd27-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Locate the alternate transcript's start from the data instead of from a search snippet. The Au2 row at chr6:44233109 is annotated on both NFKBIE transcripts in all_effects; use the two protein positions and the genomic coordinate to work out where the shorter model's start codon falls, then state for each cluster position (44233400, 44233401, 44233439) how many bp it lies from that start codon and from the picked transcript's 5' end at 44233500, and on which side. Say what assumption about exon structure this needs. Does the result make the 'promoter' reading stronger or weaker, and does it change the method?",
+        "from": [
+          "sl-biodsa-test-41d774a2f0a9",
+          "sl-biodsa-test-3e0359fc0ed5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-abac8377af27"
+      },
+      {
+        "to": "bd27-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You rest somatic status on Match_Norm alleles equal to the reference. Tabulate, over all 28,331 rows, whether Match_Norm_Seq_Allele1/2 equal Reference_Allele and what values t_depth and n_depth take. If these are constant across the file they are defaults, not observations. Then run the provenance checks the file does allow: compare each sample's MAF row count with TOTAL_MUTATIONS in the patient table and identify the samples where they differ and whether they are carriers; look at where the 44233400 rows sit in file order relative to the sorted body of each sample block; tabulate Center by Variant_Type; split carriers by sample series (M vs Au); and name the other positions that recur in four or more samples. Does anything here suggest the recurrent rows came from a different source than the rest of the call set, and does that change how much weight the calls can bear?",
+        "from": [
+          "sl-biodsa-test-8d1ab57ac27b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-8625f49ac032"
+      },
+      {
+        "to": "bd27-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your plan's rule was True if 0 hits with the region assayed and Not verifiable if the file has no non-coding calls. Apply it under the strict reading in which the cluster is coding: count rows in any sample with Start_Position above 44233500 within 5 kb, and use the DISTANCE column of the 5'Flank rows (how many, in how many samples, at what distances) to judge whether this call set reports variants upstream of transcript starts at all. Under that reading, which of True or Not verifiable would follow, and why? State explicitly what makes you prefer your reading over the strict one, and whether the check changes the method.",
+        "from": [
+          "sl-biodsa-test-068a27645612"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-9a3c74cd7c07"
+      },
+      {
+        "to": "bd27-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your switch from labels to coordinates relies on the ENST00000477930 upstream_gene_variant entry in all_effects. Measure how specific that is: over all Missense/Silent/Nonsense rows in the file, count how many carry '<their own Hugo_Symbol>,upstream_gene_variant' for another transcript, and list every other gene named with upstream_gene_variant in the six cluster rows. Also recount which NFKBIE rows carry that entry for ENST00000477930 specifically (you report 7 of 8). If the dual annotation is common among ordinary coding rows, what evidence for 'promoter' remains, and does that change your method or your confidence?",
+        "from": [
+          "sl-biodsa-test-694fe28590f0"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-ee9b0559ae71"
+      },
+      {
+        "to": "bd27-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your positive control for promoter coverage came back empty and you recorded the MAF as exome-derived. Follow that through: use the DISTANCE column of the 5'Flank rows (count, number of samples, range of distances) and count rows in any sample with Start_Position above chr6:44233500 within 5 kb to judge whether a variant upstream of the NFKBIE transcript start could have been reported. If the cluster were read as coding, as the picked transcript labels it, would the label then be True or Not verifiable, and why? Say what tips you to your reading instead, and whether this check changes the method.",
+        "from": [
+          "sl-biodsa-test-63c6b5a355f6"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-f02b18dc41dc"
+      },
+      {
+        "to": "bd27-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You ran no somatic or artefact check on the six cluster rows and read recurrence as proof of a genuine hotspot; recurrence at one position is also what a systematic artefact or a germline leak looks like. For the six rows report FILTER, dbSNP_RS, Existing_variation, ExAC/GMAF and the matched-normal allele columns, and tabulate over the whole file whether the normal-allele and depth columns vary at all (if constant they carry no information). Then compare each sample's MAF row count with TOTAL_MUTATIONS in the patient table, note which samples differ, look at where the 44233400 rows sit in file order within each sample block, split carriers by sample series (M vs Au), and name the other positions recurring in four or more samples and what kind of sites they are. Does the result support, weaken or leave open the claim that these are real somatic calls, and does it change the method?",
+        "from": [
+          "sl-biodsa-test-0aebc13eba86"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-1d3393d2cbe8"
+      },
+      {
+        "to": "bd27-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Place the alternate transcript's start from the data. The Au2 row at chr6:44233109 carries a protein position on both NFKBIE transcripts in all_effects; from the two positions and the coordinate, work out where the shorter model's start codon falls and give the distance and side of each cluster position (44233400, 44233401, 44233439) relative to it and to the picked transcript's 5' end. State the exon-structure assumption this needs. Does the result make the weakest point you named stronger or weaker, and does it change the method?",
+        "from": [
+          "sl-biodsa-test-694fe28590f0"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-5b6ba3da4922"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In Ensembl VEP, how is the consequence 'upstream_gene_variant' defined (what distance from which transcript feature, and what is the default distance), and when a variant is coding in one transcript and upstream of another transcript of the same gene, how does vcf2maf choose the single effect that sets Variant_Classification (when does a row become 5'Flank rather than Missense_Mutation)?",
+          "why": "Both teams used an upstream_gene_variant entry for a second transcript as their main evidence that variants are promoter mutations, without showing they know how wide the annotator's upstream window is or how the picked effect is chosen. The definition decides how much that entry can prove.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When vcf2maf converts a VCF that lacks per-sample genotype and read-depth fields, what does it write by default into Match_Norm_Seq_Allele1, Match_Norm_Seq_Allele2, t_depth, n_depth, t_ref_count and t_alt_count?",
+          "why": "One team cited normal alleles equal to the reference as evidence that calls are somatic. If those values are tool defaults when genotype data are absent, they are not evidence and the somatic-status check needs another basis.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In cancer-genomics studies of recurrent non-coding mutations, how is a gene's 'promoter' usually delimited relative to the transcription start site (typical window sizes upstream and downstream), and are variants that fall in a 5'UTR or inside the annotated coding sequence of a longer isoform, but just upstream of a shorter isoform's start, conventionally reported as promoter mutations? How do reference annotation sets indicate which of two alternative translation start sites is the supported one?",
+          "why": "The agreed answer turns on whether variants about 60 to 100 bp inside the picked transcript, labelled missense there, may be called promoter mutations. Both teams named this as their weakest point and neither resolved it; a stated convention would settle which reading is defensible.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In Ensembl VEP, how is the consequence 'upstream_gene_variant' defined (what distance from which transcript feature, and what is the default distance), and when a variant is coding in one transcript and upstream of another transcript of the same gene, how does vcf2maf choose the single effect that sets Variant_Classification (when does a row become 5'Flank rather than Missense_Mutation)?",
+          "answer": "VEP: upstream_gene_variant is the Sequence Ontology term SO:0001631, 'a sequence variant located 5' of a gene', IMPACT MODIFIER. It is assigned per transcript. The --distance option is documented as the distance 'between a variant and a transcript for which Ensembl VEP will assign the upstream_gene_variant or downstream_gene_variant consequences', 'Default: 5000'; the consequences page says VEP by default includes upstream and downstream annotations for variants within 5 kb of a feature. So the entry means: the variant lies outside that transcript and within 5,000 bp on the 5' side of the transcript's annotated start (the transcript 5' end, not the CDS start). The output field DISTANCE is the 'shortest distance from variant to transcript'. The vcf2maf.pl VEP command line does not set --distance, so the 5 kb default applies. vcf2maf: it does not report the most severe effect across a gene's transcripts. It (1) sorts every transcript effect by transcript biotype priority, then consequence severity (missense_variant ranks 6, upstream_gene_variant 16), then transcript length; (2) takes the gene symbol of the top-ranked effect; (3) reports that gene's effect on a user-supplied --custom-enst isoform if one is listed, otherwise on the isoform VEP flags CANONICAL=YES; (4) falls back to the worst effect only if the gene has neither. Variant_Classification is then mapped from that one effect: missense_variant -> Missense_Mutation, upstream_gene_variant -> 5'Flank, 5_prime_UTR_variant -> 5'UTR. So a variant that is missense in the canonical (or override) transcript and upstream of a shorter transcript is written as Missense_Mutation, with the upstream entry appearing only in all_effects. The row becomes 5'Flank only when the canonical/override transcript itself begins downstream of the variant, even if a non-canonical transcript makes it missense. What the entry can prove: only that the variant is within 5 kb upstream of the second transcript's annotated start. It does not show promoter location by itself. The MAF's DISTANCE column belongs to the picked effect, and all_effects carries gene, consequence, protein change, transcript and RefSeq IDs but no distance, so the offset to the second transcript's start has to be computed from coordinates. The Missense label reflects which isoform is flagged canonical, not which start site is biologically used. Caveat: this describes vcf2maf's current main branch; the study file may have been produced by a different version or annotator.",
+          "sources": [
+            "https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html",
+            "https://www.ensembl.org/info/docs/tools/vep/script/vep_options.html",
+            "https://www.ensembl.org/info/docs/tools/vep/vep_formats.html",
+            "https://raw.githubusercontent.com/mskcc/vcf2maf/main/vcf2maf.pl"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd27-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-3eb970077758"
+            },
+            "bd27-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-6945747720f1"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In Ensembl VEP, how is the consequence 'upstream_gene_variant' defined (what distance from which transcript feature, and what is the default distance), and when a variant is coding in one transcript and upstream of another transcript of the same gene, how does vcf2maf choose the single effect that sets Variant_Classification (when does a row become 5'Flank rather than Missense_Mutation)? ANSWER: VEP: upstream_gene_variant is the Sequence Ontology term SO:0001631, 'a sequence variant located 5' of a gene', IMPACT MODIFIER. It is assigned per transcript. The --distance option is documented as the distance 'between a variant and a transcript for which Ensembl VEP will assign the upstream_gene_variant or downstream_gene_variant consequences', 'Default: 5000'; the consequences page says VEP by default includes upstream and downstream annotations for variants within 5 kb of a feature. So the entry means: the variant lies outside that transcript and within 5,000 bp on the 5' side of the transcript's annotated start (the transcript 5' end, not the CDS start). The output field DISTANCE is the 'shortest distance from variant to transcript'. The vcf2maf.pl VEP command line does not set --distance, so the 5 kb default applies. vcf2maf: it does not report the most severe effect across a gene's transcripts. It (1) sorts every transcript effect by transcript biotype priority, then consequence severity (missense_variant ranks 6, upstream_gene_variant 16), then transcript length; (2) takes the gene symbol of the top-ranked effect; (3) reports that gene's effect on a user-supplied --custom-enst isoform if one is listed, otherwise on the isoform VEP flags CANONICAL=YES; (4) falls back to the worst effect only if the gene has neither. Variant_Classification is then mapped from that one effect: missense_variant -> Missense_Mutation, upstream_gene_variant -> 5'Flank, 5_prime_UTR_variant -> 5'UTR. So a variant that is missense in the canonical (or override) transcript and upstream of a shorter transcript is written as Missense_Mutation, with the upstream entry appearing only in all_effects. The row becomes 5'Flank only when the canonical/override transcript itself begins downstream of the variant, even if a non-canonical transcript makes it missense. What the entry can prove: only that the variant is within 5 kb upstream of the second transcript's annotated start. It does not show promoter location by itself. The MAF's DISTANCE column belongs to the picked effect, and all_effects carries gene, consequence, protein change, transcript and RefSeq IDs but no distance, so the offset to the second transcript's start has to be computed from coordinates. The Missense label reflects which isoform is flagged canonical, not which start site is biologically used. Caveat: this describes vcf2maf's current main branch; the study file may have been produced by a different version or annotator. HOW SURE: high. SOURCES: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html, https://www.ensembl.org/info/docs/tools/vep/script/vep_options.html, https://www.ensembl.org/info/docs/tools/vep/vep_formats.html, https://raw.githubusercontent.com/mskcc/vcf2maf/main/vcf2maf.pl."
+        },
+        {
+          "question": "When vcf2maf converts a VCF that lacks per-sample genotype and read-depth fields, what does it write by default into Match_Norm_Seq_Allele1, Match_Norm_Seq_Allele2, t_depth, n_depth, t_ref_count and t_alt_count?",
+          "answer": "Match_Norm_Seq_Allele1 and Match_Norm_Seq_Allele2 are both set to the reference allele; the source comment reads 'If normal genotype is unavailable, then we'll assume it's ref/ref homozygous', and they are overwritten only if the normal sample has a usable GT. Likewise Tumor_Seq_Allele1 = reference and Tumor_Seq_Allele2 = variant ('assume it's ref/var heterozygous'). All MAF fields start as empty strings; t_depth and n_depth are filled only from a per-sample DP, and t_ref_count/t_alt_count (and n_ref_count/n_alt_count) only from per-sample AD, so without those fields they stay blank. Consequence: normal alleles equal to the reference, alongside blank depth and count columns, are tool defaults and are not evidence that calls are somatic. The somatic-status check needs another basis, such as the study's matched-normal design in the clinical table, Mutation_Status if populated, or population allele-frequency columns. Caveat: read from vcf2maf's current main branch; a file made by another converter or version may fill missing values differently.",
+          "sources": [
+            "https://raw.githubusercontent.com/mskcc/vcf2maf/main/vcf2maf.pl"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd27-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-d07cf7f3ba35"
+            },
+            "bd27-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-12e73ab49b40"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When vcf2maf converts a VCF that lacks per-sample genotype and read-depth fields, what does it write by default into Match_Norm_Seq_Allele1, Match_Norm_Seq_Allele2, t_depth, n_depth, t_ref_count and t_alt_count? ANSWER: Match_Norm_Seq_Allele1 and Match_Norm_Seq_Allele2 are both set to the reference allele; the source comment reads 'If normal genotype is unavailable, then we'll assume it's ref/ref homozygous', and they are overwritten only if the normal sample has a usable GT. Likewise Tumor_Seq_Allele1 = reference and Tumor_Seq_Allele2 = variant ('assume it's ref/var heterozygous'). All MAF fields start as empty strings; t_depth and n_depth are filled only from a per-sample DP, and t_ref_count/t_alt_count (and n_ref_count/n_alt_count) only from per-sample AD, so without those fields they stay blank. Consequence: normal alleles equal to the reference, alongside blank depth and count columns, are tool defaults and are not evidence that calls are somatic. The somatic-status check needs another basis, such as the study's matched-normal design in the clinical table, Mutation_Status if populated, or population allele-frequency columns. Caveat: read from vcf2maf's current main branch; a file made by another converter or version may fill missing values differently. HOW SURE: high. SOURCES: https://raw.githubusercontent.com/mskcc/vcf2maf/main/vcf2maf.pl."
+        },
+        {
+          "question": "In cancer-genomics studies of recurrent non-coding mutations, how is a gene's 'promoter' usually delimited relative to the transcription start site (typical window sizes upstream and downstream), and are variants that fall in a 5'UTR or inside the annotated coding sequence of a longer isoform, but just upstream of a shorter isoform's start, conventionally reported as promoter mutations? How do reference annotation sets indicate which of two alternative translation start sites is the supported one?",
+          "answer": "Windows: there is no single standard. Those read: PCAWG driver analysis (Rheinbay et al., preprint methods) used 200 bp either side of every protein-coding transcript's TSS (GENCODE v19), collapsed per gene, with the global set of CDS and splice-site bases subtracted, and 5'UTR as a separate element (5'UTR minus CDS). Weinhold et al. 2014 used 2,000 bp upstream to 200 bp downstream of all TSSs, removed ORFs (extended 5 bp), and tested Ensembl-defined 5'UTRs separately. Fredriksson et al. 2017 (melanoma promoter hotspots) used +/-500 bp of the nearest annotated TSS (GENCODE 17) and states no CDS exclusion. A 2024 preprint used 1,000 bp upstream to 500 bp downstream of canonical-transcript TSSs and described that as more inclusive than earlier studies. Windows are usually anchored on the TSS of all annotated transcripts, not only the canonical one. 5'UTR: bases a few hundred bp downstream of a TSS fall inside these windows, so 5'UTR variants near the TSS are routinely counted as promoter mutations; PCAWG reports 'promoter and/or 5'UTR' hits. Coding sequence of a longer isoform: the web does not settle this with one convention. The two large systematic screens (PCAWG, Weinhold) explicitly remove any base that is coding in any annotated transcript from promoter elements, so by their rules a variant inside the longer isoform's annotated CDS is a coding variant even if it lies within 200 bp of a shorter isoform's TSS. Under a purely positional window (Fredriksson's +/-500 bp) the same variant counts as a promoter-region mutation. I did not find a source stating a rule for this alternative-isoform case specifically. Calling such variants promoter mutations is therefore defensible only if the shorter isoform's start is the supported one; otherwise the systematic-screen convention classes them as coding. Which start is supported: GENCODE transcript tags include upstream_ATG ('an upstream ATG exists when a downstream ATG is better supported'), downstream_ATG ('an upstream ATG is used where a downstream ATG seems more evolutionary conserved'), cds_start_NF ('the coding region start could not be confirmed'), non_ATG_start, RP_supported_TIS (translation initiation site supported by ribosome profiling), CAGE_supported_TSS, CCDS, appris_principal, basic, MANE_Select and Ensembl_canonical. MANE Select is one transcript per locus, identical in 5'UTR, CDS and splicing between RefSeq and Ensembl, with the TSS set from FANTOM CAGE data and start codons revised when evidence warrants (the page gives FNDC5 as an example). Ensembl canonical is scored on PhyloCSF conservation of the CDS, RNA-seq intron and CAGE expression, agreement with APPRIS principal and UniProt canonical isoforms, and CDS length, disqualifying transcripts whose CDS is 75% or less of the longest. RefSeq Select uses curator picks, prior clinical use, CDS conservation, expression, Swiss-Prot match, CAGE and protein length. MANE is defined on GRCh38, with mappings to GRCh37. Not verified from a page I read: older GRCh37 VEP caches may assign CANONICAL by an earlier, more length-based rule, so the CANONICAL flag in an older GRCh37 MAF may not reflect the currently supported start; checking the transcript's present MANE Select / RefSeq Select status would be the safer test.",
+          "sources": [
+            "https://www.biorxiv.org/content/10.1101/237313v1.full",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC4217527/",
+            "https://journals.plos.org/plosgenetics/article?id=10.1371%2Fjournal.pgen.1006773",
+            "https://www.biorxiv.org/content/10.1101/2024.06.03.597231v1.full",
+            "https://www.nature.com/articles/s41586-020-1965-x",
+            "https://www.gencodegenes.org/pages/tags.html",
+            "https://www.ensembl.org/info/genome/genebuild/canonical.html",
+            "https://www.ncbi.nlm.nih.gov/refseq/MANE/",
+            "https://www.ncbi.nlm.nih.gov/refseq/refseq_select/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd27-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-01a0be8549fa"
+            },
+            "bd27-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-3e89a58976bd"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cancer-genomics studies of recurrent non-coding mutations, how is a gene's 'promoter' usually delimited relative to the transcription start site (typical window sizes upstream and downstream), and are variants that fall in a 5'UTR or inside the annotated coding sequence of a longer isoform, but just upstream of a shorter isoform's start, conventionally reported as promoter mutations? How do reference annotation sets indicate which of two alternative translation start sites is the supported one? ANSWER: Windows: there is no single standard. Those read: PCAWG driver analysis (Rheinbay et al., preprint methods) used 200 bp either side of every protein-coding transcript's TSS (GENCODE v19), collapsed per gene, with the global set of CDS and splice-site bases subtracted, and 5'UTR as a separate element (5'UTR minus CDS). Weinhold et al. 2014 used 2,000 bp upstream to 200 bp downstream of all TSSs, removed ORFs (extended 5 bp), and tested Ensembl-defined 5'UTRs separately. Fredriksson et al. 2017 (melanoma promoter hotspots) used +/-500 bp of the nearest annotated TSS (GENCODE 17) and states no CDS exclusion. A 2024 preprint used 1,000 bp upstream to 500 bp downstream of canonical-transcript TSSs and described that as more inclusive than earlier studies. Windows are usually anchored on the TSS of all annotated transcripts, not only the canonical one. 5'UTR: bases a few hundred bp downstream of a TSS fall inside these windows, so 5'UTR variants near the TSS are routinely counted as promoter mutations; PCAWG reports 'promoter and/or 5'UTR' hits. Coding sequence of a longer isoform: the web does not settle this with one convention. The two large systematic screens (PCAWG, Weinhold) explicitly remove any base that is coding in any annotated transcript from promoter elements, so by their rules a variant inside the longer isoform's annotated CDS is a coding variant even if it lies within 200 bp of a shorter isoform's TSS. Under a purely positional window (Fredriksson's +/-500 bp) the same variant counts as a promoter-region mutation. I did not find a source stating a rule for this alternative-isoform case specifically. Calling such variants promoter mutations is therefore defensible only if the shorter isoform's start is the supported one; otherwise the systematic-screen convention classes them as coding. Which start is supported: GENCODE transcript tags include upstream_ATG ('an upstream ATG exists when a downstream ATG is better supported'), downstream_ATG ('an upstream ATG is used where a downstream ATG seems more evolutionary conserved'), cds_start_NF ('the coding region start could not be confirmed'), non_ATG_start, RP_supported_TIS (translation initiation site supported by ribosome profiling), CAGE_supported_TSS, CCDS, appris_principal, basic, MANE_Select and Ensembl_canonical. MANE Select is one transcript per locus, identical in 5'UTR, CDS and splicing between RefSeq and Ensembl, with the TSS set from FANTOM CAGE data and start codons revised when evidence warrants (the page gives FNDC5 as an example). Ensembl canonical is scored on PhyloCSF conservation of the CDS, RNA-seq intron and CAGE expression, agreement with APPRIS principal and UniProt canonical isoforms, and CDS length, disqualifying transcripts whose CDS is 75% or less of the longest. RefSeq Select uses curator picks, prior clinical use, CDS conservation, expression, Swiss-Prot match, CAGE and protein length. MANE is defined on GRCh38, with mappings to GRCh37. Not verified from a page I read: older GRCh37 VEP caches may assign CANONICAL by an earlier, more length-based rule, so the CANONICAL flag in an older GRCh37 MAF may not reflect the currently supported start; checking the transcript's present MANE Select / RefSeq Select status would be the safer test. HOW SURE: medium. SOURCES: https://www.biorxiv.org/content/10.1101/237313v1.full, https://pmc.ncbi.nlm.nih.gov/articles/PMC4217527/, https://journals.plos.org/plosgenetics/article?id=10.1371%2Fjournal.pgen.1006773, https://www.biorxiv.org/content/10.1101/2024.06.03.597231v1.full, https://www.nature.com/articles/s41586-020-1965-x, https://www.gencodegenes.org/pages/tags.html, https://www.ensembl.org/info/genome/genebuild/canonical.html, https://www.ncbi.nlm.nih.gov/refseq/MANE/, https://www.ncbi.nlm.nih.gov/refseq/refseq_select/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd27-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd27-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd27-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd27-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd27-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 90.88463554193731,
+      "cost_usd": 0.1649314,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 138.69141470897011,
+      "cost_usd": 0.1688458,
+      "error": null
+    },
+    {
+      "agent": "bd27-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 102.11333937500603,
+      "cost_usd": 0.17795,
+      "error": null
+    },
+    {
+      "agent": "bd27-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 152.0194313339889,
+      "cost_usd": 0.30477780000000004,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 218.98723558406346,
+      "cost_usd": 0.45211949999999995,
+      "error": null
+    },
+    {
+      "agent": "bd27-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 262.89293133304454,
+      "cost_usd": 0.6595382000000001,
+      "error": null
+    },
+    {
+      "agent": "bd27-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 240.91657916689292,
+      "cost_usd": 0.49049929999999997,
+      "error": null
+    },
+    {
+      "agent": "bd27-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 265.4792383329477,
+      "cost_usd": 0.5742249999999999,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,495 @@
+{
+  "study": "bd12",
+  "status": "replicated",
+  "final": {
+    "agent": "bd12-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd12/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd12-library": "fable",
+    "bd12-team-a": "fable",
+    "bd12-team-b": "fable",
+    "bd12-team-c": "fable",
+    "bd12-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd12-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd12/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd12-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd12/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd12-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd12/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd12-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd12/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd12-team-a",
+        "bd12-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd12-team-a",
+        "bd12-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "File-format trap, reported by the library from inspecting the file bytes (verify it yourself): data_clinical_patient.txt uses carriage-return-only line endings (CR, no LF). Line-based shell tools (head, wc -l, grep, awk) and readers that split on newline see the whole file as a single line starting with '#', and a comment='#' or skip-lines reader can return an empty or one-row table. The other files (sample, mutations, gene panel matrix, cna, sv) use normal LF endings. The variables needed for this hypothesis (SUBTYPE_GROUP, PREDOMINANT_HISTOLOGIC_SUBTYPE, PATIENT_ID) are reported to be in data_clinical_sample.txt, not in the patient file. Read the patient file with universal newlines (Python open(path, newline=None), or pandas read_csv with sep='\\t' and skiprows=4, which accepts CR terminators), or convert CR to LF in a copy inside your own folder. After loading, assert that the patient table has roughly 600 rows and a PATIENT_ID column and that the sample table has roughly 604 rows matching the gene panel matrix. A table that failed to parse is never a reason to answer 'Not verifiable'.",
+      "from": [
+        "sl-biodsa-test-63126fc93280"
+      ],
+      "reason": "A team that hits the CR-only patient file may get an empty table and wrongly conclude that variables are missing; it also tells them the subtype variables are in the sample file, so the parse problem need not block the analysis.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-cc739932d34c"
+      }
+    },
+    {
+      "text": "Build the denominator from the clinical and panel tables, not from the mutation file. In cBioPortal-format data, data_mutations.txt lists only samples with at least one called mutation, so using the samples present in it as the denominator drops mutation-free tumours and inflates the per-group frequencies, possibly unevenly across groups. Conversely, a sample that was not profiled for BRAF must not be counted as wild-type. Take the samples from data_clinical_sample.txt (skip the leading '#' lines), join to data_gene_panel_matrix.txt (the 'mutations' column not NA), join the mutation file's Tumor_Sample_Barcode to SAMPLE_ID, and count how many clinical samples are absent from the mutation file. Frequency = unique profiled samples with the variant / all profiled samples in that subtype group; profiled samples absent from the mutation file count as wild-type and unprofiled samples are excluded. The MSK-IMPACT panel versions are nested (341 genes within 410 within 468; sample-ID suffixes IM3/IM5/IM6) and BRAF is on every version, so do not drop any sample from the BRAF denominator because of its panel version; tabulate panel version by subtype group to confirm which panels are present.",
+      "from": [
+        "sl-biodsa-test-9c4fe378c14b",
+        "sl-biodsa-test-0df4bd827b2b"
+      ],
+      "reason": "The hypothesis is a comparison of frequencies, so the choice of denominator directly sets the numbers being compared; a mutation-file-only denominator or a panel-version exclusion would distort the groups differently.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-b82ba3d36268"
+      }
+    },
+    {
+      "text": "Define the event as exactly BRAF p.V600E, not 'any BRAF alteration'. In lung adenocarcinoma a large share of BRAF mutations (roughly half or more) are non-V600 (e.g. G469, G466, K601, L597, D594, N581) or variants of unknown significance; these are not the targetable V600E, and neither are BRAF fusions in data_sv.txt or amplifications in data_cna.txt. A gene-level 'BRAF mutated' frequency can rank the groups differently from V600E itself. Filter data_mutations.txt to Hugo_Symbol == BRAF, tabulate HGVSp_Short, and take p.V600E (hg19 chr7:140453136 A>T, c.1799T>A) as the primary event, counting unique samples rather than rows. Look at any other codon-600 rows (V600K, V600_K601delinsE, dinucleotide calls) and report them separately. Base the verdict on V600E-only counts; show gene-level BRAF and all-codon-600 counts only as sensitivity analyses and say whether they agree in direction. Accept the mutation calls as delivered: MSK-IMPACT calls known hotspots such as V600E at a lower threshold (about 2% variant allele fraction with at least 8 alt reads) than other variants (about 5%, at least 10 alt reads), so adding your own blanket VAF >= 5% or alt-read filter deletes legitimate low-purity V600E calls and can do so unevenly across subtypes. List t_alt_count, depth and VAF for each V600E call and check Mutation_Status for non-somatic entries; mention a call below 5% VAF as a caveat rather than removing it. There may be no ready-made 'BRAF V600E' clinical column; the variable can be derived from the mutation file, so its absence as a column does not make the claim unverifiable.",
+      "from": [
+        "sl-biodsa-test-e70b363d0265",
+        "sl-biodsa-test-0df4bd827b2b"
+      ],
+      "reason": "With a rare event, counting non-V600E BRAF mutations or filtering out one or two real V600E calls could reverse the direction of the comparison; and a team looking only for a clinical column could wrongly answer 'Not verifiable'.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-0a8309e561eb"
+      }
+    },
+    {
+      "text": "Define the three histologic groups carefully. Lung adenocarcinomas are grouped by predominant pattern: lepidic (LEP, low grade), acinar/papillary (ACI/PAP, intermediate) and micropapillary/solid (MIP/SOL, high grade). The library reports, and you should verify in the file, that data_clinical_sample.txt has a SUBTYPE_GROUP column and a PREDOMINANT_HISTOLOGIC_SUBTYPE column, and that the group label is written with a space after the slash (like 'Micropapillary/ Solid'), so an exact string match can silently drop a whole group. Strip and normalise whitespace before matching. Cross-tabulate the two columns including NA and blank, confirm that each predominant subtype maps to exactly one group, and note any tumours outside the three groups (invasive mucinous, colloid, other variants, missing subtype). Use the provided group column unless it is inconsistent; exclude samples that belong to none of the three groups and report how many, rather than folding them into a comparator.",
+      "from": [
+        "sl-biodsa-test-896598a2b30e"
+      ],
+      "reason": "A string mismatch or a silently lumped 'other' category changes group sizes and proportions, and so can change the comparison the verdict rests on.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-b4a7fe0fea8e"
+      }
+    },
+    {
+      "text": "Check the unit of analysis. Sample IDs in this kind of panel-sequencing cohort carry tumour indices (e.g. -T01-, -T02-), so a patient may have more than one sequenced sample, and a mutation file can list the same variant more than once for one sample. Counting rows or samples instead of patients double-counts a rare event and breaks the independence that exact tests assume. Test whether PATIENT_ID is unique in data_clinical_sample.txt, look for duplicated (Tumor_Sample_Barcode, HGVSp_Short) BRAF rows, and compare the sample counts in the clinical sample file, the gene panel matrix and the patient file. If a patient has more than one sample, analyse one sample per patient (the first sequenced or the primary resection sample), count a patient as V600E-positive once, and confirm that the conclusion is the same at sample level.",
+      "from": [
+        "sl-biodsa-test-23bb1de2b8a7"
+      ],
+      "reason": "With only a handful of V600E events, one double-counted patient can shift a group's frequency enough to change the direction of a comparison.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-9364995d0edb"
+      }
+    },
+    {
+      "text": "The hypothesis is a three-group statement: MIP/SOL lower than LEP and lower than ACI/PAP. Testing only MIP/SOL against the two other groups pooled can hide that one comparator goes the other way, and an overall 3x2 test says nothing about direction. Report n mutated / n total and the percentage for each of the three groups separately, then compare (a) MIP/SOL vs LEP, (b) MIP/SOL vs ACI/PAP and (c) MIP/SOL vs LEP + ACI/PAP pooled, noting the direction in each. Treat the hypothesis as supported in direction only if the MIP/SOL frequency is lower than each comparator group, not just lower than the pooled one; if the pairwise directions disagree, say so and let the per-group table, not the pooled test, drive the verdict. The groups are also an ordered grade (LEP < ACI/PAP < MIP/SOL), so lay the table out in that order and see whether the frequency falls monotonically. A trend test may be added as a supplementary, more powerful check of direction, but only with an exact or permutation p-value (e.g. permute the V600E labels 100,000 times with a fixed seed and recompute the Cochran-Armitage statistic with scores 1, 2, 3); the chi-square approximation is unreliable with so few events. A significant trend does not stand in for the hypothesis, because it can be driven entirely by LEP versus the rest while ACI/PAP and MIP/SOL are equal. Keep the two pairwise comparisons, with per-group proportions and exact intervals, as the basis of the verdict.",
+      "from": [
+        "sl-biodsa-test-bb2520099224",
+        "sl-biodsa-test-9be6e8d2e2c9"
+      ],
+      "reason": "Which comparison the verdict rests on (pairwise against each comparator versus pooled or trend) can give different answers to the same hypothesis, so the teams need the comparison structure fixed in advance.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-f044ccd64ed2"
+      }
+    },
+    {
+      "text": "BRAF V600E is rare in lung adenocarcinoma (about 1.5-3% of tumours in general), so each subtype group will probably hold only a handful of positives or none. Chi-square is invalid when expected cell counts are below 5, and Fisher's exact test is conservative with very low power here, so a large p-value is likely whether or not a real difference exists. Compute expected counts, state the total number of V600E-positive cases and how many fall in each group, and give exact (Clopper-Pearson or Wilson) 95% intervals for each group's proportion; for a group with 0/n events the upper bound is about 3/n. Use exact tests (scipy.stats.fisher_exact, and the more powerful unconditional barnard_exact or boschloo_exact, or mid-p) instead of chi-square. Report proportions with intervals, do not present an odds ratio of 0 or infinity as an estimate, and say how many events the conclusion rests on. Keep the unadjusted per-group frequency comparison as the primary analysis, because the claim is a descriptive statement about frequencies. The groups differ in smoking history, stage and sex, but a multivariable logistic regression with this few events (well under 10 events per variable) gives separation and absurd odds ratios; if adjustment is shown at all it should be a sensitivity analysis with at most one covariate (e.g. smoking history), using Firth penalised regression or a stratified exact test, and never maximum-likelihood odds ratios from a separated model.",
+      "from": [
+        "sl-biodsa-test-0e34f35019af",
+        "sl-biodsa-test-96e5f087fab6"
+      ],
+      "reason": "The choice of test and of primary analysis determines whether the output is interpretable at all with a rare event; an invalid chi-square or a separated regression could be mistaken for the answer.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-d77e3b54c914"
+      }
+    },
+    {
+      "text": "Fix the rule for choosing the label before looking at p-values. In this task 'Not verifiable' means the needed variables are missing from the data, not that statistical power is low. A p > 0.05 from a small sample is not evidence that the frequencies are equal, so it does not by itself contradict the hypothesis; equally, a lower percentage that rests on one or two cases is fragile. Work through, in order: (1) are the variables present (subtype group and V600E calls)? (2) what is the direction of the observed frequency in MIP/SOL versus each comparator? (3) how strong is it (one-sided exact p for 'lower', interval for the difference)? (4) fragility: would moving one V600E case between groups flip the direction? If the variables exist, decide between True and False from the observed direction and size of the difference together with its robustness, report the p-value and interval as a statement of uncertainty rather than letting 'not significant' alone force False or Not verifiable, and say in the reasoning when the conclusion is descriptive rather than statistically significant.",
+      "from": [
+        "sl-biodsa-test-533348a22ac3"
+      ],
+      "reason": "The label depends on how a non-significant rare-event result is read; without a rule set in advance, the same numbers could be labelled True, False or Not verifiable.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-8c1dca3c8371"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed the sequenced specimen is the resected primary tumour whose predominant histologic pattern is recorded in SUBTYPE_GROUP. 49 of 604 sample IDs carry a tumour index other than T01 (T02 x39, T03 x7, T04 x2, T06 x1) and there is no sample-type column; team A noticed the indices only as a duplicate-patient issue and neither team tested whether the result depends on these samples.",
+      "Both teams assumed BRAF V600E detection sensitivity is equal across the three groups. The library's pitfall on low tumour content (lepidic tumours in particular) was only partly addressed: team B dropped the 6 zero-mutation samples, team A did not run it at all, and neither used FGA_FACETS (exactly 0 in 29 samples) or TMB as a purity proxy.",
+      "Both teams took the denominator to be all profiled tumours in each group. Neither computed the frequency of V600E among BRAF-mutant tumours as a primary alternative, although both printed the any-BRAF counts.",
+      "Both teams treated the unadjusted comparison as the quantity asked for and treated 'direction opposite, modest evidence' as sufficient for the label; neither ran a stratified exact test for direction."
+    ],
+    "unused_evidence": [
+      "data_clinical_patient.txt (sex, smoking history, pack-years, age): team B's method does not mention reading it at all; team A used smoking only as an unmodelled stratum table, where the never-smoker stratum points the other way on very small numbers.",
+      "FGA_FACETS and TMB in data_clinical_sample.txt: usable as tumour-content proxies for the detection-sensitivity check; unused by both teams (29 samples have FGA_FACETS exactly 0).",
+      "PATHOLOGIC_STAGE and PN_STATUS: unused by both teams; stage mix may differ between subtype groups, but the hypothesis is about raw frequency so this is unlikely to change the label.",
+      "Tumour index in SAMPLE_ID (T01 vs T02-T06): available as a provenance flag, unused as a restriction.",
+      "Mutation_Status has 3 rows marked UNKNOWN (rest SOMATIC) and 21 rows have blank HGVSp_Short; team A says it looked at Mutation_Status for BRAF rows, team B matched by genomic position, so probably harmless but not stated explicitly by team B.",
+      "data_timeline_status.txt (96 recurrence events), data_cna_hg19.seg, RFS/OS columns: not relevant to a mutation-frequency comparison; ignoring them is reasonable. data_sv.txt and data_cna.txt were checked for BRAF by both teams (no BRAF SV; BRAF CNA all 0)."
+    ],
+    "unresolved_weak_points": [
+      "Both teams named the same weak point: the conclusion rests on 8 V600E events (4 / 0 / 4), with the LEP contrast alone not significant. Team A partly addressed it (move-one-case fragility, drop the low-VAF call); team B only reported it. Neither quantified how many missed or reassigned calls it would take for MIP/SOL to stop being highest against each comparator.",
+      "Team A reported that the MIP/SOL excess sits entirely in ever-smokers and that in never-smokers MIP/SOL has zero events while ACI/PAP has some, then set it aside as a caveat without a stratified exact test. Team B never looked at smoking.",
+      "Team B flagged that 7 of 8 calls are on the newest panel and resolved it by a within-panel re-analysis (same direction). Resolved.",
+      "Team A's closing caveat ('if the hypothesis intended a different event definition the answer could differ') was reported, not explored beyond codon-600 and any-BRAF."
+    ],
+    "second_readings": [
+      "'Frequency of targetable BRAF-V600E mutations' could mean the share of BRAF mutations that are the targetable V600E (denominator = BRAF-mutant tumours per group) rather than V600E per all tumours. Both teams have the counts to compute this but did not state it.",
+      "'Compared to LEP and ACI/PAP' can mean versus each comparator separately or versus the two pooled; both teams ran both, so this reading is covered.",
+      "'MIP/SOL tumors' is read as predominant-pattern group (the only definition the data hold); micropapillary and solid separately were shown by team B. A reading based on any MIP/SOL component cannot be built from these tables.",
+      "'Targetable' could be read as V600E that is the tumour's actionable driver, i.e. not co-occurring with another dominant driver (KRAS/EGFR etc.) in the same sample; neither team listed co-mutations of the 8 V600E tumours.",
+      "The label rule: because 'Not verifiable' is reserved for absent variables, a result that is merely 'not lower' and a result that is 'significantly higher' both map to the same label, so the weak statistical power does not by itself threaten the label; only a variant in which MIP/SOL is actually lower would."
+    ],
+    "verdict": "I trust the agreed answer fairly well: the label depends only on whether MIP/SOL is lower, the two teams reproduced identical counts with exact methods, and no event definition, panel stratum or one-case perturbation they tried shows MIP/SOL lower. What remains untested is whether the ordering survives restricting to first-specimen (T01) samples, excluding likely low-tumour-content samples, stratifying by smoking, and the BRAF-mutant-denominator reading; with only 8 events each of these should be run before release, though I expect them to confirm rather than overturn.",
+    "questions": [
+      {
+        "to": "bd12-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: 49 of the 604 sample IDs have a tumour index other than T01 (T02 x39, T03 x7, T04 x2, T06 x1) and the data have no sample-type column, so a later specimen may not be the resected tumour whose predominant pattern is recorded in SUBTYPE_GROUP. List the tumour index of each of the 8 V600E samples and tabulate tumour index by subtype group, then repeat the per-group V600E table restricted to T01 samples. Does the ordering of the three groups in the T01-only table differ from the full table, and does that change your method or label?",
+        "from": [
+          "sl-biodsa-test-c5f4e5c3cc0e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-18edfa45a6de"
+      },
+      {
+        "to": "bd12-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your notes do not show the library's detection-sensitivity check. Tabulate by subtype group the share of samples with FGA_FACETS exactly 0 (29 samples overall), the share with no called mutation, and the median TMB, and compare the VAF/depth of V600E calls with typical VAFs of other driver calls in each group. Then recompute the per-group V600E table after excluding samples with FGA_FACETS = 0 or no called mutation. Is there evidence that one group (lepidic in particular) had systematically lower tumour content, and does the group ordering survive the exclusion?",
+        "from": [
+          "sl-biodsa-test-6df15d72d164",
+          "sl-biodsa-test-199831e7f662"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-2f92ef52f97d"
+      },
+      {
+        "to": "bd12-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You reported that the MIP/SOL excess lies entirely in ever-smokers and that in never-smokers MIP/SOL has no V600E while ACI/PAP has some, but you ran no test on it. Run an exact stratified analysis of MIP/SOL versus the other groups across the smoking strata (exact conditional test of the common odds ratio with its exact confidence interval, plus an exact test of homogeneity of the stratum odds ratios), and also tabulate by sex. Is the direction of the association consistent across strata within sampling error, or is there a stratum in which the data credibly support 'MIP/SOL lower', and does that change which comparison you treat as primary?",
+        "from": [
+          "sl-biodsa-test-51d5aa978973"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-6c965d49fdf9"
+      },
+      {
+        "to": "bd12-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The phrase 'frequency of targetable BRAF-V600E mutations' can also be read with BRAF-mutant tumours as the denominator (what share of each group's BRAF-mutant tumours carry the targetable V600E), and 'targetable' can be read as V600E not accompanied by another dominant driver. Compute, per subtype group, V600E patients divided by patients with any BRAF mutation, with exact intervals, and list for each of the 8 V600E tumours any co-occurring KRAS/EGFR/other driver mutation or fusion in data_mutations.txt and data_sv.txt. Under either reading, is MIP/SOL lower than LEP or than ACI/PAP, and does that change the label rule you fixed in advance?",
+        "from": [
+          "sl-biodsa-test-41cdcba1eb84"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-c1e75cb86745"
+      },
+      {
+        "to": "bd12-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: 49 of the 604 sample IDs have a tumour index other than T01 (T02 x39, T03 x7, T04 x2, T06 x1) and the data have no sample-type column, so a later specimen may not be the resected tumour whose predominant pattern is recorded in SUBTYPE_GROUP. List the tumour index of each of the 8 V600E samples and tabulate tumour index by subtype group, then repeat the per-group V600E table restricted to T01 samples. Does the ordering of the three groups in the T01-only table differ from the full table, and does that change your method or label?",
+        "from": [
+          "sl-biodsa-test-9e8b2afb1e8b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-3a4eda903aed"
+      },
+      {
+        "to": "bd12-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You excluded the 6 zero-mutation samples as a sensitivity check, but FGA_FACETS is exactly 0 in 29 samples and you did not report the VAF or depth of the V600E calls. Tabulate by subtype group the share of samples with FGA_FACETS = 0, the median TMB, and the VAF/depth of each V600E call, then recompute the per-group V600E table excluding samples with FGA_FACETS = 0 or no called mutation. Is there evidence that one group (lepidic in particular) had systematically lower tumour content, how many missed calls in a comparator group would be needed to reverse the ordering, and does the ordering survive the exclusion?",
+        "from": [
+          "sl-biodsa-test-6df15d72d164",
+          "sl-biodsa-test-d1eacd2cdee5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-8b013d649eb5"
+      },
+      {
+        "to": "bd12-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your method does not use data_clinical_patient.txt (note that it has CR-only line endings, so a line-based reader returns one row). Read it, cross-tabulate V600E by subtype group within smoking-history strata and within sex, and run an exact stratified test of MIP/SOL versus the other groups (exact common odds ratio with confidence interval, and an exact test of homogeneity across strata). Is the direction of the association the same in every stratum within sampling error, or is there a stratum in which the data credibly support 'MIP/SOL lower', and does that change which comparison you treat as primary?",
+        "from": [
+          "sl-biodsa-test-9e8b2afb1e8b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-a097c61655de"
+      },
+      {
+        "to": "bd12-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: The phrase 'frequency of targetable BRAF-V600E mutations' can also be read with BRAF-mutant tumours as the denominator, and 'targetable' can be read as V600E not accompanied by another dominant driver. Compute, per subtype group, V600E patients divided by patients with any BRAF mutation, with exact intervals; list for each of the 8 V600E tumours any co-occurring KRAS/EGFR/other driver mutation or fusion; and confirm that none of the 3 Mutation_Status = UNKNOWN rows or the 21 blank-HGVSp_Short rows is a BRAF row. Under either reading, is MIP/SOL lower than LEP or than ACI/PAP, and does that change your decision rule?",
+        "from": [
+          "sl-biodsa-test-d1eacd2cdee5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-fe6c956ee06e"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In clinical tumour-sequencing sample identifiers of the form P-<patient number>-T<two-digit index>-IM<panel version>, what does the tumour index (T01, T02, T03 ...) denote? Does a T02 or later index mean a second, distinct specimen from the same patient (possibly a different site, a metastasis, a recurrence or a different time point) rather than a repeat of the first, and is there any convention for telling whether such a specimen is the primary tumour?",
+          "why": "About 8% of the samples carry an index other than T01 and there is no sample-type column; whether these specimens can be assumed to be the resected primary tumour that the histologic subtype describes decides whether they belong in the comparison.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When the FACETS allele-specific copy-number tool reports a fraction of genome altered of exactly 0 for a targeted-panel tumour sample, how is that usually interpreted: a truly copy-neutral tumour, or a low-tumour-purity / failed-fit sample in which somatic mutations may also be under-called? Is there a recommended way to use it as a purity flag in sensitivity analyses of mutation frequency?",
+          "why": "Neither team used the copy-number-derived column as a tumour-content proxy; if a value of exactly 0 marks low-purity samples, their uneven spread across histologic groups could bias a rare-hotspot frequency comparison.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "For a rare binary event compared between groups within a small number of strata, some of which have zero events in a cell, which exact methods are recommended for testing the direction of a common association and the homogeneity of stratum-specific odds ratios (for example the exact conditional test of the common odds ratio and Zelen's exact test), and which Python or R functions implement them?",
+          "why": "One team saw opposite directions in two smoking strata with very few events and fitted no model; a correct exact stratified method is needed to say whether that pattern is noise or a real reversal.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In clinical tumour-sequencing sample identifiers of the form P-<patient number>-T<two-digit index>-IM<panel version>, what does the tumour index (T01, T02, T03 ...) denote? Does a T02 or later index mean a second, distinct specimen from the same patient (possibly a different site, a metastasis, a recurrence or a different time point) rather than a repeat of the first, and is there any convention for telling whether such a specimen is the primary tumour?",
+          "answer": "No page I read gives a formal definition of the T index, so this rests on worked examples, not on a specification. What the examples show: (1) the patient ID is the first 9 characters (P-0000000) and the T number distinguishes separate sequenced tumour samples of that patient; in an MSK sample table T01 and T02 of one patient have different coverage, different sample type and a different age at sequencing report (P-0000114-T01-IM3 = Metastasis, lymph node, age 58; P-0000114-T02-IM3 = Primary, age 59), so T02 is a distinct specimen, not a re-run of T01. (2) The index does NOT encode primary versus metastasis: T02 samples labelled Primary are common (P-0000114-T02, P-0000192-T02, P-0066922-T02-IM7, P-0000037-T02-IM3), a T01 can be a metastasis, and a patient can have T01 and T02 both Primary or both Metastasis. Primary/metastasis status is carried only in a separate clinical column (SAMPLE_TYPE, METASTATIC_SITE / primary_mets); there is no ID-based convention for it. (3) A patient can appear in a cohort with only a T02 (or later) sample, meaning the cohort's curators chose that specimen. (4) The IM suffix tracks the panel version (IM3 rows carry GENE_PANEL IMPACT341). Conventions seen for multiple samples per patient: the gnomeR QA guide says to check for it, that using both samples 'often' does not make sense, and to ask which is appropriate; one published analysis kept the newer panel and otherwise 'the sample with lowest index'. Practical reading for a cohort with no sample-type column: an index other than T01 is not evidence that the specimen is not the primary, and not evidence that it is; do not drop such samples on the index alone. Check whether PATIENT_ID is unique (if each patient has one sample, the non-T01 samples are the curated study specimens), keep them in the primary analysis, and report a T01-only sensitivity analysis.",
+          "sources": [
+            "https://mskcc-epi-bio.github.io/gnomeR/articles/qa-impact-data.html",
+            "https://drive.google.com/file/d/1Txdaa7JKOVMS3TZ8g9tkQUzZPkNc2m24/view",
+            "https://www.cell.com/cms/10.1016/j.cell.2019.05.005/attachment/5a555abc-a1ed-48d5-8224-a71131ef5bce/mmc3.pdf"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd12-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-9baf369bc7f6"
+            },
+            "bd12-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-020addd1eae9"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In clinical tumour-sequencing sample identifiers of the form P-<patient number>-T<two-digit index>-IM<panel version>, what does the tumour index (T01, T02, T03 ...) denote? Does a T02 or later index mean a second, distinct specimen from the same patient (possibly a different site, a metastasis, a recurrence or a different time point) rather than a repeat of the first, and is there any convention for telling whether such a specimen is the primary tumour? ANSWER: No page I read gives a formal definition of the T index, so this rests on worked examples, not on a specification. What the examples show: (1) the patient ID is the first 9 characters (P-0000000) and the T number distinguishes separate sequenced tumour samples of that patient; in an MSK sample table T01 and T02 of one patient have different coverage, different sample type and a different age at sequencing report (P-0000114-T01-IM3 = Metastasis, lymph node, age 58; P-0000114-T02-IM3 = Primary, age 59), so T02 is a distinct specimen, not a re-run of T01. (2) The index does NOT encode primary versus metastasis: T02 samples labelled Primary are common (P-0000114-T02, P-0000192-T02, P-0066922-T02-IM7, P-0000037-T02-IM3), a T01 can be a metastasis, and a patient can have T01 and T02 both Primary or both Metastasis. Primary/metastasis status is carried only in a separate clinical column (SAMPLE_TYPE, METASTATIC_SITE / primary_mets); there is no ID-based convention for it. (3) A patient can appear in a cohort with only a T02 (or later) sample, meaning the cohort's curators chose that specimen. (4) The IM suffix tracks the panel version (IM3 rows carry GENE_PANEL IMPACT341). Conventions seen for multiple samples per patient: the gnomeR QA guide says to check for it, that using both samples 'often' does not make sense, and to ask which is appropriate; one published analysis kept the newer panel and otherwise 'the sample with lowest index'. Practical reading for a cohort with no sample-type column: an index other than T01 is not evidence that the specimen is not the primary, and not evidence that it is; do not drop such samples on the index alone. Check whether PATIENT_ID is unique (if each patient has one sample, the non-T01 samples are the curated study specimens), keep them in the primary analysis, and report a T01-only sensitivity analysis. HOW SURE: medium. SOURCES: https://mskcc-epi-bio.github.io/gnomeR/articles/qa-impact-data.html, https://drive.google.com/file/d/1Txdaa7JKOVMS3TZ8g9tkQUzZPkNc2m24/view, https://www.cell.com/cms/10.1016/j.cell.2019.05.005/attachment/5a555abc-a1ed-48d5-8224-a71131ef5bce/mmc3.pdf."
+        },
+        {
+          "question": "When the FACETS allele-specific copy-number tool reports a fraction of genome altered of exactly 0 for a targeted-panel tumour sample, how is that usually interpreted: a truly copy-neutral tumour, or a low-tumour-purity / failed-fit sample in which somatic mutations may also be under-called? Is there a recommended way to use it as a purity flag in sensitivity analyses of mutation frequency?",
+          "answer": "It is ambiguous by itself and the FACETS author says so. When FACETS finds no copy-number change it cannot estimate purity and returns purity NA (ploidy 2); V. Seshan: purity then 'can be anything from 0 to 100%. If the tumor didn't have any tumor cells at all then there will be no copy number change and the purity is zero. On the other hand if the tumor is driven purely by mutation or epigenetics then there won't be any copy number change and the purity can be any number'; purity is also NA when there is no major aberrant segment (focal amplifications alone do not help). The MSK FACETS QC code (facets-preview facets_fit_qc, 'valid purity filter') marks a fit with purity NA or the 0.3 placeholder as failing QC, i.e. such fits are treated as unevaluable, not as confirmed diploid tumours. So a fraction-altered of exactly 0 means 'no usable copy-number signal': either a genuinely quiet genome or too little tumour, and the second case is where mutation calls can be missed (MSK clinical reports carry the comment 'Low tumor content (approximately 20% or less). Negative results should be interpreted with caution'). I found no published, recommended procedure for using FGA=0 as a purity flag; the web does not settle that part. The only guidance read is the author's: with no copy-number change, estimate purity from the mutations, since the allele fraction of high-confidence calls is about 0.5 x purity. A defensible sensitivity analysis built on that: flag samples with FGA exactly 0 (or missing); split them by whether they have called mutations at a reasonable allele fraction (tumour demonstrably present, quiet genome) or have no mutations / only very low allele fractions (probable low purity); compare the share of flagged samples across the groups; repeat the frequency comparison without the probable-low-purity samples, leaving the primary denominator unchanged.",
+          "sources": [
+            "https://github.com/mskcc/facets/issues/66",
+            "https://github.com/mskcc/facets/issues/204",
+            "https://rdrr.io/github/taylor-lab/facets-preview/src/facets_qc/v1.0/facets_fit_qc.R",
+            "https://drive.google.com/file/d/1Txdaa7JKOVMS3TZ8g9tkQUzZPkNc2m24/view"
+          ],
+          "confidence": "medium for the interpretation; low for a recommended flagging procedure (none found)",
+          "deliveries": {
+            "bd12-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-afa6b363a414"
+            },
+            "bd12-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-bfdc4b0adefc"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When the FACETS allele-specific copy-number tool reports a fraction of genome altered of exactly 0 for a targeted-panel tumour sample, how is that usually interpreted: a truly copy-neutral tumour, or a low-tumour-purity / failed-fit sample in which somatic mutations may also be under-called? Is there a recommended way to use it as a purity flag in sensitivity analyses of mutation frequency? ANSWER: It is ambiguous by itself and the FACETS author says so. When FACETS finds no copy-number change it cannot estimate purity and returns purity NA (ploidy 2); V. Seshan: purity then 'can be anything from 0 to 100%. If the tumor didn't have any tumor cells at all then there will be no copy number change and the purity is zero. On the other hand if the tumor is driven purely by mutation or epigenetics then there won't be any copy number change and the purity can be any number'; purity is also NA when there is no major aberrant segment (focal amplifications alone do not help). The MSK FACETS QC code (facets-preview facets_fit_qc, 'valid purity filter') marks a fit with purity NA or the 0.3 placeholder as failing QC, i.e. such fits are treated as unevaluable, not as confirmed diploid tumours. So a fraction-altered of exactly 0 means 'no usable copy-number signal': either a genuinely quiet genome or too little tumour, and the second case is where mutation calls can be missed (MSK clinical reports carry the comment 'Low tumor content (approximately 20% or less). Negative results should be interpreted with caution'). I found no published, recommended procedure for using FGA=0 as a purity flag; the web does not settle that part. The only guidance read is the author's: with no copy-number change, estimate purity from the mutations, since the allele fraction of high-confidence calls is about 0.5 x purity. A defensible sensitivity analysis built on that: flag samples with FGA exactly 0 (or missing); split them by whether they have called mutations at a reasonable allele fraction (tumour demonstrably present, quiet genome) or have no mutations / only very low allele fractions (probable low purity); compare the share of flagged samples across the groups; repeat the frequency comparison without the probable-low-purity samples, leaving the primary denominator unchanged. HOW SURE: medium for the interpretation; low for a recommended flagging procedure (none found). SOURCES: https://github.com/mskcc/facets/issues/66, https://github.com/mskcc/facets/issues/204, https://rdrr.io/github/taylor-lab/facets-preview/src/facets_qc/v1.0/facets_fit_qc.R, https://drive.google.com/file/d/1Txdaa7JKOVMS3TZ8g9tkQUzZPkNc2m24/view."
+        },
+        {
+          "question": "For a rare binary event compared between groups within a small number of strata, some of which have zero events in a cell, which exact methods are recommended for testing the direction of a common association and the homogeneity of stratum-specific odds ratios (for example the exact conditional test of the common odds ratio and Zelen's exact test), and which Python or R functions implement them?",
+          "answer": "Direction of a common association: the exact conditional test of the common odds ratio (the exact counterpart of Cochran-Mantel-Haenszel, conditioning on every stratum's margins). R: mantelhaen.test(x, exact=TRUE, alternative='less' or 'greater') on a 2x2xK array; it returns the exact p-value, the conditional maximum-likelihood common odds ratio and an exact confidence interval. SAS: PROC FREQ, EXACT COMOR. Homogeneity of the stratum odds ratios: Zelen's exact test. R: NSM3::zelen.test(z) with z an array of K 2x2 tables ('small data sets only'); SAS: PROC FREQ, EXACT EQOR. Base R does not test homogeneity (mantelhaen.test note: 'Currently, no inference on homogeneity of the odds ratios is performed') and its asymptotic CMH is valid only without three-way interaction. Python: statsmodels StratifiedTable offers only asymptotic tests, test_null_odds (Mantel-Haenszel chi-square) and test_equal_odds (Breslow-Day, optional Tarone adjustment), plus shift_zeros, which adds 0.5 to every cell of a table containing a zero; its documentation lists no exact option, and I found no documented Python function for either exact test. In Python they must be coded from the definitions (my derivation, not a documented routine): for the common-odds-ratio test, the null distribution of the total event count in the group of interest is the convolution of the per-stratum hypergeometric distributions (scipy.stats.hypergeom), and the one-sided p-value is the tail at the observed total; for Zelen, enumerate all sets of tables with the same margins and the same total, and sum the probabilities of those no more probable than the observed set. A stratum with no events at all has a one-point distribution and adds nothing. Check any hand-coded version against R if R is available. Cautions from the sources: a simulation study (Reis, Hirji, Afifi 1999; abstract read) recommends exact tests, Zelen among them, for sparse tables because asymptotic ones do not hold their size, but finds that all homogeneity tests 'had low power for small strata sizes, even with moderate to large heterogeneity', so a non-significant Zelen test with a handful of events does not show the odds ratios are equal and cannot confirm a reversal either; SAS warns that CMH-type tests have low power when strata point in opposite directions. With very few events, report the per-stratum counts and say the stratum pattern is not distinguishable from noise unless the exact homogeneity test rejects.",
+          "sources": [
+            "https://search.r-project.org/R/refmans/stats/html/mantelhaen.test.html",
+            "https://go.documentation.sas.com/api/docsets/statug/v_023/content/statug_freq_details92.htm",
+            "https://search.r-project.org/CRAN/refmans/NSM3/html/zelen.test.html",
+            "https://www.statsmodels.org/stable/generated/statsmodels.stats.contingency_tables.StratifiedTable.html",
+            "https://www.statsmodels.org/stable/generated/statsmodels.stats.contingency_tables.StratifiedTable.test_equal_odds.html",
+            "https://onlinelibrary.wiley.com/doi/10.1002/(SICI)1097-0258(19990430)18:8%3C893::AID-SIM84%3E3.0.CO;2-5"
+          ],
+          "confidence": "high for the R and SAS functions and the statsmodels limits; medium for the hand-coded Python route",
+          "deliveries": {
+            "bd12-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-58c5471d2022"
+            },
+            "bd12-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-2c1dcea922cd"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: For a rare binary event compared between groups within a small number of strata, some of which have zero events in a cell, which exact methods are recommended for testing the direction of a common association and the homogeneity of stratum-specific odds ratios (for example the exact conditional test of the common odds ratio and Zelen's exact test), and which Python or R functions implement them? ANSWER: Direction of a common association: the exact conditional test of the common odds ratio (the exact counterpart of Cochran-Mantel-Haenszel, conditioning on every stratum's margins). R: mantelhaen.test(x, exact=TRUE, alternative='less' or 'greater') on a 2x2xK array; it returns the exact p-value, the conditional maximum-likelihood common odds ratio and an exact confidence interval. SAS: PROC FREQ, EXACT COMOR. Homogeneity of the stratum odds ratios: Zelen's exact test. R: NSM3::zelen.test(z) with z an array of K 2x2 tables ('small data sets only'); SAS: PROC FREQ, EXACT EQOR. Base R does not test homogeneity (mantelhaen.test note: 'Currently, no inference on homogeneity of the odds ratios is performed') and its asymptotic CMH is valid only without three-way interaction. Python: statsmodels StratifiedTable offers only asymptotic tests, test_null_odds (Mantel-Haenszel chi-square) and test_equal_odds (Breslow-Day, optional Tarone adjustment), plus shift_zeros, which adds 0.5 to every cell of a table containing a zero; its documentation lists no exact option, and I found no documented Python function for either exact test. In Python they must be coded from the definitions (my derivation, not a documented routine): for the common-odds-ratio test, the null distribution of the total event count in the group of interest is the convolution of the per-stratum hypergeometric distributions (scipy.stats.hypergeom), and the one-sided p-value is the tail at the observed total; for Zelen, enumerate all sets of tables with the same margins and the same total, and sum the probabilities of those no more probable than the observed set. A stratum with no events at all has a one-point distribution and adds nothing. Check any hand-coded version against R if R is available. Cautions from the sources: a simulation study (Reis, Hirji, Afifi 1999; abstract read) recommends exact tests, Zelen among them, for sparse tables because asymptotic ones do not hold their size, but finds that all homogeneity tests 'had low power for small strata sizes, even with moderate to large heterogeneity', so a non-significant Zelen test with a handful of events does not show the odds ratios are equal and cannot confirm a reversal either; SAS warns that CMH-type tests have low power when strata point in opposite directions. With very few events, report the per-stratum counts and say the stratum pattern is not distinguishable from noise unless the exact homogeneity test rejects. HOW SURE: high for the R and SAS functions and the statsmodels limits; medium for the hand-coded Python route. SOURCES: https://search.r-project.org/R/refmans/stats/html/mantelhaen.test.html, https://go.documentation.sas.com/api/docsets/statug/v_023/content/statug_freq_details92.htm, https://search.r-project.org/CRAN/refmans/NSM3/html/zelen.test.html, https://www.statsmodels.org/stable/generated/statsmodels.stats.contingency_tables.StratifiedTable.html, https://www.statsmodels.org/stable/generated/statsmodels.stats.contingency_tables.StratifiedTable.test_equal_odds.html, https://onlinelibrary.wiley.com/doi/10.1002/(SICI)1097-0258(19990430)18:8%3C893::AID-SIM84%3E3.0.CO;2-5."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd12-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd12-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd12-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd12-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd12-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 138.15873979206663,
+      "cost_usd": 0.24792679999999997,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 169.14944474992808,
+      "cost_usd": 0.2588751,
+      "error": null
+    },
+    {
+      "agent": "bd12-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 100.55162849999033,
+      "cost_usd": 0.1885339,
+      "error": null
+    },
+    {
+      "agent": "bd12-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 126.45507637504488,
+      "cost_usd": 0.2452503,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 140.99458824994508,
+      "cost_usd": 0.3159207,
+      "error": null
+    },
+    {
+      "agent": "bd12-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 148.48696962499525,
+      "cost_usd": 0.4234314,
+      "error": null
+    },
+    {
+      "agent": "bd12-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 185.29008658300154,
+      "cost_usd": 0.3992029,
+      "error": null
+    },
+    {
+      "agent": "bd12-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 175.3549352500122,
+      "cost_usd": 0.36972829999999995,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,547 @@
+{
+  "study": "sc32",
+  "status": "refereed",
+  "final": {
+    "agent": "sc32-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc32/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc32-library": "opus",
+    "sc32-team-a": "opus",
+    "sc32-team-b": "opus",
+    "sc32-team-c": "opus",
+    "sc32-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "sc32-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc32/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "t_cell_pct": 63.3,
+        "monocyte_pct": 17.8,
+        "b_cell_pct": 10.0,
+        "nk_cell_pct": 6.6,
+        "dc_pct": 2.1,
+        "progenitor_cell_pct": 0.2
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc32-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc32/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "t_cell_pct": 63.3,
+        "monocyte_pct": 17.8,
+        "b_cell_pct": 10.0,
+        "nk_cell_pct": 6.6,
+        "dc_pct": 2.1,
+        "progenitor_cell_pct": 0.2
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc32-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc32/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "t_cell_pct": 63.3,
+        "monocyte_pct": 18.1,
+        "b_cell_pct": 10.0,
+        "nk_cell_pct": 6.6,
+        "dc_pct": 1.8,
+        "progenitor_cell_pct": 0.2
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc32-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc32/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "t_cell_pct": 63.3,
+        "monocyte_pct": 17.8,
+        "b_cell_pct": 10.0,
+        "nk_cell_pct": 6.6,
+        "dc_pct": 2.1,
+        "progenitor_cell_pct": 0.2
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc32-team-a",
+        "sc32-team-b"
+      ],
+      "fields": {
+        "t_cell_pct": true,
+        "monocyte_pct": true,
+        "b_cell_pct": true,
+        "nk_cell_pct": true,
+        "dc_pct": true,
+        "progenitor_cell_pct": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc32-team-a",
+        "sc32-team-b"
+      ],
+      "fields": {
+        "t_cell_pct": true,
+        "monocyte_pct": true,
+        "b_cell_pct": true,
+        "nk_cell_pct": true,
+        "dc_pct": false,
+        "progenitor_cell_pct": true
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Data facts read from file headers only (no analysis done). 158618536.node is an AnnData h5ad: 100,000 cells x 40,352 genes, var names are gene symbols plus ENSG-style names for unnamed genes. X is sparse CSR holding RAW INTEGER COUNTS (stored as float32); there are no layers, no .raw, no obsm and no neighbour graph. obs has donor (12), cytokine (91 categories), treatment (PBS vs cytokine), sample (1092 donor_cytokine combinations), split-pool barcode wells bc1/bc2/bc3 (Parse-style combinatorial barcoding) and QC columns gene_count, tscp_count, pct_counts_MT. 158562712.node is a 55 KB CellTypist-format pickle: a dict with keys Model (sklearn LogisticRegression, one-vs-rest), Scaler_ (StandardScaler) and description. The model has 7 classes - 'B cell', 'DC', 'ILC', 'Monocyte', 'NK cell', 'Progenitor cell', 'T cell' - and 888 feature genes, all of which are present in the dataset's var names.",
+      "from": [
+        "sl-sc-test-ee988ae6a64a"
+      ],
+      "reason": "Tells the team what the two unlabelled .node files are, that the matrix is unnormalised counts, and that the model has 7 classes while the answer has 6 fields; each of these determines how prediction must be set up.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-994e3218efe2"
+      }
+    },
+    {
+      "text": "Normalisation pitfall. A CellTypist model stores per-gene mean/sd learned on log1p of counts normalised to 10,000 per cell and re-applies them to the query. Feeding raw counts, another target sum (median, 1e6), SCT/Pearson residuals or z-scored data gives wrong scores or an 'Invalid expression matrix' / '.raw' error. Check X is integer before normalising; then run sc.pp.normalize_total(adata, target_sum=1e4) and sc.pp.log1p(adata) exactly once on ALL 40,352 genes and verify np.expm1(adata.X[:10]).sum(axis=1) equals 10000 for every row. Never normalise twice, never sc.pp.scale before prediction, never normalise after subsetting genes.",
+      "from": [
+        "sl-sc-test-ccfa03b9ea99"
+      ],
+      "reason": "The input is raw counts, so the team must normalise, and the wrong normalisation silently changes every predicted label and therefore every percentage.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-5d85361e77a4"
+      }
+    },
+    {
+      "text": "Gene-filtering pitfall. CellTypist silently uses only genes shared between query and model, so any gene filter or rename before prediction (HVG subset, min_cells filter, dropping MT/ribosomal/lncRNA or ENSG-named genes, symbol conversion) removes model features and changes scores without an error. Here all 888 model features exist in the raw var names (including ENSG-style ones), so nothing needs converting. At the moment of prediction confirm len(set(model features) & set(adata.var_names)) == 888, var_names are unique, and the CellTypist log reports 888 features used. If fewer are used, undo the filter/rename and predict from the full CP10k-log1p matrix; do HVG selection only on a copy used for clustering/UMAP.",
+      "from": [
+        "sl-sc-test-4eb6d569d4e2"
+      ],
+      "reason": "A routine preprocessing step (HVG or gene filtering) would degrade the model's input without any warning, shifting labels.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-6ad3c5da5f9e"
+      }
+    },
+    {
+      "text": "Model-loading pitfall and a version-independent fallback. The model pickle was written with scikit-learn 1.7.2 and numpy>=2, so loading elsewhere can fail (ModuleNotFoundError for numpy._core on old numpy; missing multi_class attribute across sklearn versions) or emit InconsistentVersionWarning. If celltypist is unavailable or errors, do not improvise with sklearn predict_proba/softmax. Reproduce CellTypist's pipeline exactly: take the CP10k-log1p matrix restricted to the model's 888 features IN THE MODEL'S ORDER; compute (X - Scaler_.mean_) / Scaler_.scale_; set values > 10 to 10; scores = Xs @ coef_.T + intercept_ (cells x 7); label = classes_[argmax(scores)]; probability = sigmoid(scores). Record sklearn/numpy versions and any unpickle warning, and where both paths run, confirm the manual labels match the tool's on a sample of cells. Densify only the 100,000 x 888 feature block, never the full 100,000 x 40,352 matrix.",
+      "from": [
+        "sl-sc-test-593009204351"
+      ],
+      "reason": "Environment mismatch is likely, and a hand-rolled prediction that forgets the scaler, the clipping at 10 or the gene order gives different labels; the exact recipe keeps the result correct and memory-safe.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-1fbc633b4be9"
+      }
+    },
+    {
+      "text": "Two label columns pitfall. CellTypist can return per-cell 'predicted_labels' (deterministic, depends only on expression) and 'majority_voting' (each Leiden over-cluster takes its dominant label). Their proportions differ, mostly for rare classes (DC, Progenitor cell, ILC), which get absorbed into the dominant neighbouring label under voting. Majority voting also depends on the neighbour graph (CellTypist builds it itself here, since none exists), Leiden version/seed and resolution (default 25 for 100k-200k cells), so it is not reproducible across environments and is memory-heavy at 100k cells. Per-cell labels are the direct output of the provided model; majority voting is an optional refinement. If you run both, cross-tabulate them and compare the six percentages; if any field differs by more than about 0.5 point, state which one is reported and why. Do not mix the two, and do not compute proportions from a custom clustering instead of the model's labels without saying so.",
+      "from": [
+        "sl-sc-test-9850d94e08a2"
+      ],
+      "reason": "The choice of label column directly changes the rare-class percentages (DC, progenitor), which are separate fields in the answer.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ed2646e68da3"
+      }
+    },
+    {
+      "text": "Prediction mode pitfall. CellTypist mode='prob match' (p_thres=0.5) can leave cells 'Unassigned' or give multi-labels joined by '|'; these do not map onto the six answer fields and change the denominator. The default mode='best match' always assigns exactly one of the 7 classes (the model's argmax). Use best match for the reported percentages; confirm the label set is exactly the 7 model classes with no 'Unassigned' or '|' labels. The fraction of cells with max sigmoid probability < 0.5 may be reported as a confidence diagnostic only; do not drop low-confidence cells from the denominator unless explicitly justified and reported.",
+      "from": [
+        "sl-sc-test-81aae2ad19ba"
+      ],
+      "reason": "Using the wrong mode or dropping low-confidence cells changes the denominator and so all six percentages.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-3fdb76d5034a"
+      }
+    },
+    {
+      "text": "ILC pitfall. The model predicts 7 classes including 'ILC', but the answer has 6 fields (T, monocyte, B, NK, DC, progenitor) that must sum to 100. Any cells predicted 'ILC' make the six sum to less than 100 unless a rule is chosen, and the rule changes the numbers. The task text does not specify the rule. Count the 'ILC' cells first; if zero the issue vanishes. If non-zero, compute the six percentages under each candidate rule - (a) fold ILC into NK, (b) drop ILC cells and renormalise over the six named classes - and see how far each field moves. The library's reasoning for (a): NK cells are group-1 innate lymphoid cells and CellTypist's own immune hierarchy files 'NK cells' under the high-level label 'ILC', so merging is the lineage-consistent option; (b) is the alternative. State the rule used explicitly, and report both if they differ by more than 0.1 point.",
+      "from": [
+        "sl-sc-test-a4ec7535a179"
+      ],
+      "reason": "The 7-to-6 class mismatch forces an explicit decision that the team would otherwise make implicitly or miss, and it moves the NK field and/or all fields.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ec6c236e698d"
+      }
+    },
+    {
+      "text": "Cell filtering pitfall (QC and doublets). The task gives no QC instructions, and any cell-level filter changes the denominator in a cell-type-biased way: caps on counts remove mostly monocytes (high RNA content), while min-gene and mitochondrial cutoffs preferentially remove small low-RNA cells and rare types. Inspect the obs distributions of gene_count, tscp_count and pct_counts_MT to see whether the data are already filtered (e.g. a hard floor on gene_count); if they look pre-filtered, annotate all 100,000 cells without extra filtering. If you do filter, use lenient MAD-based thresholds and report cells removed per predicted label alongside the unfiltered percentages. Doublet removal is likewise optional and tool/seed-dependent (and should be run per sample, not on the pooled data), so it shifts proportions non-reproducibly; the default for a coarse-proportion answer from a provided model is no doublet removal. If removal is tried and moves any field by more than 0.5 point, report both versions and say which is submitted.",
+      "from": [
+        "sl-sc-test-0087743f9672",
+        "sl-sc-test-af6d6862e7b6"
+      ],
+      "reason": "Habitual QC or doublet filtering before annotation would change which cells are counted and bias the lineage percentages; the team should decide this deliberately.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-7651a2ae170e"
+      }
+    },
+    {
+      "text": "Study-design pitfall. The dataset pools 12 donors x 91 cytokine/PBS conditions (1092 samples). Cytokine stimulation and in vitro culture alter transcriptional state and composition, so a reference model trained on resting cells may misassign stimulated cells (e.g. activated monocytes as DC, proliferating cells as 'Progenitor cell'), and an overall percentage depends on whether cells are pooled or averaged per sample. The quantity asked for is the pooled cell-level percentage over all cells: do not reweight by sample or donor. As a diagnostic, tabulate predicted-label percentages by treatment (PBS vs cytokine) and by cytokine, flag cytokines where DC or Progenitor fractions jump far above PBS levels, and check canonical markers in those cells (CD34 for progenitors; FCER1A/CLEC10A/CD1C for DC; CD14/LYZ for monocytes). Report outliers as caveats, but do not override model labels with manual relabelling unless you state so explicitly.",
+      "from": [
+        "sl-sc-test-27f34c443a4a"
+      ],
+      "reason": "Pooled versus per-sample averaging gives different numbers, and the stimulation design is the main reason the rare DC/progenitor fields could be inflated; the team needs to know how to aggregate and what to sanity-check.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-70864f57c080"
+      }
+    },
+    {
+      "text": "Rounding pitfall. Rounding six percentages independently to 1 decimal often makes them sum to 99.9 or 100.1, which breaks the 'sum to 100' requirement. After computing count/total*100 for the six fields (with the chosen ILC rule), round and sum; if the sum is not exactly 100.0, apply largest-remainder rounding (adjust the field with the largest rounding remainder by 0.1) and note the adjustment.",
+      "from": [
+        "sl-sc-test-ab18e5eef307"
+      ],
+      "reason": "The answer format requires the six rounded values to sum to 100, and naive rounding frequently fails this.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-c0e2af13fcd1"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams report per-cell best-match labels and neither ran the tool's majority-voting refinement (one could not because of a software error, the other never tried), so the agreed answer rests on an untested choice of label column that mainly affects the rare classes (DC, Progenitor, ILC).",
+      "Both teams assumed that CP10k + log1p on all genes is the scale the model's stored scaler was fitted on. Each verified its own normalisation (row sums of 10,000) but neither compared the stored scaler mean/SD (or n_samples_seen_) with the query's per-gene statistics, which is the only direct test of that assumption available in the files.",
+      "Both teams hand-implemented the prediction from the same library recipe (scale, clip at 10, argmax of linear scores) because the tool was missing; their agreement shows the recipe was followed twice, not that the recipe matches the tool.",
+      "Both teams folded ILC into NK and counted all 100,000 cells with no QC or doublet removal, pooling stimulated and unstimulated cells.",
+      "Both teams accepted the model's DC and Progenitor calls in cytokine-stimulated cells as the quantity asked for, without measuring how fragile those calls are."
+    ],
+    "unused_evidence": [
+      "Scaler_.mean_, Scaler_.var_/scale_ and n_samples_seen_ in the model pickle: they record the training distribution and were used only to transform the query, never to check that the query is on the same scale or of the same kind as the training data.",
+      "The model's description block (training date in 2025, empty details/url/source) and feature names carrying the same de-duplication suffixes and ENSG-style names as the query's gene index: this suggests a custom model trained on data with the same gene annotation, which bears on whether stimulated cells are in or out of distribution. Neither team used it.",
+      "obs QC columns gene_count, tscp_count, mread_count, pct_counts_MT: team A looked only at their minimum (pre-filtered at 400 genes); neither team checked whether rare-class calls concentrate in high-count cells (possible doublets).",
+      "obs treatment/cytokine/donor/sample: used for descriptive tabulation only; team B did not look at DC markers by treatment at all.",
+      "The coefficient matrix itself (which genes drive the DC and Progenitor scores) was never inspected."
+    ],
+    "unresolved_weak_points": [
+      "Team B named the missing majority-voting run as its weakest point and only reported it; the neighbour-graph error was not worked around.",
+      "Team A named two: the hand implementation could not be cross-checked against the tool, and DC calls under interferon stimulation look monocyte-like (low FCER1A/CD1C, high LYZ). Both were reported as caveats, neither was resolved or bounded.",
+      "Team A's pitfall table marks 'predicted_labels vs majority_voting' and 'QC filtering and doublets' as not found in data, but its checks list shows no voting run and no doublet test, so 'not found' means 'not tested'.",
+      "Team B's pitfalls_checked list is empty and its marker check has no DC marker."
+    ],
+    "second_readings": [
+      "'Perform coarse cell type annotation' with a provided model can mean the model's per-cell labels or the cluster-refined (majority-voted) labels that the tool's usual workflow reports; the two differ for rare classes.",
+      "The answer has six fields that must sum to 100 while the model has seven classes. Either a rule for ILC is expected, or the intended labelling contains no ILC cells at all (which could happen after cluster-level voting). The teams considered only the first.",
+      "Denominator: all cells versus cells assigned to the six named lineages (teams checked; same after rounding).",
+      "Population: all cells pooled versus unstimulated (PBS) cells only as the 'PBMC' composition; the task text supports pooled, and the teams chose pooled."
+    ],
+    "verdict": "Moderate trust. Two independent hand implementations of the same per-cell recipe agree, so the best-match computation is probably reproduced correctly, but neither team tested the choice between per-cell labels and majority voting (which decides ILC and can move the rare classes) and neither checked the query against the model's stored training statistics, so the agreement may reflect a shared reading rather than a confirmed one.",
+    "questions": [
+      {
+        "to": "sc32-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your pitfall table marks 'predicted_labels vs majority_voting' as not found in the data, but your checks list shows no voting run, so it was not tested. Build an over-clustering of the 100,000 cells the way the tool does when no neighbour graph exists (if the standard neighbour call fails, build the kNN graph on the PCA yourself and cluster it), give each cluster its dominant per-cell label, and tabulate against your per-cell labels. Report: how many ILC cells remain, how far each of the six percentages moves at one decimal, and whether that is stable across two seeds and the resolutions either side of the tool's default for this cell count. The task wants six fields summing to 100 from a seven-class model: under which label column does that hold without adding a rule of your own? Does that change your method?",
+        "from": [
+          "sl-sc-test-ed2646e68da3",
+          "sl-sc-test-0cf4b018b6a0"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-dd1fa90ddec4"
+      },
+      {
+        "to": "sc32-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you verified your own normalisation (row sums of 10,000) but not that it is the scale the model was fitted on. The pickle stores Scaler_.mean_, Scaler_.scale_ and n_samples_seen_. Compare them with the per-gene mean and SD of your CP10k-log1p query on the 888 features: correlation, slope, median ratio, and the genes that deviate most. Repeat the comparison for unstimulated cells only and for one or two other plausible normalisations (for example another target sum, or normalising after subsetting genes) and see which matches the stored values best. Also report what fraction of scaled values hit the clip at 10. Does the match support your normalisation, and what does n_samples_seen_ together with the feature names say about what kind of data the model was trained on? Does that change your method?",
+        "from": [
+          "sl-sc-test-5d85361e77a4",
+          "sl-sc-test-994e3218efe2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-4b8cf1061639"
+      },
+      {
+        "to": "sc32-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you named the DC calls under interferon stimulation as a weak point and left it as a caveat. Bound it. For DC-labelled cells, separately in PBS and in the cytokines where the DC share jumps, report the margin between the DC and Monocyte decision scores and the share of DC calls whose DC probability is below 0.5 or whose margin is small; then compute how far the DC and monocyte percentages would move if those low-margin calls went the other way. List the genes with the largest positive DC coefficients and check whether they are interferon-response genes, and whether the mean DC score of monocyte-marker-positive cells rises with interferon treatment. Is the pooled DC percentage stable to this at one decimal? Does that change your method or your confidence?",
+        "from": [
+          "sl-sc-test-210f58e3a551",
+          "sl-sc-test-70864f57c080"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-679a7e0ababd"
+      },
+      {
+        "to": "sc32-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your other named weak point is that the hand implementation was never cross-checked, and the other team followed the same written recipe, so agreement between you does not test the recipe. Run the checks that are possible without the tool: (a) call the unpickled classifier's own decision_function/predict on your scaled, clipped matrix and count cells whose label differs from your manual argmax; (b) confirm the scaler's with_mean/with_std flags, that no feature has zero scale, and that the feature order you used is the model's and not the data's, by shuffling the order once and confirming the labels change; (c) report exact per-class cell counts, not only rounded percentages, and how many cells sit within a very small margin between their top two classes. Does any of this change your method?",
+        "from": [
+          "sl-sc-test-1fbc633b4be9",
+          "sl-sc-test-2f05d06326c1"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-70a05ba97557"
+      },
+      {
+        "to": "sc32-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you named the missing majority-voting run as your weakest point and your plan listed it as a check, but it stopped at a neighbour-graph error. Get round the error (for example build the kNN graph on the PCA yourself, or pass the matrix in the sparse class the function expects) and reproduce the tool's over-clustering at its default resolution for this cell count, then give each cluster its dominant per-cell label. Report the cross-table against your per-cell labels: how many ILC cells remain, how far each of the six percentages moves at one decimal, and whether it is stable across two seeds and the neighbouring resolutions. The task wants six fields summing to 100 from a seven-class model: under which label column does that hold without adding a rule of your own? Does that change your method?",
+        "from": [
+          "sl-sc-test-04deba1a5e57",
+          "sl-sc-test-9850d94e08a2",
+          "sl-sc-test-1b9c87428514"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-fbf981b2fbf5"
+      },
+      {
+        "to": "sc32-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you applied the stored scaler but did not test that your query is on the scale it was fitted on. The pickle stores Scaler_.mean_, Scaler_.scale_ and n_samples_seen_. Compare them with the per-gene mean and SD of your normalised query on the 888 features (correlation, slope, median ratio, worst-matching genes), for all cells and for PBS cells only, and for one or two other plausible normalisations (another target sum, or normalising after subsetting genes). Which matches best, and what fraction of scaled values hit the clip at 10? What do n_samples_seen_ and the feature names say about what kind of data the model was trained on? Does that change your method?",
+        "from": [
+          "sl-sc-test-878b2aeae002",
+          "sl-sc-test-ccfa03b9ea99"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-c81ffd478a1e"
+      },
+      {
+        "to": "sc32-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your marker check covers T, monocyte, B, NK and progenitor but has no DC marker, and your treatment tabulation was by composition only. The other team saw the DC share differ several-fold between unstimulated cells and some interferon conditions, with DC-labelled cells low in classical DC markers and high in a monocyte marker. Check in your labels: the DC share by treatment and by cytokine; detection of FCER1A, CD1C, CLEC10A, LILRA4 and of CD14, LYZ in DC-labelled cells, split PBS versus the cytokines with the highest DC share; and the margin between the DC and Monocyte scores in those cells. How far would the DC and monocyte percentages move if low-margin DC calls went the other way? Do the same for Progenitor calls against a proliferation marker such as MKI67. Does that change your method or your confidence?",
+        "from": [
+          "sl-sc-test-878b2aeae002",
+          "sl-sc-test-27f34c443a4a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-46f970bee600"
+      },
+      {
+        "to": "sc32-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your pitfalls_checked list is empty and the QC columns in obs (gene_count, tscp_count, pct_counts_MT) were not used. Check whether the rare classes are where low-quality cells or doublets land: compare the distributions of tscp_count, gene_count and pct_counts_MT across the seven predicted classes; count cells that co-express markers of two lineages (for example CD3E with MS4A1 or with LYZ) and tabulate which label they received; and recompute the six percentages after removing the cells you would call doublets or low quality under one stated rule. Does any field move at one decimal, and does the task text say anything that settles whether such cells belong in the denominator? Does that change your method?",
+        "from": [
+          "sl-sc-test-ee988ae6a64a",
+          "sl-sc-test-1b9c87428514"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-136e765f823a"
+      }
+    ]
+  },
+  "referee": {
+    "difference": "Both teams use the same per-cell pipeline (CP10k+log1p, 888 genes, stored scaler, clip 10, LR argmax). X then applies CellTypist-style majority voting (Leiden res 25 over-clustering, dominant label per cluster), giving Mono 18.1 and DC 1.8. Y reports the per-cell labels with the 72 ILC folded into NK, giving Mono 17.8 and DC 2.1. This is a difference in reading the task (majority voting or not), not in the rows kept.",
+    "test": "percell.py reproduces the per-cell labels independently and checks whether the 7-class output fits the 6-field format without majority voting: does ILC change any rounded value when folded or dropped? mv.py reruns majority voting at res 25 with seeds 0 and 1 to check it reproduces at one decimal.",
+    "expected_if_x": "Per-cell ILC would be large enough that the 6-field format only works if majority voting removes ILC, and majority voting would reproduce X's 18.1/1.8 stably at one decimal.",
+    "expected_if_y": "Per-cell counts would match Y exactly, ILC would be negligible (folding or dropping leaves the rounded values unchanged), and majority voting would not be stable at one decimal.",
+    "outcome": "The per-cell counts matched Y exactly: T63249 Mono17772 B10030 NK6552 DC2090 Prog235 ILC72. ILC is 0.072%, and folding it into NK or dropping it and renormalising both give 63.3/17.8/10.0/6.6/2.1/0.2, so the format needs no majority voting. My majority-voting rerun timed out inside the 3-min limit (it needed a patch for a scanpy bug). The teams' own runs at the same settings (res 25, seed 0) disagree at one decimal (X: Mono 18.1, DC 1.8; Y: Mono 18.2, DC 1.7).",
+    "pick": "Y",
+    "reason": "The task asks only for annotation with the provided model. The per-cell output is deterministic, I reproduced it exactly, and it fits the six-field format. X's majority-voting step is an extra, non-default choice whose result is not reproducible at the reported precision. This is moderate support: the task text does not rule majority voting out.",
+    "own_answer": null,
+    "picked_agent": "sc32-team-a",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "sc32-team-b",
+      "Y": "sc32-team-a"
+    }
+  },
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In CellTypist, when majority voting is requested and the input AnnData has no precomputed neighbour graph, what exact steps and default parameters does the package use to build one (gene filtering, number of highly variable genes, scaling, number of principal components, number of neighbours), which clustering algorithm and which resolution rule by number of cells does over-clustering use, and what are the defaults of majority_voting and min_prop in annotate()?",
+          "why": "Neither team could run the tool's majority voting; with the exact defaults they can reproduce it by hand and see whether the rare classes change, which is the main untested choice behind the agreed answer.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In CellTypist's custom model training (celltypist.train), what input normalisation is required or checked, on which cells and genes is the stored StandardScaler fitted (before or after feature selection, and is it refitted on the selected genes), and how does prediction use the scaler's mean_ and scale_ together with the clip at 10?",
+          "why": "Both teams assumed the query normalisation matches what the model's scaler was fitted on; knowing exactly how the scaler is produced lets them compare its stored mean and SD with the query's statistics and interpret any mismatch.",
+          "passed": false,
+          "reasons": [
+            "a number within 1 percent of another team's value for \"b_cell_pct\""
+          ]
+        },
+        {
+          "question": "Which combinations of scanpy, anndata and scipy versions make scanpy.pp.neighbors (or CellTypist's over-clustering) fail with an error about a sparse csr_array lacking getnnz, and what is the documented workaround that leaves the resulting graph unchanged?",
+          "why": "One team's majority-voting run failed on exactly this kind of error and was abandoned; a known workaround would let both teams run the check instead of only reporting it as a weak point.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In CellTypist, when majority voting is requested and the input AnnData has no precomputed neighbour graph, what exact steps and default parameters does the package use to build one (gene filtering, number of highly variable genes, scaling, number of principal components, number of neighbours), which clustering algorithm and which resolution rule by number of cells does over-clustering use, and what are the defaults of majority_voting and min_prop in annotate()?",
+          "answer": "annotate() defaults: majority_voting=False, min_prop=0 (a subcluster is named 'Heterogeneous' only if its dominant label's share is below min_prop, so this never happens at 0), mode='best match', over_clustering=None, use_GPU=False. Majority voting is skipped when there are 50 cells or fewer. Over-clustering uses Leiden (scanpy sc.tl.leiden, leidenalg>=0.9) at resolution 5, 10, 15, 20, 25 or 30 for datasets with fewer than 5k, 20k, 40k, 100k or 200k cells, or 200k and above. A dataset of exactly 100,000 cells therefore gets resolution 25. Each subcluster is then given its most frequent per-cell predicted label. If no neighbour graph exists, the graph is built as follows: if X has negative values, use adata.raw; sc.pp.filter_genes(min_cells=5); sc.pp.highly_variable_genes(n_top_genes=min(2500, n_vars)) on the log1p-CP10k data with scanpy's default flavor; subset to the HVGs; sc.pp.scale(max_value=10); sc.tl.pca(n_comps=50); sc.pp.neighbors(n_neighbors=10, n_pcs=50). If X_pca already exists, the existing PCA is reused. Caveats: the graph steps come from a search excerpt of the DANCE port of CellTypist's _construct_neighbor_graph. The fetched CellTypist source pages were cut off before that function, so I could not read it in CellTypist's own code. The exact extra Leiden keyword arguments are also unverified: CellTypist 1.7.0 changed them 'to parallel scanpy', probably the flavor/n_iterations settings. The random seed is scanpy's default of 0.",
+          "sources": [
+            "https://celltypist.readthedocs.io/en/stable/celltypist.classifier.Classifier.html",
+            "https://celltypist.readthedocs.io/en/stable/_modules/celltypist/classifier.html",
+            "https://pydance.readthedocs.io/en/latest/_modules/dance/modules/single_modality/cell_type_annotation/celltypist.html",
+            "https://celltypist.readthedocs.io/en/latest/?badge=latest"
+          ],
+          "confidence": "high for the annotate() defaults and the resolution rule; medium for the graph-construction steps; low for the exact Leiden keyword arguments",
+          "deliveries": {
+            "sc32-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-3b1514b2b816"
+            },
+            "sc32-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-39d32b1d86a0"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In CellTypist, when majority voting is requested and the input AnnData has no precomputed neighbour graph, what exact steps and default parameters does the package use to build one (gene filtering, number of highly variable genes, scaling, number of principal components, number of neighbours), which clustering algorithm and which resolution rule by number of cells does over-clustering use, and what are the defaults of majority_voting and min_prop in annotate()? ANSWER: annotate() defaults: majority_voting=False, min_prop=0 (a subcluster is named 'Heterogeneous' only if its dominant label's share is below min_prop, so this never happens at 0), mode='best match', over_clustering=None, use_GPU=False. Majority voting is skipped when there are 50 cells or fewer. Over-clustering uses Leiden (scanpy sc.tl.leiden, leidenalg>=0.9) at resolution 5, 10, 15, 20, 25 or 30 for datasets with fewer than 5k, 20k, 40k, 100k or 200k cells, or 200k and above. A dataset of exactly 100,000 cells therefore gets resolution 25. Each subcluster is then given its most frequent per-cell predicted label. If no neighbour graph exists, the graph is built as follows: if X has negative values, use adata.raw; sc.pp.filter_genes(min_cells=5); sc.pp.highly_variable_genes(n_top_genes=min(2500, n_vars)) on the log1p-CP10k data with scanpy's default flavor; subset to the HVGs; sc.pp.scale(max_value=10); sc.tl.pca(n_comps=50); sc.pp.neighbors(n_neighbors=10, n_pcs=50). If X_pca already exists, the existing PCA is reused. Caveats: the graph steps come from a search excerpt of the DANCE port of CellTypist's _construct_neighbor_graph. The fetched CellTypist source pages were cut off before that function, so I could not read it in CellTypist's own code. The exact extra Leiden keyword arguments are also unverified: CellTypist 1.7.0 changed them 'to parallel scanpy', probably the flavor/n_iterations settings. The random seed is scanpy's default of 0. HOW SURE: high for the annotate() defaults and the resolution rule; medium for the graph-construction steps; low for the exact Leiden keyword arguments. SOURCES: https://celltypist.readthedocs.io/en/stable/celltypist.classifier.Classifier.html, https://celltypist.readthedocs.io/en/stable/_modules/celltypist/classifier.html, https://pydance.readthedocs.io/en/latest/_modules/dance/modules/single_modality/cell_type_annotation/celltypist.html, https://celltypist.readthedocs.io/en/latest/?badge=latest."
+        },
+        {
+          "question": "Which combinations of scanpy, anndata and scipy versions make scanpy.pp.neighbors (or CellTypist's over-clustering) fail with an error about a sparse csr_array lacking getnnz, and what is the documented workaround that leaves the resulting graph unchanged?",
+          "answer": "The trigger is pynndescent 0.7.0 (released 2026-10-27), not a particular scipy or anndata version. PyNNDescentTransformer.fit_transform now returns a scipy.sparse csr_array, and scanpy's _ind_dist_shortcut in neighbors/_common.py calls d.getnnz(axis=1), which sparse arrays lack. The report used scanpy 1.12.4, pynndescent 0.7.0, scipy 1.18.1 and Python 3.12, and the call was unchanged on main at the time. Scanpy picks pynndescent by default from 8192 cells with the euclidean metric, so CellTypist's over-clustering on 100k cells hits the error. Documented workaround: pin pynndescent<0.7 (0.6.0 works). This restores the previous behaviour, so the graph is unchanged. Alternatively, install a scanpy build that includes PR #4451 (merged 2026-10-29; I did not confirm which release first ships it). That fix replaces getnnz with per-row counts from np.diff(d.indptr), which give the same values for both csr_matrix and csr_array, so the graph is unchanged. Patching the same line locally is equivalent. Switching to transformer='sklearn' (exact kNN) also avoids the error, but it can change the graph slightly.",
+          "sources": [
+            "https://github.com/scverse/scanpy/issues/4444",
+            "https://github.com/scverse/scanpy/pull/4451",
+            "https://github.com/scverse/scanpy/issues/2773"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc32-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-25db4163593b"
+            },
+            "sc32-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-1c6cf34526d0"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Which combinations of scanpy, anndata and scipy versions make scanpy.pp.neighbors (or CellTypist's over-clustering) fail with an error about a sparse csr_array lacking getnnz, and what is the documented workaround that leaves the resulting graph unchanged? ANSWER: The trigger is pynndescent 0.7.0 (released 2026-10-27), not a particular scipy or anndata version. PyNNDescentTransformer.fit_transform now returns a scipy.sparse csr_array, and scanpy's _ind_dist_shortcut in neighbors/_common.py calls d.getnnz(axis=1), which sparse arrays lack. The report used scanpy 1.12.4, pynndescent 0.7.0, scipy 1.18.1 and Python 3.12, and the call was unchanged on main at the time. Scanpy picks pynndescent by default from 8192 cells with the euclidean metric, so CellTypist's over-clustering on 100k cells hits the error. Documented workaround: pin pynndescent<0.7 (0.6.0 works). This restores the previous behaviour, so the graph is unchanged. Alternatively, install a scanpy build that includes PR #4451 (merged 2026-10-29; I did not confirm which release first ships it). That fix replaces getnnz with per-row counts from np.diff(d.indptr), which give the same values for both csr_matrix and csr_array, so the graph is unchanged. Patching the same line locally is equivalent. Switching to transformer='sklearn' (exact kNN) also avoids the error, but it can change the graph slightly. HOW SURE: high. SOURCES: https://github.com/scverse/scanpy/issues/4444, https://github.com/scverse/scanpy/pull/4451, https://github.com/scverse/scanpy/issues/2773."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc32-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc32-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc32-team-b",
+      "round": "challenge",
+      "reason": "the referee's test supported the other answer: The task asks only for annotation with the provided model. The per-cell output is deterministic, I reproduced it exactly, and it fits the six-field format. X's majority-voting step is an extra, non-default choice whose result is not reproducible at the reported precision. This is moderate support: the task text does not rule majority voting out."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc32-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 65.28724387497641,
+      "cost_usd": 0.26141040000000004,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 112.70645341696218,
+      "cost_usd": 0.1523784,
+      "error": null
+    },
+    {
+      "agent": "sc32-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 67.44984200003091,
+      "cost_usd": 0.21844220000000003,
+      "error": null
+    },
+    {
+      "agent": "sc32-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 259.61669037502725,
+      "cost_usd": 0.2863192,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 196.55208983295597,
+      "cost_usd": 0.3986691,
+      "error": null
+    },
+    {
+      "agent": "sc32-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 116.21783958305605,
+      "cost_usd": 0.5283597999999999,
+      "error": null
+    },
+    {
+      "agent": "sc32-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 292.2816328749759,
+      "cost_usd": 0.4115066,
+      "error": null
+    },
+    {
+      "agent": "sc32-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 429.3765388749307,
+      "cost_usd": 0.46179640000000005,
+      "error": null
+    },
+    {
+      "agent": "sc32-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 399.5463857500581,
+      "cost_usd": 0.2566892,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

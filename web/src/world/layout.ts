@@ -86,7 +86,7 @@ for (let c = 0; c < 8; c++) {
   }
 }
 
-/** Each department head's desk, at the back of the room it runs (D-22). */
+/** Each department head's desk, at the back of the room it runs (D-23). */
 export const HEAD_SEATS: Record<"library" | "team-a" | "team-b", Spot> = {
   library: seat(24, 10, TILE / 2),
   "team-a": seat(41, 10, TILE / 2),

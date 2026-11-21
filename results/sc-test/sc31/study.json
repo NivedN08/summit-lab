@@ -1,0 +1,541 @@
+{
+  "study": "sc31",
+  "status": "refereed",
+  "final": {
+    "agent": "sc31-team-a",
+    "team": "team-a",
+    "round": "revise",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc31/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc31-library": "opus",
+    "sc31-team-a": "opus",
+    "sc31-team-b": "opus",
+    "sc31-team-c": "opus",
+    "sc31-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc31-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc31/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "T_cells": 58.75,
+        "B_cells": 20.35,
+        "NK_cells": 4.52,
+        "Monocytes": 14.78,
+        "Dendritic_cells": 1.6
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc31-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc31/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "T_cells": 58.3,
+        "B_cells": 19.6,
+        "NK_cells": 5.5,
+        "Monocytes": 14.6,
+        "Dendritic_cells": 1.65
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc31-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc31/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "T_cells": 58.75,
+        "B_cells": 20.35,
+        "NK_cells": 4.52,
+        "Monocytes": 14.78,
+        "Dendritic_cells": 1.6
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc31-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc31/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "T_cells": 59.17,
+        "B_cells": 19.61,
+        "NK_cells": 4.58,
+        "Monocytes": 14.82,
+        "Dendritic_cells": 1.45
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc31-team-a",
+        "sc31-team-b"
+      ],
+      "fields": {
+        "T_cells": true,
+        "B_cells": true,
+        "NK_cells": false,
+        "Monocytes": true,
+        "Dendritic_cells": true
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "sc31-team-a",
+        "sc31-team-b"
+      ],
+      "fields": {
+        "T_cells": true,
+        "B_cells": true,
+        "NK_cells": true,
+        "Monocytes": true,
+        "Dendritic_cells": false
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Data layout as reported by the library from file headers (confirm on loading). 156259621.node is the labelled reference AnnData: 118,685 cells x 22,927 genes, raw integer counts in X, 20 samples in obs['sample'], cell names carrying HIVE platform ids. Use the labels in obs['manual_annotation_corrected'] (20 types: naive/memory CD4 T, naive/memory/cytotoxic CD8 T, Treg, MAIT, gamma-delta T, naive/memory B, plasma cell, NK, cycling NK, classical/non-classical monocyte, dendritic cell, plasmacytoid DC, platelet, erythrocyte, peripheral blood stem cell). Do not use obs['manual_annotation']: it is the uncorrected version and has a duplicate spelling ('Memory CD8 Cells' vs 'Memory CD8 T Cells'). 156261218.node is the unlabelled query: 11,693 cells x 27,946 genes, raw integer counts in X and layers['counts'], 4 samples, precomputed Seurat clusters at resolution 1 (20 clusters), X_pca and X_umap, no cell-type column. Both use gene symbols; 22,902 genes are shared. HBB is absent from both gene lists, so it cannot serve as an erythrocyte marker.",
+      "from": [
+        "sl-sc-test-ad3a2908bc03"
+      ],
+      "reason": "Tells the team which file is reference and which is query, which label column is safe (the uncorrected one would split a CD8 T label), and that X holds raw counts, so they do not lose time or pick the wrong column.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-27a779e0b19d"
+      }
+    },
+    {
+      "text": "The five requested percentages need not sum to 100. The reference contains labels outside the five categories (platelet, erythrocyte, peripheral blood stem cell), and query cells may be of these kinds or unassignable. Renormalising the five numbers to 100, or forcing every query cell into one of the five classes, inflates every category. Check: after annotation, count query cells labelled platelet / erythrocyte / progenitor / unassigned (platelets: PPBP, PF4; progenitors: CD34; HBB is not in the gene list). Report each category as a share of all supplied query cells (11,693 per the headers), state that denominator, and leave the residual as 'other'. Map fine labels to the five categories as: all CD4/CD8 T, Treg, MAIT, gamma-delta T -> T_cells; naive/memory B and plasma cell -> B_cells; NK and cycling NK -> NK_cells; classical and non-classical monocyte -> Monocytes; dendritic cell and plasmacytoid DC -> Dendritic_cells; platelet, erythrocyte, stem cell -> none of the five.",
+      "from": [
+        "sl-sc-test-f68deab63c3d"
+      ],
+      "reason": "The choice of denominator and of the fine-to-broad label mapping directly sets every reported percentage; a team that renormalises or forces all cells into five classes will be off in all five numbers.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-885fa75815e7"
+      }
+    },
+    {
+      "text": "Classifier-based annotation degrades silently when reference and query are not normalised identically. CellTypist-style models, for example, store per-gene mean and sd from the training data and expect log1p of counts normalised to 10,000 per cell; they give inaccurate predictions on scaled, SCT/Pearson-residual or highly-variable-gene-subset input. Here both files hold raw integer counts in X, and the query has about 5,044 genes the reference lacks. Check: confirm X is integer counts in both objects, subset both to the shared genes (22,902) before normalising, apply the same normalisation to both, and verify the maximum of the log matrix is plausible (below about 10). Train any model on the reference normalised exactly as the query will be; never feed scaled or HVG-only matrices to a model trained on full log-normalised data.",
+      "from": [
+        "sl-sc-test-532570e3bb7b"
+      ],
+      "reason": "A normalisation or gene-set mismatch gives confident but wrong labels with no error message, so the team must do this check before trusting any classifier output.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-9e91f61655f0"
+      }
+    },
+    {
+      "text": "The reference is from the HIVE picowell platform and the query platform is unstated. Platform comparisons report that cells cluster by technology as well as by cell type, and that HIVE has platform-specific signatures (higher ribosomal and mitochondrial fractions, better granulocyte retention). A classifier or joint PCA built without batch handling can therefore separate reference from query instead of separating cell types. Check: compare total counts, genes detected, mito and ribo fractions between reference and query; build a joint embedding and see whether query cells mix with reference cells of the same marker-defined lineage; compare two independent approaches (a classifier on normalised expression versus integration-based neighbour voting) and compare both with reference-free marker annotation of the query clusters. If a platform effect is seen: use a transfer method that corrects for dataset and sample (reference-PCA projection with anchors, Harmony, or scVI/scANVI with sample as batch) on shared genes only, do not reuse the query's or reference's stored X_pca across datasets, and trust a broad lineage call only where the methods and the markers agree.",
+      "from": [
+        "sl-sc-test-6fbe77703c71"
+      ],
+      "reason": "A cross-platform batch effect can corrupt label transfer wholesale; knowing the reference is HIVE prompts the team to use batch-aware transfer and to cross-check with markers.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-3b09b18429a8"
+      }
+    },
+    {
+      "text": "Label transfer forces every query cell onto the nearest reference type, so cell types absent from the reference receive a confident wrong label. The documented example is neutrophils (absent from a PBMC reference) being annotated as CD14 monocytes with a high prediction score but a low mapping score. Check: do not rely on the prediction score alone; compute a measure of how well each query cell is represented by the reference (Seurat MappingScore, or distance from each query cell to its reference neighbours in the shared embedding), and inspect markers of any query cluster with low mapping quality or very low gene counts (granulocytes: FCGR3B, CSF3R, CXCR2, S100A8 with few genes detected). If such a cluster is found, label it 'other' rather than Monocytes or any of the five categories, and confirm every transferred label with canonical markers at cluster level.",
+      "from": [
+        "sl-sc-test-ff0b81d3564e"
+      ],
+      "reason": "If the query holds a population the reference lacks, it would be silently counted in one of the five categories (most likely Monocytes); only a mapping-quality and marker check reveals this.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-4a88e5a286bb"
+      }
+    },
+    {
+      "text": "Reference composition biases label transfer. A PBMC benchmark of five label-transfer methods found that the number of reference cells per type changes the result, and rare types (DC, pDC, plasma cells, cycling NK) are an imbalanced-classification problem that neighbour voting and unweighted classifiers under-call in favour of abundant T cells and monocytes. Check: tabulate reference cells per label; rerun the transfer with a class-balanced reference (down-sample each type to a cap, or use class_weight='balanced') and compare the five percentages with the full-reference run. Prefer the balanced or stratified reference (it also makes the ~118,685-cell reference tractable), keep all 20 reference samples represented, and treat any category whose percentage moves between the runs as uncertain.",
+      "from": [
+        "sl-sc-test-45daf7cdfe70"
+      ],
+      "reason": "Class imbalance mainly distorts the small categories (Dendritic_cells, and plasma/cycling NK inside B and NK); a balanced rerun is a cheap test of whether those numbers are stable.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-5304681496ea"
+      }
+    },
+    {
+      "text": "Assigning one label per coarse cluster (the query ships with 20 Seurat clusters at resolution 1), or majority voting over clusters, erases rare populations that sit inside a larger cluster (DCs inside monocytes, pDCs or plasma cells inside B cells, NK inside cytotoxic T). Pure per-cell labels, on the other hand, are noisy from dropout, and majority voting depends on the clustering and latent space it is run on. Check: cross-tabulate per-cell predicted labels against clusters and flag any cluster where the top five-category label is below about 80-90 percent; compare the five percentages from per-cell labels with those from cluster-majority labels. For mixed clusters, over-cluster or sub-cluster and vote within sub-clusters, validated by markers. If per-cell and cluster-level percentages differ materially for a category, that difference is the uncertainty to report.",
+      "from": [
+        "sl-sc-test-78541c929168"
+      ],
+      "reason": "The level at which labels are assigned (per cell, per shipped cluster, per sub-cluster) changes the percentages of the small categories; the team should not default to the 20 precomputed clusters.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-5dbd66f9f392"
+      }
+    },
+    {
+      "text": "Dendritic cells are a small share of PBMCs and overlap transcriptionally with monocytes (cDC2 and CD14-positive DC3 versus classical monocytes), while pDCs carry GZMB and can be pulled toward B/plasma or NK labels. Because the true DC share is small, a few dozen misassigned cells change the Dendritic_cells percentage by a large relative amount. Check: sub-cluster the myeloid compartment and score monocyte markers (CD14, S100A8/S100A9, VCAN, C5AR1, FCAR; FCGR3A for non-classical) against cDC markers (FCER1A, CD1C, CLEC10A, HLA-DQA1; CLEC9A, XCR1 for cDC1) and pDC markers (CLEC4C, LILRA4, IL3RA, TCF4); count how many cells each method calls DC or pDC and whether they form coherent sub-clusters. Assign DC versus monocyte at sub-cluster level from these markers rather than from coarse clusters or raw per-cell votes, and report the DC percentage together with the cell count behind it.",
+      "from": [
+        "sl-sc-test-54d13da9988c"
+      ],
+      "reason": "Dendritic_cells is the smallest and most error-prone of the five numbers; this gives the team the specific marker test that separates DCs from monocytes and pDCs from B/NK.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ddd9b69e3391"
+      }
+    },
+    {
+      "text": "NK cells and cytotoxic T cells (effector-memory CD8, gamma-delta T, MAIT) share the cytotoxic programme (NKG7, GNLY, GZMB, PRF1, KLRD1, CST7), and some CD8 TEM and gamma-delta T cells are KLRF1-positive, so label transfer can move cells between NK_cells and T_cells in either direction. NK cells also express CD3E, so CD3E alone does not prove T identity. Check: within cells called NK, look for CD3D, CD3G, TRAC, CD8A/CD8B, and TRDC with TRGC1/TRGC2; within cells called cytotoxic CD8 / gamma-delta / MAIT, look for CD3D/CD3G-negative cells with KLRF1, NCAM1, FCGR3A, TYROBP, FCER1G; sub-cluster the cytotoxic lymphocyte compartment on its own, and check MKI67-positive 'cycling NK' calls for CD3D. If misassignment is found, reassign at sub-cluster level using CD3D/CD3G/TRAC/TRDC (T) versus their absence plus KLRF1/NCAM1 (NK), and report how much the NK and T percentages move.",
+      "from": [
+        "sl-sc-test-b1ffe442cd88"
+      ],
+      "reason": "The NK/T boundary is the main place where cells shift between two of the requested categories; the team needs the right discriminating genes (not CD3E or the shared cytotoxic genes) to place it.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-a6a5da5a0b8a"
+      }
+    },
+    {
+      "text": "Prediction-score thresholds are not a validated filter. The Seurat/Azimuth developers recommend no fixed cut-off, and a low score often only means the vote is split between two subtypes of the same lineage (for example two CD4 memory subtypes). Discarding low-score cells or relabelling them 'unknown' therefore removes real T cells and distorts the five broad percentages. Check: sum the prediction probabilities across fine labels within each of the five broad categories before judging confidence; look at the score distribution per predicted type and at which broad category the low-score cells fall into. Score confidence at the broad five-category level, keep cells whose ambiguity lies within one category, and reserve 'other' for cells that are ambiguous between categories or poorly represented by the reference.",
+      "from": [
+        "sl-sc-test-9645446d4f72"
+      ],
+      "reason": "Stops the team from applying a fine-label confidence cut-off that would wrongly move real cells (mostly T cells) out of the five categories and lower the reported percentages.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-96ffe08e0e1e"
+      }
+    },
+    {
+      "text": "Heterotypic doublets and cell-cell complexes (T cell-monocyte, B-T, platelet-leukocyte aggregates) survive standard filtering in blood data, can form their own clusters with mixed-lineage expression, and are forced into one lineage by label transfer. Doublet callers miss a sizeable fraction, and removing cells changes the denominator of every percentage. Check: run a doublet caller per sample (Scrublet or scDblFinder) and look for clusters with high total counts co-expressing CD3D with LYZ/CD14, MS4A1/CD79A with CD3D, or PPBP/PF4 with a leukocyte lineage. Do not silently drop cells: compute the five percentages both with suspect cells kept in the denominator as 'other' and with them removed, state which is reported, and prefer keeping the denominator at all supplied query cells, since the query is already QC-filtered.",
+      "from": [
+        "sl-sc-test-4ce97eaf9f2c"
+      ],
+      "reason": "Whether the team filters cells before counting changes the denominator of all five percentages; this tells them to keep the supplied cell set as the denominator and to quantify the effect of any suspect cluster instead of dropping it.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-dd6a938cf971"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "sc31-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the two teams did not use the same denominator. You renormalised over the five categories; the other team reported each category as a share of all supplied query cells and left cells called platelet, erythrocyte or stem cell as a residual, so its five numbers do not sum to 100. Read the task sentence 'Report the percentage of cells belonging to each of the following five categories' again and write down which words support your reading and which would count against it. Does that change your method?",
+      "from": [
+        "sl-sc-test-f68deab63c3d",
+        "sl-sc-test-7b6791a1744f"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-16fa7fe0cd09"
+    },
+    {
+      "to": "sc31-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: you settled the identity of the largest query cluster (NKG7/GNLY positive) from TRDC and CD3E and from the transferred label. The library holds a note that NK cells also express CD3E, so CD3E alone does not prove T identity, and that label transfer moves cells between NK and cytotoxic T labels in either direction. Check in that cluster, and in every other cytotoxic cluster: CD3D, CD3G, TRAC, CD8A/CD8B, TRGC1/TRGC2 on one side, and KLRF1, NCAM1, FCGR3A, TYROBP, FCER1G on the other. Is the cluster uniform, or does it split when the cytotoxic lymphocytes are clustered on their own? Do the reference cells carrying the label your transfer assigned show the same marker pattern as this cluster? Is the share of query cells that this label takes plausible for blood? Does any of this change your method?",
+      "from": [
+        "sl-sc-test-2cc8f8839312",
+        "sl-sc-test-b1ffe442cd88"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-3762d8b165b8"
+    },
+    {
+      "to": "sc31-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team compared quality measures between the two files and saw that the reference and the query do not look like the same platform: the range of raw counts per gene and the ribosomal and mitochondrial shares differ clearly between them. You fitted the PCA on the reference and projected the query into it. Check whether that holds in your data, and whether the query cells sit inside the reference cloud in your PCA or are shifted as a block. Which of your fine labels change, and for how many cells, if the platform offset is handled in a different way? Does that change your method?",
+      "from": [
+        "sl-sc-test-7b6791a1744f",
+        "sl-sc-test-d2889c93b9b5"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-0a7b6f80c0b7"
+    },
+    {
+      "to": "sc31-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: you flagged one cluster with both T and monocyte markers. The other team, working with finer sub-clusters, saw two further groups that look like mixed-lineage cells with raised total counts: one with B-cell and T-cell markers together and one with B-cell and monocyte markers together. It also saw that per-cell dendritic calls scattered inside monocyte clusters outnumber the cells in coherent dendritic sub-clusters. Check whether these groups exist inside your B-cell and monocyte clusters, how many cells they hold, and whether their total counts and genes detected set them apart. Which categories do your cell-level calls give them? Does that change your method or your stated uncertainty?",
+      "from": [
+        "sl-sc-test-5420963b490c",
+        "sl-sc-test-2151fcb61b28"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-c7d24fcd2e53"
+    },
+    {
+      "to": "sc31-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team worked with the precomputed Seurat clusters of the query and saw that the largest of them is a single cytotoxic cluster expressing NKG7/GNLY together with TRDC and CD3E, where the NK versus T decision for the whole cluster rests on few genes. Your notes describe only a small sub-cluster with mixed NK and TRDC+ T calls. Check how your per-cell labels divide the cells of that largest precomputed cluster, and what CD3D, CD3G, TRAC, TRGC1/TRGC2 versus KLRF1, NCAM1, FCGR3A, TYROBP, FCER1G show there. Do your logistic regression, your kNN and your sub-cluster markers agree on it, cell by cell? Does that change your method?",
+      "from": [
+        "sl-sc-test-2cc8f8839312",
+        "sl-sc-test-b1ffe442cd88"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-57401a964c6f"
+    },
+    {
+      "to": "sc31-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: you z-scored each dataset with its own statistics, and your reference subsample was class-balanced while the query is not. The other team did not scale the query separately. A per-dataset z-score depends on the cell-type mix of that dataset. Check whether your labels, above all at the NK / cytotoxic T boundary and for dendritic cells, stay the same when the query is scaled with reference statistics, or when the reference subsample used for scaling has a composition close to the query's. How many cells change category? Does that change your method?",
+      "from": [
+        "sl-sc-test-7b6791a1744f",
+        "sl-sc-test-d2889c93b9b5"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-e97ff279055c"
+    },
+    {
+      "to": "sc31-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team saw a precomputed cluster that expresses T-cell and monocyte markers together, and found that labelling it as a whole and labelling it cell by cell put it in different categories. You recorded a low-count group mixing monocyte and T calls but did not include it in your doublet sensitivity. Check what that group is (two lineages in one cell, ambient RNA, or low-quality cells) from its counts, genes detected and marker co-expression, and how much your categories move under each way of labelling it. The other team also saw low LYZ in the monocyte clusters and checked that proportions are consistent across the four query samples. Do those two observations hold in your data? Does any of this change your method?",
+      "from": [
+        "sl-sc-test-2151fcb61b28",
+        "sl-sc-test-5420963b490c"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-94d3ff9aa277"
+    },
+    {
+      "to": "sc31-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the two teams did not use the same denominator. You divided by all supplied query cells and left a residual outside the five categories; the other team read the task as asking for shares among the five named categories. Read the task sentence 'Report the percentage of cells belonging to each of the following five categories' again and write down which words support your reading and which would count against it. Does that change your method?",
+      "from": [
+        "sl-sc-test-f68deab63c3d",
+        "sl-sc-test-d2889c93b9b5"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-3d94e5227e42"
+    }
+  ],
+  "warning_signs_to_team_c": [],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": {
+    "difference": "Both use logistic-regression label transfer and agree on T/NK/Mono within 0.4 pt. They differ mainly on B_cells (X 20.35, Y 19.61, a gap of about 75 cells after allowing for the denominator: X renormalises over the five categories, Y divides by all cells) and on DC (X 1.60, Y 1.45; Y moved 24 CD14/FCN1+ DC calls to Monocytes and settled NK vs T by sub-clustering).",
+    "test": "code/test.py: a reference-free count from raw query counts. For each cell, count how many of 7 B-lineage genes are detected (CD79A, CD79B, MS4A1, CD19, BANK1, IGHM, CD22). Measure that B-program in the B Seurat clusters (1, 6, 13) and plasma cluster 19 (JCHAIN/MZB1+) against the background rate in all other clusters, then estimate the true B fraction. The same is done for DC with DC genes (FCER1A, CD1C, CLEC10A, LILRA4, ...). code/calib.py checks the gene panel on the reference labels (TPR 0.85, FPR 0.0025 at >=3 genes).",
+    "expected_if_x": "About 2370 B-lineage cells (about 20.3% of all cells), i.e. about 70+ B-program cells beyond the B and plasma clusters, at a rate clearly above background.",
+    "expected_if_y": "About 2290-2300 B cells (about 19.6%): B clusters plus plasma cells, with B-program cells outside them only at background rate.",
+    "outcome": "B clusters 1+6+13 = 2273 cells, plus plasma cluster 19 = 27, gives 2300 (19.67% of all cells, 19.74% renormalised). Inside the B clusters, 96.9% of cells show the B program (>=3 genes); elsewhere only 1.35% do, which is background spread across all clusters. The mixture-corrected estimate is (0.1992-0.0135)/(0.969-0.0135) = 19.4%. Both point to about 19.5-19.7, which matches Y and is below X's 20.35. For DC, the coherent DC clusters 17+18 hold 129 cells (1.10%). Y (1.45) is closer than X (1.60), though both are above that.",
+    "pick": "Y",
+    "reason": "The marker-based count, with sensitivity and background measured within the query, reproduces Y's B fraction. X's extra ~75 B calls have no B-program support above background. Y's DC value is also nearer the coherent DC clusters. T/NK/Mono do not differ meaningfully.",
+    "own_answer": null,
+    "picked_agent": "sc31-team-a",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "sc31-team-b",
+      "Y": "sc31-team-a"
+    }
+  },
+  "research": [
+    {
+      "round": "questions",
+      "questions": [
+        {
+          "question": "In human peripheral blood scRNA-seq, are TRDC and CD3E transcripts detected in NK cells as well as in gamma-delta T cells, and which transcripts are regarded as reliable for separating gamma-delta T cells from NK cells (for example CD3D, CD3G, TRGC1/TRGC2, TRDV genes versus KLRF1, NCAM1, FCER1G, TYROBP)?",
+          "why": "One team decided the identity of a large cytotoxic cluster from TRDC and CD3E; if NK cells express both transcripts, that evidence does not separate the two lineages and both the T-cell and NK-cell shares depend on it.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "What are the typical ranges of NK cells and of gamma-delta T cells as a fraction of healthy adult human PBMC, as measured by flow cytometry or large scRNA-seq atlases?",
+          "why": "It gives both teams a plausibility check on how many cells their transfer assigns to the gamma-delta T label versus the NK label, without relying on either team's classifier.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When transferring cell-type labels between scRNA-seq platforms with a linear classifier such as logistic regression (as in CellTypist or similar tools), how is the query scaled by default (with reference statistics or its own), and is z-scoring reference and query separately known to bias labels when the two datasets differ in cell-type composition?",
+          "why": "The teams handled the platform offset differently (separate z-scoring versus projection into a reference-fitted PCA without separate scaling), and this choice can move cells across the NK/T and monocyte/DC boundaries.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In human peripheral blood scRNA-seq, are TRDC and CD3E transcripts detected in NK cells as well as in gamma-delta T cells, and which transcripts are regarded as reliable for separating gamma-delta T cells from NK cells?",
+          "answer": "Yes. NK cells express both transcripts, so TRDC plus CD3E cannot separate gdT from NK. The Human Protein Atlas classes TRDC immune-cell RNA as 'Group enriched (gdT-cell, NK-cell)' and its single-cell cluster as NK & T cells. In mouse, germline (unrearranged) Tcrd transcription occurs in all maturing NK cells. NK cells also express CD3E mRNA (Allen Immune Health Atlas, already in memory). More reliable for T identity: CD3D and CD3G, plus the TCR genes TRGC1/TRGC2, TRDV1/TRDV2 and TRGV9. NK identity rests on their absence plus KLRF1, NCAM1, FCER1G, TYROBP, FCGR3A and NCR1. Pizzolato et al. found that Vd1 gdT cells resemble NK cells and Vd2 cells resemble CD8 T cells, and that the gdT cluster only separated at higher clustering resolution (1.2). The call is therefore best made at sub-cluster level.",
+          "sources": [
+            "https://www.proteinatlas.org/ENSG00000211829-TRDC",
+            "https://onlinelibrary.wiley.com/doi/10.1002/eji.200737354",
+            "https://www.pnas.org/doi/full/10.1073/pnas.1818488116",
+            "https://apps.allenimmunology.org/aifi/resources/imm-health-atlas/cell-type-descriptions/cd8-t-cells-gdt-cells-and-mait-cells/"
+          ],
+          "confidence": "high that TRDC/CD3E are not discriminating; medium on the exact best marker panel",
+          "deliveries": {
+            "sc31-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-57d8d5499f0e"
+            },
+            "sc31-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-99aeeb64eabb"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In human peripheral blood scRNA-seq, are TRDC and CD3E transcripts detected in NK cells as well as in gamma-delta T cells, and which transcripts are regarded as reliable for separating gamma-delta T cells from NK cells? ANSWER: Yes. NK cells express both transcripts, so TRDC plus CD3E cannot separate gdT from NK. The Human Protein Atlas classes TRDC immune-cell RNA as 'Group enriched (gdT-cell, NK-cell)' and its single-cell cluster as NK & T cells. In mouse, germline (unrearranged) Tcrd transcription occurs in all maturing NK cells. NK cells also express CD3E mRNA (Allen Immune Health Atlas, already in memory). More reliable for T identity: CD3D and CD3G, plus the TCR genes TRGC1/TRGC2, TRDV1/TRDV2 and TRGV9. NK identity rests on their absence plus KLRF1, NCAM1, FCER1G, TYROBP, FCGR3A and NCR1. Pizzolato et al. found that Vd1 gdT cells resemble NK cells and Vd2 cells resemble CD8 T cells, and that the gdT cluster only separated at higher clustering resolution (1.2). The call is therefore best made at sub-cluster level. HOW SURE: high that TRDC/CD3E are not discriminating; medium on the exact best marker panel. SOURCES: https://www.proteinatlas.org/ENSG00000211829-TRDC, https://onlinelibrary.wiley.com/doi/10.1002/eji.200737354, https://www.pnas.org/doi/full/10.1073/pnas.1818488116, https://apps.allenimmunology.org/aifi/resources/imm-health-atlas/cell-type-descriptions/cd8-t-cells-gdt-cells-and-mait-cells/."
+        },
+        {
+          "question": "What are the typical ranges of NK cells and of gamma-delta T cells as a fraction of healthy adult human PBMC, as measured by flow cytometry or large scRNA-seq atlases?",
+          "answer": "Gamma-delta T cells are about 5% of adult blood T cells and about 1% of PBMC. A flow reference range from 238 Brazilian adults gives TCRgd at 1.0-15.9% of lymphocytes. The same study gives total NK cells at 3.7-28.5% of lymphocytes, with CD3+ at 51.3-83.5% and CD19+ at 6.3-20.8%. Because PBMC also contain monocytes, NK cells are usually about 5-20% of PBMC; this PBMC figure is my inference from the lymphocyte-based ranges. I did not read a large scRNA-seq atlas for these numbers.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC7140678/",
+            "https://lbmms.paginas.ufsc.br/files/2017/09/1-s2.0-S0165247814002570-main.pdf",
+            "https://www.pnas.org/doi/full/10.1073/pnas.1818488116"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc31-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-d08b1d7bfbe8"
+            },
+            "sc31-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-cde06e8053d7"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What are the typical ranges of NK cells and of gamma-delta T cells as a fraction of healthy adult human PBMC, as measured by flow cytometry or large scRNA-seq atlases? ANSWER: Gamma-delta T cells are about 5% of adult blood T cells and about 1% of PBMC. A flow reference range from 238 Brazilian adults gives TCRgd at 1.0-15.9% of lymphocytes. The same study gives total NK cells at 3.7-28.5% of lymphocytes, with CD3+ at 51.3-83.5% and CD19+ at 6.3-20.8%. Because PBMC also contain monocytes, NK cells are usually about 5-20% of PBMC; this PBMC figure is my inference from the lymphocyte-based ranges. I did not read a large scRNA-seq atlas for these numbers. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC7140678/, https://lbmms.paginas.ufsc.br/files/2017/09/1-s2.0-S0165247814002570-main.pdf, https://www.pnas.org/doi/full/10.1073/pnas.1818488116."
+        },
+        {
+          "question": "When transferring cell-type labels between scRNA-seq platforms with a linear classifier such as logistic regression (as in CellTypist or similar tools), how is the query scaled by default (with reference statistics or its own), and is z-scoring reference and query separately known to bias labels when the two datasets differ in cell-type composition?",
+          "answer": "CellTypist scales the query with the reference's statistics. The model bundles a StandardScaler fitted on the training data. At prediction it computes (query - scaler.mean_) / scaler.scale_ per gene and clips values above 10, so the query must be log1p of counts normalised to 10,000 per cell. Seurat FindTransferAnchors (default pcaproject) fits PCA on the reference and projects the query onto it, with a scale=TRUE option for the query. The pages I read do not say whether Seurat uses query or reference statistics for that scaling. On bias, the web did not settle it: no source I read shows that separate z-scoring biases labels under composition differences. By reasoning only, per-dataset z-scoring centres each dataset on its own composition-weighted gene means. When cell-type mixes differ, that shifts the query relative to the reference and can move borderline cells, such as NK/T or monocyte/DC. Treat this as an unverified inference.",
+          "sources": [
+            "https://github.com/Teichlab/celltypist/issues/29",
+            "https://github.com/Teichlab/celltypist/issues/138",
+            "https://github.com/Teichlab/celltypist",
+            "https://satijalab.org/seurat/reference/findtransferanchors"
+          ],
+          "confidence": "high for CellTypist default; low for the bias claim (not settled by sources)",
+          "deliveries": {
+            "sc31-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-cdd0a351df8b"
+            },
+            "sc31-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-b431e5da5212"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When transferring cell-type labels between scRNA-seq platforms with a linear classifier such as logistic regression (as in CellTypist or similar tools), how is the query scaled by default (with reference statistics or its own), and is z-scoring reference and query separately known to bias labels when the two datasets differ in cell-type composition? ANSWER: CellTypist scales the query with the reference's statistics. The model bundles a StandardScaler fitted on the training data. At prediction it computes (query - scaler.mean_) / scaler.scale_ per gene and clips values above 10, so the query must be log1p of counts normalised to 10,000 per cell. Seurat FindTransferAnchors (default pcaproject) fits PCA on the reference and projects the query onto it, with a scale=TRUE option for the query. The pages I read do not say whether Seurat uses query or reference statistics for that scaling. On bias, the web did not settle it: no source I read shows that separate z-scoring biases labels under composition differences. By reasoning only, per-dataset z-scoring centres each dataset on its own composition-weighted gene means. When cell-type mixes differ, that shifts the query relative to the reference and can move borderline cells, such as NK/T or monocyte/DC. Treat this as an unverified inference. HOW SURE: high for CellTypist default; low for the bias claim (not settled by sources). SOURCES: https://github.com/Teichlab/celltypist/issues/29, https://github.com/Teichlab/celltypist/issues/138, https://github.com/Teichlab/celltypist, https://satijalab.org/seurat/reference/findtransferanchors."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc31-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "sc31-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "sc31-team-b",
+      "round": "revise",
+      "reason": "the referee's test supported the other answer: The marker-based count, with sensitivity and background measured within the query, reproduces Y's B fraction. X's extra ~75 B calls have no B-program support above background. Y's DC value is also nearer the coherent DC clusters. T/NK/Mono do not differ meaningfully."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc31-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 43.5390435840236,
+      "cost_usd": 0.1575464,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 95.39483370806556,
+      "cost_usd": 0.16195130000000002,
+      "error": null
+    },
+    {
+      "agent": "sc31-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 115.06455875001848,
+      "cost_usd": 0.3040246,
+      "error": null
+    },
+    {
+      "agent": "sc31-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 444.88750095805153,
+      "cost_usd": 0.4864026,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 91.1238672080217,
+      "cost_usd": 0.21652240000000003,
+      "error": null
+    },
+    {
+      "agent": "sc31-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 129.599740540958,
+      "cost_usd": 0.5881413999999999,
+      "error": null
+    },
+    {
+      "agent": "sc31-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 182.50251566700172,
+      "cost_usd": 0.5648606,
+      "error": null
+    },
+    {
+      "agent": "sc31-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 327.3468137079617,
+      "cost_usd": 0.7213419999999999,
+      "error": null
+    },
+    {
+      "agent": "sc31-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 100.40006229199935,
+      "cost_usd": 0.2997398,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

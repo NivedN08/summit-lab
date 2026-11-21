@@ -1,0 +1,510 @@
+{
+  "study": "bd37",
+  "status": "refereed",
+  "final": {
+    "agent": "bd37-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd37/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd37-library": "fable",
+    "bd37-team-a": "fable",
+    "bd37-team-b": "fable",
+    "bd37-team-c": "fable",
+    "bd37-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "bd37-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd37/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd37-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd37/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd37-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd37/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd37-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd37/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd37-team-a",
+        "bd37-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd37-team-a",
+        "bd37-team-b"
+      ],
+      "fields": {
+        "label": false
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Which variables represent the two sides of the hypothesis. In DLBCL the 'current established methods' for prognosis are the IPI family (IPI, R-IPI, NCCN-IPI), cell-of-origin (GCB vs ABC), and MYC/BCL2(/BCL6) rearrangement (double-hit) or double-expressor status. The library, reading only the file headers, reports that this dataset has an IPI total plus its five component flags (IPI_ECOG, IPI_ANNARBOR_STAGE, IPI_LDH, IPI_EXTRANODAL_SITES, IPI_AGE), MYC/BCL2/BCL6 FISH status columns (MYC_FISH, BCL2_FISH_STATUS, BCL6_FISH_STATUS), overall survival (OS_MONTHS, OS_STATUS), and the study's own genomic risk label (PROGNOSTIC_MODEL in data_clinical_sample.txt, 'Genomic Risk Model Classification'), but no cell-of-origin or expression column. Confirm all of this yourself. List which comparators are present and how complete each is (FISH columns may be sparsely filled). Suggested design: IPI as the primary comparator, kept at full resolution; FISH/double-hit as a secondary comparator on its own complete subset; state plainly that cell-of-origin could not be compared. The absence of one comparator does not by itself make the claim untestable, and choosing a weak or partial comparator distorts the verdict. Do not use raw mutation counts or TMB as a stand-in for 'the genetic alterations identified' if the study's own genomic risk label is provided.",
+      "from": [
+        "sl-biodsa-test-5b437493eea2"
+      ],
+      "reason": "Decides whether the task is testable at all and which columns are compared; a wrong comparator or a wrong proxy for the study's genetic model changes the label.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-be3a85cdbaa0"
+      }
+    },
+    {
+      "text": "What counts as evidence of 'outperforms'. A significant log-rank p or large hazard ratio for the genomic risk groups shows only that they are prognostic, not that they beat an established method; p-values and hazard ratios from classifiers with different group sizes and cut-points are not comparable. Two separately computed Harrell C-indices are also a weak basis: C is insensitive for model comparison, the two C's come from the same patients and are correlated, so comparing separate confidence intervals is not a valid test. Do a head-to-head on the identical patients: (a) Cox models with IPI only, genomic risk only, and both; report the likelihood-ratio chi-square of each term given the other (genomic | IPI and IPI | genomic) and the AIC of the two single-predictor models; (b) a paired bootstrap CI for the difference in C (resample patients, recompute both, take the difference); (c) genomic groups within each IPI stratum and IPI groups within each genomic stratum (stratified log-rank or stratified Cox); (d) absolute spread of 2- and 5-year OS between best and worst group for each system and the share of patients in the extreme groups. 'Genomic adds significantly to IPI' is complementary value, not superiority, unless the reverse test (IPI adds to genomic) and the head-to-head measures also favour the genomic model.",
+      "from": [
+        "sl-biodsa-test-d0066a6902c4",
+        "sl-biodsa-test-864940c43ca0"
+      ],
+      "reason": "The hypothesis is a comparative claim; the most likely error is to answer it with a one-sided significance test, which would decide the label on the wrong evidence.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-0f52686e9cb7"
+      }
+    },
+    {
+      "text": "Compare the models on the same patients. IPI (and its five component columns), the PROGNOSTIC_MODEL label, and OS_MONTHS/OS_STATUS may each be missing for different subsets of the cohort, so per-model 'available case' statistics are not comparable and complete cases may not be a random subset. Count non-missing values for each variable and for their intersection; compare survival and genomic-risk distribution between patients with and without IPI; check whether IPI can be recomputed from the five component flags when the total is blank. Run every head-to-head metric on the identical intersection set, report its n and number of deaths, and add a sensitivity analysis (genomic model on all patients vs on the IPI-complete subset) to show the conclusion does not depend on who has IPI.",
+      "from": [
+        "sl-biodsa-test-5b7460af8ed1"
+      ],
+      "reason": "Differential missingness can manufacture or hide a difference between the two models; fixing the analysis set changes every reported number.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-1132608a3132"
+      }
+    },
+    {
+      "text": "Encoding traps that silently invert the metric. lifelines.utils.concordance_index(event_times, predicted_scores, event_observed) assumes a HIGHER score means LONGER survival, so a risk score (IPI 0-5, or Low<Medium<High) must be negated or the function returns 1-C; scikit-survival's concordance_index_censored assumes higher = higher risk. OS_STATUS is a string of the form '0:LIVING'/'1:DECEASED' and must be parsed into an event indicator (event = 1 for DECEASED). Risk labels are text and sort alphabetically (High<Low<Medium) unless mapped explicitly to an ordered scale. The sample file also has a separate CENSORED column whose description ('True or False') reportedly does not match its values: cross-tabulate it against OS_STATUS before using either. Sanity checks: KM curves should order from lowest-risk group best to highest-risk group worst, and the IPI C-index should be above 0.5 (the library cites roughly 0.63 as a published value for OS in R-CHOP-treated cohorts). A C below 0.5 for either model indicates a coding bug, not a finding.",
+      "from": [
+        "sl-biodsa-test-262ac1e57160"
+      ],
+      "reason": "A direction or parsing error would flip which model looks better and therefore flip the label.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-10009dd567fe"
+      }
+    },
+    {
+      "text": "Granularity and ties affect the comparison. Discrimination measures depend on the number of distinct levels of a score: a genomic risk group with a few levels and an IPI coded 0-5 (or as 4 groups: 0-1 low, 2 low-intermediate, 3 high-intermediate, 4-5 high; or R-IPI: 0, 1-2, 3-5) yield very different numbers of tied pairs, and software differs on whether tied scores count 0.5 or are dropped, so the C-index ranking can flip with the coding choice. Tabulate the levels of PROGNOSTIC_MODEL and IPI; compute concordance with a stated tie rule (ties = 0.5) for IPI as 0-5, as 4 groups and as 3 groups against the genomic score; also compare by Cox LR chi-square with each entered as a categorical factor, penalising degrees of freedom with AIC. Report the comparison at matched granularity and at the comparator's native granularity, require a consistent result across codings before calling either model superior, and never weaken the comparator by dichotomising IPI.",
+      "from": [
+        "sl-biodsa-test-691e785c7f7a"
+      ],
+      "reason": "The result of the head-to-head can depend on an arbitrary coding choice; the team needs to know to test more than one coding.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-78661bda5af0"
+      }
+    },
+    {
+      "text": "Optimism of a model evaluated on the cohort it was built on. The library judges it very likely (not confirmed) that the study's genomic risk grouping (PROGNOSTIC_MODEL) was fitted on this same cohort using its survival outcome, whereas the IPI was defined externally; scoring both here would then give the genomic model a resubstitution advantage in C-index, KM separation and hazard ratios. Look for any train/validation split flag (none was visible in the headers), quantify the size of the genomic-vs-IPI margin and whether it survives a paired bootstrap CI, state the optimism caveat explicitly, and weigh the size and robustness of the margin rather than resubstitution statistics alone. If you build a genetic predictor yourself from data_mutations.txt / data_log2_cna.txt, the same problem is stronger: many gene indicators fitted and scored on the same patients can separate KM curves from pure noise. In that case put every step (gene selection, weights, cut-points, tuning) inside cross-validation folds, score only out-of-fold predictions, compare that out-of-fold score with IPI on the same patients, and treat the supplied PROGNOSTIC_MODEL column as the primary representation of the study's model. Also: a mutation file lists only mutated calls, so a sample with no row for a gene is wild-type only if it was profiled (check data_gene_panel_matrix.txt and the overlap of sample IDs across the clinical, gene-panel, mutation and CNA files); patients absent from the mutation or CNA tables must not be treated as wild-type.",
+      "from": [
+        "sl-biodsa-test-73850cd18204",
+        "sl-biodsa-test-2099dfd71305"
+      ],
+      "reason": "Affects how much weight an apparent advantage of the genetic model deserves, and prevents an overfitted self-built model from being used as evidence.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-b01d934e5168"
+      }
+    },
+    {
+      "text": "Check the quality of the risk groups, not just a summary statistic. A risk-group system can show a large hazard ratio or a wide best-vs-worst survival gap while being a poor classification because its extreme groups are tiny, its groups are not monotonically ordered, or its predicted survival is inaccurate. For both the genomic groups and the IPI groups, on the same patients: tabulate group sizes and deaths per group, confirm the KM curves are ordered at 2 and 5 years (with CIs), and compute an overall-accuracy measure for each system (IPCW Brier score at 2 and 5 years or integrated Brier score, expressed relative to the pooled KM) in addition to discrimination. Do not credit a system for separation that comes from a group holding only a few percent of patients or from adjacent groups that do not differ; report disagreement between discrimination and overall accuracy as mixed evidence.",
+      "from": [
+        "sl-biodsa-test-9961513388ee"
+      ],
+      "reason": "Adds a second, independent criterion (group size, ordering, accuracy) that can contradict a discrimination-only comparison and so change the conclusion.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-26ea693d3753"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams took the supplied PROGNOSTIC_MODEL class as the primary stand-in for 'the genetic alterations identified in the study', although team B found it is only partly reproducible from the mutation and CNA tables and neither team tested what else it encodes (association with IPI components, age, FISH, purity, treatment response).",
+      "Both teams treated overall survival as the only meaning of 'prognosis' and compared on the 618 complete cases; neither used any other outcome column.",
+      "Both teams read a point-estimate advantage on likelihood/AIC and long-horizon measures as enough for 'outperforms', although every paired bootstrap interval includes zero and the short-horizon measures point the other way. Neither wrote down beforehand which pattern of results maps to which label.",
+      "Both teams' optimism check is the same model family (ridge Cox on all gene-level features, 5-fold); both assumed its out-of-fold failure says something about the supplied class, and neither checked the feature construction against the quality flags in the mutation table.",
+      "Both assumed the 248 patients without a genomic class are missing at random because their survival does not differ; neither asked why 209 patients with survival data have no class, or used them."
+    ],
+    "unused_evidence": [
+      "INITIAL_TX_RESPONSE (complete/partial/no response, filled for 922 of 1001) and CNS_RELAPSE (filled for 403): outcome columns that neither team used as an endpoint or as a check on what the genomic class tracks.",
+      "The 209 patients who have OS but no PROGNOSTIC_MODEL (138 of them also have IPI): their missingness is not explained by missing IPI, response, FISH or purity. They were used only for a survival-by-missingness log-rank, not as patients on whom the class's genetic content could be scored without having been labelled.",
+      "data_mutations.txt columns observed_in_TN_pair (1 for 4159 rows, 0 for 2946) and Variant_Classification (includes Intron 108, 5'UTR 49, 3'UTR 3, Silent 9, Splice_Region 16; no deletions at all): neither team reports filtering on them when building mutation indicators. Hotspot is constant 0 and allele counts are empty, so those carry nothing.",
+      "TUMOR_PURITY (three categories, 52 samples below 30%) and TMB_NONSYNONYMOUS: not used as covariates or strata in either team's own genetic model, although purity limits detection of mutations and shifts log2 copy-number values.",
+      "B_SYMPTOMS_AT_DIAGNOSIS, TESTICULAR_INVOLVEMENT, CNS_STATUS, SEX: clinical baseline columns not used; minor for the head-to-head but relevant to whether the class encodes clinical information.",
+      "The mutation table covers exactly 150 genes and the CNA table 140 of the same genes: the tables themselves look like the study's identified alteration set, which bears on which object the hypothesis is about."
+    ],
+    "unresolved_weak_points": [
+      "Team A: named in-sample optimism of the supplied class as the point that could flip the label; its own check (resubstitution C at or above the class's C, out-of-fold C below IPI) made the worry worse, and the team only lowered confidence. Its plan said a margin not robust to coding or bootstrap would be called 'mixed', the margin was not robust, and 'mixed' was never mapped to one of the three labels.",
+      "Team B: named the same point and added that the class uses information beyond the genetic tables. Its plan said it would then rely on its cross-validated genetics-only model; that condition was met and the team kept the supplied class as primary without saying why the rule was dropped. Reported, not resolved.",
+      "Team B's out-of-fold genetic model sits at chance (0.50-0.535) while 51 of 393 features are univariately associated with survival and team A's similar model reaches 0.57; the gap between a chance-level multivariable score and real univariate signal was not explained, so the 'main counter-evidence' is itself unverified.",
+      "Both: the ranking flips by horizon (IPI ahead at 2-3 years, class ahead at 5 years) and proportional hazards fails for both; neither reported how many deaths and how many patients at risk lie behind the 5-year result."
+    ],
+    "second_readings": [
+      "'The genetic alterations identified in the study' can mean the alterations themselves (the 150-gene mutation and CNA tables) or the study's risk class built partly from them; the two readings are scored by different analyses that the teams found to point in different directions.",
+      "'Prognosis' can mean overall survival, response to initial treatment, or relapse; and for survival, early (most deaths) versus 5-year horizon.",
+      "'Outperform' can mean a higher point estimate on some metrics, or a margin that is statistically robust and holds out of sample.",
+      "'Current established methods' is plural: IPI, FISH rearrangement status and cell of origin. Only IPI is testable at scale here (FISH on 112 with OS, cell of origin absent), so the claim may be read as testable against one comparator only, or against the comparators jointly (class versus IPI plus FISH together)."
+    ],
+    "verdict": "Low trust in the agreed answer: both teams sit at 0.55 confidence, name the same unresolved weak point (the supplied class may be in-sample and partly non-genetic), and their agreement comes from the same choice to score that class rather than from independent evidence. Their own out-of-fold genetic models, the tied C-index, the bootstrap intervals including zero and the short-horizon measures all cut against the label, and several data columns (treatment response, the unlabelled patients with survival, mutation quality flags, purity) were not used to settle it.",
+    "questions": [
+      {
+        "to": "bd37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your weakest point (in-sample optimism of the supplied class) was reported, not resolved. 209 patients have OS but no PROGNOSTIC_MODEL, and 138 of them also have IPI; missing IPI, response, FISH or purity does not explain why they are unlabelled. Run this check: (a) describe how these 209 differ from the 753 labelled patients on what the tables hold (number of mutation rows, the samples with no mutation row, CNA spread, purity, TMB, position in the file); (b) train a classifier of the supplied class from the mutation and CNA tables using labelled patients only and no survival data, apply it to the unlabelled patients, and compare its predicted class with IPI for OS on those patients, with the interval. State what this check can and cannot show at that sample size. Does the result change which analysis your label rests on?",
+        "from": [
+          "sl-biodsa-test-d01ba0b440fa"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-e5224b7458d1"
+      },
+      {
+        "to": "bd37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You treated the supplied class as the representation of 'the genetic alterations identified', but did not test what it encodes. Run this check on the labelled patients: (a) cross-tabulate the class against each IPI component, age, FISH status, purity category and INITIAL_TX_RESPONSE; (b) split the class into the part predictable out-of-fold from the mutation and CNA tables and the remainder, enter both in one Cox model for OS, and report which part carries the prognostic information, with and without IPI in the model; (c) when you build mutation indicators, say whether the result moves if you keep only protein-altering classes and only rows with observed_in_TN_pair = 1. Given (a)-(c), is the class's performance attributable to the genetic alterations in the tables, and does that change your method?",
+        "from": [
+          "sl-biodsa-test-a02a9d840fb9"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-fef53c14f4c3"
+      },
+      {
+        "to": "bd37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You scored 'prognosis' only as overall survival and found the ranking differs between 2 and 5 years. Two checks: (a) report how many of the 185 deaths fall before 24 months, between 24 and 60, and after 60, and the number still at risk at 60 months in each genomic and each IPI group; then repeat the head-to-head with follow-up censored at 24 and at 60 months; (b) INITIAL_TX_RESPONSE was not used: on the same patients compare the supplied class and IPI for predicting failure to reach complete response. Before reading the results, write down which endpoint and horizon the word 'prognosis' in the hypothesis commits you to. Do the results change how you weigh the metrics?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-96ca4959ae27"
+      },
+      {
+        "to": "bd37-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your plan said that a margin not robust to coding or bootstrap would be called 'mixed'. The margin was not robust, but the task has no 'mixed' label. Write down, for each of the three labels, the pattern of results (which metrics, which intervals, in-sample or out-of-fold, supplied class or your own genetic score) that would have made you choose it; then place your actual results in that table, metric by metric, counting how many favour each side with an interval excluding zero. Does the label you gave follow from a rule you can state, and would the rule have given the same label had you fixed it before seeing the results?",
+        "from": [
+          "sl-biodsa-test-a02a9d840fb9"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-55eb6414f8d7"
+      },
+      {
+        "to": "bd37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your weakest point (the supplied class may be fitted on these patients) was reported, not resolved. 209 patients have OS but no PROGNOSTIC_MODEL, and 138 of them also have IPI; missing IPI, response, FISH or purity does not explain why they are unlabelled. Run this check: (a) describe how these 209 differ from the 753 labelled patients on what the tables hold (number of mutation rows, the 29 samples with no mutation row, CNA spread, purity, TMB, position in the file); (b) take your classifier of the supplied class from the genetic tables (trained on labelled patients only, no survival data), apply it to the unlabelled patients, and compare its predicted class with IPI for OS on those patients, with the interval. State what this check can and cannot show at that sample size. Does the result change which analysis your label rests on?",
+        "from": [
+          "sl-biodsa-test-d369cc5f5540",
+          "sl-biodsa-test-900ef0fab961"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-ac53128d2572"
+      },
+      {
+        "to": "bd37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your plan said you would rely on the cross-validated genetics-only model if the supplied class looked in-sample or drew on non-genetic information. You then found the class uses information beyond the mutation and CNA tables, yet kept it as primary. Run this check: (a) cross-tabulate the class against each IPI component, age, FISH status, purity category and INITIAL_TX_RESPONSE, to see whether it carries clinical or outcome information; (b) enter your out-of-fold predicted class (the part explained by the genetic tables) and the supplied class together in a Cox model for OS and report which carries the prognostic information, with and without IPI. Then say whether your pre-stated rule applies, and if you still set it aside, give the data-based reason.",
+        "from": [
+          "sl-biodsa-test-01a8ec409534",
+          "sl-biodsa-test-900ef0fab961"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-588c39c6c5f2"
+      },
+      {
+        "to": "bd37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You scored 'prognosis' only as overall survival, proportional hazards fails for both systems, and your time-dependent AUC ranks them differently at 24/36 and at 60 months. Two checks: (a) report how many of the 185 deaths fall before 24 months, between 24 and 60, and after 60, and the number still at risk at 60 months in each genomic and each IPI group; then repeat the likelihood comparison with follow-up censored at 24 and at 60 months; (b) INITIAL_TX_RESPONSE was not used: on the same patients compare the supplied class and IPI for predicting failure to reach complete response. Before reading the results, write down which endpoint and horizon the word 'prognosis' commits you to and which pattern of results would lead to each of the three labels. Do the results change how you weigh the metrics?",
+        "from": [
+          "sl-biodsa-test-ff1fc4e96d12",
+          "sl-biodsa-test-b029742dd1f1"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-469645ddbebb"
+      },
+      {
+        "to": "bd37-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You call your genetics-only model the main counter-evidence, but its out-of-fold C is at chance while 51 of 393 features are univariately associated with survival and 8 pass q<0.1; a correctly built score should not usually lose all of that signal. Check the construction: (a) report C per fold as well as pooled, and confirm the direction of the pooled score; (b) rebuild the mutation indicators keeping only protein-altering classes (the file also holds Intron, UTR, Silent and Splice_Region rows) and, separately, only rows with observed_in_TN_pair = 1; (c) add TUMOR_PURITY as a stratum or covariate, since purity affects both mutation detection and log2 copy-number values; (d) score the same out-of-fold predictions on the 618-patient set used for the head-to-head. Does the out-of-fold result stand, and does that change how much weight it gets against the supplied class?",
+        "from": [
+          "sl-biodsa-test-900ef0fab961"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-c11466cac694"
+      }
+    ]
+  },
+  "referee": {
+    "difference": "X and Y use the same rows (618 patients with OS, IPI and the supplied PROGNOSTIC_MODEL genomic class, 185 deaths) and report nearly identical numbers. They differ only in the decision rule: X labels True because the genomic class has a nominally better Cox likelihood/AIC and 5-year Brier/AUC than IPI at 60 months and full follow-up; Y labels False because no paired interval excludes zero in favour of the class, Harrell C is tied or favours IPI, IPI leads at 24 months and for treatment response, and the class's signal is not reproducible from the mutation/CNA tables.",
+    "test": "test.py (output in test_out.txt): on the 618 patients, compared the 3-level genomic class with IPI at matched granularity (IPI collapsed to 3 groups 0-1/2-3/4-5 and to the standard 4 groups 0-1/2/3/4-5, plus raw 0-5) for overall survival censored at 24 months, 60 months and uncensored, using Cox LR chi2, AIC and Harrell C, with a paired patient bootstrap (100 resamples, kept small for the time limit) giving the interval of each difference and P(genomic better). Also a negative control: follow-up length among living patients by class.",
+    "expected_if_x": "If the genomic class truly outperforms IPI, then once IPI's finer 6-level scale is removed the class should lead on both discrimination (C) and fit (LR/AIC) at the 60-month primary horizon, with bootstrap P(genomic better) of about 0.95 or more on at least the primary comparison.",
+    "expected_if_y": "If the edge is only nominal, then at matched granularity C stays tied, the LR/AIC intervals still include zero, and the direction flips with the horizon (IPI ahead early).",
+    "outcome": "Y's pattern. At 60 months, class vs 3-group IPI: C 0.671 vs 0.665 (difference CI -0.04..0.04, P(genomic better)=0.51); LR 82 vs 60 (difference CI -19..58, P=0.83); vs 4-group IPI C 0.671 vs 0.673 (P=0.42), LR P=0.79; vs raw IPI C 0.671 vs 0.683 (P=0.30), LR 82 vs 74 (P=0.60). At 24 months IPI is level or ahead in every coding (C 0.663 vs 0.670/0.676/0.688; LR 55 vs 55/55/73; P(genomic better) 0.06-0.44). Only with uncensored follow-up does the class's LR edge approach security (107 vs 64, CI -6..78, P=0.95 vs 3-group IPI; 0.87-0.94 vs other codings), while C stays tied (0.673 vs 0.664/0.672/0.682, P 0.36-0.59). 5-year OS by group: class 93%/68%/49%; 3-group IPI 84%/64%/45%. Negative control: follow-up among living patients does not differ by class (Kruskal-Wallis p=0.07), so no sign of gross outcome leakage. No interval excludes zero in favour of the genomic class at any horizon or coding.",
+    "pick": "Y",
+    "reason": "The test was built to tell a real advantage from a nominal one: matching IPI's granularity to the class removes the main reason C might understate the class, and the class still does not lead on discrimination (tie) and its likelihood edge is not secure at the 5-year horizon both teams pre-specified (P=0.79-0.83), reverses at 24 months where 128 of 185 deaths occur, and only nears significance when the 17 deaths after 60 months are included. The supplied genomic class is clearly prognostic and comparable to IPI, but the data do not show it outperforming IPI, which is what the hypothesis asserts; the relevant variables exist, so the fitting label is Y's False. Caveats: the bootstrap had only 100 resamples, the full-follow-up likelihood difference is borderline (P=0.95, interval -6..78), and a reader who accepts a nominal in-sample point advantage on long-term OS as 'outperforms' would reach X's True; this is a decision-rule difference and the test supports Y's rule only in the sense that the advantage X relies on is not statistically distinguishable from none.",
+    "own_answer": null,
+    "picked_agent": "bd37-team-a",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "bd37-team-b",
+      "Y": "bd37-team-a"
+    }
+  },
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "What formal tests exist for comparing two non-nested Cox proportional-hazards models fitted to the same patients (for example a Vuong-type or Fine partial-likelihood-ratio test for non-nested Cox models), which R or Python packages implement them, and how do methods papers say an AIC or likelihood-ratio chi-square difference between two non-nested survival models should be interpreted when a paired bootstrap interval for that difference includes zero?",
+          "why": "Both teams lean on a likelihood/AIC advantage whose bootstrap interval crosses zero while concordance is tied; a defined test and its interpretation would tell them whether that pattern counts as one model outperforming the other.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When a categorical risk grouping (three classes) has been derived by supervised selection from on the order of a hundred or more candidate molecular features in a cohort with a few hundred events, and is then scored on that same cohort against an externally defined clinical index, how large is the expected optimism in apparent concordance and likelihood-ratio chi-square, and what estimators can be applied when the candidate-feature count is known but the fitting procedure is not (for example the van Houwelingen-le Cessie heuristic shrinkage factor, Harrell's bootstrap optimism, or permutation of the outcome through a surrogate pipeline)?",
+          "why": "Neither team could quantify how much of the supplied class's edge could be resubstitution optimism; a recognised estimator would turn their named weak point into a number they can set against the observed margin.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In the prognostic-model literature, when two risk systems both violate proportional hazards and their ranking differs between early and late time horizons, which summary measure and which horizon are recommended for deciding which system predicts prognosis better (for example Uno's truncated C, integrated Brier score over a pre-set window, time-dependent AUC at a clinically chosen landmark), and how is the horizon supposed to be chosen relative to when most events occur and to the numbers still at risk?",
+          "why": "Both teams found the comparator ahead at two to three years and the genomic class ahead only at five years, and resolved it by judgement; a stated convention would decide which horizon the comparison should rest on.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "What formal tests exist for comparing two non-nested Cox proportional-hazards models fitted to the same patients (for example a Vuong-type or Fine partial-likelihood-ratio test for non-nested Cox models), which R or Python packages implement them, and how do methods papers say an AIC or likelihood-ratio chi-square difference between two non-nested survival models should be interpreted when a paired bootstrap interval for that difference includes zero?",
+          "answer": "TEST. The defined test is Fine's partial-likelihood-ratio test (Fine 2002, Biometrika 89:635-647), the Cox analogue of Vuong's (1989) non-nested likelihood-ratio test. Its null hypothesis is that the two models are equidistant from the truth in Kullback-Leibler distance applied to the rank (partial) likelihood; neither model has to be correct, and the statistic is consistent for the model closer to the truth. It is a sequential procedure: step 1 is a variance test (H0: the two fitted models are indistinguishable); step 2 is a standard-normal z test of the scaled partial log-likelihood difference, with one-sided alternatives (model 1 fits better / model 2 fits better) and a two-sided p. PACKAGES. R only: the GitHub package thomashielscher/nonnestcox, function plrtest(object1, object2, nested=FALSE, adjusted='none'). Both coxph fits need x=TRUE and y=TRUE and must use identical rows in identical order (the function stops otherwise). adjusted='AIC' subtracts (p1 - p2) from the log-likelihood difference; adjusted='BIC' subtracts log(number of events)/2 * (p1 - p2); the default is no adjustment. CRAN nonnest2 (vuongtest, icci) lists lm, glm, glm.nb, clm, hurdle, zeroinfl, mlogit, nls, polr, rlm, lavaan, vglm, mirt and OpenMx as supported classes, not coxph; pscl::vuong also does not take coxph. The search turned up no Python implementation. INTERPRETATION. Merkle, You and Preacher (2016) state that 'select the model with the lowest' information criterion is problematic because it can never conclude equal fit and the preferred model often changes in new samples; Vuong-type tests allow three conclusions (one model fits better, equal fit, or indistinguishable). The nonnest2 vignette reads a 95% interval for the AIC difference that overlaps zero as 'the model fits are sufficiently close that neither can be preferred over the other'. An accepted CrossValidated answer reads a significant variance test with a non-significant LR test as: the models differ, but neither can be shown to be closer to the truth. So an AIC or LR chi-square advantage whose paired interval includes zero, with concordance tied, is 'fits not distinguishable', not 'one model outperforms the other'. LIMITS. That reading is documented for Vuong-theory intervals, not specifically for a paired bootstrap interval; Merkle et al. note that nonparametric bootstrap procedures did not fully characterise the sampling variability of BIC, so Fine's test is the better-founded check. I read only the abstract of Fine's paper (full text not retrieved) plus the plrtest source code; I found no survival-specific methods paper on bootstrap intervals for AIC differences.",
+          "sources": [
+            "https://doi.org/10.1093/biomet/89.3.635",
+            "https://github.com/thomashielscher/nonnestcox/",
+            "https://raw.githubusercontent.com/thomashielscher/nonnestcox/master/R/plrtest.R",
+            "https://cran.r-project.org/web/packages/nonnest2/nonnest2.pdf",
+            "https://cran.r-project.org/web/packages/nonnest2/vignettes/nonnest2.pdf",
+            "https://arxiv.org/abs/1402.6720",
+            "https://stats.stackexchange.com/questions/484649/comparing-non-nested-cox-models-aic-partial-likelihood-test",
+            "https://stats.stackexchange.com/questions/310925/compare-non-nested-cox-models"
+          ],
+          "confidence": "high for the test and its R implementation; medium for the interpretation of a bootstrap interval that includes zero (by analogy with Vuong-theory intervals)",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-7b05d05d9c71"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-2b1301ec3c34"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What formal tests exist for comparing two non-nested Cox proportional-hazards models fitted to the same patients (for example a Vuong-type or Fine partial-likelihood-ratio test for non-nested Cox models), which R or Python packages implement them, and how do methods papers say an AIC or likelihood-ratio chi-square difference between two non-nested survival models should be interpreted when a paired bootstrap interval for that difference includes zero? ANSWER: TEST. The defined test is Fine's partial-likelihood-ratio test (Fine 2002, Biometrika 89:635-647), the Cox analogue of Vuong's (1989) non-nested likelihood-ratio test. Its null hypothesis is that the two models are equidistant from the truth in Kullback-Leibler distance applied to the rank (partial) likelihood; neither model has to be correct, and the statistic is consistent for the model closer to the truth. It is a sequential procedure: step 1 is a variance test (H0: the two fitted models are indistinguishable); step 2 is a standard-normal z test of the scaled partial log-likelihood difference, with one-sided alternatives (model 1 fits better / model 2 fits better) and a two-sided p. PACKAGES. R only: the GitHub package thomashielscher/nonnestcox, function plrtest(object1, object2, nested=FALSE, adjusted='none'). Both coxph fits need x=TRUE and y=TRUE and must use identical rows in identical order (the function stops otherwise). adjusted='AIC' subtracts (p1 - p2) from the log-likelihood difference; adjusted='BIC' subtracts log(number of events)/2 * (p1 - p2); the default is no adjustment. CRAN nonnest2 (vuongtest, icci) lists lm, glm, glm.nb, clm, hurdle, zeroinfl, mlogit, nls, polr, rlm, lavaan, vglm, mirt and OpenMx as supported classes, not coxph; pscl::vuong also does not take coxph. The search turned up no Python implementation. INTERPRETATION. Merkle, You and Preacher (2016) state that 'select the model with the lowest' information criterion is problematic because it can never conclude equal fit and the preferred model often changes in new samples; Vuong-type tests allow three conclusions (one model fits better, equal fit, or indistinguishable). The nonnest2 vignette reads a 95% interval for the AIC difference that overlaps zero as 'the model fits are sufficiently close that neither can be preferred over the other'. An accepted CrossValidated answer reads a significant variance test with a non-significant LR test as: the models differ, but neither can be shown to be closer to the truth. So an AIC or LR chi-square advantage whose paired interval includes zero, with concordance tied, is 'fits not distinguishable', not 'one model outperforms the other'. LIMITS. That reading is documented for Vuong-theory intervals, not specifically for a paired bootstrap interval; Merkle et al. note that nonparametric bootstrap procedures did not fully characterise the sampling variability of BIC, so Fine's test is the better-founded check. I read only the abstract of Fine's paper (full text not retrieved) plus the plrtest source code; I found no survival-specific methods paper on bootstrap intervals for AIC differences. HOW SURE: high for the test and its R implementation; medium for the interpretation of a bootstrap interval that includes zero (by analogy with Vuong-theory intervals). SOURCES: https://doi.org/10.1093/biomet/89.3.635, https://github.com/thomashielscher/nonnestcox/, https://raw.githubusercontent.com/thomashielscher/nonnestcox/master/R/plrtest.R, https://cran.r-project.org/web/packages/nonnest2/nonnest2.pdf, https://cran.r-project.org/web/packages/nonnest2/vignettes/nonnest2.pdf, https://arxiv.org/abs/1402.6720, https://stats.stackexchange.com/questions/484649/comparing-non-nested-cox-models-aic-partial-likelihood-test, https://stats.stackexchange.com/questions/310925/compare-non-nested-cox-models."
+        },
+        {
+          "question": "When a categorical risk grouping (three classes) has been derived by supervised selection from on the order of a hundred or more candidate molecular features in a cohort with a few hundred events, and is then scored on that same cohort against an externally defined clinical index, how large is the expected optimism in apparent concordance and likelihood-ratio chi-square, and what estimators can be applied when the candidate-feature count is known but the fitting procedure is not (for example the van Houwelingen-le Cessie heuristic shrinkage factor, Harrell's bootstrap optimism, or permutation of the outcome through a surrogate pipeline)?",
+          "answer": "NOT SETTLED AS A NUMBER. No source I read gives the expected optimism for this exact configuration. The web gives estimators and reference magnitudes. (a) Heuristic shrinkage (van Houwelingen and le Cessie): s = (LR chi-square - p) / LR chi-square. The rationale given is that the part of the model chi-square bought by estimating p parameters has expected value p under the null. p has to count every candidate predictor parameter considered before selection, not the 2 df of the final three-class grouping: Riley et al. define 'candidate' as considered before any variable selection and count a k-category predictor as k-1 parameters; Harrell's course notes say degrees of freedom are 'spent' by anything examined against the outcome and cannot be retrieved, and recommend subtracting the df from a chi-square to correct for chance. Riley et al. set s >= 0.9 as the target for a model not to be materially overfitted. (b) Reference magnitudes, from a teaching simulation of a pre-specified 8-parameter Cox model with no selection: apparent-minus-held-out C-index was about 0.069 at 5.7 events per parameter, 0.044 at 8.6, 0.028 at 14, 0.018 at 25, 0.010 at 43 and 0.005 at 86; the heuristic factor tracked the held-out calibration slope (0.59 predicted vs 0.53 measured at the smallest size). These are a floor for a pipeline that also selects features. Simon et al. (2011) describe resubstitution separation of survival curves, time-dependent ROC and Harrell's C for classifiers built from high-dimensional data as 'highly biased'. (c) Bootstrap optimism and cross-validation require re-running the whole supervised pipeline in each resample, so they are not available when the fitting procedure is unknown. That leaves the heuristic (needs only p and the observed LR chi-square) and a permutation null through a surrogate pipeline, whose answer depends on how well the surrogate mimics the real procedure. MY INFERENCE (not a quoted source): the optimism in LR chi-square lies between the grouping's nominal 2 df (no selection effect) and roughly p, the full candidate df. With p around 100 or more, an observed LR chi-square of similar or smaller size gives a heuristic shrinkage near zero or negative, so a small apparent edge over an externally defined index cannot be separated from resubstitution optimism. The heuristic was derived for full pre-specified models, so using p = all candidates is a conservative upper bound. LIMITS. The retrieval tool returned only the opening part of each page. For Riley et al. and Simon et al. I read the abstract and introduction; for the Harrell 1996 tutorial the definition of p as all parameters examined during the analysis came from a search excerpt of the page I opened, not from the opened text. The formula itself was read on a secondary teaching page, not in the original 1990 paper. The statement in (c) that every supervised step must be repeated inside the resampling was not reached in this session's page text; it rests on the department's earlier finding from the Simon et al. paper.",
+          "sources": [
+            "https://med-study-rpg.com/biostats/en/methods/b5-02-shrinkage/",
+            "https://doi.org/10.1002/sim.7992",
+            "https://hbiostat.org/rmsc/multivar",
+            "https://scispace.com/pdf/tutorial-in-biostatistics-multivariable-prognostic-models-4auy6032o6.pdf",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3105299/"
+          ],
+          "confidence": "medium for the estimators and the rule that p counts all candidates; low for any specific size of optimism in this configuration",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-db219ba13137"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-1108e586be66"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When a categorical risk grouping (three classes) has been derived by supervised selection from on the order of a hundred or more candidate molecular features in a cohort with a few hundred events, and is then scored on that same cohort against an externally defined clinical index, how large is the expected optimism in apparent concordance and likelihood-ratio chi-square, and what estimators can be applied when the candidate-feature count is known but the fitting procedure is not (for example the van Houwelingen-le Cessie heuristic shrinkage factor, Harrell's bootstrap optimism, or permutation of the outcome through a surrogate pipeline)? ANSWER: NOT SETTLED AS A NUMBER. No source I read gives the expected optimism for this exact configuration. The web gives estimators and reference magnitudes. (a) Heuristic shrinkage (van Houwelingen and le Cessie): s = (LR chi-square - p) / LR chi-square. The rationale given is that the part of the model chi-square bought by estimating p parameters has expected value p under the null. p has to count every candidate predictor parameter considered before selection, not the 2 df of the final three-class grouping: Riley et al. define 'candidate' as considered before any variable selection and count a k-category predictor as k-1 parameters; Harrell's course notes say degrees of freedom are 'spent' by anything examined against the outcome and cannot be retrieved, and recommend subtracting the df from a chi-square to correct for chance. Riley et al. set s >= 0.9 as the target for a model not to be materially overfitted. (b) Reference magnitudes, from a teaching simulation of a pre-specified 8-parameter Cox model with no selection: apparent-minus-held-out C-index was about 0.069 at 5.7 events per parameter, 0.044 at 8.6, 0.028 at 14, 0.018 at 25, 0.010 at 43 and 0.005 at 86; the heuristic factor tracked the held-out calibration slope (0.59 predicted vs 0.53 measured at the smallest size). These are a floor for a pipeline that also selects features. Simon et al. (2011) describe resubstitution separation of survival curves, time-dependent ROC and Harrell's C for classifiers built from high-dimensional data as 'highly biased'. (c) Bootstrap optimism and cross-validation require re-running the whole supervised pipeline in each resample, so they are not available when the fitting procedure is unknown. That leaves the heuristic (needs only p and the observed LR chi-square) and a permutation null through a surrogate pipeline, whose answer depends on how well the surrogate mimics the real procedure. MY INFERENCE (not a quoted source): the optimism in LR chi-square lies between the grouping's nominal 2 df (no selection effect) and roughly p, the full candidate df. With p around 100 or more, an observed LR chi-square of similar or smaller size gives a heuristic shrinkage near zero or negative, so a small apparent edge over an externally defined index cannot be separated from resubstitution optimism. The heuristic was derived for full pre-specified models, so using p = all candidates is a conservative upper bound. LIMITS. The retrieval tool returned only the opening part of each page. For Riley et al. and Simon et al. I read the abstract and introduction; for the Harrell 1996 tutorial the definition of p as all parameters examined during the analysis came from a search excerpt of the page I opened, not from the opened text. The formula itself was read on a secondary teaching page, not in the original 1990 paper. The statement in (c) that every supervised step must be repeated inside the resampling was not reached in this session's page text; it rests on the department's earlier finding from the Simon et al. paper. HOW SURE: medium for the estimators and the rule that p counts all candidates; low for any specific size of optimism in this configuration. SOURCES: https://med-study-rpg.com/biostats/en/methods/b5-02-shrinkage/, https://doi.org/10.1002/sim.7992, https://hbiostat.org/rmsc/multivar, https://scispace.com/pdf/tutorial-in-biostatistics-multivariable-prognostic-models-4auy6032o6.pdf, https://pmc.ncbi.nlm.nih.gov/articles/PMC3105299/."
+        },
+        {
+          "question": "In the prognostic-model literature, when two risk systems both violate proportional hazards and their ranking differs between early and late time horizons, which summary measure and which horizon are recommended for deciding which system predicts prognosis better (for example Uno's truncated C, integrated Brier score over a pre-set window, time-dependent AUC at a clinically chosen landmark), and how is the horizon supposed to be chosen relative to when most events occur and to the numbers still at risk?",
+          "answer": "NOT SETTLED AS A DECISION RULE. No source I read says which horizon wins when rankings flip under non-proportional hazards. What the sources do state: (1) Horizon. The STRATOS guidance (McLernon et al. 2023) says a time horizon must be decided for the model's practical use, that follow-up must be sufficient to assess performance over that disease-specific horizon, and that performance can be assessed either at the fixed end of the horizon or over the whole follow-up within it; its case study uses 5 years. The horizon is therefore a clinical choice fixed in advance, not the one at which a model looks best. (2) Measure at a fixed horizon. Blanche, Kattan and Gerds (2019) show the C-index is not proper for t-year risk: it scores the order of event times rather than event status at t and can rank a misspecified model above the correct one. Time-dependent AUC at t is proper. (3) Measure over a window. Uno et al. (2011) describe the C-statistic as a global assessment rather than a t-year measure, show that Harrell's C estimates a quantity that depends on the study's censoring distribution, and define the censoring-free alternative as C restricted to a fixed, prespecified period (0, tau); they note estimators derived under proportional hazards are biased when that model is wrong. (4) Accuracy. Wang et al. (2023) state that C statistics do not quantify prediction accuracy and that the integrated Brier score does; in their example evaluation stops where censoring leaves 'minimal information'. CONSEQUENCE FOR THE TEAMS. Rest the comparison on a horizon justified before seeing which model it favours and placed where most events have occurred and enough patients remain at risk. Report time-dependent AUC and Brier score at that horizon, plus Uno's C and integrated Brier score over (0, tau]. A late-only advantage in a thin risk set, or a ranking that flips between horizons, is mixed evidence rather than one system predicting better. LIMITS. The retrieval tool returned only the opening part of each page: the STRATOS sentences on choosing the horizon came from a search excerpt of the Annals version of the paper whose PDF I opened; the PDF text I received stops at the start of the Methods. The numbers-at-risk criterion rests on the department's earlier finding (Kaplan-Meier estimates are unstable where the risk set is small), not on a page read in this session. No DLBCL-specific horizon convention was looked up.",
+          "sources": [
+            "https://www.stratos-initiative.org/wp-content/uploads/2023/07/McLernonetal-2023.pdf",
+            "https://doi.org/10.7326/m22-0844",
+            "https://doi.org/10.1093/biostatistics/kxy006",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3079915/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC10660575/"
+          ],
+          "confidence": "medium for which measures suit which target and that the horizon must be prespecified with sufficient follow-up; low for which horizon should decide a ranking that flips",
+          "deliveries": {
+            "bd37-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-66b1c6f48eb6"
+            },
+            "bd37-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-5362859f8bad"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In the prognostic-model literature, when two risk systems both violate proportional hazards and their ranking differs between early and late time horizons, which summary measure and which horizon are recommended for deciding which system predicts prognosis better (for example Uno's truncated C, integrated Brier score over a pre-set window, time-dependent AUC at a clinically chosen landmark), and how is the horizon supposed to be chosen relative to when most events occur and to the numbers still at risk? ANSWER: NOT SETTLED AS A DECISION RULE. No source I read says which horizon wins when rankings flip under non-proportional hazards. What the sources do state: (1) Horizon. The STRATOS guidance (McLernon et al. 2023) says a time horizon must be decided for the model's practical use, that follow-up must be sufficient to assess performance over that disease-specific horizon, and that performance can be assessed either at the fixed end of the horizon or over the whole follow-up within it; its case study uses 5 years. The horizon is therefore a clinical choice fixed in advance, not the one at which a model looks best. (2) Measure at a fixed horizon. Blanche, Kattan and Gerds (2019) show the C-index is not proper for t-year risk: it scores the order of event times rather than event status at t and can rank a misspecified model above the correct one. Time-dependent AUC at t is proper. (3) Measure over a window. Uno et al. (2011) describe the C-statistic as a global assessment rather than a t-year measure, show that Harrell's C estimates a quantity that depends on the study's censoring distribution, and define the censoring-free alternative as C restricted to a fixed, prespecified period (0, tau); they note estimators derived under proportional hazards are biased when that model is wrong. (4) Accuracy. Wang et al. (2023) state that C statistics do not quantify prediction accuracy and that the integrated Brier score does; in their example evaluation stops where censoring leaves 'minimal information'. CONSEQUENCE FOR THE TEAMS. Rest the comparison on a horizon justified before seeing which model it favours and placed where most events have occurred and enough patients remain at risk. Report time-dependent AUC and Brier score at that horizon, plus Uno's C and integrated Brier score over (0, tau]. A late-only advantage in a thin risk set, or a ranking that flips between horizons, is mixed evidence rather than one system predicting better. LIMITS. The retrieval tool returned only the opening part of each page: the STRATOS sentences on choosing the horizon came from a search excerpt of the Annals version of the paper whose PDF I opened; the PDF text I received stops at the start of the Methods. The numbers-at-risk criterion rests on the department's earlier finding (Kaplan-Meier estimates are unstable where the risk set is small), not on a page read in this session. No DLBCL-specific horizon convention was looked up. HOW SURE: medium for which measures suit which target and that the horizon must be prespecified with sufficient follow-up; low for which horizon should decide a ranking that flips. SOURCES: https://www.stratos-initiative.org/wp-content/uploads/2023/07/McLernonetal-2023.pdf, https://doi.org/10.7326/m22-0844, https://doi.org/10.1093/biostatistics/kxy006, https://pmc.ncbi.nlm.nih.gov/articles/PMC3079915/, https://pmc.ncbi.nlm.nih.gov/articles/PMC10660575/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd37-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd37-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd37-team-b",
+      "round": "challenge",
+      "reason": "the referee's test supported the other answer: The test was built to tell a real advantage from a nominal one: matching IPI's granularity to the class removes the main reason C might understate the class, and the class still does not lead on discrimination (tie) and its likelihood edge is not secure at the 5-year horizon both teams pre-specified (P=0.79-0.83), reverses at 24 months where 128 of 185 deaths occur, and only nears significance when the 17 deaths after 60 months are included. The supplied genomic class is clearly prognostic and comparable to IPI, but the data do not show it outperforming IPI, which is what the hypothesis asserts; the relevant variables exist, so the fitting label is Y's False. Caveats: the bootstrap had only 100 resamples, the full-follow-up likelihood difference is borderline (P=0.95, interval -6..78), and a reader who accepts a nominal in-sample point advantage on long-term OS as 'outperforms' would reach X's True; this is a decision-rule difference and the test supports Y's rule only in the sense that the advantage X relies on is not statistically distinguishable from none."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd37-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 131.3217325420119,
+      "cost_usd": 0.27960039999999997,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 79.67154862498865,
+      "cost_usd": 0.13298410000000002,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 590.0240194579819,
+      "cost_usd": 0.39979980000000004,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 611.0241624170449,
+      "cost_usd": 0.4164130999999999,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 203.4006073330529,
+      "cost_usd": 0.4259797,
+      "error": null
+    },
+    {
+      "agent": "bd37-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 279.26011595805176,
+      "cost_usd": 0.6676028,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 355.248381084064,
+      "cost_usd": 0.5015580000000001,
+      "error": null
+    },
+    {
+      "agent": "bd37-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 380.7014976249775,
+      "cost_usd": 0.44693099999999997,
+      "error": null
+    },
+    {
+      "agent": "bd37-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 386.31886658398435,
+      "cost_usd": 0.211689,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

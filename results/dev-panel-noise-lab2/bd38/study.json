@@ -1,0 +1,456 @@
+{
+  "study": "bd38",
+  "status": "replicated",
+  "final": {
+    "agent": "bd38-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd38/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd38-library": "opus",
+    "bd38-team-a": "opus",
+    "bd38-team-b": "opus",
+    "bd38-team-c": "opus",
+    "bd38-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd38-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd38/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd38-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd38/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd38-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd38/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd38-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab2/bd38/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd38-team-a",
+        "bd38-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd38-team-a",
+        "bd38-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "'ERBB-PI3K pathway' has no single definition. Prespecify the gene list before looking at results, ideally the ERBB receptors (EGFR, ERBB2, ERBB3, ERBB4) plus the core PI3K/AKT/mTOR genes curated in TCGA PanCanAtlas (Sanchez-Vega 2018: PIK3CA, PIK3R1, PTEN, AKT1-3, MTOR, TSC1/2, etc.). Rerun with a broader list such as KEGG ErbB signalling (~85 genes) as a sensitivity check. If the verdict changes with the definition, say so and favour the curated driver-focused list.",
+      "from": [
+        "sl-dev-panel-noise-lab2-930c24116bb3"
+      ],
+      "reason": "Which genes count as the pathway can decide the verdict, because bigger gene sets pick up more chance hits.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-2fa71bd7b617"
+      }
+    },
+    {
+      "text": "Tabulate Variant_Classification in data_mutations.txt. Count as pathway mutations only the non-synonymous classes: Missense, Nonsense, Frame_Shift_Del/Ins, In_Frame_Del/Ins, Splice_Site, Translation_Start_Site and Nonstop. Keep Silent mutations as a neutral background, for example for dN/dS. Do not count Intron, UTR, Flank or RNA rows.",
+      "from": [
+        "sl-dev-panel-noise-lab2-1fbee8515521"
+      ],
+      "reason": "Counting every MAF row inflates the pathway mutation rate.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-752b1656b086"
+      }
+    },
+    {
+      "text": "Whether a pathway is 'significantly mutated' must be judged against a background expectation, not from the raw percentage of samples with a hit. Estimate the expected number of mutated samples from each sample's mutation rate (TMB_NONSYNONYMOUS or MAF counts) multiplied by the summed coding length of the pathway genes. Compare observed with expected (PathScan/SLAPenrich-style), or use synonymous mutations as the baseline (gene-set dN/dS). Long genes such as ERBB4 collect passenger mutations, so list which genes carry the hits. Check whether the hits are known hotspots or truncations (PIK3CA E542/E545/H1047, ERBB2/ERBB3 hotspots, PTEN truncations) or scattered missense mutations in long genes.",
+      "from": [
+        "sl-dev-panel-noise-lab2-029138a791ff",
+        "sl-dev-panel-noise-lab2-1cadd66c124a"
+      ],
+      "reason": "Without a background model, large pathways with long genes look mutated by chance alone. This is the main methodological choice for this hypothesis.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-621729aeb47b"
+      }
+    },
+    {
+      "text": "The cohort is small (about 56 samples). If the ERBB-PI3K genes carry only a few dozen mutations or fewer, a background or selection model fitted only on those genes is unstable. Fit the background on all genes in the exome (whole-exome per-sample rate, or dNdScv genesetdnds-style), then estimate enrichment for the gene set. A gene-set dN/dS whose CI excludes 1 indicates selection.",
+      "from": [
+        "sl-dev-panel-noise-lab2-e817c8bb8c82"
+      ],
+      "reason": "This stops the teams from fitting an unstable model to sparse pathway counts.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-352bd5783f8e"
+      }
+    },
+    {
+      "text": "Inspect TMB_NONSYNONYMOUS in data_clinical_sample.txt and the number of mutations per Tumor_Sample_Barcode, and check which samples carry the ERBB/PI3K hits. One or a few hypermutated samples can drive a pathway signal. Count at the sample level (altered yes/no) with per-sample background rates, and repeat the test without hypermutators as a sensitivity analysis.",
+      "from": [
+        "sl-dev-panel-noise-lab2-5aea7eddd972"
+      ],
+      "reason": "Hypermutators can produce a spurious result that the pathway is significantly mutated.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-b6ae2f183d17"
+      }
+    },
+    {
+      "text": "Report the fraction of samples with a non-synonymous pathway mutation and its 95% CI, the observed/expected ratio and the p-value, and say whether the hits are recurrent known drivers. In a small cohort a non-significant test is weak evidence, so describe the power limits when interpreting the result.",
+      "from": [
+        "sl-dev-panel-noise-lab2-68cbf437ae7d"
+      ],
+      "reason": "This tells the teams how to weigh a null result against clear driver evidence when choosing the label.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-80f7befb5963"
+      }
+    },
+    {
+      "text": "If the ERBB-PI3K test comes out of a scan of many pathways (e.g. maftools OncogenicPathways or all KEGG pathways), apply BH FDR across the pathways tested and report the q-value. A single prespecified pathway test does not need this correction.",
+      "from": [
+        "sl-dev-panel-noise-lab2-4a9bf5847182"
+      ],
+      "reason": "Keeps p-values calibrated if teams use a pathway-scan tool.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab2-6663d480c6e3"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": true,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat 'significantly mutated' as a mutation count in a gene set the team built itself, tested against its own background model: per-base Poisson for team A, random equal-size gene sets for team B. Neither tested whether the verdict holds under a background that accounts for gene length and covariates, which team B admits it ignores.",
+      "Both assume every MAF row is a somatic call and keep all nonsynonymous rows. Neither checked the FILTER or population-frequency columns, so rows that may be germline could be counted as pathway hits.",
+      "Both treat the 56 samples as one homogeneous, independent cohort sequenced the same way. Sample IDs carry two suffixes (D and F), which may stand for different sub-cohorts or sequencing approaches with different coverage."
+    ],
+    "unused_evidence": [
+      "The FILTER column: 68 rows are flagged 'common_variant'. The ExAC_AF* and *_MAF columns hold population allele frequencies. If any ERBB-PI3K hit is a common or flagged variant, the hit count and the significance would both drop.",
+      "The SOMATIC, IMPACT, SIFT/PolyPhen and MA:FImpact columns could separate functional pathway hits from passenger hits. Both teams cited 'hotspot' hits informally, but the Hotspot column is 0 for every row.",
+      "The D/F suffix in sample IDs, and the clinical columns for tumour cellularity (clone VAF and pathology review). Uneven purity or coverage across sub-cohorts changes the per-sample background rates that team A's test uses.",
+      "The CANONICAL and PICK flags: about 300 rows are not the canonical or picked transcript. Neither team said whether it removed duplicate transcript rows or non-canonical annotations before counting."
+    ],
+    "unresolved_weak_points": [
+      "Team A reported a p-value that moves from about 0.02 to 0.19 depending on gene list and sample set, and the main 22-gene sample-level test is not significant. Team A still chose a label that contradicts 'not significantly mutated' and never settled which test is primary.",
+      "Team A hardcoded CDS lengths for unmutated genes from memory. This was reported but not checked.",
+      "Team B's p-value of 0.005 comes from a null that ignores gene length, and pathway genes such as ERBB2/3/4 and PIK3CA are long. Team B kept the result and did not fix this. The two teams' sample counts (5/56 vs 9/56) differ only because their gene lists differ, so the conclusion depends on the gene-set definition."
+    ],
+    "second_readings": [
+      "'Significantly mutated' may mean a formal significantly-mutated-gene or pathway test against background, with multiple-testing correction across pathways. That reading is stricter than 'p<0.05 in one chosen test'. It may also simply mean 'recurrently or frequently altered at a notable fraction of cases', which is a descriptive reading.",
+      "'ERBB-PI3K signaling pathway' may mean a narrow, standard pathway definition (receptors plus PI3K catalytic/regulatory subunits, PTEN, AKT, mTOR) or a broad KEGG-style ErbB list. The label can flip between these definitions."
+    ],
+    "verdict": "I have low to moderate trust in the agreed answer. Each team's own significance test is weak: team A's p-values are borderline and the main test is not significant, and team B's null ignores gene length. Neither team checked the variant filter flags or how the pathway definition was chosen, so this agreement could be a shared artefact of loose test design.",
+    "questions": [
+      {
+        "to": "bd38-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Before you look at results, which of your tests (22-gene sample-level, 16-gene core, 68-gene broad, with or without the hypermutator) did you set as the primary test? Is your label consistent with that primary test's p-value at a stated alpha, after correcting for the several variants you tried?",
+        "from": [
+          "sl-dev-panel-noise-lab2-c3986ccc3a33"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-1422d17a15cd"
+      },
+      {
+        "to": "bd38-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate each ERBB-PI3K hit against the FILTER column ('common_variant') and the ExAC_AF / population MAF columns. Is any hit flagged or common? If you drop flagged rows, does your observed count or p-value change?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-185a520e9b93"
+      },
+      {
+        "to": "bd38-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Replace your hardcoded CDS lengths with lengths derived from the data (e.g. CDS_position / Protein_position ranges seen in the MAF), or give a sensitivity range for them. Then fit per-sample rates separately for the D- and F-suffixed samples. Do the expected count and the conclusion still hold?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-2cdb38e41cd3"
+      },
+      {
+        "to": "bd38-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Count rows per sample-gene-position, and count rows where CANONICAL is not YES or PICK is not 1. Are any pathway hits or background mutations duplicated across transcripts? Does deduplicating change the observed/expected ratio?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-7b6cc8a0fb26"
+      },
+      {
+        "to": "bd38-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Re-run your random gene-set test with random sets matched to the pathway genes' coding length (or weighted by length). Does the enrichment p-value stay below your threshold?",
+        "from": [
+          "sl-dev-panel-noise-lab2-b4027d6f6c4e"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-6d1f0c459a41"
+      },
+      {
+        "to": "bd38-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Cross-tabulate each of your 9 pathway-hit samples' variants against the FILTER column ('common_variant') and the ExAC_AF / population MAF columns. Are any hits likely germline or common? If you exclude them, does the sample count or the p-value change?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-4f6d25809ede"
+      },
+      {
+        "to": "bd38-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your 45-gene list gives 9/56 and the core list gives 5/56. Run your enrichment test separately on the core list, and on a standard published pathway list fixed before you look. Does the label hold under each definition?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-f47b0852db2b"
+      },
+      {
+        "to": "bd38-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: The Hotspot column is 0 for every row. On what evidence in the data (e.g. SIFT/PolyPhen/MA:FImpact or IMPACT columns) did you call PIK3CA E545K, ERBB2 I767M and ERBB3 E919K functional? Does your conclusion rest on that support, or on the enrichment test alone?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab2-2d333d0c0e53"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In cancer genomics, how are pathway-level 'significantly mutated' tests usually defined (e.g. MutSigCV, OncodriveFM, PathScan, or gene-length-matched permutation)? How do they correct for gene length and for per-sample mutation rate?",
+          "why": "Both teams used home-made background models. One ignores gene length and one relies on CDS lengths recalled from memory. The verdict depends on which test is standard.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In VEP/vcf2maf-annotated MAF files, what does a FILTER value of 'common_variant' mean, and are such rows normally excluded from somatic mutation analyses?",
+          "why": "Neither team used this flag. If it marks probable germline variants, it changes which rows count as pathway hits.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Which genes do standard curated definitions of the ERBB / PI3K-AKT signalling pathway include (e.g. TCGA pan-cancer oncogenic pathway curation versus KEGG ErbB signalling)?",
+          "why": "The teams' gene lists range from 14 to 68 genes and the significance moves with the list. A standard definition would settle which list applies.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In cancer genomics, how are pathway-level 'significantly mutated' tests usually defined (e.g. MutSigCV, OncodriveFM, PathScan, or gene-length-matched permutation)? How do they correct for gene length and for per-sample mutation rate?",
+          "answer": "Standard pathway tests compare what is observed against a background model; they do not use raw frequencies. PathScan (Wendl et al. 2011) gives each gene a mutation probability that depends on its length under a random-mutation null. It tests each sample separately using that sample's background mutation rate and combines the per-sample p-values with Fisher-Lancaster. SLAPenrich (Iorio et al. 2018) also works per sample: the chance that a sample has at least one hit in a pathway is Poisson-based, scaling with the summed exonic block length of the pathway genes times a background rate estimated from the input. It then tests the number of altered samples. So the accepted approach is per-sample rate times summed coding length; a model that ignores gene length departs from the standard. I did not read the MutSigCV or OncodriveFM pages.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3106187/",
+            "https://www.nature.com/articles/s41598-018-25076-6"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd38-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-2009bde56d75"
+            },
+            "bd38-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-1bee659a70e1"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cancer genomics, how are pathway-level 'significantly mutated' tests usually defined (e.g. MutSigCV, OncodriveFM, PathScan, or gene-length-matched permutation)? How do they correct for gene length and for per-sample mutation rate? ANSWER: Standard pathway tests compare what is observed against a background model; they do not use raw frequencies. PathScan (Wendl et al. 2011) gives each gene a mutation probability that depends on its length under a random-mutation null. It tests each sample separately using that sample's background mutation rate and combines the per-sample p-values with Fisher-Lancaster. SLAPenrich (Iorio et al. 2018) also works per sample: the chance that a sample has at least one hit in a pathway is Poisson-based, scaling with the summed exonic block length of the pathway genes times a background rate estimated from the input. It then tests the number of altered samples. So the accepted approach is per-sample rate times summed coding length; a model that ignores gene length departs from the standard. I did not read the MutSigCV or OncodriveFM pages. HOW SURE: high. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC3106187/, https://www.nature.com/articles/s41598-018-25076-6."
+        },
+        {
+          "question": "In VEP/vcf2maf-annotated MAF files, what does a FILTER value of 'common_variant' mean, and are such rows normally excluded from somatic mutation analyses?",
+          "answer": "vcf2maf sets FILTER=common_variant when a variant is seen at appreciable frequency in a population database (ExAC, later gnomAD). That makes it a probable germline polymorphism rather than a somatic mutation. The original rule, as documented by the Van Allen lab re-implementation, tags a variant if at least 10 alleles occur in any ExAC subpopulation, unless it is at a known somatic site. Current vcf2maf.pl defaults to max_subpop_af = 0.0004. Tagging can be turned off with --filter-vcf 0. AACR GENIE uses the filter to remove putative germline SNPs. These rows are normally excluded from somatic analyses, so they should not count as pathway hits.",
+          "sources": [
+            "https://github.com/vanallenlab/common_variant_filter",
+            "https://raw.githubusercontent.com/mskcc/vcf2maf/main/vcf2maf.pl",
+            "https://github.com/mskcc/vcf2maf/blob/main/docs/vep_maf_readme.txt"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd38-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-c8a54ebb2bf3"
+            },
+            "bd38-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-155500df4328"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In VEP/vcf2maf-annotated MAF files, what does a FILTER value of 'common_variant' mean, and are such rows normally excluded from somatic mutation analyses? ANSWER: vcf2maf sets FILTER=common_variant when a variant is seen at appreciable frequency in a population database (ExAC, later gnomAD). That makes it a probable germline polymorphism rather than a somatic mutation. The original rule, as documented by the Van Allen lab re-implementation, tags a variant if at least 10 alleles occur in any ExAC subpopulation, unless it is at a known somatic site. Current vcf2maf.pl defaults to max_subpop_af = 0.0004. Tagging can be turned off with --filter-vcf 0. AACR GENIE uses the filter to remove putative germline SNPs. These rows are normally excluded from somatic analyses, so they should not count as pathway hits. HOW SURE: high. SOURCES: https://github.com/vanallenlab/common_variant_filter, https://raw.githubusercontent.com/mskcc/vcf2maf/main/vcf2maf.pl, https://github.com/mskcc/vcf2maf/blob/main/docs/vep_maf_readme.txt."
+        },
+        {
+          "question": "Which genes do standard curated definitions of the ERBB / PI3K-AKT signalling pathway include (e.g. TCGA pan-cancer oncogenic pathway curation versus KEGG ErbB signalling)?",
+          "answer": "No standard defines a single 'ERBB-PI3K' pathway. The TCGA PanCanAtlas curation (Sanchez-Vega et al. 2018, maftools oncogenic_sig_patwhays.tsv) has a 29-gene PI3K pathway: EIF4EBP1, AKT1, AKT2, AKT3, AKT1S1, DEPDC5, DEPTOR, INPP4B, MAPKAP1, MLST8, MTOR, NPRL2, NPRL3, PDK1, PIK3CA, PIK3CB, PIK3R1, PIK3R2, PIK3R3, PPP2R1A, PTEN, RHEB, RICTOR, RPTOR, RPS6, RPS6KB1, STK11, TSC1, TSC2. It places EGFR, ERBB2, ERBB3 and ERBB4 in RTK-RAS instead. A curated ERBB-PI3K set is therefore ERBB1-4 plus those 29 genes (33 genes). KEGG hsa04012 (ErbB signaling pathway) is much broader: ligands, receptors, MAPK, PI3K/AKT, PLCG, SRC, CBL and others, about 85 genes. My fetch cut off before the KEGG member list, so that count is not checked. The web does not settle which list a given study meant. The TCGA-curated list is the driver-focused standard.",
+          "sources": [
+            "https://raw.githubusercontent.com/PoisonAlien/maftools/master/inst/extdata/oncogenic_sig_patwhays.tsv",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6070353/",
+            "https://rest.kegg.jp/get/hsa04012"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "bd38-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-0e0534329640"
+            },
+            "bd38-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab2-d44ac6a2bcd2"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Which genes do standard curated definitions of the ERBB / PI3K-AKT signalling pathway include (e.g. TCGA pan-cancer oncogenic pathway curation versus KEGG ErbB signalling)? ANSWER: No standard defines a single 'ERBB-PI3K' pathway. The TCGA PanCanAtlas curation (Sanchez-Vega et al. 2018, maftools oncogenic_sig_patwhays.tsv) has a 29-gene PI3K pathway: EIF4EBP1, AKT1, AKT2, AKT3, AKT1S1, DEPDC5, DEPTOR, INPP4B, MAPKAP1, MLST8, MTOR, NPRL2, NPRL3, PDK1, PIK3CA, PIK3CB, PIK3R1, PIK3R2, PIK3R3, PPP2R1A, PTEN, RHEB, RICTOR, RPTOR, RPS6, RPS6KB1, STK11, TSC1, TSC2. It places EGFR, ERBB2, ERBB3 and ERBB4 in RTK-RAS instead. A curated ERBB-PI3K set is therefore ERBB1-4 plus those 29 genes (33 genes). KEGG hsa04012 (ErbB signaling pathway) is much broader: ligands, receptors, MAPK, PI3K/AKT, PLCG, SRC, CBL and others, about 85 genes. My fetch cut off before the KEGG member list, so that count is not checked. The web does not settle which list a given study meant. The TCGA-curated list is the driver-focused standard. HOW SURE: medium. SOURCES: https://raw.githubusercontent.com/PoisonAlien/maftools/master/inst/extdata/oncogenic_sig_patwhays.tsv, https://pmc.ncbi.nlm.nih.gov/articles/PMC6070353/, https://rest.kegg.jp/get/hsa04012."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd38-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd38-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd38-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd38-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd38-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 96.05334170802962,
+      "cost_usd": 0.45607140000000007,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 41.809562999987975,
+      "cost_usd": 0.146473,
+      "error": null
+    },
+    {
+      "agent": "bd38-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 24.099945374997333,
+      "cost_usd": 0.19636960000000003,
+      "error": null
+    },
+    {
+      "agent": "bd38-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 24.72143745806534,
+      "cost_usd": 0.3985942,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 107.1252894999925,
+      "cost_usd": 0.3883238,
+      "error": null
+    },
+    {
+      "agent": "bd38-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 116.53638779197354,
+      "cost_usd": 0.49145620000000007,
+      "error": null
+    },
+    {
+      "agent": "bd38-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 98.71029333397746,
+      "cost_usd": 0.3821578,
+      "error": null
+    },
+    {
+      "agent": "bd38-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 95.70037558407057,
+      "cost_usd": 0.35274880000000003,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

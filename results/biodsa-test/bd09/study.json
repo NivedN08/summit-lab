@@ -1,0 +1,422 @@
+{
+  "study": "bd09",
+  "status": "replicated",
+  "final": {
+    "agent": "bd09-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd09/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "bd09-library": "fable",
+    "bd09-team-a": "fable",
+    "bd09-team-b": "fable",
+    "bd09-team-c": "fable",
+    "bd09-referee": "fable"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd09-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd09/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd09-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd09/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd09-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd09/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd09-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/biodsa-test/bd09/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd09-team-a",
+        "bd09-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd09-team-a",
+        "bd09-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The hypothesis is about high-risk neuroblastoma, but the library reports that the tables have no risk-group or stage column. Two opposite mistakes follow: declaring the claim untestable, or carving out a wrong 'high-risk' subset such as MYCN-amplified tumours only. In the standard clinical classification, high-risk is mainly metastatic disease (stage M / INSS 4) in children older than 18 months, plus MYCN-amplified tumours of stage L2, M or MS at any age. MYCN amplification is therefore sufficient but not necessary, and most high-risk patients are older children without MYCN amplification. First read the '#' header lines and column names for any risk, stage or cohort description. Then cross-tabulate AGE from data_clinical_patient.txt (the library reports it is in years, so 18 months = 1.5; confirm the unit) against MYCN_AMP from data_clinical_sample.txt, checking the codes first (in GRADE and MKI a code such as 9 may mean unknown). Count the patients who are neither older than 1.5 years nor MYCN-amplified: on the data available these are the ones with least support for high-risk status. If nearly all patients are older than 18 months or MYCN-amplified, the library advises treating the whole cohort as the high-risk group and reporting the cohort median, then recomputing the median after dropping the doubtful patients as a sensitivity analysis. Do not restrict to MYCN-amplified cases as if that defined high-risk. Director's caveat: age and MYCN status are proxies, because stage is missing; an older child with a localized, non-amplified tumour is not high-risk, so say in your reasoning that cohort membership rests on these proxies (and on any cohort description you find), not on a recorded risk group.",
+      "from": [
+        "sl-biodsa-test-fe5d1a236a99"
+      ],
+      "reason": "Decides which samples the median is computed over. Without it the team may answer 'Not verifiable' for lack of a risk column, or compute the median on a MYCN-amplified subset that is not what 'high-risk' means.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-365721f1f64d"
+      }
+    },
+    {
+      "text": "Mutation-burden values from different studies are not on one scale. The mutation classes counted and the calling pipeline shift the number by a roughly constant factor: in one whole-exome evaluation, counting all coding mutations (including synonymous and indels) gave values 3.1-fold higher than counting missense only, although the rank order of samples was preserved (Spearman 0.99); subtracting germline variants by database instead of a matched normal inflates counts; and laboratories running their own pipelines on the same samples report substantially different values. A verdict of 'high' or 'not high' that rests on an external benchmark lying within about 3-fold of the cohort median is therefore not safe. Compute the cohort median under each definition the sample table allows (the library lists TOTAL_PER_MB; TOTAL_PER_MB minus SILENT_PER_MB; NUM_NONSILENT_MUTATION / 30; and missense-only, MISSENSE_MUTATIONS over COVERED_BASES) and take the ratio of each to the benchmark you chose. State the definition used for the cohort value and for the benchmark, compare on an order-of-magnitude scale, and treat the result as settled only if every definition puts the median on the same side of the benchmark by more than the roughly 3-fold definitional spread. Otherwise report explicitly that the verdict depends on the definition.",
+      "from": [
+        "sl-biodsa-test-30e189a80fc4"
+      ],
+      "reason": "The team already holds external benchmarks for judging 'high'. This sets how large the gap between the cohort median and a benchmark must be before the comparison can carry the label, and adds a multi-definition robustness check.",
+      "fact_ids": {
+        "team-a": "sl-biodsa-test-f76690faea0b"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams judged 'high' against the same external adult/pan-cancer scale (about 1-10 per Mb, TMB-high at 10 per Mb). That scale reached them from one source (the library's note, or the same general convention), so their agreement on the benchmark is not independent. Neither team matched the variant classes and denominator of each benchmark to the definition used for the cohort median before comparing.",
+      "Both teams treated all 240 patients as high-risk on the strength of age above 1.5 years and MYCN status. There is no stage or risk-group column, and an older child with a localized, non-amplified tumour is not high-risk. Neither team built a subset with positive high-risk evidence other than age and MYCN.",
+      "Both teams read 'median exonic mutation frequency' as the median over tumours of a per-megabase rate. Neither computed any other quantity the phrase could name (a per-gene frequency across tumours, or the share of tumours with an exonic mutation).",
+      "Both teams assumed the reported calls are complete enough that the per-sample rate is the tumour's true rate, not a floor set by purity, depth or platform sensitivity. The roughly two-fold lower rate in whole-genome samples was reported but its cause was not examined.",
+      "Team B cited 'median OS 23.9 months' as evidence of a high-risk cohort. The patient table has OS_MONTHS and EFS_MONTHS but no status column, so that figure is a median of recorded months, not a survival median."
+    ],
+    "unused_evidence": [
+      "Sample-table segmental chromosome columns (VAR_1P_NEG, VAR_11Q_NEG, VAR_17Q_POS and 10 others), HYPERDIPLOID and ATRX_DELETION. These are tumour-genetics markers tied to risk biology; 114 of 240 samples are flagged 11q-. Neither team used them to test whether the cohort, or a subset, has positive high-risk evidence.",
+      "EFS_MONTHS and OS_MONTHS in the patient table. Team B used OS_MONTHS without an event flag; neither team used EFS_MONTHS < OS_MONTHS as evidence that an event occurred.",
+      "Allele-level columns in the mutation table: tumor_f (filled in 5,095 of 5,291 rows), t_ref_count/t_alt_count (4,800 rows), dbSNP_RS (228 rows) and RNAseq support (100 rows). Neither team used them to ask whether detection sensitivity or germline leakage shifts the per-sample rate.",
+      "Sample-table mutation-type and spectrum columns (INDEL, SUBSTITUTION, C_T ... A_T, MISSENSE_MUTATIONS, SPLICE_SITE, DE_NOVO_START_OUTOFFRAME and others). Neither team checked which classes make up TOTAL_PER_MB beyond nonsilent + silent.",
+      "Two samples carry a dual platform label ('Exome_WGA,Genome_BCCA' and 'Genome_BCCA,Genome_CGI'), and the panel matrix labels one Exome_WGA sample as WGS. The teams count genome samples differently (18 versus 17) and neither says how calls from two platforms were merged for these samples.",
+      "data_sv.txt (79 rows in 16 genome-sequenced samples) and YEAR of diagnosis were not used. I see no route by which either changes an exonic point-mutation rate, so I ask nothing about them."
+    ],
+    "unresolved_weak_points": [
+      "Team A named benchmark dependence as its weakest point: against a paediatric-only scale the cohort median is mid-to-upper range and 'would not settle it'. Team A reported this and kept the pan-cancer scale; it did not resolve it. It also notes the pan-cancer average figure came from a note and search snippets, not a page it read.",
+      "Team B named the same weak point (no in-data comparison group, 'high' judged against an external scale) and resolved nothing further; it recorded that no pitfalls were passed down to it.",
+      "Both teams named the proxy basis of high-risk status. Team A tested age and MYCN strata; Team B supported it with an OS figure that the data cannot support as stated. Neither resolved it with other columns."
+    ],
+    "second_readings": [
+      "'High' relative to what: adult/pan-cancer tumours (both teams' reading), other paediatric tumours, or lower-risk neuroblastoma (no comparison group in the data). Under the paediatric reading Team A itself says the result is not clearly low.",
+      "'Exonic mutation frequency' could mean a per-gene frequency (share of tumours mutated in a gene, median over genes) or the share of tumours with at least one exonic mutation, not a per-megabase rate per tumour.",
+      "'Exonic' could mean coding only (silent + nonsilent), nonsilent only, or every call inside exons including splice-site, UTR and non-coding RNA rows. Both teams covered the first two; the MAF holds about 100 rows of the third kind.",
+      "'In high-risk neuroblastoma' could require a recorded high-risk group. The data have none, so the claim is tested on a cohort assumed to be high-risk."
+    ],
+    "verdict": "I trust the agreed numeric finding: both teams reproduced the per-Mb rate from two sources and every platform, age and MYCN stratum they examined lies on the same side of the scale they used. What is not settled is interpretive: the label rests on one shared external benchmark for 'high' and on an unrecorded high-risk status, and neither team tested a second reading of the phrase, so I expect the label to hold but want these checks run before it is reported.",
+    "questions": [
+      {
+        "to": "bd09-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your weakest point is that the label depends on which benchmark is used, and you reported it without resolving it. For each benchmark you quote, write down which variant classes it counts (nonsilent only, or silent + nonsilent) and what its denominator is, then compare it only with the cohort median computed under the matching definition, and tabulate the share of the 240 samples above each benchmark under that matched definition. Do the definition-matched comparisons, including the paediatric-only one, all fall on the same side, and if they do not, does that change the label or the benchmark you treat as primary?",
+        "from": [
+          "sl-biodsa-test-2dac5a507f7c"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-dec501cf032a"
+      },
+      {
+        "to": "bd09-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You treated all 240 patients as high-risk from age and MYCN alone. The sample table also has segmental chromosome columns (VAR_1P_NEG, VAR_11Q_NEG, VAR_17Q_POS and others) and the patient table has EFS_MONTHS and OS_MONTHS, none of which you used. Count the patients with no positive marker at all (MYCN_AMP not 1, no 1p-/11q-/17q+ flag, and EFS_MONTHS not shorter than OS_MONTHS), and recompute the median per-Mb rate separately for patients with and without such a marker. Does the size of the unmarked group, or a difference in its median, change who you count as in scope?",
+        "from": [
+          "sl-biodsa-test-dbc21b6d056a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-8e828e270ef4"
+      },
+      {
+        "to": "bd09-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Neither team used the allele-level columns of data_mutations.txt (tumor_f, t_ref_count, t_alt_count, dbSNP_RS). Compute each sample's median tumor_f and median depth (t_ref_count + t_alt_count), relate them to its per-Mb rate, and report the median rate in the third of samples with the highest depth and allele fraction; also report the share of calls per sample that carry a dbSNP_RS identifier. Does the rate rise with detection power in a way that makes the cohort median a floor, not an estimate, and does that change how you compare it with a benchmark?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-9ea2cfe11deb"
+      },
+      {
+        "to": "bd09-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Two samples carry a dual platform label ('Exome_WGA,Genome_BCCA' and 'Genome_BCCA,Genome_CGI') and the panel matrix labels one Exome_WGA sample as WGS; you count 18 genome samples where the other team counts 17. For these samples, check whether the mutation rows look like a union of two call sets (compare their counts and COVERED_BASES with single-platform samples of each kind) and state how you classified each one. Does reclassifying or dropping them, or the genome-versus-exome gap you found, change the pooled estimate you report or the stratum you treat as primary?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-36dce5b413a9"
+      },
+      {
+        "to": "bd09-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You cited 'median OS 23.9 months' as support for treating the cohort as high-risk, but data_clinical_patient.txt has OS_MONTHS and EFS_MONTHS with no status column. Check what those columns can show: count patients with EFS_MONTHS shorter than OS_MONTHS, equal to it, and blank, and say whether OS_MONTHS can be told apart from follow-up time. Then recompute the median per-Mb rate in patients with direct evidence of an event or MYCN amplification and in the rest. Does this change the evidence you rely on for the cohort's high-risk status, or who you count as in scope?",
+        "from": [
+          "sl-biodsa-test-ed049919b514"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-72216d94915f"
+      },
+      {
+        "to": "bd09-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You read 'median exonic mutation frequency' as a per-megabase rate per tumour and computed nothing else. Compute the other quantities the phrase could name: for each gene, the share of the 240 tumours with an exonic mutation in it, with the median over mutated genes and over all genes covered; and the share of tumours with at least one exonic mutation. Do these readings point the same way as your primary quantity, and if one does not, does that change which quantity you treat as the one the hypothesis is about?",
+        "from": [
+          "sl-biodsa-test-6a86a21d57dd"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-7bea2ecbd2f0"
+      },
+      {
+        "to": "bd09-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You reported that genome-only samples have roughly half the rate of exome samples and attributed it to sensitivity without testing that. Using the sample-table columns INDEL, SUBSTITUTION, SILENT_MUTATION, NUM_NONSILENT_MUTATION and COVERED_BASES, and tumor_f and read counts in data_mutations.txt, check whether the gap sits in one mutation class, in the denominator, or in low-allele-fraction calls present in exome samples only. Does the result tell you which platform's rate is closer to the truth, and does that change whether you pool platforms or which stratum you compare with the benchmark?",
+        "from": [
+          "sl-biodsa-test-9de3c35c5d55"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-083481b05437"
+      },
+      {
+        "to": "bd09-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your weakest point is that 'high' is judged against an external scale, and you recorded that no pitfalls were passed down to you. State, for each scale you used, whether it counts silent mutations and what its denominator is, and compare it only with the cohort median under the matching definition (silent + nonsilent per covered Mb, or nonsilent only). Then find the smallest threshold for 'high' at which the cohort median would cross it under each definition. Is there any published scale, adult or paediatric, whose threshold lies that low, and does the answer change your label or only your confidence?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-biodsa-test-82d581dd9df3"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In the widely cited pan-cancer analyses of somatic mutation frequency (the adult exome analysis across 27 tumour types and the large paediatric pan-cancer sequencing studies), is the per-megabase rate computed over coding sequence only or genome-wide, and does it count silent mutations or nonsilent mutations only?",
+          "why": "Both teams compared a cohort median with these reference ranges without confirming that variant classes and denominators match; a mismatch could move a comparison by a meaningful factor, most of all against the paediatric range, where the margin is small.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "Is there an accepted numeric threshold, or a conventional verbal description, for a 'high' versus 'low' somatic coding mutation rate in paediatric solid tumours specifically (for example the definitions of hypermutation used in paediatric cancer studies), and how do genomic studies of paediatric embryonal tumours describe their mutation rates relative to adult cancers?",
+          "why": "The hypothesis gives no threshold and both teams fell back on an adult/pan-cancer scale; a paediatric-specific convention would settle whether the second reading of 'high' could lead to a different label.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In cBioPortal-format clinical patient files, when a survival-months column such as OS_MONTHS or EFS_MONTHS is supplied without a matching status column, what does the months value represent: time to the event, or time to last follow-up for patients without an event?",
+          "why": "One team used a median of OS months as evidence of poor survival, and one of my questions asks teams to use EFS shorter than OS as evidence of an event; both uses depend on how these fields are defined when no status is given.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In the widely cited pan-cancer analyses of somatic mutation frequency (the adult exome analysis across 27 tumour types and the large paediatric pan-cancer sequencing studies), is the per-megabase rate computed over coding sequence only or genome-wide, and does it count silent mutations or nonsilent mutations only?",
+          "answer": "The references are not on one basis, so each comparison has to name which one it uses. (a) Adult exome analysis, 27 tumour types, 3,083 tumour-normal pairs: the denominator is covered coding sequence, not the genome ('an average of 30 Mb of coding sequence per sample was covered to adequate depth'). The headline numbers are nonsilent coding mutations: 373,909 nonsilent coding mutations, mean 4.0/Mb, median 1.5/Mb (44 per sample); the text says 'the median frequency of non-synonymous mutations varied by more than 1000-fold across cancer types (Figure 1)', with paediatric cancers 'as low as 0.1/Mb' and melanoma and lung above 100/Mb. However the Figure 1 legend describes the plotted value as 'the total frequency of somatic mutations in the exome', so the paper is not internally consistent on whether silent mutations are in the plotted rate. (b) Paediatric study of 1,699 cases: the often-quoted median range, 0.17/Mb (AML, Wilms) to 0.79/Mb (osteosarcoma), is NOT an exonic rate. Methods: 'The median mutation rate of 651 CGI WGS samples (Fig. 1a) was calculated from tier3 non-coding SNVs'; coding rates are a separate panel (Fig. 1b, coding SNVs from 1,639 WGS/WES samples). The 0.79 for osteosarcoma is the non-coding value; its coding rate is 0.53/Mb. SNVs only, no indels; the text does not split silent from nonsilent. (c) Paediatric study of 914 patients (879 primary tumours): coding rate, defined as 'the total number of coding mutations' (SNVs 93%, indels 7%) normalised by 'the number of sufficiently covered (>=6x) coding bases' per sample. Range 0.02-0.49/Mb across cancer types; paediatric 0.13/Mb versus adult TCGA 1.8/Mb (14 times lower). It does not say silent mutations are excluded; 'total coding mutations' reads as silent included, but this is not stated outright. Consequence: a cohort rate of silent + nonsilent mutations per covered coding Mb is like-for-like with (c) and with the Figure 1 axis of (a); against the nonsilent headline numbers of (a) the nonsilent-only rate is the matching one; the 0.17-0.79 range of (b) is a genome-wide non-coding SNV rate and should not be quoted as an exonic benchmark (the one coding/non-coding pair given, osteosarcoma 0.53 vs 0.79, differs by about 1.5-fold). Not checked: the source behind the '1-10 per Mb in common adult cancers' comparison in (b) (a citation I did not open), and the supplementary methods of (a).",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3919509/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5854542/",
+            "https://www.nature.com/articles/nature25795",
+            "https://www.nature.com/articles/nature25480"
+          ],
+          "confidence": "high for coding-vs-genome denominators and for the non-coding basis of the 0.17-0.79 range (read in the papers' text and Methods); medium for silent-vs-nonsilent, because (a) is internally inconsistent and (c) does not state it explicitly",
+          "deliveries": {
+            "bd09-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-43d31d88fe6a"
+            },
+            "bd09-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-2fb645edb76a"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In the widely cited pan-cancer analyses of somatic mutation frequency (the adult exome analysis across 27 tumour types and the large paediatric pan-cancer sequencing studies), is the per-megabase rate computed over coding sequence only or genome-wide, and does it count silent mutations or nonsilent mutations only? ANSWER: The references are not on one basis, so each comparison has to name which one it uses. (a) Adult exome analysis, 27 tumour types, 3,083 tumour-normal pairs: the denominator is covered coding sequence, not the genome ('an average of 30 Mb of coding sequence per sample was covered to adequate depth'). The headline numbers are nonsilent coding mutations: 373,909 nonsilent coding mutations, mean 4.0/Mb, median 1.5/Mb (44 per sample); the text says 'the median frequency of non-synonymous mutations varied by more than 1000-fold across cancer types (Figure 1)', with paediatric cancers 'as low as 0.1/Mb' and melanoma and lung above 100/Mb. However the Figure 1 legend describes the plotted value as 'the total frequency of somatic mutations in the exome', so the paper is not internally consistent on whether silent mutations are in the plotted rate. (b) Paediatric study of 1,699 cases: the often-quoted median range, 0.17/Mb (AML, Wilms) to 0.79/Mb (osteosarcoma), is NOT an exonic rate. Methods: 'The median mutation rate of 651 CGI WGS samples (Fig. 1a) was calculated from tier3 non-coding SNVs'; coding rates are a separate panel (Fig. 1b, coding SNVs from 1,639 WGS/WES samples). The 0.79 for osteosarcoma is the non-coding value; its coding rate is 0.53/Mb. SNVs only, no indels; the text does not split silent from nonsilent. (c) Paediatric study of 914 patients (879 primary tumours): coding rate, defined as 'the total number of coding mutations' (SNVs 93%, indels 7%) normalised by 'the number of sufficiently covered (>=6x) coding bases' per sample. Range 0.02-0.49/Mb across cancer types; paediatric 0.13/Mb versus adult TCGA 1.8/Mb (14 times lower). It does not say silent mutations are excluded; 'total coding mutations' reads as silent included, but this is not stated outright. Consequence: a cohort rate of silent + nonsilent mutations per covered coding Mb is like-for-like with (c) and with the Figure 1 axis of (a); against the nonsilent headline numbers of (a) the nonsilent-only rate is the matching one; the 0.17-0.79 range of (b) is a genome-wide non-coding SNV rate and should not be quoted as an exonic benchmark (the one coding/non-coding pair given, osteosarcoma 0.53 vs 0.79, differs by about 1.5-fold). Not checked: the source behind the '1-10 per Mb in common adult cancers' comparison in (b) (a citation I did not open), and the supplementary methods of (a). HOW SURE: high for coding-vs-genome denominators and for the non-coding basis of the 0.17-0.79 range (read in the papers' text and Methods); medium for silent-vs-nonsilent, because (a) is internally inconsistent and (c) does not state it explicitly. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC3919509/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5854542/, https://www.nature.com/articles/nature25795, https://www.nature.com/articles/nature25480."
+        },
+        {
+          "question": "Is there an accepted numeric threshold, or a conventional verbal description, for a 'high' versus 'low' somatic coding mutation rate in paediatric solid tumours specifically (for example the definitions of hypermutation used in paediatric cancer studies), and how do genomic studies of paediatric embryonal tumours describe their mutation rates relative to adult cancers?",
+          "answer": "No single accepted threshold exists; a large hypermutation study says 'there is no agreed on definition of hypermutation'. The conventions in use are: (1) >10 mutations/Mb = hypermutated, applied to childhood and adult cancers alike (segmented regression gave 9.91/Mb for childhood and 9.0/Mb for adult tumours; 'for consistency, we use 10 Mut/Mb'), and >100/Mb = ultra-hypermutated. (2) The 914-patient paediatric pan-cancer study adds a paediatric-specific tier: >10/Mb 'hypermutators', and 2-10 coding mutations/Mb 'paediatric highly mutated' ('below this threshold, but markedly above average'), against cancer-type rates of 0.02-0.49/Mb. This is the only paediatric-specific numeric definition of 'high' I found. (3) The 1,699-case study uses a relative rule: hypermutators are more than three standard deviations above the mean of their histotype (5% trimmed). All three label individual tumours, not a cohort median. Verbal convention: paediatric and embryonal tumours are described as low relative to adult cancers. Medulloblastoma exomes 'exhibit low mutation rates consistent with other pediatric tumors, with a median of 0.35 non-silent mutations per megabase'; paediatric coding rates are 'overall 14 times lower than in adult cancers' (0.13 vs 1.8/Mb); embryonal rhabdomyosarcoma median 0.27/Mb; rhabdoid tumours are 'amongst those with the lowest mutation burden'; childhood genomes are 'typically thought of as quiet'; the adult 27-type analysis places paediatric tumours at the lowest end (as low as 0.1/Mb); a review states adult cancers 'on average exhibit substantially higher mutational burdens compared with the vast majority of childhood tumors'. So on a paediatric-specific reading, 'high' would mean roughly >=2/Mb (highly mutated) or >=10/Mb (hypermutated); a rate within about 0.02-0.8/Mb is the ordinary paediatric level, which the field calls low. Caution: targeted-panel burden runs higher than exome-based values (the panel-based median over 2,885 paediatric tumours was 2.5 Mut/Mb), so panel figures should not be used as the scale for exome rates. I deliberately did not open disease-specific studies of the tumour type in the task.",
+          "sources": [
+            "https://www.nature.com/articles/nature25480",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5849393/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC5854542/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3919509/",
+            "https://www.omicsdi.org/dataset/ega/phs000504.v1.p1",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC11571274/",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC6129500/"
+          ],
+          "confidence": "high that the 10/Mb and 2-10/Mb conventions exist and that embryonal/paediatric tumours are described as low; medium that these per-tumour labels are the right yardstick for a cohort median, since no source defines 'high' for a median",
+          "deliveries": {
+            "bd09-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-beeec2c32fa1"
+            },
+            "bd09-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-f06e93111ff0"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Is there an accepted numeric threshold, or a conventional verbal description, for a 'high' versus 'low' somatic coding mutation rate in paediatric solid tumours specifically (for example the definitions of hypermutation used in paediatric cancer studies), and how do genomic studies of paediatric embryonal tumours describe their mutation rates relative to adult cancers? ANSWER: No single accepted threshold exists; a large hypermutation study says 'there is no agreed on definition of hypermutation'. The conventions in use are: (1) >10 mutations/Mb = hypermutated, applied to childhood and adult cancers alike (segmented regression gave 9.91/Mb for childhood and 9.0/Mb for adult tumours; 'for consistency, we use 10 Mut/Mb'), and >100/Mb = ultra-hypermutated. (2) The 914-patient paediatric pan-cancer study adds a paediatric-specific tier: >10/Mb 'hypermutators', and 2-10 coding mutations/Mb 'paediatric highly mutated' ('below this threshold, but markedly above average'), against cancer-type rates of 0.02-0.49/Mb. This is the only paediatric-specific numeric definition of 'high' I found. (3) The 1,699-case study uses a relative rule: hypermutators are more than three standard deviations above the mean of their histotype (5% trimmed). All three label individual tumours, not a cohort median. Verbal convention: paediatric and embryonal tumours are described as low relative to adult cancers. Medulloblastoma exomes 'exhibit low mutation rates consistent with other pediatric tumors, with a median of 0.35 non-silent mutations per megabase'; paediatric coding rates are 'overall 14 times lower than in adult cancers' (0.13 vs 1.8/Mb); embryonal rhabdomyosarcoma median 0.27/Mb; rhabdoid tumours are 'amongst those with the lowest mutation burden'; childhood genomes are 'typically thought of as quiet'; the adult 27-type analysis places paediatric tumours at the lowest end (as low as 0.1/Mb); a review states adult cancers 'on average exhibit substantially higher mutational burdens compared with the vast majority of childhood tumors'. So on a paediatric-specific reading, 'high' would mean roughly >=2/Mb (highly mutated) or >=10/Mb (hypermutated); a rate within about 0.02-0.8/Mb is the ordinary paediatric level, which the field calls low. Caution: targeted-panel burden runs higher than exome-based values (the panel-based median over 2,885 paediatric tumours was 2.5 Mut/Mb), so panel figures should not be used as the scale for exome rates. I deliberately did not open disease-specific studies of the tumour type in the task. HOW SURE: high that the 10/Mb and 2-10/Mb conventions exist and that embryonal/paediatric tumours are described as low; medium that these per-tumour labels are the right yardstick for a cohort median, since no source defines 'high' for a median. SOURCES: https://www.nature.com/articles/nature25480, https://pmc.ncbi.nlm.nih.gov/articles/PMC5849393/, https://pmc.ncbi.nlm.nih.gov/articles/PMC5854542/, https://pmc.ncbi.nlm.nih.gov/articles/PMC3919509/, https://www.omicsdi.org/dataset/ega/phs000504.v1.p1, https://pmc.ncbi.nlm.nih.gov/articles/PMC11571274/, https://pmc.ncbi.nlm.nih.gov/articles/PMC6129500/."
+        },
+        {
+          "question": "In cBioPortal-format clinical patient files, when a survival-months column such as OS_MONTHS or EFS_MONTHS is supplied without a matching status column, what does the months value represent: time to the event, or time to last follow-up for patients without an event?",
+          "answer": "Either, depending on the patient, and without the status column the file does not say which. The cBioPortal FAQ defines OS_MONTHS as 'the number of months from a starting point (often time of diagnosis or time of sequencing) to time of death or last follow up', and PFS_MONTHS as the time 'the disease recurred or the patient was last seen'. The *_STATUS column ('0:' = no event, '1:' = event) is what separates event times from censoring times, and the file-format documentation requires *_STATUS and *_MONTHS as a pair for survival plots. The documentation does not cover a months column supplied alone, and it does not define EFS_MONTHS specifically (only OS and DFS are listed, plus the generic PREFIX_STATUS / PREFIX_MONTHS pairing), so the web does not settle the lone-column case beyond this general definition. Consequences: a median of OS_MONTHS without status is a median observation time mixing deaths and censored patients; it is not a median survival and is not evidence of poor survival. EFS_MONTHS shorter than OS_MONTHS is consistent with a non-death event (relapse or progression) before death or last follow-up, but that is my inference from the standard definitions, assuming both are measured from the same start and to the same last contact; cBioPortal's documentation does not state it. EFS equal to OS cannot distinguish 'no event, both censored' from 'death as the first event'.",
+          "sources": [
+            "https://docs.cbioportal.org/user-guide/faq/",
+            "https://docs.cbioportal.org/file-formats/"
+          ],
+          "confidence": "high for the documented definition (event or last follow-up); medium for the EFS-shorter-than-OS inference, which no source states",
+          "deliveries": {
+            "bd09-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-aed7d8aefa0c"
+            },
+            "bd09-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-biodsa-test-11c2b0bb6229"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cBioPortal-format clinical patient files, when a survival-months column such as OS_MONTHS or EFS_MONTHS is supplied without a matching status column, what does the months value represent: time to the event, or time to last follow-up for patients without an event? ANSWER: Either, depending on the patient, and without the status column the file does not say which. The cBioPortal FAQ defines OS_MONTHS as 'the number of months from a starting point (often time of diagnosis or time of sequencing) to time of death or last follow up', and PFS_MONTHS as the time 'the disease recurred or the patient was last seen'. The *_STATUS column ('0:' = no event, '1:' = event) is what separates event times from censoring times, and the file-format documentation requires *_STATUS and *_MONTHS as a pair for survival plots. The documentation does not cover a months column supplied alone, and it does not define EFS_MONTHS specifically (only OS and DFS are listed, plus the generic PREFIX_STATUS / PREFIX_MONTHS pairing), so the web does not settle the lone-column case beyond this general definition. Consequences: a median of OS_MONTHS without status is a median observation time mixing deaths and censored patients; it is not a median survival and is not evidence of poor survival. EFS_MONTHS shorter than OS_MONTHS is consistent with a non-death event (relapse or progression) before death or last follow-up, but that is my inference from the standard definitions, assuming both are measured from the same start and to the same last contact; cBioPortal's documentation does not state it. EFS equal to OS cannot distinguish 'no event, both censored' from 'death as the first event'. HOW SURE: high for the documented definition (event or last follow-up); medium for the EFS-shorter-than-OS inference, which no source states. SOURCES: https://docs.cbioportal.org/user-guide/faq/, https://docs.cbioportal.org/file-formats/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd09-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd09-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd09-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd09-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd09-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 121.03596508293413,
+      "cost_usd": 0.2481572,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 105.02872545795981,
+      "cost_usd": 0.1594541,
+      "error": null
+    },
+    {
+      "agent": "bd09-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 97.4430224999087,
+      "cost_usd": 0.18515609999999996,
+      "error": null
+    },
+    {
+      "agent": "bd09-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 161.97840274998453,
+      "cost_usd": 0.35239410000000004,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 153.67664212500677,
+      "cost_usd": 0.3482258,
+      "error": null
+    },
+    {
+      "agent": "bd09-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 271.1316148750484,
+      "cost_usd": 0.5791917999999999,
+      "error": null
+    },
+    {
+      "agent": "bd09-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 186.83201137499418,
+      "cost_usd": 0.35309619999999997,
+      "error": null
+    },
+    {
+      "agent": "bd09-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 202.30990941694472,
+      "cost_usd": 0.4255884,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

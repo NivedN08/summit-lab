@@ -1,0 +1,540 @@
+{
+  "study": "sc06",
+  "status": "replicated",
+  "final": {
+    "agent": "sc06-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc06/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc06-library": "opus",
+    "sc06-team-a": "opus",
+    "sc06-team-b": "opus",
+    "sc06-team-c": "opus",
+    "sc06-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc06-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc06/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_pbmcs_retained": 14198,
+        "median_genes_per_pbmc": 68.0,
+        "n_monocytes_pbmc": 2264
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc06-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc06/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_pbmcs_retained": 14221,
+        "median_genes_per_pbmc": 68.0,
+        "n_monocytes_pbmc": 2185
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc06-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc06/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_pbmcs_retained": 14198,
+        "median_genes_per_pbmc": 68.0,
+        "n_monocytes_pbmc": 2264
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc06-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc06/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_pbmcs_retained": 14187,
+        "median_genes_per_pbmc": 68.0,
+        "n_monocytes_pbmc": 2185
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc06-team-a",
+        "sc06-team-b"
+      ],
+      "fields": {
+        "n_pbmcs_retained": true,
+        "median_genes_per_pbmc": true,
+        "n_monocytes_pbmc": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc06-team-a",
+        "sc06-team-b"
+      ],
+      "fields": {
+        "n_pbmcs_retained": true,
+        "median_genes_per_pbmc": true,
+        "n_monocytes_pbmc": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "DATA LAYOUT (header-level facts from the library; the director re-checked them against the file headers and they hold). /workspace/data/adata_merged_noX.h5ad is 16136 cells x 386 genes: a BD Rhapsody TARGETED immune panel, not whole transcriptome. There is no X matrix; counts are in three layers: Raw_Molecules, RSEC_Adjusted_Molecules, DBEC_Adjusted_Molecules. The panel has no MT- and no ribosomal (RPS/RPL) genes. obs columns include sample (9 sample tags), tissue, source (PBMC / Tissue), batch (2), treatment (3 timepoints), condition. Peripheral blood = source 'PBMC' = 14549 cells before any QC, spread over 6 sample tags, one of which (SampleTag08 PBMC3) holds 6962 of them; the 1587 Tissue cells are tumour. Batch is perfectly confounded with condition (batch 1 = Non-Responder, 12624 cells; batch 2 = Responder, 3512 cells) and every Tissue sample is in batch 1. obs['Cell_Index'] is NOT unique (16082 distinct values for 16136 cells), so use the obs index (cell_id) as the cell key, never Cell_Index. The sample tags present contain no Multiplet or Undetermined labels, so tag-level multiplets have already been removed upstream.",
+      "from": [
+        "sl-sc-test-d7cbf6c89f9e",
+        "sl-sc-test-a92de9304c9f"
+      ],
+      "reason": "Saves the team from loading errors and wrong joins (no X, non-unique Cell_Index), tells them how the blood compartment is defined in obs, and gives the batch/condition/tissue layout that every later QC, clustering and batch-correction decision depends on.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-5fd903bf2a3f"
+      }
+    },
+    {
+      "text": "PITFALL - choice of count layer. With no X, you must choose which layer is the count matrix, and the choice changes both how many cells pass QC and the median genes per cell. For Rhapsody targeted assays BD applies DBEC after RSEC to remove low-depth artifact molecules (PCR chimeras and similar) and recommends the DBEC table when sequencing is near saturation; RSEC still contains noise molecules that grow with depth and inflate genes detected per cell. In this file DBEC has about 11% fewer non-zero entries than RSEC (1,164,478 vs 1,305,936). CHECK: compute genes detected and total molecules per PBMC cell from each layer, and compare the medians and the number of cells passing your QC. GUIDANCE: DBEC_Adjusted_Molecules is the vendor-recommended default for a targeted panel; compute QC metrics and the reported genes-per-cell on the same layer you analyse; do not use Raw_Molecules; state which layer you used and what the numbers would be under the other one.",
+      "from": [
+        "sl-sc-test-bf992e227090"
+      ],
+      "reason": "All three requested numbers depend on the layer; an unexamined or mixed choice (QC on one layer, genes-per-cell on another) gives a silently different answer.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-3e6026d34beb"
+      }
+    },
+    {
+      "text": "PITFALL - whole-transcriptome QC defaults do not apply to a 386-gene targeted panel. Cutoffs such as min_genes=200, max_genes=2500 or percent-mito <5-20% are wrong here: a healthy cell detects only tens of panel genes, so min_genes=200 removes almost every cell, and with no MT- genes in the panel pct_counts_mt is 0 or undefined and filters nothing. CHECK: look at the per-cell distributions of genes detected and total molecules for the PBMC cells before choosing any cutoff; confirm that no var name starts with 'MT-'; count how many cells each proposed cutoff removes. GUIDANCE: set thresholds from the observed distribution (the detached low tail / knee, or MAD-based outliers on log counts and log genes); low total count and low genes detected are the only usable QC metrics; report how many cells each filter removes.",
+      "from": [
+        "sl-sc-test-f88370765c6e"
+      ],
+      "reason": "The retained-cell count (a) is decided almost entirely by the QC rule, and copying standard scanpy/Seurat tutorial thresholds would be badly wrong on this panel.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-588f315132ba"
+      }
+    },
+    {
+      "text": "PITFALL - where and how the QC thresholds are derived. Tumour-tissue cells and PBMCs, and the two batches, have different count and gene distributions, so one fixed threshold or one pooled MAD computed on the merged tumour+blood object over-cuts one group and under-cuts the other, and strict cutoffs preferentially delete small low-RNA lineages. The retained PBMC count also depends on whether you filter before or after subsetting to PBMC. CHECK: look at log total counts and genes detected per sample and per batch for PBMC only; compare the number retained under a global cutoff with per-sample or per-batch MAD cutoffs (e.g. 3-5 MADs); cross-tabulate the removed cells by provisional lineage to see whether one lineage is being lost. GUIDANCE: derive thresholds on the PBMC cells (per sample or per batch), keep them lenient, remove only clear low-quality tails, and state the rule and how sensitive the retained count is to it.",
+      "from": [
+        "sl-sc-test-7df71a5fdce6"
+      ],
+      "reason": "Changes answer (a) directly, and through lineage-biased cell loss can also change the monocyte count (c).",
+      "fact_ids": {
+        "team-a": "sl-sc-test-3459d3f83fae"
+      }
+    },
+    {
+      "text": "PITFALL - the median genes per cell is silently changed by processing order. It differs if computed before vs after cell filtering, on all cells vs PBMC only, on RSEC vs DBEC, or after a gene filter (min_cells) or an HVG subset has dropped columns. scanpy's filter_cells writes obs['n_genes'] at the time it is called and never updates it. CHECK / DO: recompute genes detected as (counts > 0).sum(axis=1) on the final retained PBMC cells, directly from the chosen raw count layer with all 386 genes, and compare it with any stored obs column. Report that recomputed value; do not filter genes or select HVGs before computing it.",
+      "from": [
+        "sl-sc-test-921a31ac2d92"
+      ],
+      "reason": "Answer (b) is a single number that is easy to get wrong through a stale obs column or a gene-filtered matrix.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-6b0af2072437"
+      }
+    },
+    {
+      "text": "PITFALL - same-tag doublets are still in the data. Sample-tag demultiplexing has already removed cross-sample multiplets (no Multiplet/Undetermined labels remain), but doublets of two cells carrying the same tag, including heterotypic monocyte+T or monocyte+B doublets, are invisible to tags; with only 3-6 tags per cartridge a large share of doublets are same-tag. Monocyte-containing doublets co-express CD14/S100A9 with CD3E/MS4A1 and inflate both the retained count and the monocyte count. An upper total-count cutoff alone is a weak doublet detector. CHECK: look for clusters or cells co-expressing myeloid markers (CD14, S100A9, FCN1) with T (CD3D/CD3E/TRAC), B (MS4A1/CD79A) or NK (GNLY/KLRF1) markers together with high total counts; if you run Scrublet/scDblFinder, run it per cartridge (the batch column, i.e. per capture), not per sample tag and not on the merged object. GUIDANCE: remove or separately label doublet clusters before counting lineages and report the monocyte count with and without them. Doublet simulators are less validated on 386-gene targeted data, so confirm their calls with marker co-expression.",
+      "from": [
+        "sl-sc-test-af35ade07319",
+        "sl-sc-test-a92de9304c9f"
+      ],
+      "reason": "Decides whether a doublet step belongs in QC at all, which changes (a) and (c); without this the team might assume sample tags already handled doublets.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-0e82dce04dcf"
+      }
+    },
+    {
+      "text": "PITFALL - joint clustering with tumour cells, batch correction, and a DBEC-induced batch effect. (1) Clustering blood and tumour cells together distorts the blood annotation: tumour macrophages (C1QA, C1QB, CD163, VSIG4, SPP1, LIPA high) pull the myeloid cluster definition away from blood monocytes. (2) Batch is perfectly confounded with condition (batch 1 = Non-Responder, batch 2 = Responder) and all Tissue cells are in batch 1, so batch correction (Harmony/BBKNN etc.) would also remove responder biology, and integration over-corrects when composition differs between batches, merging distinct types. (3) DBEC is applied per gene, only to genes with enough sequencing depth, separately in each pipeline run, so two cartridges sequenced to different depth can have different genes DBEC-corrected; BD warns this produces an apparent batch effect that can split one cell type into batch-specific clusters. CHECK: cluster the PBMC cells alone and compare the monocyte count with that from joint clustering; per batch, compare per-gene total DBEC vs RSEC counts to see which genes were corrected in one batch only; colour the embedding by batch and see whether monocyte clusters separate by batch; after any correction step confirm lineage markers are still cluster-specific and that monocytes/DCs or NK/T did not merge. GUIDANCE: subset to PBMC before normalisation/PCA/clustering; use batch correction only if the same lineage visibly splits by batch, and prefer the uncorrected PBMC-only result when the two disagree; annotate with marker evidence that holds in both batches and do not drop, relabel or interpret a batch-split cluster as a subtype.",
+      "from": [
+        "sl-sc-test-82d221c86671",
+        "sl-sc-test-a92de9304c9f",
+        "sl-sc-test-32cc41054ea1"
+      ],
+      "reason": "The monocyte count (c) comes from clustering and annotation, and these three structural issues are the main ways the myeloid cluster boundary can be moved by something other than biology.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-abdb71a190d9"
+      }
+    },
+    {
+      "text": "PITFALL - defining 'classical monocyte' on this panel. The usual monocyte markers LYZ, S100A8, VCAN and CST3 are NOT in the 386-gene panel (director confirmed against var names). Classical-monocyte markers that are present: CD14, S100A9, S100A12, FCN1, CD36, CD33, CCR2, TLR2, ITGAM, SELL. Neighbouring populations that share markers: non-classical (CD16+) monocytes are FCGR3A+, CX3CR1+, VMO1+ with low CD14/S100A12; cDC2 are CD1C+, FCER1A+, CLEC10A+, FLT3+, HLA-DQB1 high; pDC are IL3RA+, TCF4+, IRF8+, TLR7/TLR9+. FCGR3A is also high in NK cells, so it is not monocyte-specific. CHECK: within the myeloid compartment, sub-cluster and compare CD14/S100A12/FCN1 against FCGR3A/VMO1/CX3CR1 and CD1C/FCER1A/CLEC10A; confirm the cluster called classical monocyte is CD14-high, S100A12-high, FCGR3A-low, CD1C-low. GUIDANCE: decide and state whether your 'classical-monocyte lineage' count means only CD14+ classical monocytes or all monocytes; keep dendritic cells out; report the count under both definitions so the difference is visible.",
+      "from": [
+        "sl-sc-test-c28651bfe6a3"
+      ],
+      "reason": "Marker lists from memory would fail (four standard markers are absent), and the boundary with non-classical monocytes and DCs is the main definitional ambiguity in answer (c).",
+      "fact_ids": {
+        "team-a": "sl-sc-test-c5459c469045"
+      }
+    },
+    {
+      "text": "PITFALL - granulocytes hiding in the monocyte cluster. PBMC preparations from cancer patients, especially during chemotherapy (this cohort has before-NAC and after-NAC timepoints), often contain low-density neutrophils/granulocytes (PMN-MDSC) that co-purify in the mononuclear layer. They share S100A9/S100A12 with classical monocytes and can be absorbed into the monocyte cluster, inflating its count. CHECK: in S100A9/S100A12-high cells, test for neutrophil genes that are in the panel: CXCR2, CXCR1, MME, VNN2, CMTM2, AQP9, MMP9, ARG1, and immature-granule genes ELANE, AZU1, DEFA3, DEFA4, BPI, CTSG, CD24; neutrophils are also CD14-low, HLA-DRA/CD74-low and have few detected genes. Also check eosinophil/basophil genes CLC, EPX, CPA3, and whether such cells differ by treatment timepoint. GUIDANCE: if present, label granulocytes as a separate lineage and exclude them from the classical-monocyte count; because they have few detected genes, a low-gene QC cutoff may remove them without your noticing, so state explicitly whether they were removed by QC or kept and labelled.",
+      "from": [
+        "sl-sc-test-ebf0fd02d5e3"
+      ],
+      "reason": "A population that is specific to this kind of cohort and would otherwise be counted as monocytes (c) or be silently removed by QC (a); the team would not look for it without being told.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-c1ae14e70b20"
+      }
+    },
+    {
+      "text": "PITFALL - how the lineage is counted. Per-cell gating on one marker (e.g. CD14 > 0) undercounts badly because of dropout, while cluster-level labels depend on clustering resolution, neighbour number and mixed clusters; either can move the monocyte count by a large fraction. CHECK: annotate at cluster level from several markers per lineage, then (1) repeat at 2-3 Leiden resolutions and neighbour settings and see how the monocyte count moves, (2) inspect each cluster for mixed marker expression and sub-cluster the mixed ones, (3) compare with a per-cell multi-gene score (e.g. sc.tl.score_genes on CD14, S100A9, S100A12, FCN1) to find monocyte-like cells stranded in other clusters. GUIDANCE: use cluster-level labels refined by sub-clustering of the myeloid compartment, and report the range of counts across reasonable settings instead of a single unexamined number.",
+      "from": [
+        "sl-sc-test-138dc2add135"
+      ],
+      "reason": "Sets the counting approach for (c) and makes the team measure how fragile its number is to resolution and gating choices.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-e83c2b193f05"
+      }
+    },
+    {
+      "text": "PITFALL (lower confidence: the library reasoned this from the panel design, not from a dedicated source) - whole-transcriptome preprocessing defaults on a 386-gene pre-selected immune panel. Selecting 2000 HVGs is meaningless and selecting a few hundred discards lineage markers the panel was built around. Library-size normalisation is compositional on a panel dominated by a few highly expressed genes (e.g. HLA-DRA, CD74, FTH1, GAPDH, IGKC) that differ strongly between lineages, and the library also cautions that target_sum=1e4 is far above the tens-to-hundreds of molecules a cell has here. CHECK: confirm how many genes enter PCA; check which genes take the largest share of counts per lineage; confirm canonical markers (CD3E, MS4A1, CD14, NKG7) survived any feature selection. SUGGESTION: keep all panel genes (or drop only never-detected ones, and only after computing genes-per-cell), normalise to the median library size, log1p, use a modest number of PCs, and check that lineage calls are stable to these choices. Treat the normalisation target as a sensitivity check rather than a rule.",
+      "from": [
+        "sl-sc-test-d52277f6a551"
+      ],
+      "reason": "Feature selection and normalisation feed the clustering that produces the monocyte count; passed with its lower-confidence status stated so the team tests it instead of adopting it blindly.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-8cf0a0eaee09"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams took DBEC_Adjusted_Molecules as 'the' count matrix for QC and for 'detected genes', on the strength of the same library note (vendor guidance), not from anything in the task text or the data. Each computed the other value (RSEC) and reported it as a sensitivity only; neither tested which layer the data supports. The file header shows Raw_Molecules and RSEC_Adjusted_Molecules have identical numbers of stored non-zero entries (1,305,936 each) versus 1,164,478 for DBEC, so two of the three layers would give one genes-per-cell value and only DBEC gives the other.",
+      "Both teams assumed QC means per-sample MAD outlier removal on log molecules and log genes, computed after subsetting to source==PBMC. Neither showed whether the file is already filtered upstream (cells were already called by the vendor pipeline and tag multiplets already removed), i.e. whether there is a low-quality tail to remove at all versus a population being removed for its identity (erythroid cells).",
+      "Both teams read 'classical-monocyte lineage' as the strict CD14-high/FCGR3A-low subset rather than the coarse monocyte lineage, although the task speaks of 'major immune lineages' and the answer field is named n_monocytes_pbmc.",
+      "Both teams clustered once on one count layer and treated cluster membership as the lineage label; team B at a single Leiden resolution after ComBat on a batch variable that is perfectly confounded with responder status, team A without batch correction although its monocyte subclusters split by batch."
+    ],
+    "unused_evidence": [
+      "Raw_Molecules layer: neither team's notes say what it is for or how it relates to RSEC (same sparsity pattern per header).",
+      "obs['treatment'] (Before NAC / After NAC day 3 / After NAC day 21): not used by either team; chemotherapy timepoint could drive the erythroid tail, granulocyte or plasma-cell content and sample-specific QC losses (one day-21-heavy sample holds 48% of PBMCs).",
+      "The 1,587 tumour-tissue cells: both teams dropped them before any step, so neither knows what the PBMC numbers would be if QC or clustering were run on the merged object and PBMCs counted afterwards.",
+      "obs['condition'] is identical to batch, and obs['sex'] has one level; neither carries extra information, but the confounding means team B's ComBat step also removes responder/non-responder differences."
+    ],
+    "unresolved_weak_points": [
+      "Team A: 'whether doublet removal counts as QC' and 'how wide the classical-monocyte boundary is drawn' were reported as ranges, not resolved; it also states that doublets among lymphoid cells were not searched for, so doublets were removed from one lineage only.",
+      "Team B: 'QC convention (thresholds, layer, doublet removal) is not specified' was only reported; no doublet detection ran, its pitfalls_checked list is empty (no record of checks for cDC2, granulocytes, erythroid cells or doublets inside its two monocyte clusters), and it did not say which lineages its two-sided 3-MAD cut removed.",
+      "The two teams agree on the median genes value but their other two numbers are not identical, and the differences trace to choices neither resolved: upper-tail cut and doublet removal for the retained count; doublets/DC/non-classical content of the monocyte clusters for the monocyte count."
+    ],
+    "second_readings": [
+      "'detected genes per cell' could be counted on the error-corrected (RSEC) molecules or the raw molecules instead of DBEC; the task does not name a layer and the file was shipped with X removed.",
+      "'classical-monocyte lineage' within 'major immune lineages' could mean the coarse monocyte lineage label from a major-lineage annotation (CD14+ monocyte cluster as a whole, possibly including intermediate cells) rather than a subclustered, doublet-cleaned strict subset; the field name n_monocytes_pbmc points at a coarser reading.",
+      "'After deciding which cells you want to keep for downstream analysis' could be a decision made on the whole dataset (tumour + blood) with the peripheral-blood cells counted afterwards, and could include or exclude doublet removal and removal of non-immune cells.",
+      "'number of peripheral-blood cells you retain' could include cells later labelled as non-immune or doublets if those are labelled rather than deleted."
+    ],
+    "verdict": "Moderate-to-low trust. The agreement on median genes per cell rests on one layer choice that both teams took from the same library note and neither tested, and the retained-cell and monocyte counts are close but not the same, with the gap coming from unresolved choices (upper-tail cut, doublet removal applied to one lineage only, what sits inside the monocyte clusters, and how coarse 'classical-monocyte lineage' is meant).",
+    "questions": [
+      {
+        "to": "sc06-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: both teams took the DBEC layer from the same library note, and neither tested the choice against the data. The file header shows Raw_Molecules and RSEC_Adjusted_Molecules store the same number of non-zero entries, and DBEC about 11% fewer. On your final retained cells, compute genes detected per cell under each of the three layers, and tabulate by batch and by gene which non-zero entries DBEC sets to zero (are they spread evenly, or concentrated in one batch, in a few genes, or in lineage markers?). Then check whether the batch split you saw inside the classical monocytes is still there when you cluster on RSEC. What in the task text or in these results points to one layer as the one 'detected genes' should be counted on? Does that change your method?",
+        "from": [
+          "sl-sc-test-95a5c68d54f8",
+          "sl-sc-test-d158a261881b",
+          "sl-sc-test-bf992e227090"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-938801fc69ac"
+      },
+      {
+        "to": "sc06-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you removed doublets from the myeloid compartment only and wrote that lymphoid doublets were not searched for, so your retained count applies one rule to one lineage. Apply the same co-expression criterion you used for the 160 cells to the rest of the PBMCs (T with B, T/NK with B, plasma with other lineages) and report how many cells it flags per lineage and per sample, and whether the flagged cells detect more genes, as your myeloid ones did. With that number in hand, is your treatment of doublets consistent across lineages, and does it change whether you count doublet removal as part of 'cells you keep'? Does that change your method?",
+        "from": [
+          "sl-sc-test-a13beb35d3ed",
+          "sl-sc-test-0e82dce04dcf"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-3f75c108b46e"
+      },
+      {
+        "to": "sc06-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: the task asks you to characterise the 'major immune lineages' of blood and then to count cells 'assigned to the classical-monocyte lineage', and the answer field is named n_monocytes_pbmc. You reported four different counts depending on granularity. Make one table of the cells that separate those counts (non-classical CD16+, cells positive for both CD14 and FCGR3A, cDC2, pDC, flagged doublets) with the number in each group, and write down, word by word, which reading of the task each count answers. Which words of the task support a subclustered strict subset and which support a major-lineage label? Does that change your method?",
+        "from": [
+          "sl-sc-test-95a5c68d54f8",
+          "sl-sc-test-c5459c469045"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-e052e4172b3b"
+      },
+      {
+        "to": "sc06-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: most of the 168 cells your QC removed are erythroid cells, so your cut acts on cell identity as much as on cell quality, and 142 of them are in one sample. Check three things: whether the genes and molecules per cell show a hard floor that indicates the file was already filtered upstream; how many erythroid-like (ALAS2-high) and platelet-like cells remain among your retained cells above the cut; and how the removed cells divide by treatment timepoint, a column neither team used. Is your rule a quality filter, an identity filter, or a mix, and is it applied the same way to cells above and below the cut? Does that change your method?",
+        "from": [
+          "sl-sc-test-95a5c68d54f8",
+          "sl-sc-test-3459d3f83fae"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-ef879ad0833d"
+      },
+      {
+        "to": "sc06-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your 3-MAD rule removed 351 cells and your notes do not say from which tail or which lineages. The other team reported that the cells with the most molecules are immunoglobulin-rich plasma cells, that monocytes detect more panel genes than lymphocytes, and that the detached low-gene tail is mostly erythroid cells in one sample. Cross-tabulate your 351 removed cells by tail (upper or lower, on molecules or on genes), by sample, by treatment timepoint and by provisional lineage. Does the upper cut remove a real lineage or a disproportionate share of monocytes, and does that move your retained count or your monocyte count? Does that change your method?",
+        "from": [
+          "sl-sc-test-15fe7dc1df7d",
+          "sl-sc-test-d51431fbe18a",
+          "sl-sc-test-1928650d3d3b"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-bc754588610d"
+      },
+      {
+        "to": "sc06-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your monocyte count is the size of two Leiden clusters at one resolution after ComBat on a batch variable that is identical to responder status, and you recorded no check of what else sits inside those clusters. The other team sub-clustered its myeloid cells and found groups co-expressing monocyte markers with T, NK or B markers, plus cDC2 and CD16+ monocytes. Inside your clusters 8 and 11, count the cells that co-express CD3E/TRAC, GNLY/NKG7 or MS4A1/CD79A with the monocyte markers, the cells high in CD1C/FCER1A/CLEC10A, the cells high in FCGR3A, and cells with neutrophil genes (CXCR2, MME); say where cDC2 and CD16+ monocytes went in your partition; and repeat the count at two other resolutions and without ComBat. Do clusters 8 and 11 differ by batch? Does that change your method?",
+        "from": [
+          "sl-sc-test-15fe7dc1df7d",
+          "sl-sc-test-a13beb35d3ed",
+          "sl-sc-test-c28651bfe6a3",
+          "sl-sc-test-a92de9304c9f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-beabcf9ef4b9"
+      },
+      {
+        "to": "sc06-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: both teams took the DBEC layer from the same library note, and neither tested the choice against the data. You recorded that the raw-to-DBEC ratio differs between the two batches. The file header shows Raw_Molecules and RSEC_Adjusted_Molecules store the same number of non-zero entries, and DBEC about 11% fewer. On your retained cells, compute genes detected per cell under each of the three layers, per batch, and tabulate by batch and by gene which non-zero entries DBEC sets to zero. Is the DBEC effect the same in both batches, and does it touch the markers you use for monocytes? What in the task text or in these results points to one layer as the one 'detected genes' should be counted on? Does that change your method?",
+        "from": [
+          "sl-sc-test-d51431fbe18a",
+          "sl-sc-test-cd3bf0ad7d3f",
+          "sl-sc-test-bf992e227090"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-a1e8627914ae"
+      },
+      {
+        "to": "sc06-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: the task asks you to characterise the 'major immune lineages' of blood and then to count cells 'assigned to the classical-monocyte lineage', and the answer field is named n_monocytes_pbmc. You have a cluster-level count and a strict cell-level count that differ. Make one table with the count under each reading you would call reasonable (all monocytes as one major lineage, CD14-high clusters only, strict per-cell gate, with and without mixed-lineage cells) and the cells that separate them, including cells positive for both CD14 and FCGR3A. Which words of the task support which reading? Does that change your method?",
+        "from": [
+          "sl-sc-test-15fe7dc1df7d",
+          "sl-sc-test-d51431fbe18a"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-ff1358035f76"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In the BD Rhapsody sequence analysis pipeline for targeted mRNA panels, which molecule count (raw, RSEC-adjusted or DBEC-adjusted) is written as the main expression matrix in its standard per-cell outputs (MolsPerCell tables, h5ad and Seurat objects), does this differ between pipeline versions, and which count does the pipeline's own metrics summary use when it reports 'genes detected per cell'?",
+          "why": "Both teams chose the DBEC layer from one vendor recommendation; the median genes per cell depends entirely on the layer, so knowing what a standard analyst would load by default, and what the vendor itself calls 'genes detected', decides which reading is conventional.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How exactly does DBEC (distribution-based error correction) decide which molecules to remove: is it fitted separately per gene and per sequencing run, does it skip genes below a sequencing-depth threshold, and is it known to produce run-to-run (batch) differences in which gene-cell entries are set to zero when two cartridges are sequenced to different depths?",
+          "why": "One team saw a batch split inside a single lineage and the other saw different raw-to-DBEC ratios between batches; if DBEC is depth- and run-dependent, the layer choice affects both clustering and genes detected unevenly across batches.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "For targeted-panel single-cell RNA-seq with a few hundred genes and no mitochondrial genes, what cell-level QC do vendor guidance and published analyses conventionally apply after the pipeline's own cell calling (fixed minimum genes or molecules, MAD outliers, upper cutoffs, or none), and is same-sample-tag doublet removal conventionally treated as part of QC when a retained-cell count is reported?",
+          "why": "The retained-cell count differs between the teams only through unstated conventions (two-sided versus lower-tail cut, doublet removal); knowing the common convention for this assay type tells the teams which choices need to be defended.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In the BD Rhapsody sequence analysis pipeline for targeted mRNA panels, which molecule count (raw, RSEC-adjusted or DBEC-adjusted) is written as the main expression matrix in its standard per-cell outputs (MolsPerCell tables, h5ad and Seurat objects), does this differ between pipeline versions, and which count does the pipeline's own metrics summary use when it reports 'genes detected per cell'?",
+          "answer": "The pipeline writes both RSEC_MolsPerCell and DBEC_MolsPerCell tables (CSV in v1.x, MEX in v2+). The prebuilt single-file objects (Seurat .rds and ScanPy h5ad, added in v2.0; Cellismo/MuData in later versions) contain the RSEC molecules-per-cell table: obj@assays[['RNA']]$counts and mdata.mod['rna'].X are labelled 'mRNA Expression (RSEC)' in the v4.0 docs, and the datatables step says 'RSEC molecule counts per cell are also preloaded' into Seurat/Cellismo/Scanpy. So an analyst who loads the default object gets RSEC, not DBEC. BD's FAQ recommends RSEC when mean RSEC depth is <2, either DBEC with non-passing genes removed or RSEC with caveats when depth is 2-6, and DBEC when depth is >6. I found no documented change between versions in which layer the objects use, but the release notes were truncated, so this is unconfirmed. Which count the Metrics_Summary 'genes per cell' metric uses was NOT settled: the metrics page was cut off before the cell-metric definitions. The visible molecule metrics are all Raw or RSEC (Total_RSEC_Molecules, Mean_RSEC_Sequencing_Depth, Sequencing_Saturation on RSEC), which suggests but does not prove RSEC.",
+          "sources": [
+            "https://bd-rhapsody-bioinfo-docs.genomics.bd.com/outputs/outputs_sctools.html",
+            "https://bd-rhapsody-bioinfo-docs.genomics.bd.com/steps/steps_datatables.html",
+            "https://scomix.bd.com/hc/en-us/articles/360044971032-Bioinformatics-Primary-Analysis",
+            "https://bd-rhapsody-bioinfo-docs.genomics.bd.com/outputs/outputs_metrics_summary.html",
+            "https://bd-rhapsody-bioinfo-docs.genomics.bd.com/release_notes.html"
+          ],
+          "confidence": "high for objects holding RSEC (v4.0 docs); medium for this applying to all v2+ versions; low/unsettled for the metrics genes-per-cell layer",
+          "deliveries": {
+            "sc06-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-41e31e982a11"
+            },
+            "sc06-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-9155d9e9b9e2"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In the BD Rhapsody sequence analysis pipeline for targeted mRNA panels, which molecule count (raw, RSEC-adjusted or DBEC-adjusted) is written as the main expression matrix in its standard per-cell outputs (MolsPerCell tables, h5ad and Seurat objects), does this differ between pipeline versions, and which count does the pipeline's own metrics summary use when it reports 'genes detected per cell'? ANSWER: The pipeline writes both RSEC_MolsPerCell and DBEC_MolsPerCell tables (CSV in v1.x, MEX in v2+). The prebuilt single-file objects (Seurat .rds and ScanPy h5ad, added in v2.0; Cellismo/MuData in later versions) contain the RSEC molecules-per-cell table: obj@assays[['RNA']]$counts and mdata.mod['rna'].X are labelled 'mRNA Expression (RSEC)' in the v4.0 docs, and the datatables step says 'RSEC molecule counts per cell are also preloaded' into Seurat/Cellismo/Scanpy. So an analyst who loads the default object gets RSEC, not DBEC. BD's FAQ recommends RSEC when mean RSEC depth is <2, either DBEC with non-passing genes removed or RSEC with caveats when depth is 2-6, and DBEC when depth is >6. I found no documented change between versions in which layer the objects use, but the release notes were truncated, so this is unconfirmed. Which count the Metrics_Summary 'genes per cell' metric uses was NOT settled: the metrics page was cut off before the cell-metric definitions. The visible molecule metrics are all Raw or RSEC (Total_RSEC_Molecules, Mean_RSEC_Sequencing_Depth, Sequencing_Saturation on RSEC), which suggests but does not prove RSEC. HOW SURE: high for objects holding RSEC (v4.0 docs); medium for this applying to all v2+ versions; low/unsettled for the metrics genes-per-cell layer. SOURCES: https://bd-rhapsody-bioinfo-docs.genomics.bd.com/outputs/outputs_sctools.html, https://bd-rhapsody-bioinfo-docs.genomics.bd.com/steps/steps_datatables.html, https://scomix.bd.com/hc/en-us/articles/360044971032-Bioinformatics-Primary-Analysis, https://bd-rhapsody-bioinfo-docs.genomics.bd.com/outputs/outputs_metrics_summary.html, https://bd-rhapsody-bioinfo-docs.genomics.bd.com/release_notes.html."
+        },
+        {
+          "question": "How exactly does DBEC (distribution-based error correction) decide which molecules to remove: is it fitted separately per gene and per sequencing run, does it skip genes below a sequencing-depth threshold, and is it known to produce run-to-run (batch) differences in which gene-cell entries are set to zero when two cartridges are sequenced to different depths?",
+          "answer": "DBEC runs per bioproduct (gene). It looks only at the distribution of RSEC-adjusted read depth per molecule, pooled across all cells in the run, and ignores UMI sequence. It assumes that true molecules of a gene share amplification efficiency, so the depth distribution is bimodal. It fits two negative binomial distributions, keeps molecules in the upper mode, and discards the lower mode (late-PCR artifacts such as chimeras). The cutoff between the modes is reported as the DBEC minimum depth. DBEC is applied only to genes with mean non-singleton RSEC depth >=4. Genes below that are marked 'low depth' and keep their RSEC counts. Status and metrics per gene are in <sample>_Bioproduct_Stats.csv. Because each pipeline run is fitted on its own reads, cartridges sequenced to different depths can differ in which genes pass and where the cutoffs fall. BD's FAQ says that at mean RSEC depth 2-6, genes with inconsistent adjustment status 'can lead to an apparent batch effect when plotted on tSNE'. It also says noise molecules in RSEC grow with depth. For cross-sample comparison BD recommends DBEC with non-passing genes removed, or RSEC only across samples of similar depth.",
+          "sources": [
+            "https://bd-rhapsody-bioinfo-docs.genomics.bd.com/steps/steps%5Ferror%5Fcorrection.html",
+            "https://scomix.bd.com/hc/en-us/articles/360044971032-Bioinformatics-Primary-Analysis"
+          ],
+          "confidence": "high for the algorithm and depth threshold; high that the vendor warns of batch effects from inconsistent DBEC status (fitting per run follows from it running per pipeline run on that run's depth distribution)",
+          "deliveries": {
+            "sc06-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-112634642756"
+            },
+            "sc06-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-30b05f021f5b"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How exactly does DBEC (distribution-based error correction) decide which molecules to remove: is it fitted separately per gene and per sequencing run, does it skip genes below a sequencing-depth threshold, and is it known to produce run-to-run (batch) differences in which gene-cell entries are set to zero when two cartridges are sequenced to different depths? ANSWER: DBEC runs per bioproduct (gene). It looks only at the distribution of RSEC-adjusted read depth per molecule, pooled across all cells in the run, and ignores UMI sequence. It assumes that true molecules of a gene share amplification efficiency, so the depth distribution is bimodal. It fits two negative binomial distributions, keeps molecules in the upper mode, and discards the lower mode (late-PCR artifacts such as chimeras). The cutoff between the modes is reported as the DBEC minimum depth. DBEC is applied only to genes with mean non-singleton RSEC depth >=4. Genes below that are marked 'low depth' and keep their RSEC counts. Status and metrics per gene are in <sample>_Bioproduct_Stats.csv. Because each pipeline run is fitted on its own reads, cartridges sequenced to different depths can differ in which genes pass and where the cutoffs fall. BD's FAQ says that at mean RSEC depth 2-6, genes with inconsistent adjustment status 'can lead to an apparent batch effect when plotted on tSNE'. It also says noise molecules in RSEC grow with depth. For cross-sample comparison BD recommends DBEC with non-passing genes removed, or RSEC only across samples of similar depth. HOW SURE: high for the algorithm and depth threshold; high that the vendor warns of batch effects from inconsistent DBEC status (fitting per run follows from it running per pipeline run on that run's depth distribution). SOURCES: https://bd-rhapsody-bioinfo-docs.genomics.bd.com/steps/steps%5Ferror%5Fcorrection.html, https://scomix.bd.com/hc/en-us/articles/360044971032-Bioinformatics-Primary-Analysis."
+        },
+        {
+          "question": "For targeted-panel single-cell RNA-seq with a few hundred genes and no mitochondrial genes, what cell-level QC do vendor guidance and published analyses conventionally apply after the pipeline's own cell calling (fixed minimum genes or molecules, MAD outliers, upper cutoffs, or none), and is same-sample-tag doublet removal conventionally treated as part of QC when a retained-cell count is reported?",
+          "answer": "Not settled by the web within the call budget. The BD workflow paper (Current Protocols 2024) and a 534-gene targeted-panel paper (Wellcome Open Res 2022) were both truncated before their cell-QC methods, and no BD page I read gives a post-cell-calling threshold for targeted panels. The Current Protocols text does state that sample multiplexing and informatic doublet inference are imperfect and 'not all doublets can be removed', which treats doublet handling as a separate, optional consideration. My reading, not settled by any source: there is no single convention. Teams should explicitly state and defend (i) whether any cut is applied beyond BD cell calling, (ii) lower-only versus two-sided cuts, and (iii) whether same-tag doublet removal is included in the reported retained count.",
+          "sources": [
+            "https://currentprotocols.onlinelibrary.wiley.com/doi/10.1002/cpz1.963",
+            "https://doi.org/10.12688/wellcomeopenres.16883.2"
+          ],
+          "confidence": "low",
+          "deliveries": {
+            "sc06-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-c375b2e41868"
+            },
+            "sc06-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-0a434e0a746c"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: For targeted-panel single-cell RNA-seq with a few hundred genes and no mitochondrial genes, what cell-level QC do vendor guidance and published analyses conventionally apply after the pipeline's own cell calling (fixed minimum genes or molecules, MAD outliers, upper cutoffs, or none), and is same-sample-tag doublet removal conventionally treated as part of QC when a retained-cell count is reported? ANSWER: Not settled by the web within the call budget. The BD workflow paper (Current Protocols 2024) and a 534-gene targeted-panel paper (Wellcome Open Res 2022) were both truncated before their cell-QC methods, and no BD page I read gives a post-cell-calling threshold for targeted panels. The Current Protocols text does state that sample multiplexing and informatic doublet inference are imperfect and 'not all doublets can be removed', which treats doublet handling as a separate, optional consideration. My reading, not settled by any source: there is no single convention. Teams should explicitly state and defend (i) whether any cut is applied beyond BD cell calling, (ii) lower-only versus two-sided cuts, and (iii) whether same-tag doublet removal is included in the reported retained count. HOW SURE: low. SOURCES: https://currentprotocols.onlinelibrary.wiley.com/doi/10.1002/cpz1.963, https://doi.org/10.12688/wellcomeopenres.16883.2."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc06-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc06-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc06-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc06-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc06-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 47.09376337507274,
+      "cost_usd": 0.18605739999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 145.37588712503202,
+      "cost_usd": 0.2819064,
+      "error": null
+    },
+    {
+      "agent": "sc06-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 415.04972812498454,
+      "cost_usd": 0.45909079999999997,
+      "error": null
+    },
+    {
+      "agent": "sc06-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 476.3913531670114,
+      "cost_usd": 0.5926822,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 163.65162829100154,
+      "cost_usd": 0.3313298,
+      "error": null
+    },
+    {
+      "agent": "sc06-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 126.1341515830718,
+      "cost_usd": 0.6206149999999999,
+      "error": null
+    },
+    {
+      "agent": "sc06-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 86.82946612499654,
+      "cost_usd": 0.33546980000000004,
+      "error": null
+    },
+    {
+      "agent": "sc06-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 380.5962257500505,
+      "cost_usd": 0.6488258,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

@@ -1,0 +1,186 @@
+{
+  "study": "bd11",
+  "status": "replicated",
+  "final": {
+    "agent": "bd11-team-a",
+    "team": "team-a",
+    "round": "analysis",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd11/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/variants/m03/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bd11-library": "opus",
+    "bd11-team-a": "opus",
+    "bd11-team-b": "opus",
+    "bd11-team-c": "opus",
+    "bd11-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd11-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd11/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd11-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop1/m03-r1/bd11/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "Not verifiable"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd11-team-a",
+        "bd11-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Before any analysis, confirm the cohort actually contains the tumour type named in the hypothesis (clear cell RCC): tabulate CANCER_TYPE, CANCER_TYPE_DETAILED, ONCOTREE_CODE and PRIMARY_SITE in data_clinical_sample.txt and search all files for 'renal', 'kidney', 'RCC', 'CCRCC'. Do not substitute a different tumour type as a proxy if ccRCC samples are absent or sparse; base the label on what the data hold for ccRCC specifically.",
+      "from": [
+        "sl-m03-r1-1ebd0a0cb3e5"
+      ],
+      "reason": "A hypothesis about one tumour type can only be tested on samples of that type; checking cohort composition first decides whether any downstream ITH analysis is meaningful.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-5f1ef1e431c9"
+      }
+    },
+    {
+      "text": "Showing that ITH is present in ALL tumours requires several spatially separate samples from the same tumour (multi-region sequencing, as in Gerlinger et al. NEJM 2012 / TRACERx Renal). A single biopsy per tumour can miss ITH and cannot establish it in every case. Count samples per PATIENT_ID and check whether repeated samples come from distinct regions of the same primary tumour.",
+      "from": [
+        "sl-m03-r1-8f456216ec38"
+      ],
+      "reason": "Defines what study design is needed to test a universal ITH claim, so the team can judge whether the data's structure is capable of supporting or refuting it.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-8f1832120319"
+      }
+    },
+    {
+      "text": "For patients with more than one sample, compare SAMPLE_TYPE, timepoint and GENE_PANEL before calling discordant mutations. Primary-vs-metastasis or multi-timepoint pairs reflect metastatic/temporal divergence, not intratumour heterogeneity, and different panels (e.g. MSK-IMPACT341/410/468 vs FoundationOne) create spurious 'private' mutations. Restrict comparisons to genes covered by both panels (see data_gene_panel_matrix.txt and panel files).",
+      "from": [
+        "sl-m03-r1-a5198e1a1de8"
+      ],
+      "reason": "Prevents misreading cross-site or cross-panel differences as ITH evidence.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-5958377c67ad"
+      }
+    },
+    {
+      "text": "Calling a tumour clonal or subclonal from raw VAFs of a single targeted-panel sample is unreliable: few mutations per sample, purity and copy-number confounding, and coverage limits (some Foundation rows lack read counts). A purity- and copy-number-adjusted cancer cell fraction (PyClone/ABSOLUTE) is needed; check whether tumour purity and allele-specific CN exist before attempting it.",
+      "from": [
+        "sl-m03-r1-63428ee09775"
+      ],
+      "reason": "Stops the team from using single-sample VAF spread as a shortcut proof or disproof of ITH.",
+      "fact_ids": {
+        "team-a": "sl-m03-r1-40d312bc2bef"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 0,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assumed that a tumour type missing from the cohort makes the hypothesis Not verifiable rather than False. That fits the task's own definition of Not verifiable (no relevant variables or tables), so the assumption is sound."
+    ],
+    "unused_evidence": [
+      "Neither team analysed data_cna_hg19.seg, data_sv.txt, data_timeline.txt or the panel files for ITH. These could give an ITH measure only for the tumours actually in the cohort (IBD-associated colorectal and small-bowel cancers). None of them can produce one for ccRCC, so leaving them out cannot change the label. I checked: a case-insensitive search of all 9 files for renal, kidney, ccrcc and clear cell finds nothing, and CANCER_TYPE_DETAILED lists only colorectal, small-bowel, duodenal and NOS adenocarcinomas."
+    ],
+    "unresolved_weak_points": [
+      "Team A's weak point is the choice between False and Not verifiable. The task's definition of the labels settles it: False needs relevant variables whose analysis contradicts the claim. Team B's weak point is ccRCC hiding under another label. Their grep of all files settles it, and the histology and oncotree columns I looked at confirm it."
+    ],
+    "second_readings": [
+      "A looser reading would test whether ITH is present in all tumours of this cohort, using them as a proxy. The hypothesis names ccRCC specifically, so a proxy tumour type would answer a different question. I found no second reading that would make this data relevant."
+    ],
+    "verdict": "I trust the agreed answer, Not verifiable, highly. I checked that the cohort has no renal or clear-cell samples in any file, so the hypothesis's population is absent. I found no shared blind spot, unused evidence or second reading that could change the label, so I am asking no questions.",
+    "questions": []
+  },
+  "referee": null,
+  "research": [],
+  "not_chosen": [
+    {
+      "agent": "bd11-team-b",
+      "round": "analysis",
+      "reason": "agreed with bd11-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd11-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 70.40465275000315,
+      "cost_usd": 0.2016776,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 73.68244754197076,
+      "cost_usd": 0.1185184,
+      "error": null
+    },
+    {
+      "agent": "bd11-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 37.507662583026104,
+      "cost_usd": 0.1318212,
+      "error": null
+    },
+    {
+      "agent": "bd11-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 52.00274504197296,
+      "cost_usd": 0.196496,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 44.173221790930256,
+      "cost_usd": 0.1813326,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

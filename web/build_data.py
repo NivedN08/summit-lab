@@ -87,7 +87,7 @@ def study_of(agent: str) -> str | None:
 
 
 def clean_heads(heads: dict) -> dict:
-    """The department heads' reviews from study.json (D-22), with agent text cleaned."""
+    """The department heads' reviews from study.json (D-23), with agent text cleaned."""
     out = {}
     for key, rv in heads.items():
         if not isinstance(rv, dict):

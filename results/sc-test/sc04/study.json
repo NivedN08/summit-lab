@@ -1,0 +1,493 @@
+{
+  "study": "sc04",
+  "status": "replicated",
+  "final": {
+    "agent": "sc04-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc04/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc04-library": "opus",
+    "sc04-team-a": "opus",
+    "sc04-team-b": "opus",
+    "sc04-team-c": "opus",
+    "sc04-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc04-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc04/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "largest_clone_pct": 12.34,
+        "interpretation": 1
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc04-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc04/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "largest_clone_pct": 12.34,
+        "interpretation": 1
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc04-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc04/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "largest_clone_pct": 9.43,
+        "interpretation": 1
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc04-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc04/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "largest_clone_pct": 9.43,
+        "interpretation": 1
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc04-team-a",
+        "sc04-team-b"
+      ],
+      "fields": {
+        "largest_clone_pct": true,
+        "interpretation": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc04-team-a",
+        "sc04-team-b"
+      ],
+      "fields": {
+        "largest_clone_pct": true,
+        "interpretation": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "DATA LAYOUT AND PER-SAMPLE RULE. /workspace/data/GSE276492_combined.h5 is a Mosaic-style merged Tapestri h5 (hg19, custom myeloid panel) holding five separate patients, identified by the row attribute assays/dna_variants/ra/sample_name (2518, 5988, 6917, 4826 and 3714 cells). Layers are at assays/dna_variants/layers/{NGT,AF,DP,GQ,FILTER_MASK,...} (cells x 181 variants); variant info at assays/dna_variants/ca/{id,CHROM,POS,REF,ALT,amplicon,filtered,...}; protein counts at assays/protein_read_counts/layers/read_counts. NGT coding is 0=WT, 1=het, 2=hom, 3=missing. h5py reads everything; the mosaic package may not be installed. The 181 variants are the UNION across patients (each sample has only about 75-92 pipeline-passing variants), so a variant that is real in one patient can be all-missing, all-WT or sporadic noise in another. CHECK: subset rows by sample_name before anything else; per sample and per variant compute % missing (NGT=3) and % mutated, and find out how variants absent from a sample were filled (all 3 with DP=0, or all 0). IF FOUND: run the DNMT3A/TP53 sample screen, the full-panel driver scan and the clone table strictly within one sample; never pool patients; never require a complete genotype at a locus that is entirely uncalled in that sample (it deletes every cell), and never call a variant absent in a sample where it is merely missing.",
+      "from": [
+        "sl-sc-test-8ce65490dcc2",
+        "sl-sc-test-3509d39b7e55"
+      ],
+      "reason": "Pooling the five patients, or mishandling variants that are uncalled in the chosen sample, changes both which sample is selected and the clone denominator. The paths and NGT coding prevent a misread of the file.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-60661acc4174"
+      }
+    },
+    {
+      "text": "MISSING GENOTYPES AND THE DENOMINATOR. NGT=3 means missing, not wild-type. Treating 3 as WT inflates the WT clone and deflates every mutant clone, and dividing by all cells of the sample (or all 23,958 cells of the merged file) gives a different percentage from the standard denominator, which is cells with a called genotype at every driver locus. CHECK: for the chosen sample and each selected driver variant, tabulate the counts of NGT 0/1/2/3, and report how many cells remain after requiring NGT != 3 at all driver loci and how that number falls as each locus is added (GC-rich amplicons such as those in TP53, SRSF2, GATA2 and RUNX1 are known for many no-calls). IF FOUND: drop cells with any NGT=3 at a driver locus (the published scDNA myeloid workflow removes cells with any unknown genotype), then compute clone percentages over the remaining cells with the all-WT clone kept in the denominator. If one marginal variant removes a large share of cells, report the result with and without it rather than silently shrinking the denominator.",
+      "from": [
+        "sl-sc-test-f1a1c69cf8b2"
+      ],
+      "reason": "The task asks for a percentage of 'cells genotyped at all driver loci'; how missing calls are handled sets the denominator and so the reported number directly.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-a7b8478e287f"
+      }
+    },
+    {
+      "text": "GERMLINE VARIANTS MASQUERADING AS SOMATIC DRIVERS. The panel has no matched normal and mixes germline SNPs with somatic mutations. A germline variant inside a driver gene (for example the common TP53 P72R polymorphism at hg19 chr17:7579472 G>C, or intronic/synonymous SNPs in DNMT3A, TET2 or ASXL1) can falsely satisfy 'co-occurring DNMT3A and TP53' and, if used as a clone feature, puts nearly every cell into one giant 'mutant' clone. CHECK: within each sample separately, compute for every variant the percentage of genotyped cells (NGT 0/1/2, excluding 3) that are mutated (NGT 1 or 2) and the het/hom split. A germline het shows as mutated in roughly 80-95% of cells, with the rest split between NGT=0 and NGT=2 at about half the allele-dropout rate each (the file's metadata gives ADO of 14-19% for these samples); a germline hom shows about 100% NGT=2. Also check whether the same variant is near-clonal in several of the five unrelated patients (a SNP) and whether it is coding and nonsynonymous at all. IF FOUND: exclude such variants from the driver set and from the DNMT3A+TP53 sample screen. Keep only variants that are clearly subclonal in the sample (a distinct WT population well above what dropout explains) and that are nonsynonymous or truncating changes in a myeloid driver gene. Keep a near-clonal variant only if it is a canonical hotspot, and justify it explicitly.",
+      "from": [
+        "sl-sc-test-db2ab6b43e1c"
+      ],
+      "reason": "Counting a germline SNP as a somatic driver would change which sample qualifies and would create a spurious near-100% mutant clone, so it decides both the sample choice and the final percentage.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-131c6be4540d"
+      }
+    },
+    {
+      "text": "OVER-INCLUSION WHEN SCANNING THE FULL PANEL. 'Scan all 181 variants for drivers' invites adding artifacts and non-drivers. Every extra variant multiplies the number of genotype combinations and removes cells that are missing at that locus, so one wrongly included variant changes the largest-clone percentage. A classic artifact is the ASXL1 G646Wfs*12 homopolymer insertion (hg19 chr20:31022441 A>AG); other homopolymer indels and variants seen at a similar low level in all samples behave the same way. CHECK: for each candidate require, within the sample: mutated in at least about 1% of genotyped cells and at least about 10 cells; mean AF of mutated cells near 50 or 100 rather than 15-30; good GQ; not present at a similar low frequency in all five patients; and a nonsynonymous or truncating consequence in a recognised myeloid/clonal-haematopoiesis driver gene (the file has no gene or protein annotation, so annotate from hg19 coordinates). IF FOUND: exclude the variant from clone definition and list it with the reason. Report the final driver list explicitly and re-run the clone table after exclusion. Published workflows drop blacklisted recurrent artifacts, synonymous/non-coding variants and variants mutated in fewer than 2 cells before clone assignment.",
+      "from": [
+        "sl-sc-test-9370b6362ba5"
+      ],
+      "reason": "The task explicitly requires a full-panel driver scan, and the set of variants admitted as drivers determines the clone table and its denominator.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-24e18981530b"
+      }
+    },
+    {
+      "text": "REFERENCE, UNVERIFIED (from the librarian's own recall, not from a source; sanity-check against hotspots you know before relying on it). Variant ids in the file look like chr2:25457164:T/C on hg19 and carry NO gene annotation, so genes must be assigned by coordinate. Approximate hg19 gene spans: DNMT3A chr2:25455845-25565459 (R882 = chr2:25457242-25457243); TP53 chr17:7571720-7590868 (common germline P72R = chr17:7579472 G>C); TET2 chr4:106067842-106200960 (common germline I1762V chr4:106196951 A>G, P363L chr4:106156187 C>T, L1721W chr4:106196829 T>G); ASXL1 chr20:30946147-31027122 (artifact-prone G646Wfs chr20:31022441 A>AG; common L815P chr20:31022959 T>C); JAK2 chr9:4985245-5128183 (V617F chr9:5073770 G>T); SF3B1 chr2:198256698-198299771 (K700E chr2:198266834); SRSF2 chr17:74730197-74733493 (P95 chr17:74732959); U2AF1 chr21:44513066-44527688 (S34 chr21:44524456, Q157 chr21:44514777); IDH1 chr2:209100953-209119806 (R132 chr2:209113112-209113113); IDH2 chr15:90627212-90645708 (R140 chr15:90631934, R172 chr15:90631838); NRAS chr1:115247085-115259515 (G12/G13 chr1:115258744-115258748, Q61 chr1:115256528-115256530); KRAS chr12:25358180-25403854 (G12/G13 chr12:25398281-25398285); CSF3R chr1:36931644-36948915; MPL chr1:43803475-43820135; NPM1 chr5:170814708-170837888; KIT chr4:55524095-55606881; FLT3 chr13:28577411-28674729; RUNX1 chr21:36160098-36421595; EZH2 chr7:148504464-148581441; CBL chr11:119076986-119178859; PTPN11 chr12:112856536-112947717; WT1 chr11:32409322-32457081; GATA2 chr3:128198265-128212030; PPM1D chr17:58677544-58743640; SETBP1 chr18:42260138-42648475; CALR chr19:13049414-13055304. X-linked genes are hemizygous in males, so real mutations and SNPs both read as NGT=2: ZRSR2 chrX:15808574-15841382, BCOR chrX:39910499-40036582, STAG2 chrX:123094475-123236505, PHF6 chrX:133507342-133562822. This list says which gene a coordinate falls in; it does not say which variants in the file are drivers, which must be decided from the data.",
+      "from": [
+        "sl-sc-test-afe850ea51c2"
+      ],
+      "reason": "The team has no web access and the file has no gene annotation, so without a coordinate-to-gene map it cannot tell which of the 181 variants lie in DNMT3A, TP53 or other driver genes. It is passed with its unverified status stated so the team checks it.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-7da95019b1fb"
+      }
+    },
+    {
+      "text": "WHAT 'MUTANT FRACTION ABOVE 10%' MEANS. In single-cell data a heterozygous somatic clone present in 10% of cells has a pseudo-bulk VAF of only about 5%. Bulk CHIP/CCUS criteria are stated in VAF, whereas single-cell tools report the percentage of mutated cells, so which sample passes 'DNMT3A somatic clone exceeds 10%' can depend on which quantity is used and on whether missing cells are in the denominator. CHECK: for each DNMT3A and TP53 candidate in each of the five samples compute both (i) mutated cells / genotyped cells and (ii) mean AF over genotyped cells, and list which samples pass the DNMT3A >10% and TP53-present criteria under each definition. IF FOUND: if exactly one sample qualifies under both definitions, proceed. If the definitions disagree, prefer the percentage of mutated cells among genotyped cells (the natural single-cell meaning of mutant fraction) and state the ambiguity and the alternative sample in the answer notes.",
+      "from": [
+        "sl-sc-test-b98f458e4099"
+      ],
+      "reason": "Sample selection is the first step of the task, and choosing the wrong sample makes everything downstream wrong; the two readings of 'mutant fraction' can pick different samples.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-7103eda403ec"
+      }
+    },
+    {
+      "text": "DEFINE CLONES PER VARIANT, KEEP WT IN THE DENOMINATOR. Clonal-haematopoiesis samples often carry several independent mutations, including more than one DNMT3A variant in different clones. Defining clones per gene, or on DNMT3A and TP53 only, merges distinct clones and overstates the largest one; dropping WT cells from the denominator overstates every mutant clone. In CCUS the all-WT genotype is frequently the largest group, while the question asks for the largest clone carrying at least one mutation. CHECK: give each complete-genotype cell the concatenated genotype across all retained driver variants (one column per variant, not per gene), count each distinct pattern, and confirm the percentages sum to 100 with the all-WT pattern included. Compare with the two-variant (DNMT3A+TP53 only) table to see how much the extra drivers change it. IF FOUND: rank only patterns with at least one mutated locus, but divide by all complete-genotype cells (WT included). Report the genotype pattern of the winning clone, its cell count and the denominator.",
+      "from": [
+        "sl-sc-test-ec32f9dac5a1"
+      ],
+      "reason": "This fixes the unit of a clone and the denominator for the requested percentage; a per-gene or WT-excluded table gives a different number.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-6b5c2fdb7a8c"
+      }
+    },
+    {
+      "text": "ALLELIC DROPOUT AND ZYGOSITY IN CLONE DEFINITION. Allelic dropout (ADO) turns a true heterozygous call into NGT=2 (reference allele dropped) or NGT=0 (mutant allele dropped). The file's own metadata reports ADO of 14-19% for these five samples. Defining clones on the three-state genotype 0/1/2 therefore splits one real het clone into a main clone plus 'hom' and 'WT/single-mutant' satellites, while a binary mutated/not-mutated definition merges them; the two definitions give different sizes for the largest mutant clone. CHECK: build the clone table both ways (three-state NGT 0/1/2, and binary NGT in {1,2} versus 0) on the same complete-genotype cells. For each driver compare the number of NGT=2 cells with the number of NGT=1 cells: a hom share of roughly ADO/2 (about 5-10% of mutated cells) with a similar AF/DP/GQ profile is the dropout signature; a large, discrete NGT=2 population (AF about 100, good depth) is real loss of heterozygosity or hemizygosity (X-linked genes such as BCOR, STAG2, ZRSR2, PHF6 in males are expected to be NGT=2). IF FOUND: if the hom calls look like dropout, do not count them as a separate biological clone; collapse het+hom to 'mutated' for clone assignment. If there is a genuine large hom population, keep zygosity. In either case state which definition was used and report the largest-mutant-clone percentage under both.",
+      "from": [
+        "sl-sc-test-7cb70d087509"
+      ],
+      "reason": "Whether het and hom calls are one clone or two changes the size of the largest mutant clone, which is the number the task asks for.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-18f6f8977a3c"
+      }
+    },
+    {
+      "text": "RAW VERSUS QUALITY-FILTERED GENOTYPE CALLS. The NGT layer holds raw genotype calls. Standard practice (Mosaic filter_variants, Tapestri Insights) masks a cell-variant call as missing when DP<10, GQ<30, or the allele fraction is inconsistent with the genotype (het AF below 20-30%, ref AF above 5%, hom AF below 95%). Low-depth or low-AF 'het' calls otherwise inflate mutant clones and create spurious double-mutant cells. This file stores the pipeline defaults in its metadata (af_cutoff 20, dp_cutoff 10, gq_cutoff 30) and has a FILTER_MASK layer. CHECK: for each candidate driver in the chosen sample, look at the AF distribution of NGT=1 cells (it should centre near 50, not 10-25) and at DP and GQ of mutated calls. Work out the polarity of FILTER_MASK empirically (compare it with DP<10 / GQ<30 / AF<20) before using it. Recompute the clone table with low-quality calls set to missing (3) and compare it with the raw-NGT table. IF FOUND: use the masked genotypes as the primary analysis (failed calls become missing and leave the denominator) and report the raw-NGT figure as a sensitivity check; if the two differ materially, say so in the answer notes.",
+      "from": [
+        "sl-sc-test-4bc05b083a89"
+      ],
+      "reason": "Using raw or quality-masked genotypes changes both the numerator and the denominator of the clone percentage, and the team needs to know the mask exists and that its polarity must be checked.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-1dc3de8de202"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": true,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams ended with a driver set of exactly the two genes the task names (one DNMT3A and one TP53 variant), although the task says to scan the whole panel for ALL somatic drivers and not to stop at DNMT3A and TP53. Every other candidate was removed by judgement (low allele fraction in mutant cells, recurrence in other patients, 'adjacent SNVs look like an artifact'), not by a rule written down as thresholds and applied uniformly to all 181 variants.",
+      "Both teams took the raw NGT layer as the genotype. The first rows of the file show that raw NGT holds calls below the file's own cutoffs (for example DP=5, GQ=5 called NGT=2 with FILTER_MASK=1; metadata gives dp_cutoff=10, gq_cutoff=30, af_cutoff=20). So 'genotyped' was assumed to mean 'NGT != 3 in the raw layer' rather than 'has a call that passes the pipeline filters'. Team A measured that this choice moves the answer by about a quarter of its value and still kept raw; team B tested only a GQ filter.",
+      "Both teams defined clones on a binary mutated/not-mutated genotype (het and hom merged). Team A reported a different value for a three-state table but neither team showed whether the hom calls at the two drivers are dropout-sized or a real subpopulation (for example loss of heterozygosity at TP53).",
+      "Both teams treated the four observed patterns (WT, DNMT3A only, TP53 only, both) as four clones. Two single-mutant groups plus a double-mutant group cannot all be true clones on one tree without recurrent mutation, and both single-mutant groups are far larger than half the dropout rate times the double-mutant clone. Neither team asked whether low-quality raw WT calls create the single-mutant groups, which would change the size of the double-mutant group.",
+      "Both teams treated the four adjacent EZH2 SNVs as a mapping artifact. The same teams used 'recurs in all patients' as the mark of an artifact elsewhere, yet this cluster is specific to one patient on a panel and pipeline shared by all five. One complex variant (a multi-nucleotide change or delins) split into adjacent SNVs by the caller was not ruled out."
+    ],
+    "unused_evidence": [
+      "assays/dna_variants/layers/FILTER_MASK together with metadata dp_cutoff/gq_cutoff/af_cutoff/mutated_cells_cutoff/missing_cells_cutoff: the pipeline's own definition of a usable call and of a passing variant (82 passing variants reported for the target sample). Team A used it only as a sensitivity run; team B did not use it.",
+      "assays/dna_variants/ca/amplicon: variants sit either on catalogue amplicons (MYE_<gene>_<pos>) or on custom amplicons (customMYE_AMPn). The custom amplicons were added to the panel on purpose; the DNMT3A and TP53 variants both teams kept are on custom amplicons (AMP1, AMP37), and so are other loci the teams dropped or never discussed (for example chr17:58740228 and chr17:58740623 on AMP42/AMP43, further DNMT3A loci on AMP2/8/9/14/15, TP53 on AMP39/40, chr4:106157780 on AMP32). Neither team used this column to ask which loci the study designers expected to be mutated.",
+      "assays/dna_read_counts (cells x 279 amplicons): per-cell amplicon depth. It can show whether hom calls at a driver coincide with reduced amplicon depth (copy loss / LOH) and whether the EZH2 amplicon carrying the SNV cluster behaves differently in this patient than in the other four. Not used by either team.",
+      "assays/protein_read_counts (48 antibodies, including three isotype controls): not used at all. It can show whether carriers of a disputed variant are spread over lineages like the accepted clones or track depth/cell type like a technical artifact, and can flag doublets (mixed-lineage cells), which create apparent double mutants and low-AF hets.",
+      "AF_MISSING and RGQ layers, and per-variant ca/ado_rate and ca/ado_gt_cells (filled for only some variants): not used; the per-variant dropout values are the direct yardstick for whether single-mutant and hom groups are dropout-sized.",
+      "Other panel variants in the two named genes in the same sample (chr2:25458546, 25466799/25466800, 25466852, 25467188, 25469496, 25469502, 25469913, 25536827; chr17:7578115, 7578587): the teams' records dispose of only some of these explicitly."
+    ],
+    "unresolved_weak_points": [
+      "Team A named raw versus quality-masked genotypes as its weakest point, measured that it changes the answer materially (raw, FILTER_MASK, strict mask and three-state all give different values), and still reported raw as primary with the only argument that NGT is 'already pipeline-called'. Its own plan said to change method if masked and raw differ materially. Reported, not resolved.",
+      "Team A also named the driver set as a judgement call; it did not turn the judgement into a rule, and its records never mention the PPM1D candidate that team B tested.",
+      "Team B named the driver set as its weakest point and explicitly said the task hints at more drivers than it used; it gave the alternative values but did not settle which set the task intends. Its pitfalls_checked list is empty, so there is no record that it ran the zygosity, dropout or denominator checks passed down to it.",
+      "Both teams flagged the EZH2 cluster as the largest sensitivity (it changes which clone is largest) and excluded it on appearance alone."
+    ],
+    "second_readings": [
+      "'ALL somatic driver variants ... do not limit your analysis to DNMT3A and TP53 alone' presupposes that the intended driver set has more than two members. A reading in which 'somatic driver' means 'subclonal (not germline) variant in a driver gene of the panel in this sample', applied by rule, gives a different set from the teams' curated two-variant set, and both teams showed the answer changes when any candidate is added.",
+      "'cells genotyped at all driver loci' / 'percentage of genotyped cells': genotyped can mean NGT != 3 in the raw layer, or a call passing the platform's quality filters (failed calls set to missing). The two readings give different numerators and denominators.",
+      "'genotype-defined clonal populations': a genotype can be the zygosity-aware state (WT/HET/HOM per variant) or the binary mutated/not state. The teams' own numbers differ between the two.",
+      "'DNMT3A somatic clone exceeds 10% mutant fraction': fraction of mutated cells versus allele fraction. Team A checked this and one sample qualifies either way, so this reading is settled.",
+      "'single largest MUTANT clone': largest observed genotype pattern versus largest clone after folding dropout/doublet satellites back into their parent. The task text points to observed patterns, but the teams did not state which they report."
+    ],
+    "verdict": "Low to moderate trust. The teams agree because they made the same three untested choices (a two-variant driver set despite the task saying there are more, raw rather than filter-passing genotypes, binary rather than zygosity-aware clones), and their own sensitivity runs show each choice moves the answer; the multiple-choice interpretation is not in doubt.",
+    "questions": [
+      {
+        "to": "sc04-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: the task says to find ALL somatic drivers and not to stop at DNMT3A and TP53, yet your final set is exactly those two, and you call that a judgement call. Write your inclusion and exclusion rule as explicit numeric thresholds and apply it identically to all 181 variants in the target sample. For every variant that is neither absent nor germline-level there, tabulate: gene, consequence, the amplicon name from ca/amplicon (custom versus catalogue), mutated cells before and after the file's own FILTER_MASK, the allele fraction of the passing mutated calls, and the mutated fraction in each of the other four patients. Include the loci your records never mention (chr17:58740228 and chr17:58740623, the other DNMT3A loci, chr17:7578115, chr4:106157780). Is any variant excluded by judgement that the written rule would keep? Does that change your driver set and your method?",
+        "from": [
+          "sl-sc-test-52f910316df0",
+          "sl-sc-test-f205eedb3473"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-ce4b11f9ffe2"
+      },
+      {
+        "to": "sc04-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your plan said to change method if masked and raw genotypes differ materially; you found they do and kept raw. The raw NGT layer holds calls below the file's own cutoffs (metadata dp_cutoff, gq_cutoff, af_cutoff; FILTER_MASK=1). For each driver locus count how many of the cells you call 'genotyped' and how many of the mutated and of the WT calls fail those cutoffs, and how many of the cells in each of your four genotype groups rest on at least one failing call. Given that count, what in the task text or the data supports calling a cell 'genotyped' on a failing call? Does that change which genotype layer is your primary one?",
+        "from": [
+          "sl-sc-test-9a72e6434bca"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-c4888c81b17d"
+      },
+      {
+        "to": "sc04-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your table has a double-mutant group and two single-mutant groups, each several times larger than half the dropout rate times the double-mutant group, which cannot all be true clones on one tree. Check (a) the DP and GQ of the WT call at the other locus in the single-mutant cells against those of true WT cells, (b) the number of NGT=2 against NGT=1 cells at each driver compared with the dropout expectation, using ca/ado_rate where it is filled, and (c) whether the hom cells show lower read depth on that amplicon in assays/dna_read_counts. Do the single-mutant and hom groups look like technical satellites or real populations, and does that change whether you define clones on binary or three-state genotypes?",
+        "from": [
+          "sl-sc-test-9a72e6434bca",
+          "sl-sc-test-18f6f8977a3c",
+          "sl-sc-test-b6757338e1c8"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-4af0450a792f"
+      },
+      {
+        "to": "sc04-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you excluded the four adjacent EZH2 SNVs as a misalignment artifact, but elsewhere you used recurrence in all patients as the mark of an artifact, and this cluster is in one patient only on a panel and pipeline shared by all five. Check: whether the four SNVs have the same AF and DP within each cell (one haplotype); the AF distribution at these positions in ALL cells with adequate depth, including those called WT (two separate modes, or one continuous low-AF smear); read depth of amplicon MYE_EZH2_148506099 in this patient against the other four; whether carriers are nested in, exclusive of, or independent of the DNMT3A/TP53 cells; and whether carriers are spread over the protein-defined lineages like your accepted clones. Do the results fit an artifact or a single complex variant, and does that change your driver set?",
+        "from": [
+          "sl-sc-test-c89225fb9cb3"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-888b6d332a13"
+      },
+      {
+        "to": "sc04-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you wrote that the task hints at more drivers than DNMT3A and TP53 and that your answer changes if any are added, but you did not settle it. Write your exclusion rule as explicit numeric thresholds and apply it identically to all 181 variants in the target sample. For each excluded candidate (the PPM1D deletion, CBL, NF1, ASXL1, KRAS, the other DNMT3A and TP53 loci, chr17:58740228, chr4:106157780) tabulate: the amplicon name from ca/amplicon (custom versus catalogue), mutated cells before and after the file's FILTER_MASK, the allele fraction of the passing calls, the mutated fraction in each of the other four patients, and whether its carriers are nested in, exclusive of, or independent of the DNMT3A/TP53 cells. Which candidates fail the written rule and which only your judgement? Does that change your driver set and your method?",
+        "from": [
+          "sl-sc-test-6e337e8029ee",
+          "sl-sc-test-b453704489f2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-b95c23e905da"
+      },
+      {
+        "to": "sc04-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you counted cells from the raw NGT layer and tested only a GQ filter. The raw layer holds calls below the file's own cutoffs (metadata dp_cutoff, gq_cutoff, af_cutoff; layer FILTER_MASK, where the other team found 1 means failed). For the driver loci count how many 'genotyped' cells and how many mutated and WT calls fail those cutoffs, and rebuild your genotype table with failing calls treated as missing. The other team saw a material change. What in the task text or the data tells you whether 'genotyped' means any raw call or a passing call? Does that change your method?",
+        "from": [
+          "sl-sc-test-b453704489f2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-f450d67eec6e"
+      },
+      {
+        "to": "sc04-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your plan binarised genotypes and your notes list no pitfall checks. Build the clone table on three-state genotypes (WT/het/hom) as well as binary on the same cells. At each driver compare the number of NGT=2 with NGT=1 cells against the dropout expectation (metadata ado_rate, ca/ado_rate where filled) and check whether hom cells have lower read depth on that amplicon in assays/dna_read_counts. Also compare your two single-mutant groups with half the dropout rate times the double-mutant group, and look at DP/GQ of their WT call at the other locus. Are the hom and single-mutant groups technical satellites or real populations, and does that change how you define a clone?",
+        "from": [
+          "sl-sc-test-6e337e8029ee",
+          "sl-sc-test-7cb70d087509",
+          "sl-sc-test-b6757338e1c8"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-23ed4a7a1aaa"
+      },
+      {
+        "to": "sc04-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: you excluded the four adjacent EZH2 SNVs as a likely mapping artifact, yet your own rule for artifacts was recurrence across samples and this cluster is absent from the other four patients run on the same panel. Check: whether the four SNVs share AF and DP within each cell; the AF distribution at these positions in all adequately covered cells including those called WT (two modes or one continuous smear); read depth of amplicon MYE_EZH2_148506099 in this patient against the others; how many carrier calls pass FILTER_MASK; and whether carriers are distributed over the protein-defined lineages like the DNMT3A/TP53 cells or track depth or one cell type. Do the results fit an artifact or one complex variant split into SNVs, and does that change your driver set?",
+        "from": [
+          "sl-sc-test-fede13345955"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-b1a55e1e5fc1"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In Mission Bio Tapestri analysis (the Mosaic Python package and Tapestri Insights), what exactly does the default variant/genotype filtering do (minimum depth, minimum genotype quality, allele-fraction windows for ref/het/hom calls, minimum percent of cells genotyped, minimum percent of cells mutated), are genotype calls that fail these filters set to 'missing', and is the raw NGT layer stored in the h5 file filtered or unfiltered? When these tools report clone sizes as a percentage of 'genotyped cells', which cells count as genotyped?",
+          "why": "The answer changes materially depending on whether a cell with a low-depth or low-quality raw call counts as genotyped; both teams used raw calls and neither showed what the platform convention is.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "When Tapestri Insights, Mosaic (for example its genotype-grouping / clone-table functions) and the published single-cell DNA myeloid clonal-analysis workflows define genotype-based clones from a set of selected variants, is a clone defined by the zygosity-aware genotype (WT / heterozygous / homozygous at each variant) or by a binary mutated / not-mutated state, and how are small clones attributable to allelic dropout handled or labelled?",
+          "why": "Both teams merged het and hom into one state; a zygosity-aware definition splits the clones differently and gives a different size for the largest mutant clone.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In droplet-based targeted single-cell DNA amplicon sequencing with GATK-style variant calling, (a) how is a true complex or multi-nucleotide variant typically represented (as several adjacent SNVs carried by the same cells?) and what per-cell allele-fraction and cross-sample patterns distinguish it from a misalignment artifact cluster, and (b) are low-allele-fraction single-base deletions in homopolymer tracts of the terminal exon of PPM1D a known recurrent artifact, and which criteria are used to separate them from genuine truncating clonal-haematopoiesis mutations?",
+          "why": "Both teams excluded a sample-specific cluster of adjacent SNVs and a truncating-type indel in a clonal-haematopoiesis gene on appearance alone; including either changes the answer, and neither team showed knowledge of how such calls are normally adjudicated.",
+          "passed": false,
+          "reasons": [
+            "a number within 1 percent of another team's value for \"interpretation\""
+          ]
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In Mission Bio Tapestri analysis (Mosaic and Tapestri Insights), what does the default variant/genotype filtering do (min depth, min GQ, AF windows for ref/het/hom, min % cells genotyped, min % cells mutated), are failing calls set to missing, is the raw NGT layer in the h5 filtered or unfiltered, and which cells count as 'genotyped' when clone sizes are reported?",
+          "answer": "Mosaic Dna.filter_variants defaults: min_dp=10, min_gq=30, vaf_ref=5 (NGT=0 calls with AF>5 become missing), vaf_het=30 (NGT=1 calls with AF<30 become missing), vaf_hom=95 (NGT=2 calls with AF<95 become missing), min_prct_cells=50 (variant must be genotyped in >=50% of cells after the call filters, weighted by cell completeness) and min_mut_prct_cells=1 (mutated in >=1%, also weighted). Failing cell-variant calls are set to 3 (missing) in a new NGT_FILTERED layer; NGT itself is left unchanged. The NGT layer in the pipeline h5 is raw/unfiltered: the pipeline stores only its cutoffs (af/dp/gq cutoffs, missing_cells/missing_variants/mutated_cells cutoffs), a FILTER_MASK layer and filtered flags, and these 'do not actually remove any variants/cells'. Tapestri Insights v2.2 Advanced Filters use one alternate-AF cutoff instead of the three zygosity-specific ones (tapestriR equivalent: GQ 30, DP 10, AF 20, genotyped in >=50%, mutated in >=1%; masking is optional there, gt.mask defaults to FALSE). By platform convention a call that fails DP/GQ/AF is missing, so the cell is not genotyped at that locus. Clone-percentage denominators: Mosaic group_by_genotype divides by all input cells and pools incomplete cells into a 'Missing GT clones' group (in the docs example 620/3751 = 16.53% includes 2413 missing cells). The usual practice (Mosaic notebooks drop the missing group; the Bowman/Miles workflow removes any cell with NGT=3 at retained variants) is to count as genotyped only cells with a passing call at every selected variant. A claim that Tapestri Insights computes percentages over genotyped cells came only from an unopened search snippet (BBG-Wiki) and is unverified.",
+          "sources": [
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.dna.Dna.filter_variants.html",
+            "https://missionbio.github.io/mosaic/manual/data_structure.html",
+            "https://missionbio.github.io/mosaic/v2.4.1/4_data_structure.html",
+            "https://missionbio.github.io/mosaic/v2.4.1/examples/analysis-walkthrough.html",
+            "https://rdrr.io/github/MissionBio/tapestriR/man/filter_variants.html",
+            "https://missionbio.github.io/mosaic/notebooks/additional-plots-and-customizations.html",
+            "https://bowmanr.github.io/scDNA_myeloid/post-processing.html"
+          ],
+          "confidence": "high for the Mosaic defaults and raw NGT; medium for the 'genotyped cells' denominator convention; low for the exact Tapestri Insights internals",
+          "deliveries": {
+            "sc04-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-8e1ac22fab6a"
+            },
+            "sc04-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-a9237d151942"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In Mission Bio Tapestri analysis (Mosaic and Tapestri Insights), what does the default variant/genotype filtering do (min depth, min GQ, AF windows for ref/het/hom, min % cells genotyped, min % cells mutated), are failing calls set to missing, is the raw NGT layer in the h5 filtered or unfiltered, and which cells count as 'genotyped' when clone sizes are reported? ANSWER: Mosaic Dna.filter_variants defaults: min_dp=10, min_gq=30, vaf_ref=5 (NGT=0 calls with AF>5 become missing), vaf_het=30 (NGT=1 calls with AF<30 become missing), vaf_hom=95 (NGT=2 calls with AF<95 become missing), min_prct_cells=50 (variant must be genotyped in >=50% of cells after the call filters, weighted by cell completeness) and min_mut_prct_cells=1 (mutated in >=1%, also weighted). Failing cell-variant calls are set to 3 (missing) in a new NGT_FILTERED layer; NGT itself is left unchanged. The NGT layer in the pipeline h5 is raw/unfiltered: the pipeline stores only its cutoffs (af/dp/gq cutoffs, missing_cells/missing_variants/mutated_cells cutoffs), a FILTER_MASK layer and filtered flags, and these 'do not actually remove any variants/cells'. Tapestri Insights v2.2 Advanced Filters use one alternate-AF cutoff instead of the three zygosity-specific ones (tapestriR equivalent: GQ 30, DP 10, AF 20, genotyped in >=50%, mutated in >=1%; masking is optional there, gt.mask defaults to FALSE). By platform convention a call that fails DP/GQ/AF is missing, so the cell is not genotyped at that locus. Clone-percentage denominators: Mosaic group_by_genotype divides by all input cells and pools incomplete cells into a 'Missing GT clones' group (in the docs example 620/3751 = 16.53% includes 2413 missing cells). The usual practice (Mosaic notebooks drop the missing group; the Bowman/Miles workflow removes any cell with NGT=3 at retained variants) is to count as genotyped only cells with a passing call at every selected variant. A claim that Tapestri Insights computes percentages over genotyped cells came only from an unopened search snippet (BBG-Wiki) and is unverified. HOW SURE: high for the Mosaic defaults and raw NGT; medium for the 'genotyped cells' denominator convention; low for the exact Tapestri Insights internals. SOURCES: https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.dna.Dna.filter_variants.html, https://missionbio.github.io/mosaic/manual/data_structure.html, https://missionbio.github.io/mosaic/v2.4.1/4_data_structure.html, https://missionbio.github.io/mosaic/v2.4.1/examples/analysis-walkthrough.html, https://rdrr.io/github/MissionBio/tapestriR/man/filter_variants.html, https://missionbio.github.io/mosaic/notebooks/additional-plots-and-customizations.html, https://bowmanr.github.io/scDNA_myeloid/post-processing.html."
+        },
+        {
+          "question": "When Tapestri Insights, Mosaic (genotype-grouping / clone-table functions) and published scDNA myeloid clonal workflows define genotype clones from selected variants, is the clone zygosity-aware (WT/het/hom) or binary mutated/not-mutated, and how are small ADO-attributable clones handled or labelled?",
+          "answer": "By default the clone is zygosity-aware. Mosaic group_by_genotype has ignore_zygosity=False by default (HET and HOM are distinct; setting it True merges them) and reports WT/Het/Hom per variant per clone. The Bowman/Miles scDNA_myeloid workflow builds the clone label by joining the 0/1/2 NGT values across variants on complete-genotype cells, which is also zygosity-aware. ADO handling: Mosaic marks the HET clone as 'parent' and its HOM and WT single-locus derivatives as 'sister' clones, and scores each clone as score = (sister score + DP score + GQ score) * parent-size score. Clones above max_ado_score (default 1 in the Dna method, 0.8 in the GroupByGenotype class) are pooled as 'ADO clones', clones below min_clone_size (% of total cells, default 1) as 'Small subclones', and incomplete cells as 'Missing'. Bowman keeps only clones whose bootstrap lower 95% CI is >=10 cells. So het and hom are not merged by default, but ADO-sized satellites are removed from the named-clone list instead of being folded into the parent. I did not find a separate statement for Tapestri Insights.",
+          "sources": [
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.dna.Dna.group_by_genotype.html",
+            "https://missionbio.github.io/mosaic/notebooks/additional-plots-and-customizations.html",
+            "https://bowmanr.github.io/scDNA_myeloid/assessing-clonal-abundance.html",
+            "https://bowmanr.github.io/scDNA_myeloid/post-processing.html"
+          ],
+          "confidence": "high for Mosaic and the Bowman workflow; low for Tapestri Insights specifically",
+          "deliveries": {
+            "sc04-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-2c6de17fd29c"
+            },
+            "sc04-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-8d748e843025"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: When Tapestri Insights, Mosaic (genotype-grouping / clone-table functions) and published scDNA myeloid clonal workflows define genotype clones from selected variants, is the clone zygosity-aware (WT/het/hom) or binary mutated/not-mutated, and how are small ADO-attributable clones handled or labelled? ANSWER: By default the clone is zygosity-aware. Mosaic group_by_genotype has ignore_zygosity=False by default (HET and HOM are distinct; setting it True merges them) and reports WT/Het/Hom per variant per clone. The Bowman/Miles scDNA_myeloid workflow builds the clone label by joining the 0/1/2 NGT values across variants on complete-genotype cells, which is also zygosity-aware. ADO handling: Mosaic marks the HET clone as 'parent' and its HOM and WT single-locus derivatives as 'sister' clones, and scores each clone as score = (sister score + DP score + GQ score) * parent-size score. Clones above max_ado_score (default 1 in the Dna method, 0.8 in the GroupByGenotype class) are pooled as 'ADO clones', clones below min_clone_size (% of total cells, default 1) as 'Small subclones', and incomplete cells as 'Missing'. Bowman keeps only clones whose bootstrap lower 95% CI is >=10 cells. So het and hom are not merged by default, but ADO-sized satellites are removed from the named-clone list instead of being folded into the parent. I did not find a separate statement for Tapestri Insights. HOW SURE: high for Mosaic and the Bowman workflow; low for Tapestri Insights specifically. SOURCES: https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.dna.Dna.group_by_genotype.html, https://missionbio.github.io/mosaic/notebooks/additional-plots-and-customizations.html, https://bowmanr.github.io/scDNA_myeloid/assessing-clonal-abundance.html, https://bowmanr.github.io/scDNA_myeloid/post-processing.html."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc04-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc04-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc04-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc04-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc04-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 40.272945957956836,
+      "cost_usd": 0.168048,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 109.63637895800639,
+      "cost_usd": 0.2570166,
+      "error": null
+    },
+    {
+      "agent": "sc04-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 100.02350354206283,
+      "cost_usd": 0.4735964,
+      "error": null
+    },
+    {
+      "agent": "sc04-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 115.75621004099958,
+      "cost_usd": 0.5376483999999999,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 208.71546512504574,
+      "cost_usd": 0.4254865,
+      "error": null
+    },
+    {
+      "agent": "sc04-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 125.57097779191099,
+      "cost_usd": 0.6185766,
+      "error": null
+    },
+    {
+      "agent": "sc04-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 108.97495804203209,
+      "cost_usd": 0.5451768,
+      "error": null
+    },
+    {
+      "agent": "sc04-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 124.61272608302534,
+      "cost_usd": 0.531613,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

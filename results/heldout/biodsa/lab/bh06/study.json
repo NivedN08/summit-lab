@@ -1,0 +1,395 @@
+{
+  "study": "bh06",
+  "status": "replicated",
+  "final": {
+    "agent": "bh06-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh06/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bh06-library": "opus",
+    "bh06-team-a": "opus",
+    "bh06-team-b": "opus",
+    "bh06-team-c": "opus",
+    "bh06-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bh06-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh06/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh06-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh06/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bh06-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh06/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bh06-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/heldout/biodsa/lab/bh06/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "True"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bh06-team-a",
+        "bh06-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bh06-team-a",
+        "bh06-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "The sample table mixes plasma cfDNA samples with tissue samples. The cfDNA (MSK-ACCESS) samples are the rows with GENE_PANEL == ACCESS129; rows on IMPACT341/410/468/505 are tissue MSK-IMPACT. Restrict the cfDNA detection rate to ACCESS129 samples, join mutations/CNA/SV on Tumor_Sample_Barcode, and report it both per sample and per patient (patient positive if any of their cfDNA samples is positive). Use tissue only for concordance, never in the cfDNA rate.",
+      "from": [
+        "sl-lab-4a365180b1d7"
+      ],
+      "reason": "Counting tissue samples would measure the wrong thing; the hypothesis is specifically about cfDNA.",
+      "fact_ids": {
+        "team-a": "sl-lab-c088aa62ddf3"
+      }
+    },
+    {
+      "text": "The mutation, CNA and SV files list only samples that carry something, so a rate computed from IDs in those files is close to 100% by construction. The denominator must be all ACCESS129 sample IDs from data_clinical_sample.txt / data_gene_panel_matrix.txt, including samples with no calls. Count a sample as positive if it has at least one mutation, a non-zero CNA call, or an SV. Report n_positive/n_total.",
+      "from": [
+        "sl-lab-80ce7afb9703"
+      ],
+      "reason": "Wrong denominator is the most likely way to get a biased rate.",
+      "fact_ids": {
+        "team-a": "sl-lab-5d51e4f2cfa8"
+      }
+    },
+    {
+      "text": "TERT promoter variants, the commonest alteration in HCC, may appear in data_mutations.txt as 5'Flank or other non-coding classifications. Do not drop them with a coding-only filter; count them as alterations, and say how the rate changes if they are excluded.",
+      "from": [
+        "sl-lab-781df4c9e971"
+      ],
+      "reason": "A routine non-coding filter would sharply change the detection rate.",
+      "fact_ids": {
+        "team-a": "sl-lab-97ede1c501fa"
+      }
+    },
+    {
+      "text": "MSK-ACCESS is a 129-gene panel with CNA/SV calling on only a few genes. Check which genes data_cna.txt covers for ACCESS129 samples. Report the cfDNA detection rate for mutations only and for any alteration (mutation + CNA + SV) separately. The usual definition of 'genomic alteration' is any alteration.",
+      "from": [
+        "sl-lab-6b6932188dfe"
+      ],
+      "reason": "The rate depends on the alteration definition, so both should be visible.",
+      "fact_ids": {
+        "team-a": "sl-lab-a0aab58f8781"
+      }
+    },
+    {
+      "text": "Clonal hematopoiesis variants (e.g. DNMT3A, TET2, ASXL1, PPM1D, JAK2, some TP53) can appear in plasma and be mistaken for tumour alterations. MSK-ACCESS normally removes them using matched white-blood-cell sequencing, and SOMATIC_STATUS = Matched would suggest this was done. Check the mutation annotation columns and the share of calls in CH genes, and run a sensitivity analysis without CH-gene calls.",
+      "from": [
+        "sl-lab-6f3ff78d4429"
+      ],
+      "reason": "Checks that the detection rate is not inflated by non-tumour variants.",
+      "fact_ids": {
+        "team-a": "sl-lab-e8e1c7ce2648"
+      }
+    },
+    {
+      "text": "The hypothesis concerns this study's own cohort (advanced HCC with a cfDNA panel), so under the benchmark convention the label is True or False, not Not verifiable. 'High percentage' has no stated threshold and the cohort is about 50 patients, so give a Wilson 95% CI for the per-patient rate. State the threshold you will use for 'high' before computing the rate, and judge it against the whole interval.",
+      "from": [
+        "sl-lab-c0b43210f710"
+      ],
+      "reason": "Rules out the wrong label category and makes the interpretation of an unthresholded claim explicit and robust to the small n.",
+      "fact_ids": {
+        "team-a": "sl-lab-00a30d29d349"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Every row in data_mutations.txt attached to a cfDNA sample is a variant detected in that cfDNA sample; neither team checked read support (t_alt_count), and some cfDNA rows carry zero alternate reads, which may be tissue-informed genotyping records rather than detections.",
+      "All cfDNA mutation rows are tumour-derived: Team A removed a hand-picked list of CH genes and Team B removed nothing, but the MAF has its own per-variant CH flag.",
+      "Being in the ACCESS129 cfDNA sample set is the same as having 'advanced HCC'; neither team checked sample type, cancer type or OS columns for the cfDNA patients.",
+      "Counting at patient level (any cfDNA sample positive) gives the right denominator; whether patients with several cfDNA draws change the per-patient rate was not explored beyond reporting both numbers."
+    ],
+    "unused_evidence": [
+      "MAF column CH (Yes/No) marks individual cfDNA variants as clonal-haematopoiesis-derived. Team A says CH was 'not found in data', yet the column has Yes values on cfDNA rows. Removing flagged variants, not whole genes, could change which patients count as positive.",
+      "MAF columns t_alt_count / t_alt_freq / t_depth: some cfDNA rows have zero alternate reads. These may be genotyped from matched tissue and not detected, which would inflate the detection rate.",
+      "MAF columns call_confidence (High/Low/blank), DMP ('Signed out' vs blank) and covered (yes/no): these give the variant's calling tier and reporting status, and neither team used them.",
+      "The matched tissue IMPACT samples (37 of the cfDNA patients also have tissue): these could separate de novo cfDNA calls from tissue-informed genotypes, and give a tumour-informed check."
+    ],
+    "unresolved_weak_points": [
+      "Team A: no threshold for 'high percentage'. Answered by arguing the CI lower bound is high, but the threshold was not fixed in advance as the director asked.",
+      "Team B: whether TERT 5'Flank counts, and the lack of a definition of 'advanced'. Both only reported, and neither was tested with a sensitivity analysis (Team A did one for TERT).",
+      "Both teams: CNA/SV absent for cfDNA, so the rate is called a 'lower bound'. That holds only if every listed mutation is a true detection. Upward-biasing records (zero-read genotypes, CH-flagged, low-confidence) were not considered."
+    ],
+    "second_readings": [
+      "'Genomic alterations detected in cfDNA' could mean somatic tumour-derived alterations called de novo in plasma, excluding CH and tissue-informed genotypes with no plasma reads, rather than any row in the MAF.",
+      "'A high percentage of patients' could be read per patient at a given (for example baseline) draw rather than across any of several draws."
+    ],
+    "verdict": "The cfDNA cohort is clearly this study's own, so the True/False framing is sound. But both teams counted raw MAF rows without using the data's own CH flag, read counts (some rows have zero alt reads) or call-confidence fields, and these all push the rate upward. I trust the agreed answer moderately until those filters are applied.",
+    "questions": [
+      {
+        "to": "bh06-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The MAF has a per-variant CH column, and some cfDNA rows have CH=Yes, though your notes say CH was not found in the data. If you drop variants flagged CH=Yes, rather than a gene list, how many cfDNA patients still have at least one alteration, and does that change your method?",
+        "from": [
+          "sl-lab-220700ce3c67"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-345caea318d8"
+      },
+      {
+        "to": "bh06-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Some cfDNA mutation rows have t_alt_count = 0. Are these genotyped (tissue-informed) records rather than detections? If you count only rows with alternate-read support in the cfDNA sample, does the per-patient detection count change?",
+        "from": [
+          "sl-lab-220700ce3c67"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-6782d2d109de"
+      },
+      {
+        "to": "bh06-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate call_confidence (High/Low/blank), DMP (Signed out/blank) and covered (yes/no) for the cfDNA rows. Does restricting to high-confidence, covered calls change the number of positive patients, and should that restriction be your primary definition?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-b195f42dec20"
+      },
+      {
+        "to": "bh06-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your count used every cfDNA MAF row. The MAF has a CH column with Yes values on cfDNA rows. How many patients stay positive after excluding CH=Yes variants, and does that change your method or your confidence?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-027be047ef95"
+      },
+      {
+        "to": "bh06-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check t_alt_count and t_alt_freq for the cfDNA rows. Some have zero alternate reads. If you require at least one supporting read (or a stated minimum) in the plasma sample, does the per-patient rate change, and is your 'lower bound' still a lower bound?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-b0e50dc3e2c8"
+      },
+      {
+        "to": "bh06-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You flagged TERT 5'Flank as an open question but did not test it. Recompute the per-patient rate with and without TERT promoter calls, and with and without call_confidence=Low / covered=no rows. Does any combination change your label?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-lab-c8c3529c2f80"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In tumour-informed cfDNA panel sequencing pipelines (for example MSK-ACCESS-style), how are variants that were genotyped at known tissue positions but have zero or few supporting plasma reads represented in a cBioPortal-format MAF? Do they count as 'detected'?",
+          "why": "Some cfDNA rows have zero alternate reads. If these are genotype-only records, counting them inflates the detection rate, and neither team checked this.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In cBioPortal MAFs from cfDNA assays with matched white-blood-cell sequencing, what do the 'CH', 'call_confidence' and 'DMP' (Signed out) columns conventionally mean, and which subset is normally reported as plasma-detected somatic alterations?",
+          "why": "These columns decide which rows count as tumour-derived detections, and neither team used them.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In tumour-informed cfDNA panel sequencing pipelines (for example MSK-ACCESS-style), how are variants that were genotyped at known tissue positions but have zero or few supporting plasma reads represented in a cBioPortal-format MAF? Do they count as 'detected'?",
+          "answer": "The web did not settle this: the research gateway returned HTTP 502 (Exa 403) on all 4 calls, so I read no pages. From domain knowledge only: MSK-ACCESS-style tumour-informed workflows (genotype_variants) genotype known tissue variants in plasma and may write them to the MAF even when plasma alt reads are zero or below the calling threshold. Such genotype-only rows (t_alt_count = 0) should not count as plasma detections. Count only rows with alt reads > 0, and preferably only rows that were called or signed out. Report the detection rate with and without these rows.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh06-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-3ee549f6e734"
+            },
+            "bh06-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-95f30d103845"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In tumour-informed cfDNA panel sequencing pipelines (for example MSK-ACCESS-style), how are variants that were genotyped at known tissue positions but have zero or few supporting plasma reads represented in a cBioPortal-format MAF? Do they count as 'detected'? ANSWER: The web did not settle this: the research gateway returned HTTP 502 (Exa 403) on all 4 calls, so I read no pages. From domain knowledge only: MSK-ACCESS-style tumour-informed workflows (genotype_variants) genotype known tissue variants in plasma and may write them to the MAF even when plasma alt reads are zero or below the calling threshold. Such genotype-only rows (t_alt_count = 0) should not count as plasma detections. Count only rows with alt reads > 0, and preferably only rows that were called or signed out. Report the detection rate with and without these rows. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "In cBioPortal MAFs from cfDNA assays with matched white-blood-cell sequencing, what do the 'CH', 'call_confidence' and 'DMP' (Signed out) columns conventionally mean, and which subset is normally reported as plasma-detected somatic alterations?",
+          "answer": "The web did not settle this: the research gateway returned HTTP 502 (Exa 403) on all calls, so I read no pages. From domain knowledge only: 'CH' flags variants attributed to clonal hematopoiesis because they were also seen in matched WBC DNA, so they are not tumour-derived. 'call_confidence' gives the calling tier (e.g. High, Low, or genotyped/not called). 'DMP' / 'Signed out' flags variants that were clinically reported. The conventional set of plasma-detected somatic alterations is non-CH rows with alt reads > 0 that were called (high confidence or signed out). Test whether the conclusion holds with and without these filters.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bh06-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-5fbe2598b8cd"
+            },
+            "bh06-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-lab-0bd3fbb7a142"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In cBioPortal MAFs from cfDNA assays with matched white-blood-cell sequencing, what do the 'CH', 'call_confidence' and 'DMP' (Signed out) columns conventionally mean, and which subset is normally reported as plasma-detected somatic alterations? ANSWER: The web did not settle this: the research gateway returned HTTP 502 (Exa 403) on all calls, so I read no pages. From domain knowledge only: 'CH' flags variants attributed to clonal hematopoiesis because they were also seen in matched WBC DNA, so they are not tumour-derived. 'call_confidence' gives the calling tier (e.g. High, Low, or genotyped/not called). 'DMP' / 'Signed out' flags variants that were clinically reported. The conventional set of plasma-detected somatic alterations is non-CH rows with alt reads > 0 that were called (high confidence or signed out). Test whether the conclusion holds with and without these filters. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bh06-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh06-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bh06-team-b",
+      "round": "challenge",
+      "reason": "agreed with bh06-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bh06-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 55.64554687496275,
+      "cost_usd": 0.1886598,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 38.433699458953924,
+      "cost_usd": 0.21877760000000002,
+      "error": null
+    },
+    {
+      "agent": "bh06-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 35.22273795795627,
+      "cost_usd": 0.15728,
+      "error": null
+    },
+    {
+      "agent": "bh06-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 43.80516154097859,
+      "cost_usd": 0.2113682,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 64.77808341698255,
+      "cost_usd": 0.2589786,
+      "error": null
+    },
+    {
+      "agent": "bh06-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 105.39164054207504,
+      "cost_usd": null,
+      "error": null
+    },
+    {
+      "agent": "bh06-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 58.70589824998751,
+      "cost_usd": 0.24826379999999998,
+      "error": null
+    },
+    {
+      "agent": "bh06-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 58.27197120792698,
+      "cost_usd": 0.26940620000000004,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

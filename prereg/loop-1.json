@@ -1,0 +1,17 @@
+{
+  "batch": "loop-1",
+  "status": "final",
+  "benchmark": "biodsa",
+  "studies": ["bd14", "bd16", "bd18", "bd26", "bd28", "bd30", "bd33", "bd34", "bd36", "bd37",
+              "bd05", "bd11", "bd17", "bd20", "bd24", "bd27", "bd31", "bd32", "bd38", "bd40"],
+  "arms": [
+    "incumbent: variant v3-opus, the settings of runs/dev-panel-noise-lab1 (Phase 1 replicate 1), whose graded results and first-round snapshots stand for it",
+    "each move: a variant of the incumbent run on the panel with --backend modal --memory past --parallel 8, reusing the incumbent's first round when the move does not change it; an accepted move is run a second time"
+  ],
+  "config": {"director_model": "opus", "worker_model": "opus", "recheck": false, "guard": false},
+  "seeds": {"referee_order": null},
+  "max_usd": 400,
+  "primary_endpoint": "Which moves the code accepts: paired against the incumbent on the 20 tasks, a move is accepted only if rescued - damaged >= T = 3 (M-15), damaged <= 1, cost per task <= 1.25 x the incumbent's, and a second run of the move has net > 0. The incumbent at the end is the candidate frozen for the held-out test.",
+  "stop_rules": "Stop after 8 moves, 3 rejections in a row, or $400 spent across moves (per evaluation run at most $50). A halt by a usage or spending limit is resumed with the same command; nothing is re-planned.",
+  "notes": "Phase 4 of the v4 plan. Proposer: an Opus agent that sees only the ledger summary and outcome counts by kind; an invalid or repeated move falls back to the fixed rule queues (top failure kind first: settled claims judged Not verifiable, so the first rule move is turning the re-check on). Dev tasks only: the loop never runs on held-out data. Graded by exact match on the label after every agent of an evaluation has exited."
+}

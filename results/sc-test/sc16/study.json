@@ -1,0 +1,515 @@
+{
+  "study": "sc16",
+  "status": "refereed",
+  "final": {
+    "agent": "sc16-team-b",
+    "team": "team-b",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc16/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc16-library": "opus",
+    "sc16-team-a": "opus",
+    "sc16-team-b": "opus",
+    "sc16-team-c": "opus",
+    "sc16-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc16-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc16/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "median_variant_call_rate": 0.9936,
+        "variants_call_rate_ge_0p8": 412
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc16-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc16/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "median_variant_call_rate": 0.9936539746158984,
+        "variants_call_rate_ge_0p8": 412
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc16-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc16/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "median_variant_call_rate": 0.9904682967260672,
+        "variants_call_rate_ge_0p8": 177
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc16-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc16/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "median_variant_call_rate": 0.8174,
+        "variants_call_rate_ge_0p8": 100
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc16-team-a",
+        "sc16-team-b"
+      ],
+      "fields": {
+        "median_variant_call_rate": true,
+        "variants_call_rate_ge_0p8": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc16-team-a",
+        "sc16-team-b"
+      ],
+      "fields": {
+        "median_variant_call_rate": false,
+        "variants_call_rate_ge_0p8": false
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "DATA LAYOUT (from file headers only; no analysis was done, so verify as you read): GSE276492_combined.h5 is a Mission Bio Tapestri multi-assay HDF5 (pipeline 2.0.2, panel CO89_Custom-Myeloid, hg19, 279 amplicons) holding 5 samples as separate top-level groups: GSM8499463_S7, GSM8499464_S8, GSM8499465_S10, GSM8499466_S13, GSM8499467_S15. Per-cell genotypes are at <sample>/assays/dna_variants/layers/{NGT,GQ,DP,AF,FILTER_MASK,RGQ}, shape cells x variants (2518x75267, 5988x89607, 6912x99071, 4826x78181, 3714x81592). Variant annotations are in ca/{id,filtered,CHROM,POS,REF,ALT,QUAL,amplicon,ado_rate}; cell annotations in ra/{barcode,filtered,sample_name}. The pipeline QC cutoffs stored in dna_variants/metadata are the same in all samples: gq_cutoff 30, dp_cutoff 10, af_cutoff 20, missing_cells_cutoff 50, missing_variants_cutoff 50, mutated_cells_cutoff 1 (these are percentages, not fractions). Metadata n_passing_variants = 82, 88, 92, 75, 82 and n_passing_cells = 2518, 5983, 6898, 4826, 3714, in the sample order above.",
+      "from": [
+        "sl-sc-test-4741a3086cf6"
+      ],
+      "reason": "The file is not a single matrix; the team needs to know where the genotypes, the QC flag and the stored pass counts live, and the other briefing items refer to these paths and numbers.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-63fb438c2f38"
+      }
+    },
+    {
+      "text": "PITFALL (which variants are 'the final QC-passed set'): In Tapestri h5 files the ca/filtered flag is reported to have inverted polarity: filtered == 1 means the variant was filtered OUT by the pipeline, so the QC-passed set is ca/filtered == 0 (same convention for ra/filtered on cells). Taking the wrong polarity swaps roughly 80 variants per sample for roughly 75,000-99,000 failing ones. Do not re-derive the set with a tool's default filter either: the stored flag comes from the pipeline cascade (mask genotypes with GQ < 30, DP < 10, mutated AF < 20; drop variants genotyped in < 50 percent of cells; drop cells with < 50 percent of kept variants genotyped; drop variants mutated in < 1 percent of remaining cells), and mosaic's Dna.filter_variants() defaults, tapestriR and Tapestri Insights all use different cutoffs or denominators and will give a different set. CHECK: per sample, count ca/filtered == 0 and == 1 and compare with dna_variants/metadata/n_passing_variants (82, 88, 92, 75, 82); the number of variants entering your median must equal the QC-passed count (or the union size if you pool), not tens of thousands. Because the pipeline selected these variants on a >= 50 percent quality-masked call rate, the minimum quality-masked call rate on the correct set should be about 0.5; a minimum near 0 means you have the unfiltered set or have mixed variant sets across samples. IF FOUND: use whichever polarity reproduces n_passing_variants exactly and state it; if neither does, report that rather than guessing. Add no extra variant filters of your own (QUAL, germline, blacklist, minimum call rate) unless you report them as a deviation.",
+      "from": [
+        "sl-sc-test-87361cc109e6",
+        "sl-sc-test-3432d426e438",
+        "sl-sc-test-e1b2a2b38c82"
+      ],
+      "reason": "Choosing the wrong polarity or recomputing the filter changes the variant set by three orders of magnitude and so changes both requested numbers; the stored pass counts give a concrete way to confirm the right set.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-4fa6c8e89285"
+      }
+    },
+    {
+      "text": "PITFALL (how missing is coded): In the Tapestri NGT layer genotypes are integers 0 = wildtype/ref, 1 = heterozygous, 2 = homozygous alt, 3 = missing. Missing is not NaN, -1 or 0. Testing isnan, != -1, > 0 or != 0 as 'non-missing' gives a call rate of 1.0 everywhere or silently turns call rate into a mutation rate. CHECK: list the unique NGT values on the passing variants (expect a subset of {0,1,2,3}) and confirm that NGT == 3 entries have DP of 0 or very low. IF FOUND: per-variant call rate = mean over cells of (NGT in {0,1,2}) = 1 - mean(NGT == 3); wildtype (0) counts as called.",
+      "from": [
+        "sl-sc-test-f3b932f57459"
+      ],
+      "reason": "The call rate is defined entirely by what counts as missing; the wrong sentinel gives a plausible-looking but wrong number without any error.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-b6da4ecf740e"
+      }
+    },
+    {
+      "text": "PITFALL (two definitions of 'non-missing genotype' that give different numbers): (a) Raw: stored NGT != 3. (b) Quality-masked: the genotype also has GQ >= 30, DP >= 10 and, for mutated calls only, AF >= 20 (the stored cutoffs). Definition (b) is what the pipeline's FILTER_MASK layer and mosaic's NGT_FILTERED encode by treating failing genotypes as missing, and it is the definition the pipeline used when selecting the QC-passed variants. Raw call rates are higher than masked ones, so both the median and the count >= 0.8 shift. CHECK: compute both on the passing variants. Do not assume FILTER_MASK polarity (1 = failing); verify it by cross-tabulating FILTER_MASK against (GQ < 30 or DP < 10 or NGT == 3). Under the masked definition every passing variant should have call rate of about 0.5 or more, which confirms you have the right mask. IF FOUND (the two differ): do not silently pick one. The library's reading, which is a judgment and not a verified fact, is that 'non-missing genotype' on the stored genotypes most literally means NGT != 3 on the NGT layer as shipped; make your own decision, state which definition is primary and why, and report the other as a sensitivity result with the size of the gap.",
+      "from": [
+        "sl-sc-test-5c17db85e6e5"
+      ],
+      "reason": "This is a genuine ambiguity in the task wording that changes both outputs; the team must choose deliberately and record the alternative rather than land on one by accident.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ba3373a34832"
+      }
+    },
+    {
+      "text": "PITFALL (five samples, five variant lists): The file is five samples with five different variant lists and five different QC-passed sets, not one merged cells x variants matrix. 'The final QC-passed variant set' and 'fraction of cells' are therefore undefined until you choose a combination rule, and the rules give different answers: (1) per-sample: one call rate per (sample, passing variant) pair, about 419 values pooled, with a variant that passes in several samples counted several times; (2) union of passing variant ids, call rate over all 23,958 cells pooled, pulling each variant's column from every sample's full matrix (mosaic's multisample workflow subsets every sample to the union of per-sample passing variants); (3) intersection of passing ids only. Under rule 2 a variant absent from a sample's variant list has no genotype there. CHECK: decode the ca/id bytes and compute the overlap of passing ids across samples (size of union, size of intersection, and how many union ids are missing entirely from some sample's full id list); compute the answer under rules 1 and 2. IF FOUND (rules disagree): state the rule you used explicitly; for rule 2 treat cells of a sample that lacks the variant as missing (kept in the denominator) and say so; never report a median of per-sample medians as if it were the pooled per-variant median.",
+      "from": [
+        "sl-sc-test-5c68934e2d90"
+      ],
+      "reason": "The task asks for one median and one count from a file that holds five separate matrices; how samples are combined changes how many variants are summarised and every call rate, so the rule must be chosen and stated.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-90be948ed2ed"
+      }
+    },
+    {
+      "text": "PITFALL (cell denominator): The call-rate denominator should be the called cells, i.e. the rows of <sample>/assays/dna_variants (2518, 5988, 6912, 4826, 3714), not the <sample>/all_barcodes group (about 1.3 million raw barcodes, mostly empty droplets, read counts only). Two further traps: the pipeline flags a few cells as failing in ra/filtered (metadata n_passing_cells is 5983 of 5988 in S8 and 6898 in S10), and S10's metadata n_cells says 6917 while its NGT matrix has 6912 rows, so metadata counts must not be used as the denominator. CHECK: denominator == NGT.shape[0] for the cells you kept; compute call rates with all assay cells and again with only ra/filtered-passing cells and see whether the median or the >= 0.8 count moves. IF FOUND (they differ): the library's reading, a judgment rather than a verified fact, is that 'fraction of cells' most literally means all cells in the assay matrix; state which you use as primary and report the other as a sensitivity result.",
+      "from": [
+        "sl-sc-test-6f0123dc4a5d"
+      ],
+      "reason": "The denominator sets every call rate; using raw barcodes or a metadata count would change the answer, and the passing-cells choice is a second ambiguity the team should test rather than assume away.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-7c1808dc6f2e"
+      }
+    },
+    {
+      "text": "PITFALL (summary arithmetic at the threshold): Layers are cells x variants, so per-variant call rate is a mean down axis 0 (one value per variant); averaging along axis 1 gives per-cell completeness instead, and its count is bounded by the number of cells, not variants. Keep call rate as a fraction in [0,1] (the pipeline metadata cutoffs are percentages, e.g. 50, so mixing units makes '>= 0.8' meaningless). The threshold is inclusive (>=), and rounding call rates before thresholding, or float error at exactly 0.8, can move variants across the cut-off. CHECK: length of the call-rate vector equals the number of passing variants; all values in [0,1]; count variants within 1e-9 of 0.8 and decide them with integer arithmetic (5 * n_called >= 4 * n_cells). IF FOUND: compute the count from integer called/total counts, report the median unrounded (numpy's median of an even-length vector averages the two middle values), and return the count as an integer.",
+      "from": [
+        "sl-sc-test-0743f0acc143"
+      ],
+      "reason": "Both requested outputs are summary statistics that an axis mix-up, unit mix-up or boundary rounding can change with no error raised.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-3cd1091cc6bf"
+      }
+    },
+    {
+      "text": "PITFALL (reading shortcuts that change the answer): The dna_variants layers are large gzip-compressed HDF5 datasets chunked (64,64); AF is float64 (about 5.5 GB for the 6912 x 99071 sample), so loading whole layers can exhaust memory and tempt you to subsample cells or variants, which changes call rates. h5py fancy indexing needs increasing indices and returns columns in file order, so a variant-id list held in another order becomes misaligned with the call rates; ids are byte strings (|S) and compare unequal to str. CHECK: read only the passing columns (boolean mask or sorted integer indices on axis 1) of NGT (int8; add GQ/DP/AF for the passing columns only if needed) over ALL rows; assert the returned shape is (n_cells, n_passing) and decode ids before any cross-sample set operation. IF FOUND (memory or speed problems): read sample by sample and column-subset first; never subsample cells.",
+      "from": [
+        "sl-sc-test-bf798e23e64b"
+      ],
+      "reason": "Memory pressure on this file pushes toward subsampling, and id ordering/byte-string issues silently break cross-sample matching; either would alter the per-variant call rates.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-d85fa3c266cb"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 7,
+  "challenge_changed_answer": null,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat a genotype as 'non-missing' whenever the stored NGT code is not 3, ignoring the per-genotype quality flag (FILTER_MASK, built from GQ/DP/AF cutoffs). The stored NGT layer is unmasked (genotypes with depth of 2-6 reads and FILTER_MASK=1 still carry a 0/1/2 code), while the file's own QC-passed flag was built on quality-masked genotypes. Neither team tested which definition the file's QC uses for 'genotyped'; both adopted the raw reading from the same library note, which labelled itself a judgment.",
+      "Both teams summarise 419 (sample, variant) pairs, so a variant id that passes QC in several samples enters the median and the count several times. The reported count is larger than the number of distinct QC-passed variant ids (181). The task speaks of 'the final QC-passed variant set' (one set) and of a count of 'variants'; neither team tested whether a set with repeated ids is what is asked.",
+      "Both teams assume 'fraction of cells' means cells of one sample at a time, never cells of the whole combined dataset, for the primary answer.",
+      "Both teams assume the per-sample pipeline flag ca/filtered==0 is the 'final' set and that no further combination step across the five samples (as a vendor loader would do for a multi-sample file) defines it."
+    ],
+    "unused_evidence": [
+      "layers/FILTER_MASK, GQ, DP, AF: per-genotype quality information. Team B did not use them at all (its plan listed a DP/GQ missingness check that does not appear in its checks run); team A used them only as a sensitivity run and found that both reported numbers change a lot. Purpose: they define which genotypes the pipeline counts as genotyped. Ignoring them could change both numbers.",
+      "The file layout itself: five samples as top-level groups, each with assays/ and all_barcodes/, in a file named 'combined'. This matches a vendor multi-sample container, for which the vendor loader has a defined rule for building one cells-by-variants object. Neither team asked what that rule produces. It could change the count strongly.",
+      "The full per-sample variant lists (75k-99k ids each): for a union id that did not pass QC in a sample but is present in that sample's list, real genotypes exist. Team A treated ids absent from a sample as missing, team B dropped the samples where the id did not pass; neither used the stored genotypes of non-passing-but-present ids. Their two 'union' results therefore differ from each other and neither is the third variant.",
+      "dna_variants/metadata fields n_passing_variants_per_cell, n_variants_per_cell and high_quality_variants (0 in all samples), and ca/ado_rate, ca/ado_gt_cells (all -1 in the rows seen), ca/QUAL, layers/RGQ: not used; most likely not needed for a call rate, but nobody stated what they are.",
+      "ra/filtered (24 cells) and the 5-cell gap between S10 metadata n_cells and matrix rows: used differently by the two teams, shown by both to be negligible. Resolved."
+    ],
+    "unresolved_weak_points": [
+      "Team A named 'pooling rule and raw vs masked definition are judgment calls that change the answer substantially' (confidence 0.5). It reported the alternatives but resolved neither with evidence from the data or the wording.",
+      "Team B named 'ambiguity in how the 5 samples should be combined; the count changes under other reasonable aggregations' (confidence 0.45). Its own plan said to 'pick the most literal' if aggregation changed the answer a lot; it did change a lot, and the notes do not show an argument for why multi-counted pairs are the most literal reading of one 'variant set'.",
+      "Team B planned a DP/GQ-based missingness check and did not record running it; its pitfalls_checked list is empty.",
+      "The two teams' union-rule sensitivity results disagree with each other (different denominators), and this was not reconciled."
+    ],
+    "second_readings": [
+      "'the final QC-passed variant set' as ONE set of distinct variants for the combined dataset (union or intersection of ids, or whatever a multi-sample load yields), not five per-sample sets concatenated with repeats.",
+      "'fraction of cells' as the fraction of all cells in the dataset (pooled across the five samples), versus cells of the sample in which the variant passed.",
+      "'non-missing genotype' as a genotype that survives the pipeline's genotype-level QC (the same definition the pipeline used to decide which variants pass), versus any stored NGT code other than 3.",
+      "'final' as pointing to the last stage of a multi-stage QC (genotype masking, variant filter, cell filter, variant filter again), which would also imply the cell filter and the masked genotypes belong to the final state; or 'final' as a set produced after a loader's own default variant filter rather than the stored flag."
+    ],
+    "verdict": "Low to moderate trust. The agreement is real but rests on two untested choices the teams share and both flagged themselves (repeat-counted sample-variant pairs instead of one set of distinct variants, and raw rather than quality-masked 'non-missing'); each choice alone moves one of the two reported numbers substantially, and the reported count exceeds the number of distinct QC-passed variants in the file.",
+    "questions": [
+      {
+        "to": "sc16-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your primary summary is over 419 (sample, variant) pairs, in which a variant id that passes in several samples is counted several times, so your count of variants at or above the threshold is larger than the number of distinct QC-passed ids in the file. Check: among the pairs at or above the threshold, how many distinct ids are there; how many ids sit on different sides of the threshold in different samples; and how many ids appear 1, 2, 3, 4 and 5 times. Then reread 'the final QC-passed variant set' and the answer field name word by word and write down whether a set with repeated ids is a reading of those words. Does that change your method?",
+        "from": [
+          "sl-sc-test-89a3feea67a9",
+          "sl-sc-test-96fa3a7f2219"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-a7f808399741"
+      },
+      {
+        "to": "sc16-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: you found that the raw and the quality-masked definitions of 'non-missing' give very different results and named this a judgment call, but did not test which one the file itself uses. The stored NGT layer is unmasked: on QC-passed variants there are genotypes with a 0/1/2 code, FILTER_MASK=1 and read depth of only a few reads. Check, per sample over ALL variants in the list: how many variants have a call rate of at least the stored missing-cells cutoff under the raw definition and how many under the masked definition, and which of the two (with the rest of the stored cascade) reproduces ca/filtered==0. Also report, on the passing variants, what share of the genotypes you count as called have FILTER_MASK=1, and their depth distribution. Given which definition of 'genotyped' produced the 'final QC-passed' set, does that change your method?",
+        "from": [
+          "sl-sc-test-89a3feea67a9",
+          "sl-sc-test-ba3373a34832"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-6ed2c6c20bef"
+      },
+      {
+        "to": "sc16-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: your union-of-ids sensitivity result and the other team's do not agree, because the denominators differ: you kept all cells and treated an id absent from a sample as missing; they used only the cells of samples where the id passed. Neither used the stored genotypes of an id that is present in a sample's full variant list but did not pass QC there. Check, for the 181 union ids: in how many samples each id is (a) passing, (b) present but not passing, (c) absent from the list; then compute the union-rule summary under the three denominators (all cells with absent = missing; cells of samples where the id is present, using stored genotypes; cells of samples where it passed), each under both the raw and the masked definition, and put them in one table with your primary result. The file is one 'combined' container with the five samples as top-level groups: does the layout, or the table, change which rule you consider the reading of 'fraction of cells' for 'the final QC-passed variant set'? Does that change your method?",
+        "from": [
+          "sl-sc-test-96fa3a7f2219",
+          "sl-sc-test-5a2b9f8324b4"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-843add4bea93"
+      },
+      {
+        "to": "sc16-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your plan listed a check of DP/GQ-based missingness against NGT, and your notes do not show that it was run. The stored NGT layer is unmasked: on QC-passed variants there are genotypes with a 0/1/2 code that carry FILTER_MASK=1 and a read depth of only a few reads. Check: cross-tabulate FILTER_MASK against (GQ, DP, AF below the stored cutoffs, NGT==3) to fix its polarity; compute your summary with FILTER_MASK-failing genotypes counted as missing; and, per sample over ALL variants in the list, count how many variants reach the stored missing-cells cutoff under the raw and under the masked definition, to see which one the pipeline used when it built ca/filtered. Given which definition of 'genotyped' produced the 'final QC-passed' set, does that change your method?",
+        "from": [
+          "sl-sc-test-a25d7e81bfd2",
+          "sl-sc-test-5c17db85e6e5"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-f6eb9db2a53d"
+      },
+      {
+        "to": "sc16-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your plan said that if the aggregation choice changed the answer a lot you would report it and pick the most literal reading. It did change the count a lot, and you kept pooled (sample, variant) pairs, in which the same variant id is counted up to five times, so your count is larger than the number of distinct QC-passed ids. Check: among the pairs at or above the threshold, how many distinct ids are there; how many ids fall on different sides of the threshold in different samples; and how often each id repeats. Then reread 'the final QC-passed variant set' and the answer field name word by word and write down which aggregation those words describe most literally and why. Does applying your own rule now change your method?",
+        "from": [
+          "sl-sc-test-5a2b9f8324b4",
+          "sl-sc-test-a25d7e81bfd2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-cf99213c4ef4"
+      },
+      {
+        "to": "sc16-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your union-by-id sensitivity result and the other team's do not agree, because the denominators differ: you used only the cells of samples where the id passed; they kept all cells of the file and treated an id absent from a sample as missing. Neither used the stored genotypes of an id that is present in a sample's full variant list but did not pass QC there. Check, for the 181 union ids: in how many samples each id is (a) passing, (b) present but not passing, (c) absent from the list; then compute the union-rule summary under the three denominators (all cells with absent = missing; cells of samples where the id is present, using stored genotypes; cells of samples where it passed) and put them in one table with your primary result. The file is one 'combined' container with the five samples as top-level groups: does the layout, or the table, change which rule you consider the reading of 'fraction of cells'? Does that change your method?",
+        "from": [
+          "sl-sc-test-5a2b9f8324b4",
+          "sl-sc-test-96fa3a7f2219"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-ded9d6ec034a"
+      },
+      {
+        "to": "sc16-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: your record lists no pitfalls checked. Check and record: that the count of ca/filtered==0 equals dna_variants/metadata/n_passing_variants in every sample; that the length of your call-rate vector equals the number of variants you intend to summarise; and how many call rates lie within 1e-9 of the threshold, deciding those with integer counts of called and total cells rather than floats. Does any of these change your count or your method?",
+        "from": [
+          "sl-sc-test-a25d7e81bfd2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-92330cfa7dd9"
+      }
+    ]
+  },
+  "referee": {
+    "difference": "Both use the same 181-id union of ca/filtered==0 variants, pooled over the samples where each id passed. X counts a genotype as non-missing when NGT!=3 (raw), giving 0.9905/177. Y counts it as non-missing only when NGT!=3 and it passes the stored GQ>=30/DP>=10/AF>=20 quality mask (equal to FILTER_MASK==0), over QC-passed cells (ra/filtered==0), giving 0.8174/100. Under X's own masked, all-cells option the count is 99.",
+    "test": "test2.py: on sample S7, rerun the pipeline's own variant QC (missing_cells_cutoff=50%, mutated_cells_cutoff=1%, both read from metadata) over all 75,267 variants, once with raw NGT!=3 as 'called' and once with the masked definition, and compare to the stored ca/filtered. test.py: recompute the answer under each definition and denominator.",
+    "expected_if_x": "If raw NGT!=3 is the pipeline's notion of a non-missing genotype, the raw rerun reproduces ca/filtered (82 passing variants) and the masked rerun does not.",
+    "expected_if_y": "If missing means quality-masked, the masked rerun reproduces ca/filtered exactly and the raw rerun passes far too many variants.",
+    "outcome": "Masked: 82 pass, matching ca/filtered on 75,267 of 75,267 variants. Raw: 296 pass, with 214 disagreements. The masked flags equal raw & ~FILTER_MASK on every passing genotype. Recomputed answer: masked over QC-passed cells gives 0.8174/100 (Y); masked over all cells gives 0.8174/99; raw gives 0.9905/177 (X).",
+    "pick": "Y",
+    "reason": "The dataset's own definition of a genotyped (non-missing) cell, the one that produced the 'final QC-passed variant set', is the quality-masked call. Raw NGT!=3 does not reproduce the QC, so X's raw call rates measure something the QC did not use. The 100 vs 99 gap is a choice of denominator. Y restricts to QC-passed cells (ra/filtered==0), which fits the QC-passed framing.",
+    "own_answer": null,
+    "picked_agent": "sc16-team-b",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "sc16-team-a",
+      "Y": "sc16-team-b"
+    }
+  },
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In Mission Bio's mosaic Python package, when a Tapestri multi-sample .h5 file (several samples stored as separate top-level groups) is loaded with ms.load() using default arguments, how is the DNA variant assay assembled: which variants are kept (union or intersection of each sample's ca/filtered==0 variants, or something else), are the samples' cells concatenated into one cells-by-variants matrix, and what genotype value is given to cells of a sample for a variant that did not pass or is absent in that sample? What do the 'single' and 'raw' arguments change?",
+          "why": "Both teams summarised per-sample (sample, variant) pairs with repeats; the vendor's standard loader may define a single variant set and a single cell denominator for a multi-sample file, which would settle the combination rule that both teams named as their weakest point.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In Mission Bio's mosaic package and Tapestri h5 format, does loading a DNA assay with default arguments (raw=False, apply_filter/filter_variants defaults) change the NGT layer using the FILTER_MASK layer, i.e. are genotypes failing the GQ/DP/AF cutoffs set to the missing code 3 in the loaded NGT, or is NGT left as stored and only NGT_FILTERED masked? And does load() by default run Dna.filter_variants() so that the loaded variant set differs from ca/filtered==0?",
+          "why": "The definition of a 'non-missing genotype' (stored code versus quality-masked) changes both reported numbers; knowing what the standard tool hands the analyst as NGT on the 'filtered' variants, and whether a further default filter defines the 'final' set, would decide between the two definitions on a documented basis instead of a judgment.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In the Tapestri pipeline and Tapestri Insights documentation, how is a variant's or cell's 'genotyped' / 'missing' status defined for the filters 'remove variants genotyped in less than X% of cells' and 'remove cells with less than X% of genotypes present': is a genotype with low GQ, low DP or out-of-range AF counted as missing, and is the term 'call rate' or 'completeness' used for the quality-masked or the unmasked genotypes?",
+          "why": "It fixes, from the platform's own convention, whether per-variant call rate on a QC-passed set is conventionally computed after genotype-level quality masking, which neither team established.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In Mission Bio's mosaic Python package, when a Tapestri multi-sample .h5 file is loaded with ms.load() using default arguments, how is the DNA variant assay assembled (union/intersection of per-sample ca/filtered==0 variants, cell concatenation, genotype for absent/failing variants), and what do 'single' and 'raw' change?",
+          "answer": "Defaults are single=False, filter_variants=True, raw=False, filter_cells=False. load() returns a SampleGroup with one Sample/Dna object per sample. It does not concatenate cells. You get one cells-by-variants matrix only from SampleGroup.merge()/merge_assay(), which concatenate cells and rename barcodes to include sample names, or from single=True, which returns one merged Sample object. With filter_variants=True, load() keeps the variants that pass the stored 'filtered' column attribute (ca/filtered); it does not re-run filter_variants(). The SampleGroup class (match_ids=True) requires assay ids to be the same in every sample. Mission Bio's multisample notebooks then subset every sample to the UNION of the per-sample passing variants (sample.dna[:, var_union]), which points to union as the vendor's convention. The docs do not say how load() itself reconciles different per-sample passing sets, or what genotype a sample gets for a variant it lacks, so union versus intersection at load time and the fill value are NOT settled by the web. raw=True loads all barcodes instead of only cell-associated ones, plus the raw counts (cnv_raw/protein_raw).",
+          "sources": [
+            "https://missionbio.github.io/mosaic/pages/functions/missionbio.mosaic.io.load.html",
+            "https://missionbio.github.io/mosaic/pages/missionbio.mosaic.samplegroup.SampleGroup.html",
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.samplegroup.SampleGroup.merge_assay.html",
+            "https://missionbio.github.io/mosaic/notebooks/multi-sample-analysis.html",
+            "https://missionbio.github.io/mosaic/notebooks/curated_notebooks/dna-multisample.html"
+          ],
+          "confidence": "medium for object structure and arguments; low for the combination rule and fill value (not documented)",
+          "deliveries": {
+            "sc16-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-1252ff3f8e7f"
+            },
+            "sc16-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-51ead13add5d"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In Mission Bio's mosaic Python package, when a Tapestri multi-sample .h5 file is loaded with ms.load() using default arguments, how is the DNA variant assay assembled (union/intersection of per-sample ca/filtered==0 variants, cell concatenation, genotype for absent/failing variants), and what do 'single' and 'raw' change? ANSWER: Defaults are single=False, filter_variants=True, raw=False, filter_cells=False. load() returns a SampleGroup with one Sample/Dna object per sample. It does not concatenate cells. You get one cells-by-variants matrix only from SampleGroup.merge()/merge_assay(), which concatenate cells and rename barcodes to include sample names, or from single=True, which returns one merged Sample object. With filter_variants=True, load() keeps the variants that pass the stored 'filtered' column attribute (ca/filtered); it does not re-run filter_variants(). The SampleGroup class (match_ids=True) requires assay ids to be the same in every sample. Mission Bio's multisample notebooks then subset every sample to the UNION of the per-sample passing variants (sample.dna[:, var_union]), which points to union as the vendor's convention. The docs do not say how load() itself reconciles different per-sample passing sets, or what genotype a sample gets for a variant it lacks, so union versus intersection at load time and the fill value are NOT settled by the web. raw=True loads all barcodes instead of only cell-associated ones, plus the raw counts (cnv_raw/protein_raw). HOW SURE: medium for object structure and arguments; low for the combination rule and fill value (not documented). SOURCES: https://missionbio.github.io/mosaic/pages/functions/missionbio.mosaic.io.load.html, https://missionbio.github.io/mosaic/pages/missionbio.mosaic.samplegroup.SampleGroup.html, https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.samplegroup.SampleGroup.merge_assay.html, https://missionbio.github.io/mosaic/notebooks/multi-sample-analysis.html, https://missionbio.github.io/mosaic/notebooks/curated_notebooks/dna-multisample.html."
+        },
+        {
+          "question": "Does loading a DNA assay with default arguments change the NGT layer using FILTER_MASK (failing genotypes set to 3), or is NGT left as stored with only NGT_FILTERED masked? Does load() by default run Dna.filter_variants() so the variant set differs from ca/filtered==0?",
+          "answer": "load() does not re-run filter_variants() by default. With variant_filter_config=None it loads the 'default pre-filtered data', i.e. the variants passing the stored ca/filtered flag (plus any whitelist); only passing variant_filter_config triggers recomputation. So the loaded set equals ca/filtered==0. The docs say the stored gq/dp/af cutoffs are used to compute FILTER_MASK and the 'filtered' row and column attributes, and that they 'do not actually remove' anything. The masked layer NGT_FILTERED is added by Dna.filter_variants() as a copy of NGT with failing cell-variant entries set to 3. Together these imply that the loaded NGT is the stored, unmasked NGT. No page I read states outright that load() leaves NGT unchanged: the data-structure page's layer table was cut off. This part is an inference.",
+          "sources": [
+            "https://missionbio.github.io/mosaic/pages/functions/missionbio.mosaic.io.load.html",
+            "https://missionbio.github.io/mosaic/manual/data_structure.html",
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.dna.Dna.filter_variants.html",
+            "https://missionbio.github.io/mosaic/v2.4.1/4_data_structure.html",
+            "https://bbglab.github.io/bbgwiki/Methods/Sequencing/singleCell/Mosaic/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc16-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-63725cec5af3"
+            },
+            "sc16-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-a022bf7a7fb2"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: Does loading a DNA assay with default arguments change the NGT layer using FILTER_MASK (failing genotypes set to 3), or is NGT left as stored with only NGT_FILTERED masked? Does load() by default run Dna.filter_variants() so the variant set differs from ca/filtered==0? ANSWER: load() does not re-run filter_variants() by default. With variant_filter_config=None it loads the 'default pre-filtered data', i.e. the variants passing the stored ca/filtered flag (plus any whitelist); only passing variant_filter_config triggers recomputation. So the loaded set equals ca/filtered==0. The docs say the stored gq/dp/af cutoffs are used to compute FILTER_MASK and the 'filtered' row and column attributes, and that they 'do not actually remove' anything. The masked layer NGT_FILTERED is added by Dna.filter_variants() as a copy of NGT with failing cell-variant entries set to 3. Together these imply that the loaded NGT is the stored, unmasked NGT. No page I read states outright that load() leaves NGT unchanged: the data-structure page's layer table was cut off. This part is an inference. HOW SURE: medium. SOURCES: https://missionbio.github.io/mosaic/pages/functions/missionbio.mosaic.io.load.html, https://missionbio.github.io/mosaic/manual/data_structure.html, https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.dna.Dna.filter_variants.html, https://missionbio.github.io/mosaic/v2.4.1/4_data_structure.html, https://bbglab.github.io/bbgwiki/Methods/Sequencing/singleCell/Mosaic/."
+        },
+        {
+          "question": "In Tapestri pipeline / Tapestri Insights, how is 'genotyped'/'missing' defined for 'remove variants genotyped in < X% of cells' and 'remove cells with < X% of genotypes present'; do low GQ/DP/out-of-range AF genotypes count as missing; is 'call rate' or 'completeness' used for masked or unmasked genotypes?",
+          "answer": "Mission Bio's own filter code uses quality-masked genotypes. In tapestriR filter_variants, a genotype counts as 'known' only if NGT<3 AND GQ>=30 AND DP>=10 AND, for mutated calls, AF>=20. The mv (variant) and mc (cell) percentage filters are computed on that mask, so low-GQ, low-DP and low-AF genotypes count as missing. mosaic filter_variants likewise counts a variant as present (NGT in {0,1,2}) 'after the filters are applied'. It defines cell 'completeness' as the fraction of variants with a high-quality call, weighted, over all cells. tapestriR writes the mask into NGT only if gt.mask=TRUE (default FALSE), so the stored NGT is unmasked. A Mission Bio support answer quoted on the BBG wiki says Tapestri Insights computes these percentages over genotyped cells, while mosaic uses all cells. The term 'call rate' did not appear in any page I read; 'completeness' is the vendor's term, and it refers to quality-masked calls. I could not read the Tapestri Insights 'Advanced Filtering Explained' PDF, so the Insights GUI wording itself is unconfirmed.",
+          "sources": [
+            "https://rdrr.io/github/MissionBio/tapestriR/src/R/filter_variants.R",
+            "https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.dna.Dna.filter_variants.html",
+            "https://bbglab.github.io/bbgwiki/Methods/Sequencing/singleCell/Mosaic/",
+            "https://missionbio.github.io/mosaic/v2.4.1/4_data_structure.html"
+          ],
+          "confidence": "medium-high that the platform's genotyped/missing filters use quality-masked genotypes; low on any 'call rate' terminology",
+          "deliveries": {
+            "sc16-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-e84ecb220d21"
+            },
+            "sc16-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-dcfb6b596cec"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In Tapestri pipeline / Tapestri Insights, how is 'genotyped'/'missing' defined for 'remove variants genotyped in < X% of cells' and 'remove cells with < X% of genotypes present'; do low GQ/DP/out-of-range AF genotypes count as missing; is 'call rate' or 'completeness' used for masked or unmasked genotypes? ANSWER: Mission Bio's own filter code uses quality-masked genotypes. In tapestriR filter_variants, a genotype counts as 'known' only if NGT<3 AND GQ>=30 AND DP>=10 AND, for mutated calls, AF>=20. The mv (variant) and mc (cell) percentage filters are computed on that mask, so low-GQ, low-DP and low-AF genotypes count as missing. mosaic filter_variants likewise counts a variant as present (NGT in {0,1,2}) 'after the filters are applied'. It defines cell 'completeness' as the fraction of variants with a high-quality call, weighted, over all cells. tapestriR writes the mask into NGT only if gt.mask=TRUE (default FALSE), so the stored NGT is unmasked. A Mission Bio support answer quoted on the BBG wiki says Tapestri Insights computes these percentages over genotyped cells, while mosaic uses all cells. The term 'call rate' did not appear in any page I read; 'completeness' is the vendor's term, and it refers to quality-masked calls. I could not read the Tapestri Insights 'Advanced Filtering Explained' PDF, so the Insights GUI wording itself is unconfirmed. HOW SURE: medium-high that the platform's genotyped/missing filters use quality-masked genotypes; low on any 'call rate' terminology. SOURCES: https://rdrr.io/github/MissionBio/tapestriR/src/R/filter_variants.R, https://missionbio.github.io/mosaic/pages/methods/missionbio.mosaic.dna.Dna.filter_variants.html, https://bbglab.github.io/bbgwiki/Methods/Sequencing/singleCell/Mosaic/, https://missionbio.github.io/mosaic/v2.4.1/4_data_structure.html."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc16-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc16-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc16-team-a",
+      "round": "challenge",
+      "reason": "the referee's test supported the other answer: The dataset's own definition of a genotyped (non-missing) cell, the one that produced the 'final QC-passed variant set', is the quality-masked call. Raw NGT!=3 does not reproduce the QC, so X's raw call rates measure something the QC did not use. The 100 vs 99 gap is a choice of denominator. Y restricts to QC-passed cells (ra/filtered==0), which fits the QC-passed framing."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc16-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 47.26304154202808,
+      "cost_usd": 0.1966014,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 97.69683662499301,
+      "cost_usd": 0.1513197,
+      "error": null
+    },
+    {
+      "agent": "sc16-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 80.27499758405611,
+      "cost_usd": 0.28109819999999996,
+      "error": null
+    },
+    {
+      "agent": "sc16-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 129.41758366697468,
+      "cost_usd": 0.2154598,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 178.1144338749582,
+      "cost_usd": 0.3482375,
+      "error": null
+    },
+    {
+      "agent": "sc16-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 143.98212441592477,
+      "cost_usd": 0.7634915999999998,
+      "error": null
+    },
+    {
+      "agent": "sc16-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 190.3711786250351,
+      "cost_usd": 0.33604539999999994,
+      "error": null
+    },
+    {
+      "agent": "sc16-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 250.6687179999426,
+      "cost_usd": 0.5307156000000001,
+      "error": null
+    },
+    {
+      "agent": "sc16-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 90.87392241600901,
+      "cost_usd": 0.2507202,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

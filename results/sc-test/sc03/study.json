@@ -1,0 +1,507 @@
+{
+  "study": "sc03",
+  "status": "replicated",
+  "final": {
+    "agent": "sc03-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc03/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc03-library": "opus",
+    "sc03-team-a": "opus",
+    "sc03-team-b": "opus",
+    "sc03-team-c": "opus",
+    "sc03-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-a",
+      "agent": "sc03-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc03/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "pc1_top_abs_load": 0.105,
+        "max_top5_depth_corr": 0.387
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc03-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc03/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "pc1_top_abs_load": 0.105,
+        "max_top5_depth_corr": 0.387
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc03-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc03/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "pc1_top_abs_load": 0.105,
+        "max_top5_depth_corr": 0.387
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc03-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc03/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "pc1_top_abs_load": 0.105,
+        "max_top5_depth_corr": 0.387
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc03-team-a",
+        "sc03-team-b"
+      ],
+      "fields": {
+        "pc1_top_abs_load": true,
+        "max_top5_depth_corr": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "sc03-team-a",
+        "sc03-team-b"
+      ],
+      "fields": {
+        "pc1_top_abs_load": true,
+        "max_top5_depth_corr": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Scaling decision drives the PC1-loading diagnostic. scanpy's sc.pp.pca only zero-centres genes; it does NOT scale them to unit variance. On unscaled log-normalised data each gene is weighted by its variance, so one or a few very high-variance genes (often abundant lineage or secreted genes) can own PC1. The PC1 loading vector has unit norm, so max |loading| lies between 1/sqrt(n_genes) (fully spread; about 0.022 for 2000 genes) and 1.0 (a single gene). CHECK: run PCA with and without sc.pp.scale on the same gene set, print the top 10 genes by |PCs[:,0]| and see whether one gene's loading is several-fold larger than the next. IF one gene dominates: z-score the selected genes (sc.pp.scale with max_value=10) or use Pearson residuals before PCA. Counter-view to weigh: standardisation also down-weights genuinely informative high-variance genes and up-weights noisy ones, and there is no community consensus, so decide from the diagnostic on this dataset and say which choice you made and why, rather than scaling or not scaling out of habit.",
+      "from": [
+        "sl-sc-test-d8285022f6dc"
+      ],
+      "reason": "Whether genes are scaled before PCA is the single choice that most directly changes pc1_top_abs_load, and the scanpy default (no scaling) is easy to take without noticing.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-e7e2cf5c8117"
+      }
+    },
+    {
+      "text": "Feature selection before PCA. Running PCA on all ~20k genes of log1p(CP10k) data lets abundant and noisy genes set the axes; on log-normalised UMI data PC1 then tends to track the per-cell fraction of zeros and log total UMI (reported in the literature on negative-control data). The library reports, from file headers only, that adata.var has no 'highly_variable' column, so nothing has been selected for you; confirm this on load. CHECK: compare PCA on all genes versus on roughly 2000 highly variable genes, looking at |Pearson r| of PC1-5 with log1p(obs['total_counts']) and with n_genes_by_counts. If you select HVGs (mean-variance-trend based, about 2000), the HVG set is the 'gene universe passed to PCA' for the loading you report.",
+      "from": [
+        "sl-sc-test-0a28f5ed313a"
+      ],
+      "reason": "Skipping HVG selection changes both reported numbers and defines which gene universe the PC1 loading is taken over.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-03b40feacedd"
+      }
+    },
+    {
+      "text": "Give HVG selection the right matrix and never re-normalise. The library reports (headers only, confirm on load) that /workspace/data/4T1_viable_post_norm.h5ad is 6420 cells x 19973 genes, one sample, with .X = float32 log1p(CP10k), raw integer counts in layers['counts'], and no existing PCA or mito/ribo flags. scanpy highly_variable_genes flavor='seurat_v3' expects RAW integer counts, while flavor='seurat' and 'cell_ranger' expect log data. Running seurat_v3 on .X gives a wrong gene set with only a warning; re-running normalize_total/log1p on .X double-logs the data, compresses variance and changes loadings. CHECK: assert .X is non-integer with max below about 10 and expm1(X) row sums of about 1e4; assert layers['counts'] is integer and its row sums equal obs['total_counts']. Use flavor='seurat_v3' with layer='counts' (needs scikit-misc) or flavor='seurat' on .X. Known crash: this file stores the log1p base as None, which may come back as an empty adata.uns['log1p'] and make flavor='seurat' fail with KeyError: 'base'; fix by setting adata.uns['log1p'] = {'base': None}, not by re-logging. Also test how sensitive both reported metrics are to HVG flavour and n_top_genes (e.g. 2000 vs 3000).",
+      "from": [
+        "sl-sc-test-377d6175e8e1",
+        "sl-sc-test-38c15719b244",
+        "sl-sc-test-86f3f778090f"
+      ],
+      "reason": "A wrong input matrix or an accidental second log transform silently yields a different gene set and different loadings; the KeyError invites exactly that wrong fix.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-163e48c90b93"
+      }
+    },
+    {
+      "text": "Order of operations around scale and regress_out. sc.pp.scale and sc.pp.regress_out densify the matrix and set gene means to 0; calling highly_variable_genes AFTER them breaks mean-binned HVG selection, and running them on all 19973 genes wastes RAM and time. Separately, unclipped z-scores of sparse genes expressed only in a rare population reach very large values and create PCs driven by a handful of cells and genes (this is why Seurat scale.max=10 and scanpy max_value=10 exist). CHECK: HVGs chosen on unscaled data; scaling applied only to the HVG subset; maximum of the scaled matrix <= 10; inspect whether extreme PC1 scores belong to only a few cells. Safe order: HVG -> subset/mask -> (optional regress_out) -> scale(max_value=10) -> pca, keeping the log data in a layer or .raw for later annotation.",
+      "from": [
+        "sl-sc-test-1963815491a6"
+      ],
+      "reason": "A wrong order or an unclipped scale changes the gene set and can put a few-cell, few-gene axis on PC1, shifting both diagnostics.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-a05fed691ddd"
+      }
+    },
+    {
+      "text": "log1p(CP10k) does not fully remove sequencing depth. The log of a size-normalised count is biased differently in shallow and deep cells, and high-abundance genes keep a residual depth dependence, so top PCs of 'already normalised' data can still correlate with total counts. CHECK: on the exact embedding you would hand to neighbours, compute Pearson r between each of PC1..PC10 and log1p(obs['total_counts']) (and n_genes_by_counts), take max |r| over PC1-5, and scatter-plot the worst PC against depth. IF a strong correlation is found: compare candidate pipelines on this same diagnostic (HVG + scale; HVG + regress_out(total_counts) + scale; analytic Pearson residuals computed from layers['counts']) and keep the one that lowers depth correlation while cell-type structure stays intact. No transformation guarantees depth removal (benchmarks found residual-based methods still depth-correlated in some datasets, and shifted-log + PCA performing about as well overall), so measure it rather than assume it.",
+      "from": [
+        "sl-sc-test-15339b020e47"
+      ],
+      "reason": "The second reported metric is exactly this correlation; the team should treat depth leakage as something to measure and compare across pipelines, not assume away because the data are already normalised.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-e9f8efd442fb"
+      }
+    },
+    {
+      "text": "In a whole tumour, total UMI per cell is partly biology. Cell types differ several-fold in transcriptome size (large malignant/epithelial and cycling cells high; small lymphoid and granulocytic cells low), so a PC that separates cell types will correlate with depth across all cells even when no technical depth effect remains. Linear regress_out of total_counts cannot tell the two apart and also removes correlated biology. CHECK: make a coarse clustering, compare total_counts distributions between clusters, and compute the PC-vs-log1p(total_counts) correlation WITHIN each large cluster as well as globally; a large global r with small within-cluster r means the correlation is compositional. Do not regress total_counts blindly; if you do regress, verify that marker-defined populations are still separated afterwards, and state in the write-up how much of the depth correlation is between-cell-type. The reported metric itself is still the global correlation across all cells, as the task defines it.",
+      "from": [
+        "sl-sc-test-b97d2873dbed"
+      ],
+      "reason": "This is the counterweight to the previous item: it changes whether regress_out is an appropriate response to a high depth correlation and how the number should be interpreted.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-1cba75ceeb19"
+      }
+    },
+    {
+      "text": "Nuisance gene families can sit in the HVG list and dominate a PC, especially without scaling: mitochondrial (mouse prefix is lower-case 'mt-'), ribosomal (Rps/Rpl), haemoglobin (Hba-/Hbb-), immunoglobulin (Igh/Igk/Igl), Malat1, and dissociation-stress genes (Fos, Jun, Hsp*). Mito and ribo fractions also track cell quality and depth. CHECK: list the top 20 genes by |loading| for PC1-PC5 and flag these families; correlate PCs with per-cell mito and ribo fractions computed from layers['counts']. IF they dominate: consider dropping those genes from the HVG mask (not from the object), re-run PCA, and report whether the two diagnostics change.",
+      "from": [
+        "sl-sc-test-d081d4d4d923"
+      ],
+      "reason": "Gives the team a concrete thing to look for when a single gene or family owns a top PC, and a remedy that alters the gene universe and therefore both metrics.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-e31e4ecb1db7"
+      }
+    },
+    {
+      "text": "Make sure the PCA is centred. sc.pp.pca(zero_center=False) (TruncatedSVD), or old scanpy versions on sparse input, makes the first component essentially the vector of gene means, so PC1 scores track how many genes/UMIs a cell has: an artificial depth axis that also distorts later PCs. CHECK: confirm zero_center=True was used, that obsm['X_pca'] columns have mean of about 0, and that PC1 loadings are not all one sign. IF not centred: rerun with zero_center=True and svd_solver='arpack' (deterministic); a dense scaled matrix of 6420 cells x ~2000 HVGs is small enough to centre in memory.",
+      "from": [
+        "sl-sc-test-130818e41b19"
+      ],
+      "reason": "An uncentred PCA would inflate the depth correlation and change the PC1 loading for a purely technical reason; the check is cheap and arpack makes the reported numbers reproducible.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-4b025a1a4299"
+      }
+    },
+    {
+      "text": "Compute the two reported diagnostics consistently. (a) With mask_var / use_highly_variable, scanpy fills varm['PCs'] rows of non-HVG genes with zeros; harmless for a max, but the gene universe is the HVG set. (b) obs['total_counts'] is silently overwritten if sc.pp.calculate_qc_metrics is re-run after subsetting to HVGs, turning the depth covariate into an HVG-only sum. (c) PC signs are arbitrary, so use absolute values. (d) Both numbers must come from the SAME final PCA object (after any regress/scale), not from an exploratory run. CHECK: save depth = log1p(obs['total_counts']) from the untouched file before any processing and assert it equals log1p of layers['counts'] row sums over all genes; recompute both metrics from the final adata (varm['PCs'][:,0] and obsm['X_pca'][:, :5]) immediately before writing the answer.",
+      "from": [
+        "sl-sc-test-8147aa2a0110"
+      ],
+      "reason": "These are silent bookkeeping errors that would make the reported numbers wrong even when the embedding itself is sound.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-06496be81441"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 8,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams ran the identical recipe (seurat-flavour HVGs on the log matrix, z-scoring with clipping, centred PCA) and both treated 'standard pipeline' as the definition of 'suitable for clustering'. Agreement to three decimals therefore shows the recipe is reproducible, not that it is the embedding the task asks for.",
+      "Both assumed the depth correlation on the top PCs is cell-type composition (cell size) and therefore needs no correction. The only evidence is within-cluster correlation, computed on clusters derived from the same PCs (which restricts each PC's range inside a cluster and so biases the within-cluster r downwards), and the two teams' within-cluster results contradict each other.",
+      "Both rejected depth regression on the stated ground that it removes biology, but neither reported a test of that (e.g. whether marker-defined populations stay separated after regression).",
+      "Both worked only from the log-normalised matrix for feature selection and PCA; neither built any embedding from the integer counts, so every variant tested shares the same shifted-log transform and its known residual depth dependence."
+    ],
+    "unused_evidence": [
+      "layers['counts'] (integer UMI counts): used by both teams only to verify that .X is log1p(CP10k). It is what count-based feature selection, analytic Pearson residuals and equal-depth downsampling need; none of these was run (team A named the missing dependency for count-based HVGs and stopped).",
+      "obs['n_genes_by_counts'] / obs['n_genes'] (identical columns): a second per-cell capture covariate; the lab's own pitfall note asked for the PC correlation with it, and neither team reported it.",
+      "var['mean_counts'], var['pct_dropout_by_counts'], var['n_cells_by_counts'], var['total_counts']: per-gene abundance/dropout; not used to ask whether the genes carrying the depth-correlated PCs are simply the high-abundance genes (the signature of a technical depth effect) or lineage markers.",
+      "obs['sample'] has a single level, so there is no batch structure to use; mitochondrial genes are absent. Neither changes the answer."
+    ],
+    "unresolved_weak_points": [
+      "Team A: 'whether to regress out depth is a judgement call' - reported, not resolved. Team A itself found substantial within-cluster depth correlation in the largest (tumour) cluster and in a small granulocyte-like cluster, which argues against its own 'compositional' conclusion, and still kept the uncorrected embedding.",
+      "Team A: count-based HVG selection was planned as a comparison and never run because a package was missing.",
+      "Team B: dependence of the PC1 loading on HVG number and on scaling - reported as a range, with no data-based argument for the chosen point other than convention.",
+      "Between teams: the same nominal 'regress_out' sensitivity run left residual depth correlations that differ several-fold between the teams, and the within-cluster depth correlations differ from near zero (team B, one pooled number for one PC) to substantial (team A, per cluster). Neither discrepancy is explained, so the facts on which both teams rest the no-correction decision are not established."
+    ],
+    "second_readings": [
+      "The task glosses the second diagnostic as variance that 'reflects per-cell capture efficiency / library size rather than transcriptional state'. One reading: report whatever the conventional pipeline gives. A second, equally natural reading: the embedding is expected to have been built so that this axis is controlled, i.e. the diagnostic checks that the analyst dealt with depth. The two readings lead to materially different reported values for the depth field.",
+      "'the embedding you would hand to the neighbour graph': if any depth handling (regression, residual-based transform) is part of that embedding, both fields must come from that object; team A's own sensitivity run shows the depth field moves a lot while the loading field barely moves.",
+      "'the gene universe you passed to PCA' and 'driven by a single gene versus distributed': the loading field depends on the scaling decision (about two-fold between scaled and unscaled in both teams' runs). Both variants are 'distributed' in the sense that no gene dominates, so the wording does not by itself pick one; the teams chose by convention."
+    ],
+    "verdict": "Moderate-to-low trust. The numbers are a correct and reproducible readout of one conventional recipe, but the task explicitly probes whether depth was handled, and the shared decision not to correct for depth rests on within-cluster and regression checks that the two teams ran with contradictory results and never reconciled, with no clustering-independent test and no count-based alternative tried.",
+    "questions": [
+      {
+        "to": "sc03-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You concluded the depth correlation is 'partly compositional' but you also found substantial within-cluster correlation in the tumour cluster and a small S100a8+ cluster, and the clusters you used were derived from the same PCs. Run a test that does not depend on clustering: downsample layers['counts'] so that all cells have the same (or a capped) total, re-normalise, rerun your exact pipeline, and correlate the new top-5 PCs with the ORIGINAL log1p(total_counts). A correlation that survives equal depth is cell-type/cell-size biology; a correlation that falls is technical. What fraction survives, and does the result change whether the embedding you hand to the neighbour graph should include a depth correction?",
+        "from": [
+          "sl-sc-test-666bfcf80845",
+          "sl-sc-test-1cba75ceeb19"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-0415f4e51a94"
+      },
+      {
+        "to": "sc03-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: You rejected regress_out because 'it also removes correlated biology', but your notes show no test of that. Cluster the regressed and the unregressed embeddings with identical neighbour/Leiden settings and report (a) the adjusted Rand index between the two partitions and (b) whether marker-defined populations (T/NK, myeloid, fibroblast, tumour, S100a8+ granulocytes) remain separate clusters after regression. If the populations are equally well separated after regression, what remains of the argument for handing the uncorrected embedding to the neighbour graph, and does your answer change?",
+        "from": [
+          "sl-sc-test-7cce891ef851",
+          "sl-sc-test-1cba75ceeb19"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-fcc040f4a17e"
+      },
+      {
+        "to": "sc03-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: The other team's regress_out sensitivity run, on nominally the same pipeline, left a residual top-5 depth correlation several-fold smaller than yours. State exactly what you regressed (raw total_counts or log1p(total_counts)), on which matrix, and in which order relative to scaling and clipping; rerun with the other choice of covariate and report both diagnostics for each from the final PCA object. Does knowing how sensitive the 'regressed' alternative is to this detail change your view of which embedding is the defensible one?",
+        "from": [
+          "sl-sc-test-7cce891ef851"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-64ff58dcc3e2"
+      },
+      {
+        "to": "sc03-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: layers['counts'] was used only to verify .X, and your planned count-based comparison was dropped because a package was missing. The lab's pitfall note asked you to compare candidate pipelines on these same two diagnostics, including one built from the counts. Build at least one count-based embedding (for example count-based feature selection and/or analytic Pearson residuals, by installing the missing package or by a route that does not need it) and report both diagnostics plus the correlation of the top-5 PCs with n_genes_by_counts for it, for your chosen pipeline, and for the untreated baseline (all genes, no scaling). Where does your chosen pipeline sit between the baseline and the best candidate on each axis, and does that change the method?",
+        "from": [
+          "sl-sc-test-e741b84d04e6",
+          "sl-sc-test-e9f8efd442fb"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-61f49a73bc76"
+      },
+      {
+        "to": "sc03-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You called the depth axis biological on the strength of one pooled within-cluster correlation for one PC. The other team, with the same pipeline, found substantial within-cluster depth correlation in specific clusters (the largest tumour cluster and a small granulocyte-like cluster). Report the correlation with log1p(total_counts) for each of PC1-5 separately within each Leiden cluster (with cluster size and median total_counts), not one pooled number, and note that clusters cut from these same PCs restrict the PC range inside a cluster. Does any large cluster show a within-cluster depth correlation comparable to the global one, and does that change your conclusion that no depth correction is needed?",
+        "from": [
+          "sl-sc-test-39c12fcde6f7"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-c6d21b3263e2"
+      },
+      {
+        "to": "sc03-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Run a test of technical depth that does not rely on clustering: downsample layers['counts'] so that all cells have the same (or a capped) total, re-normalise, rerun your exact pipeline, and correlate the new top-5 PCs with the ORIGINAL log1p(total_counts). A correlation that survives equal depth is cell-type/cell-size biology; one that falls is technical. What fraction survives, and does it change whether the embedding you hand to the neighbour graph should include a depth correction?",
+        "from": [
+          "sl-sc-test-39c12fcde6f7"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-dfe23931a00f"
+      },
+      {
+        "to": "sc03-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You rejected regress_out because it 'would remove cell-type signal', but no test of that is recorded, and your regressed run left a residual depth correlation several-fold smaller than the other team's nominally identical run. State exactly what you regressed (raw total_counts or log1p(total_counts)), on which matrix and in which order relative to scaling; then cluster the regressed and unregressed embeddings with identical settings and report the adjusted Rand index and whether marker-defined populations (T/NK, myeloid, fibroblast, tumour, granulocytes) stay separate after regression. If they do, does your answer change?",
+        "from": [
+          "sl-sc-test-39c12fcde6f7",
+          "sl-sc-test-e58a950c53a2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-249d5761fd59"
+      },
+      {
+        "to": "sc03-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Your named weak point is that the PC1 loading depends on scaling and HVG number, and you settled it by convention. Give a data-based reason: for the untreated baseline (all genes, no scaling), the unscaled HVG variant and the scaled HVG variant, list the top five |PC1 loadings| with gene names and the ratio of the first to the second, and compare how well each embedding separates marker-defined populations under identical clustering settings. Also build one embedding from layers['counts'] (which you used only for verification) and place it on the same two diagnostics. Is there evidence in the data, beyond habit, for the variant you chose, and does it change the method?",
+        "from": [
+          "sl-sc-test-e58a950c53a2"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-sc-test-28d6461c6882"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "In scanpy, what exactly does sc.pp.regress_out fit per gene (model form, intercept, whether the covariate is used as given or transformed), and what do the current scanpy tutorials and the single-cell best-practices literature recommend about regressing total counts per cell out of log-normalised data before scaling and PCA: is it still part of the recommended workflow, optional, or discouraged, and for what stated reasons?",
+          "why": "Both teams' answer hinges on not regressing depth, and their regression sensitivity runs disagree several-fold, plausibly because of the covariate form; knowing the tool's exact behaviour and the current recommendation settles which variant is the defensible comparison.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "How do scanpy's analytic Pearson residuals functions (sc.experimental.pp.highly_variable_genes with flavor='pearson_residuals' and sc.experimental.pp.normalize_pearson_residuals / recipe_pearson_residuals) work by default (overdispersion theta, clipping, number of genes, whether they need raw integer counts and any extra dependency), and does scanpy's flavor='seurat_v3' require the scikit-misc package or is there a built-in alternative?",
+          "why": "Neither team built an embedding from the raw counts; one stopped because a dependency was missing. Knowing the defaults and requirements lets both teams run a count-based comparison on the same two diagnostics.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In single-cell RNA-seq of heterogeneous tissue, what methods are accepted for separating technical sequencing-depth effects from genuine differences in cell size / RNA content between cell types when a principal component correlates with total UMI count? In particular, is downsampling all cells to equal depth (e.g. scanpy sc.pp.downsample_counts; what are its defaults) a recognised diagnostic, and what are the known limitations of using within-cluster correlations for this purpose?",
+          "why": "The teams' only evidence that the depth correlation is biological is a within-cluster correlation on clusters derived from the same PCs, and they got conflicting results; a recognised, clustering-independent diagnostic would decide whether a depth correction belongs in the embedding.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In scanpy, what exactly does sc.pp.regress_out fit per gene (model form, intercept, covariate as given or transformed), and what do current scanpy tutorials and best-practices literature recommend about regressing total counts out of log-normalised data before scaling and PCA?",
+          "answer": "Each gene gets an ordinary linear model fitted on all keys together: y_g = b0 + sum_k b_k*cov_k. An intercept column of ones is added, and each obs covariate is used exactly as stored, with no log or other transform. If you want log depth, you have to pass log1p(total_counts) yourself. Since PR #3284 (merged Nov 2024), continuous covariates are fitted by least squares through the normal equations (inv(X'X)); earlier versions used a statsmodels Gaussian GLM, which gives the same estimates. Categorical covariates are handled by per-category means. Only residuals are returned and the intercept is not added back, so every gene ends with mean ~0. This means HVG selection must come before regress_out (Luecken, theislab tutorial #35). Regressing raw total_counts and regressing log1p(total_counts) are different models, which plausibly explains the teams' several-fold disagreement. Raw counts are right-skewed, so a linear term in them fits a log-scale depth trend poorly; log1p(total_counts) is the form that matches the diagnostic. Recommendation: regress_out does not appear in the current scanpy clustering tutorial. Caveat: the fetched page was cut off at the QC/doublet section, so I only saw its steps up to there. The scanpy docs warn that regress_out 'tends to overcorrect' (issue #526). In #526, Wolf and Luecken say it is dataset-dependent and can do more harm than good. The example there was a heterogeneous whole-tumour dataset in which regression merged cell types into one blob. Regressing biological covariates removes global structure and is mainly useful for trajectory work. So depth regression is optional and discouraged as a default, not a standard step. I could not read the Luecken & Theis 2019 data-correction section in full because the fetch truncated the page.",
+          "sources": [
+            "https://scanpy.readthedocs.io/en/stable/generated/scanpy.pp.regress_out.html",
+            "https://github.com/scverse/scanpy/issues/4280",
+            "https://github.com/scverse/scanpy/pull/3284",
+            "https://github.com/theislab/single-cell-tutorial/issues/35",
+            "https://github.com/scverse/scanpy/issues/526",
+            "https://scanpy.scverse.org/en/stable/tutorials/basics/clustering.html"
+          ],
+          "confidence": "high for the model form; medium for the recommendation",
+          "deliveries": {
+            "sc03-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-7e9775dd02ac"
+            },
+            "sc03-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-a515f08c879b"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In scanpy, what exactly does sc.pp.regress_out fit per gene (model form, intercept, covariate as given or transformed), and what do current scanpy tutorials and best-practices literature recommend about regressing total counts out of log-normalised data before scaling and PCA? ANSWER: Each gene gets an ordinary linear model fitted on all keys together: y_g = b0 + sum_k b_k*cov_k. An intercept column of ones is added, and each obs covariate is used exactly as stored, with no log or other transform. If you want log depth, you have to pass log1p(total_counts) yourself. Since PR #3284 (merged Nov 2024), continuous covariates are fitted by least squares through the normal equations (inv(X'X)); earlier versions used a statsmodels Gaussian GLM, which gives the same estimates. Categorical covariates are handled by per-category means. Only residuals are returned and the intercept is not added back, so every gene ends with mean ~0. This means HVG selection must come before regress_out (Luecken, theislab tutorial #35). Regressing raw total_counts and regressing log1p(total_counts) are different models, which plausibly explains the teams' several-fold disagreement. Raw counts are right-skewed, so a linear term in them fits a log-scale depth trend poorly; log1p(total_counts) is the form that matches the diagnostic. Recommendation: regress_out does not appear in the current scanpy clustering tutorial. Caveat: the fetched page was cut off at the QC/doublet section, so I only saw its steps up to there. The scanpy docs warn that regress_out 'tends to overcorrect' (issue #526). In #526, Wolf and Luecken say it is dataset-dependent and can do more harm than good. The example there was a heterogeneous whole-tumour dataset in which regression merged cell types into one blob. Regressing biological covariates removes global structure and is mainly useful for trajectory work. So depth regression is optional and discouraged as a default, not a standard step. I could not read the Luecken & Theis 2019 data-correction section in full because the fetch truncated the page. HOW SURE: high for the model form; medium for the recommendation. SOURCES: https://scanpy.readthedocs.io/en/stable/generated/scanpy.pp.regress_out.html, https://github.com/scverse/scanpy/issues/4280, https://github.com/scverse/scanpy/pull/3284, https://github.com/theislab/single-cell-tutorial/issues/35, https://github.com/scverse/scanpy/issues/526, https://scanpy.scverse.org/en/stable/tutorials/basics/clustering.html."
+        },
+        {
+          "question": "How do scanpy's analytic Pearson residuals functions work by default (theta, clipping, number of genes, raw counts, dependencies), and does flavor='seurat_v3' require scikit-misc or is there a built-in alternative?",
+          "answer": "Based on Lause et al. 2021, the residuals come from a negative-binomial offset model with one overdispersion shared across genes. Defaults are theta=100 (var = mu + mu^2/theta; np.inf gives Poisson). clip=None clips residuals to [-sqrt(n_obs), sqrt(n_obs)], about \u00b180 for 6420 cells. In experimental.pp.highly_variable_genes, n_top_genes has no default and must be given; genes are ranked by residual variance. recipe_pearson_residuals defaults to n_top_genes=1000, n_comps=50 and random_state=0, and runs HVG selection, then residuals on the HVG subset, then PCA. Its varm['PCs'] has zero rows for genes that were not selected. All of these functions expect raw integer counts (check_values only warns on non-integers). The HVG and normalize functions accept layer='counts'; the recipe has no layer argument, so put counts in X first. They need no package beyond scanpy. flavor='seurat_v3' and 'seurat_v3_paper' do require scikit-misc (scanpy[skmisc]) and expect counts. Built-in alternatives that need no extra package are flavor='seurat' or 'cell_ranger' on log data, or the experimental pearson_residuals flavor on counts.",
+          "sources": [
+            "https://scanpy.readthedocs.io/en/stable/generated/scanpy.experimental.pp.highly_variable_genes.html",
+            "https://scanpy.readthedocs.io/en/stable/generated/scanpy.experimental.pp.normalize_pearson_residuals.html",
+            "https://scanpy.readthedocs.io/en/stable/generated/scanpy.experimental.pp.recipe_pearson_residuals.html",
+            "https://scanpy.readthedocs.io/en/stable/generated/scanpy.pp.highly_variable_genes.html"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "sc03-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-be6aa01291c4"
+            },
+            "sc03-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-5453aae24e38"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How do scanpy's analytic Pearson residuals functions work by default (theta, clipping, number of genes, raw counts, dependencies), and does flavor='seurat_v3' require scikit-misc or is there a built-in alternative? ANSWER: Based on Lause et al. 2021, the residuals come from a negative-binomial offset model with one overdispersion shared across genes. Defaults are theta=100 (var = mu + mu^2/theta; np.inf gives Poisson). clip=None clips residuals to [-sqrt(n_obs), sqrt(n_obs)], about \u00b180 for 6420 cells. In experimental.pp.highly_variable_genes, n_top_genes has no default and must be given; genes are ranked by residual variance. recipe_pearson_residuals defaults to n_top_genes=1000, n_comps=50 and random_state=0, and runs HVG selection, then residuals on the HVG subset, then PCA. Its varm['PCs'] has zero rows for genes that were not selected. All of these functions expect raw integer counts (check_values only warns on non-integers). The HVG and normalize functions accept layer='counts'; the recipe has no layer argument, so put counts in X first. They need no package beyond scanpy. flavor='seurat_v3' and 'seurat_v3_paper' do require scikit-misc (scanpy[skmisc]) and expect counts. Built-in alternatives that need no extra package are flavor='seurat' or 'cell_ranger' on log data, or the experimental pearson_residuals flavor on counts. HOW SURE: high. SOURCES: https://scanpy.readthedocs.io/en/stable/generated/scanpy.experimental.pp.highly_variable_genes.html, https://scanpy.readthedocs.io/en/stable/generated/scanpy.experimental.pp.normalize_pearson_residuals.html, https://scanpy.readthedocs.io/en/stable/generated/scanpy.experimental.pp.recipe_pearson_residuals.html, https://scanpy.readthedocs.io/en/stable/generated/scanpy.pp.highly_variable_genes.html."
+        },
+        {
+          "question": "What methods are accepted for separating technical depth effects from genuine cell-size/RNA-content differences when a PC correlates with total UMI; is downsampling to equal depth (sc.pp.downsample_counts, defaults) a recognised diagnostic; what are the limits of within-cluster correlations?",
+          "answer": "Downsampling is recognised. OSCA's 'Downsampling instead of scaling' section explains that the log of scaled counts keeps a systematic mean trend with count size (Lun 2018). This shows up as structure correlated with library size even after normalisation. OSCA's 'most straightforward solution' is to downsample high-coverage cells to the depth of low-coverage cells, which is scater's logNormCounts(downsample=TRUE). OSCA says this is needed only in rare cases; the page was truncated before its caveats, so I did not read them. Used as a diagnostic, it works like this: downsample the counts, re-normalise, log, run PCA, and recompute the PC-versus-depth correlation. If the correlation persists, it reflects cell-type RNA content; if it disappears, it came from the transform. The other accepted route is to model depth explicitly as a GLM offset or covariate, as in analytic Pearson residuals or sctransform. scanpy sc.pp.downsample_counts(adata, counts_per_cell=None, total_counts=None, *, random_state=0, replace=False, copy=False) works on adata.X only, with no layer argument, so copy layers['counts'] into X first. Cells already below counts_per_cell are left unchanged, so set the target at or below the minimum total_counts, or at a low quantile and exclude cells below it. On within-cluster correlations, I found no source in my call budget. These limits are my own reasoning: clusters built from the same PCs make the test circular (double dipping); depth range within a cluster is restricted, which weakens r; and mixed subpopulations can inflate or reverse r. A within-cluster correlation therefore cannot settle the question, and the downsampling diagnostic does not depend on clustering.",
+          "sources": [
+            "https://bioconductor.org/books/release/OSCA.advanced/more-norm.html",
+            "https://scanpy.readthedocs.io/en/stable/generated/scanpy.pp.downsample_counts.html",
+            "https://github.com/scverse/scanpy/issues/526"
+          ],
+          "confidence": "medium for downsampling as a diagnostic and high for its defaults; low for the within-cluster limits, which are my reasoning, not from a source",
+          "deliveries": {
+            "sc03-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-8b78dc766edc"
+            },
+            "sc03-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-sc-test-a487ae17404a"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: What methods are accepted for separating technical depth effects from genuine cell-size/RNA-content differences when a PC correlates with total UMI; is downsampling to equal depth (sc.pp.downsample_counts, defaults) a recognised diagnostic; what are the limits of within-cluster correlations? ANSWER: Downsampling is recognised. OSCA's 'Downsampling instead of scaling' section explains that the log of scaled counts keeps a systematic mean trend with count size (Lun 2018). This shows up as structure correlated with library size even after normalisation. OSCA's 'most straightforward solution' is to downsample high-coverage cells to the depth of low-coverage cells, which is scater's logNormCounts(downsample=TRUE). OSCA says this is needed only in rare cases; the page was truncated before its caveats, so I did not read them. Used as a diagnostic, it works like this: downsample the counts, re-normalise, log, run PCA, and recompute the PC-versus-depth correlation. If the correlation persists, it reflects cell-type RNA content; if it disappears, it came from the transform. The other accepted route is to model depth explicitly as a GLM offset or covariate, as in analytic Pearson residuals or sctransform. scanpy sc.pp.downsample_counts(adata, counts_per_cell=None, total_counts=None, *, random_state=0, replace=False, copy=False) works on adata.X only, with no layer argument, so copy layers['counts'] into X first. Cells already below counts_per_cell are left unchanged, so set the target at or below the minimum total_counts, or at a low quantile and exclude cells below it. On within-cluster correlations, I found no source in my call budget. These limits are my own reasoning: clusters built from the same PCs make the test circular (double dipping); depth range within a cluster is restricted, which weakens r; and mixed subpopulations can inflate or reverse r. A within-cluster correlation therefore cannot settle the question, and the downsampling diagnostic does not depend on clustering. HOW SURE: medium for downsampling as a diagnostic and high for its defaults; low for the within-cluster limits, which are my reasoning, not from a source. SOURCES: https://bioconductor.org/books/release/OSCA.advanced/more-norm.html, https://scanpy.readthedocs.io/en/stable/generated/scanpy.pp.downsample_counts.html, https://github.com/scverse/scanpy/issues/526."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc03-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc03-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "sc03-team-b",
+      "round": "challenge",
+      "reason": "agreed with sc03-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc03-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 33.56096083403099,
+      "cost_usd": 0.1853776,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 98.43170720897615,
+      "cost_usd": 0.1548403,
+      "error": null
+    },
+    {
+      "agent": "sc03-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 144.2057845420204,
+      "cost_usd": 0.3800814,
+      "error": null
+    },
+    {
+      "agent": "sc03-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 156.7872784580104,
+      "cost_usd": 0.2749078,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 144.46567508298904,
+      "cost_usd": 0.280554,
+      "error": null
+    },
+    {
+      "agent": "sc03-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 151.552135291975,
+      "cost_usd": 0.8036465999999999,
+      "error": null
+    },
+    {
+      "agent": "sc03-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 152.09655616700184,
+      "cost_usd": 0.40595680000000006,
+      "error": null
+    },
+    {
+      "agent": "sc03-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 172.55899266700726,
+      "cost_usd": 0.43122219999999994,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

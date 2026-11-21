@@ -2,7 +2,7 @@
 
 You already analysed the task below and your earlier work is in this folder (your code, `{answer_file}`, `result.json`). {situation}
 
-The director has read both teams' records and has passed down questions for you. Read them with `python3 {tools}/memory.py recall "questions from the director"`.
+{questions_source}
 
 For each question:
 1. Check it against the data. Run the check; do not answer from memory of your earlier work.
@@ -11,7 +11,7 @@ For each question:
 
 Do not change your answer just because you were asked. Change it only when a check shows your method was wrong. If every check supports your method, keep your answer and say so.
 
-Record what you found for each question with `memory.py write`, label "REPLY". If you revise, overwrite `{answer_file}` and keep your old one as `answer_before_questions.json`.{findings_note}{search}
+{reply_note}If you revise, overwrite `{answer_file}` and keep your old one as `answer_before_questions.json`.{findings_note}{evidence_note}{search}
 
 ## Working limits
 

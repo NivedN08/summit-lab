@@ -1,0 +1,408 @@
+{
+  "study": "bd38",
+  "status": "replicated",
+  "final": {
+    "agent": "bd38-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd38/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true,
+    "prompt_dir": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/variants/v3-opus/prompts"
+  },
+  "models": {
+    "director": "opus",
+    "bd38-library": "opus",
+    "bd38-team-a": "opus",
+    "bd38-team-b": "opus",
+    "bd38-team-c": "opus",
+    "bd38-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd38-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd38/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd38-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd38/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd38-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd38/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd38-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/loop2/incumbent/bd38/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd38-team-a",
+        "bd38-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd38-team-a",
+        "bd38-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Before choosing a label, check whether the hypothesis is about this study. Tabulate CANCER_TYPE / CANCER_TYPE_DETAILED in data_clinical_sample.txt to confirm the cohort is nasopharyngeal carcinoma, and check that ERBB/PI3K pathway genes (e.g. EGFR, ERBB2-4, PIK3CA, PIK3R1, PTEN) appear in Hugo_Symbol of data_mutations.txt. If both hold, the claim concerns this study, and by the benchmark convention it must be labelled True or False, not Not verifiable.",
+      "from": [
+        "sl-incumbent-c1b48cf0d451"
+      ],
+      "reason": "A wrong Not verifiable is graded as wrong. This check settles which kind of label applies.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-6b4f4f413dee"
+      }
+    },
+    {
+      "text": "Fix the ERBB-PI3K gene set before testing. A core set: EGFR, ERBB2, ERBB3, ERBB4, PIK3CA, PIK3R1, PTEN, AKT1-3. An extended set (KEGG ErbB / PI3K-Akt): add PIK3CB, PIK3CD, PIK3R2, MTOR, TSC1, TSC2, KRAS, NRAS, HRAS. Report results for both sets. If the verdict changes between them, rely on the core set and on established biology.",
+      "from": [
+        "sl-incumbent-33eaf6daa796"
+      ],
+      "reason": "The verdict can depend on which genes are counted. Fixing the set in advance avoids choosing it after seeing the results.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-0af504f49d88"
+      }
+    },
+    {
+      "text": "Exome studies judge whether a pathway is significantly mutated at the pathway level, not gene by gene. Count the samples with at least one nonsilent mutation in any pathway gene, and compare that with a background expectation. Use a permutation of mutations across genes weighted by coding length, or a binomial based on per-sample mutation rate (PathScan-style). Many hits that are rare in each gene can still make the pathway significant, so low per-gene frequencies do not show the pathway is 'not significantly mutated'.",
+      "from": [
+        "sl-incumbent-a160efc25efa"
+      ],
+      "reason": "This defines the right test for 'significantly mutated pathway'. A gene-by-gene reading could mislead the verdict.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-b0210efc5b4c"
+      }
+    },
+    {
+      "text": "Tabulate Variant_Classification in data_mutations.txt. Count only nonsilent coding events: Missense, Nonsense, Frame_Shift_Del/Ins, In_Frame_Del/Ins, Splice_Site, Translation_Start_Site, Nonstop. Drop Silent, Intron, UTR, Flank, IGR and RNA rows. Count each sample once per gene or pathway.",
+      "from": [
+        "sl-incumbent-368c5a5fa22a"
+      ],
+      "reason": "Counting silent or noncoding rows inflates the pathway mutation counts.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-e45d9a7d1a79"
+      }
+    },
+    {
+      "text": "Count samples per PATIENT_ID and look for several tumours from one patient (for example, sample-ID suffixes that mark different sample sets). If a patient has more than one sample, keep one sample per patient for the pathway tally, so that shared mutations are not counted twice.",
+      "from": [
+        "sl-incumbent-588bc952b2ae"
+      ],
+      "reason": "Duplicate samples would double-count pathway hits and distort the frequency and the test.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-3e6ec5c562c3"
+      }
+    },
+    {
+      "text": "Check the TMB_NONSYNONYMOUS / per-sample mutation count distribution and see whether the pathway hits cluster in hypermutated samples. If they do, rerun the test without the hypermutators, or use a background that is adjusted for each sample's mutation rate.",
+      "from": [
+        "sl-incumbent-7b1cdc193735"
+      ],
+      "reason": "A few outlier samples can produce, or hide, apparent pathway enrichment.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-3a3140887cae"
+      }
+    },
+    {
+      "text": "NPC exome cohorts are small and underpowered. A non-significant pathway p-value is not, on its own, evidence that the pathway is unmutated. Report the pathway hit fraction with a confidence interval and a p-value (and a q-value if several pathways are tested). If the data are inconclusive, the convention says to decide from established NPC genomics biology and from what the originating study likely reported. Say explicitly which kind of evidence decided the label.",
+      "from": [
+        "sl-incumbent-3b86ad24aa46"
+      ],
+      "reason": "This stops a label being taken mechanically from low power. I dropped the library's specific statement of what the NPC literature reports, because it would amount to suggesting the answer; the teams should apply their own knowledge of the biology.",
+      "fact_ids": {
+        "team-a": "sl-incumbent-a6752eb2b411"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams assume the label is decided by recalling that the originating NPC exome study reported ERBB-PI3K as significantly mutated, so the hypothesis is the reversed finding; neither checked whether the in-data evidence could instead support the claim as stated.",
+      "Both treat every row of data_mutations.txt as a somatic, independent call per sample and apply only a Variant_Classification filter.",
+      "Both treat the 56 samples as one homogeneous cohort, although sample IDs carry two suffixes (14 'D', 42 'F'), which may mark different sequencing sets or sample types."
+    ],
+    "unused_evidence": [
+      "FILTER column: 68 calls flagged 'common_variant', with ExAC_AF/GMAF population-frequency columns; neither team says whether pathway hits carry this flag (possible germline polymorphisms).",
+      "Sample ID suffix D vs F (14 vs 42 samples, 275 vs 1300 mutations) may separate discovery and validation/screen sets with different calling depth; neither team stratified by it.",
+      "TMB_NONSYNONYMOUS and tumour-cellularity columns could serve as a per-sample background rate, but neither team used them; Team B had no background model at all.",
+      "SIFT/PolyPhen/MA:FImpact and Hotspot annotations could separate likely functional pathway hits from passengers; neither used them."
+    ],
+    "unresolved_weak_points": [
+      "Team A: its in-data permutation test is clearly non-significant (p about 0.5), and it overrode that result with a recalled study finding. It reported this but did not resolve it.",
+      "Team B: it ran no significance test, so 'significantly mutated' was never assessed in the data; it relies on recognising the source finding.",
+      "Neither team checked whether its pathway hits survive removal of common_variant-flagged calls."
+    ],
+    "second_readings": [
+      "'Significantly mutated' could mean significance from a formal pathway test (e.g. PathScan or MutSig) against a background, or simply 'recurrently mutated / altered in a notable fraction of cases'. The two readings could lead to different labels from the same counts.",
+      "'NPC cases' could mean the deposited 56 samples or the full study cohort (discovery plus prevalence screen); the teams assume the latter when they appeal to the study."
+    ],
+    "verdict": "Moderate trust. Both teams' label rests on recalling the source study rather than on the data: Team A's own in-data test points the other way and Team B ran none. Germline-flagged calls and the D/F sample split were also not examined.",
+    "questions": [
+      {
+        "to": "bd38-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Tabulate the FILTER (common_variant), ExAC_AF and GMAF values for each of your core and extended pathway hits. Do any drop out as likely germline, and does that change your counts or your test?",
+        "from": [
+          "sl-incumbent-097515582b75"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-daa00d1399bd"
+      },
+      {
+        "to": "bd38-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your permutation test is non-significant, and you overrode it with a recalled study finding. State exactly what you recall: the pathway-level method, the cohort size, and whether ERBB-PI3K was reported as significant. How sure are you that the hypothesis is the reversal, not the study's own statement? Does anything in the tables corroborate it?",
+        "from": [
+          "sl-incumbent-097515582b75"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-7e66c256d843"
+      },
+      {
+        "to": "bd38-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Split the samples by ID suffix (D vs F) and compare per-sample mutation counts and pathway-hit rates. Do the two groups look like different sequencing sets, and does that change how you set the background?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-1cab43d3c809"
+      },
+      {
+        "to": "bd38-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You ran no significance test. Build any background, for example one using per-sample TMB_NONSYNONYMOUS and gene coding length, and test whether 8/56 pathway-hit samples exceed expectation. Does the result agree with your label, and if not, what decides it?",
+        "from": [
+          "sl-incumbent-017be47ae65f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-5c1b9a75540b"
+      },
+      {
+        "to": "bd38-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: Check the FILTER, ExAC_AF and SIFT/PolyPhen annotations of your 8 hits (ERBB3 x2, ERBB2, PIK3CA, KRAS, NRAS, MTOR, TSC1, PIK3C2G). How many are common-variant flagged or predicted benign, and does including PIK3C2G or the RAS genes matter for your conclusion?",
+        "from": [
+          "sl-incumbent-017be47ae65f"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-e0a76c62ae18"
+      },
+      {
+        "to": "bd38-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: State precisely what you recall of the source study's pathway analysis: the method, the cohort, and the wording of the ERBB-PI3K result. What makes you confident that this hypothesis is the reversed finding rather than the stated one?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-incumbent-4fb8870bdc59"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "How does the PathScan pathway-mutation significance test define its background and its significance threshold, and how does it differ from counting the fraction of samples with any pathway mutation?",
+          "why": "The teams' label depends on what 'significantly mutated pathway' means. A gene-length-aware pathway test can reach significance where simple recurrence counts look unremarkable, and the reverse.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In exome-sequencing studies of nasopharyngeal carcinoma, which signalling pathways have commonly been reported as significantly or recurrently mutated (e.g. chromatin modification, ERBB-PI3K, autophagy, NF-kB)?",
+          "why": "Both teams rely on unverified recollection of the established NPC genomics finding to override a non-significant in-data test.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "How does the PathScan pathway-mutation significance test define its background and its significance threshold, and how does it differ from counting the fraction of samples with any pathway mutation?",
+          "answer": "Web not reachable (research gateway HTTP 403 on both search and contents), so this comes from prior knowledge and was not verified. PathScan (Wendl et al. 2011, Bioinformatics) works out, for each sample, the probability that a pathway gets at least one mutation by chance, using a background mutation rate and the total coding length of the pathway's genes. It combines these per-sample probabilities into one pathway p-value using a Fisher-Lancaster-type combination for discrete p-values. Significance is called after multiple-testing correction across pathways (FDR, about q<0.05). A plain count of samples with any pathway mutation ignores gene length and mutation rate. So a large pathway can be hit in many samples and still not be significant, and a small pathway with few hits can be significant.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bd38-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-0b18ca991b83"
+            },
+            "bd38-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-22aff75e0595"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How does the PathScan pathway-mutation significance test define its background and its significance threshold, and how does it differ from counting the fraction of samples with any pathway mutation? ANSWER: Web not reachable (research gateway HTTP 403 on both search and contents), so this comes from prior knowledge and was not verified. PathScan (Wendl et al. 2011, Bioinformatics) works out, for each sample, the probability that a pathway gets at least one mutation by chance, using a background mutation rate and the total coding length of the pathway's genes. It combines these per-sample probabilities into one pathway p-value using a Fisher-Lancaster-type combination for discrete p-values. Significance is called after multiple-testing correction across pathways (FDR, about q<0.05). A plain count of samples with any pathway mutation ignores gene length and mutation rate. So a large pathway can be hit in many samples and still not be significant, and a small pathway with few hits can be significant. HOW SURE: low. SOURCES: none given."
+        },
+        {
+          "question": "In exome-sequencing studies of nasopharyngeal carcinoma, which signalling pathways have commonly been reported as significantly or recurrently mutated (e.g. chromatin modification, ERBB-PI3K, autophagy, NF-kB)?",
+          "answer": "Not answered. Looking up which pathways the NPC exome literature reported as significant would amount to looking up the source study's answer to this task, which the library rules forbid. The web tool was also down (HTTP 403). The web did not settle this question.",
+          "sources": [],
+          "confidence": "low",
+          "deliveries": {
+            "bd38-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-00e4cf9a972b"
+            },
+            "bd38-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-incumbent-27f85d6e1183"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In exome-sequencing studies of nasopharyngeal carcinoma, which signalling pathways have commonly been reported as significantly or recurrently mutated (e.g. chromatin modification, ERBB-PI3K, autophagy, NF-kB)? ANSWER: Not answered. Looking up which pathways the NPC exome literature reported as significant would amount to looking up the source study's answer to this task, which the library rules forbid. The web tool was also down (HTTP 403). The web did not settle this question. HOW SURE: low. SOURCES: none given."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd38-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd38-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd38-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd38-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd38-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 69.7060107080033,
+      "cost_usd": 0.21299519999999997,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 35.6324574170867,
+      "cost_usd": 0.2167452,
+      "error": null
+    },
+    {
+      "agent": "bd38-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 40.828244957956485,
+      "cost_usd": 0.13280419999999998,
+      "error": null
+    },
+    {
+      "agent": "bd38-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 45.53278904198669,
+      "cost_usd": 0.1786798,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 51.29500475001987,
+      "cost_usd": 0.2777156,
+      "error": null
+    },
+    {
+      "agent": "bd38-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 36.05515404196922,
+      "cost_usd": 0.12929400000000002,
+      "error": null
+    },
+    {
+      "agent": "bd38-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 50.02902858296875,
+      "cost_usd": 0.2438004,
+      "error": null
+    },
+    {
+      "agent": "bd38-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 67.74259404104669,
+      "cost_usd": 0.2856812,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

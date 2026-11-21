@@ -1,0 +1,455 @@
+{
+  "study": "sc26",
+  "status": "refereed",
+  "final": {
+    "agent": "sc26-team-a",
+    "team": "team-a",
+    "round": "revise",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc26/final/eval_answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "fable",
+    "sc26-library": "opus",
+    "sc26-team-a": "opus",
+    "sc26-team-b": "opus",
+    "sc26-team-c": "opus",
+    "sc26-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "sc26-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc26/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_samples_with_mutant_nk": 5
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc26-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc26/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_samples_with_mutant_nk": 2
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "sc26-team-b",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc26/candidates/team-b-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_samples_with_mutant_nk": 3
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "sc26-team-a",
+      "round": "revise",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/sc-test/sc26/candidates/team-a-revise.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "n_samples_with_mutant_nk": 5
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "sc26-team-a",
+        "sc26-team-b"
+      ],
+      "fields": {
+        "n_samples_with_mutant_nk": false
+      },
+      "agree": false
+    },
+    {
+      "round": "revise",
+      "between": [
+        "sc26-team-a",
+        "sc26-team-b"
+      ],
+      "fields": {
+        "n_samples_with_mutant_nk": false
+      },
+      "agree": false
+    }
+  ],
+  "briefing": [
+    {
+      "text": "FILE LAYOUT. GSE276492_combined.h5 is five separate Tapestri runs stored as five top-level groups (GSM8499463_S7, GSM8499464_S8, GSM8499465_S10, GSM8499466_S13, GSM8499467_S15). Each group has 'assays' (called cells only) and 'all_barcodes' (over a million raw barcodes); use assays/dna_variants and assays/protein_read_counts, not all_barcodes. Each group has its own variant list (cells x variants: S7 2518 x 75267, S8 5988 x 89607, S10 6912 x 99071, S13 4826 x 78181, S15 3714 x 81592), so variant column indices are NOT comparable across samples: process each sample independently and match variants across samples by the id string (chr:pos:ref/alt), never by index. Join DNA and protein on barcode and confirm ra/barcode order is identical between the two assays in each group. Read sample identity from ra/sample_name and count samples by unique sample name. Each sample has 48 antibodies (45 markers plus IgG1, IgG2a, IgG2b isotype controls) and 279 amplicons. The layers (AF float64, DP, GQ, NGT) are dense and one AF layer can be about 5.5 GB, so select the driver-gene variant columns first via ca/amplicon and read only those columns. The flags ca/filtered, ra/filtered and layers/FILTER_MASK are computed from metadata cutoffs and remove nothing; their 0/1 polarity is undocumented (in S7 the first CSF3R variants have ca/filtered=1), so test polarity empirically (cross-tabulate against DP<10 or GQ<30) before relying on them.",
+      "from": [
+        "sl-sc-test-ba7cca75d74b",
+        "sl-sc-test-bcef2398022c",
+        "sl-sc-test-32b44592616f"
+      ],
+      "reason": "Without this the team can read the wrong barcode set, misalign DNA and protein cells, compare variants across samples by index, run out of memory, or use a filter flag with the wrong polarity; each of these silently changes which cells are called mutant NK.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ccdca82a8931"
+      }
+    },
+    {
+      "text": "NGT CODING. In Tapestri/Mosaic NGT layers 0 = reference, 1 = heterozygous, 2 = homozygous alternate and 3 = MISSING genotype. A test such as NGT != 0 or NGT > 0 counts every no-call as a mutation and makes nearly every cell 'mutant'. Check np.unique(NGT) per sample and compare the number of mutant NK cells under NGT > 0 versus NGT in {1,2}. Define mutant strictly as NGT in {1,2} and treat 3 as not called. Decide the denominator explicitly (all NK-labelled cells, as Mosaic does, versus NK cells genotyped at the site, as Tapestri Insights does) and report whether the per-sample outcome changes between the two.",
+      "from": [
+        "sl-sc-test-fde480b624b7"
+      ],
+      "reason": "The task's phrase 'non-reference genotype call' invites NGT != 0, which would turn missing calls into mutations and push every sample over the 1% threshold; the denominator choice can also flip samples near the threshold.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-a2f44b36db29"
+      }
+    },
+    {
+      "text": "UNFILTERED VARIANT TABLE. The h5 holds the unfiltered variant table (roughly 75,000-99,000 candidate sites per sample, most of them sequencing/PCR noise). 'At least one non-reference call in any driver-gene site' is therefore a union over thousands of noisy sites and can be true for almost every cell of every lineage from random error alone. Check: compute the fraction of cells with any raw NGT in {1,2} in a driver gene separately for NK, T and myelomonocytic cells; if it is near 100% in all classes, the raw criterion is not measuring clone membership. Mosaic's standard per-call filters are DP >= 10, GQ >= 30, het calls need VAF >= 30% (20% is a common relaxed value), hom calls VAF >= 95%, ref calls VAF <= 5%, with failing calls set to missing; then keep only variants genotyped in >= 50% of cells and mutated in >= 1% of the sample's cells. Report the per-sample result under both raw and filtered calls, because they can differ.",
+      "from": [
+        "sl-sc-test-2d3a65ff3809"
+      ],
+      "reason": "Whether calls are quality-filtered before the 'any non-reference call' union is the single choice most likely to move the sample count, so the team must make it deliberately and show both versions.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-ea760e8fd4f8"
+      }
+    },
+    {
+      "text": "GERMLINE SNPs AND ALLELE DROPOUT. Driver-gene amplicons (TET2, ASXL1, TP53 and others) carry common germline polymorphisms that are non-reference in every cell of the patient, including NK and T cells, so they make NK cells look mutant in every sample without any clonal involvement. Check: per sample and per passing variant, compute the mutant fraction among genotyped cells in each immune class. Tapestri allele dropout is roughly 5-12% per locus, so a germline het SNP will not be in 100% of cells: it appears het-dominant with about 5-10% ref and 5-10% hom calls spread evenly over all classes, with per-cell VAF near 50% (or 100% for hom). Use a tolerant germline rule (mutant in roughly >= 80-90% of genotyped cells in EVERY immune class) rather than a strict 100% rule; a somatic variant is instead mutated in a subset of cells, typically enriched in myelomonocytic cells and depleted in T cells. There is no gnomAD annotation available offline, so lineage-ubiquity is the usable substitute for a population-frequency filter. Count a cell as mutant on NGT 1 or 2 alike; do not define clones by zygosity. Report the result with and without germline-like variants excluded.",
+      "from": [
+        "sl-sc-test-37ab0a69f791",
+        "sl-sc-test-86d03aae33e0"
+      ],
+      "reason": "Germline polymorphisms satisfy a literal 'non-reference call in a driver gene' test in all cells, so including or excluding them can change the count from all samples to fewer; dropout means a naive 100%-ubiquity filter would miss them.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-af637958d3a5"
+      }
+    },
+    {
+      "text": "NO VARIANT ANNOTATION; GENE COMES FROM THE AMPLICON NAME. The variant column attributes contain only CHROM, POS, REF, ALT, QUAL, amplicon and id: there is no gene, protein-change or synonymous/non-synonymous annotation, and no web access to add one, so 'non-synonymous' cannot be verified directly, and intronic, synonymous and homopolymer-indel artefact sites inside driver amplicons will be included by default. List the col_attrs keys to confirm. Parse the gene from the amplicon name (format like MYE_CSF3R_36932055); amplicons named AMP1..AMP44 carry no gene and should be dropped. The panel includes, among others, ASXL1, BCOR, CBL, DNMT3A, ETV6, EZH2, IDH1, IDH2, JAK2, KRAS, NRAS, NF1, PHF6, PTPN11, RUNX1, SETBP1, SF3B1, SRSF2, STAG2, TET2, TP53, U2AF1, WT1, ZRSR2; confirm which panel genes you treat as MDS drivers and state the list. Since non-synonymous status is unavailable, the task's fallback ('otherwise non-reference') applies; flag indels at homopolymers as likely artefacts.",
+      "from": [
+        "sl-sc-test-3db990e94b8a"
+      ],
+      "reason": "The task assumes a driver gene list and non-synonymous annotation that the file does not contain; the team needs to know how to derive genes and that the fallback criterion is the only one that can be applied, otherwise they may stall or invent annotations.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-0cfaccf76e6f"
+      }
+    },
+    {
+      "text": "PROTEIN NORMALISATION. Antibody-tag counts are dominated by ambient/nonspecific background and per-cell staining depth. Thresholding raw counts, or running one CLR over all five samples pooled, gives sample-driven clusters and wrong positive/negative calls. The three isotype controls (IgG1, IgG2a, IgG2b) are not biology and distort clustering if left in as features. Normalise within each sample (CLR per cell, or a background-aware method that uses the isotypes), drop isotypes from the clustering features, exclude 'sticky' cells that are high on all isotypes, and set marker gates per sample from the negative peak. Check that after normalisation each lineage marker (CD3, CD19, CD14, CD33, CD56, CD7) is bimodal within each sample, isotypes are flat near background, and clusters do not split by sample.",
+      "from": [
+        "sl-sc-test-ae1fab87e35d"
+      ],
+      "reason": "The NK label is the denominator and numerator of the criterion; pooled or raw-count gating would mislabel cells differently per sample and change which samples pass.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-c19e1ac2bb09"
+      }
+    },
+    {
+      "text": "DEFINING NK CELLS. NK cells have no single specific antibody marker. CD56 is aberrantly expressed on monocytes and myeloid progenitors in MDS and on CD56+ monocyte/DC-like cells; CD16 is on non-classical monocytes and granulocytes; CD7 is on T cells and aberrant blasts; CD3+CD56+ NK-like T cells exist. A 'CD56-high' or 'CD16-high' cluster can therefore be mutant myeloid cells mislabelled as NK. Gate NK as CD3- CD19- CD14- CD33- CD7+ and (CD56+ or CD16+), rather than by one marker or an unreviewed cluster label; coexpression of CD7 with CD56 is what separates true NK cells from CD56+ myeloid cells. Check that NK-labelled cells are CD45-bright and negative for CD3, CD19, CD14/CD33/CD64 and CD34/CD117, and compare the NK mutant fraction with and without the CD7+ and CD33- requirements.",
+      "from": [
+        "sl-sc-test-b7a72718989b"
+      ],
+      "reason": "Mutant myeloid cells mislabelled as NK would create NK 'participation' that is purely a labelling error, directly inflating the sample count.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-567ef73b5840"
+      }
+    },
+    {
+      "text": "DOUBLETS. A droplet containing an NK cell and a mutant myeloid cell carries both the NK protein signal and the myeloid mutation. Tapestri doublet rates are several percent, well above the 1% NK-mutant threshold, so doublets alone can push a sample over the line. Check, among NK-labelled cells called mutant: myeloid markers (CD33, CD14, CD64, CD11b, CD13), total protein and DNA read counts (doublets are higher), and per-cell VAF of the somatic variant (a het mutation diluted by a wild-type partner sits near 25% or lower instead of 50%). Remove mixed-phenotype cells before labelling, require het VAF >= 30%, and state how many mutant NK cells remain per sample.",
+      "from": [
+        "sl-sc-test-abf027811c39"
+      ],
+      "reason": "The 1% threshold is below the expected doublet rate, so without a doublet check a positive sample cannot be distinguished from an artefact.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-53f617becd90"
+      }
+    },
+    {
+      "text": "SMALL NK NUMBERS AND CONTROLS. NK cells are a small population (often tens of cells out of a few thousand per sample), so at a 1.0% threshold a single erroneous or doublet cell can decide a sample, and a sample with zero NK-labelled cells has an undefined fraction. Report per sample: number of NK cells, number of mutant NK cells, and the same mutant fraction in T cells (negative control for false positives) and in myelomonocytic cells (positive control that the somatic variant is detectable). Compare the NK rate with the T-cell background rate, treat a sample with no NK cells as not satisfying the criterion, and state how many samples flip if a result resting on a single cell is disallowed. Note that a minimum-cell requirement is not part of the task's stated criterion (>= 1.0% of NK-labelled cells), so present it as a sensitivity check alongside the literal criterion rather than applying it silently.",
+      "from": [
+        "sl-sc-test-8beeae72f8b5"
+      ],
+      "reason": "Samples near the threshold can be decided by one cell; the team needs the control fractions and an explicit rule for zero-NK samples to make a defensible per-sample call.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-99685110b48d"
+      }
+    },
+    {
+      "text": "DO NOT OVER-FILTER TO A DEFAULT. NK involvement in the mutant clone is biologically plausible: published single-cell work reports that NK cells in MDS/CCUS patients can share the myeloid driver genotype (e.g. TET2, DNMT3A). Filtering until no sample passes is therefore not a safe default, and neither is accepting every sample. For each sample, report the NK mutant fraction for each candidate somatic driver variant next to the myelomonocytic fraction (expected high) and the T-cell fraction; genuine NK participation shows an NK fraction between T-cell background and the myeloid level, driven by the same variant that dominates the myelomonocytic cells. Give a sensitivity table of the sample count under raw calls, quality-filtered calls and germline-excluded calls, so it is visible which choice moves the count, and state which version you report and why.",
+      "from": [
+        "sl-sc-test-e6fd2742d065"
+      ],
+      "reason": "The other pitfalls all push toward stricter filtering; the team needs the counterweight that an all-negative result is as suspect as an all-positive one, and a sensitivity table makes the final count auditable.",
+      "fact_ids": {
+        "team-a": "sl-sc-test-fb91067d4d94"
+      }
+    }
+  ],
+  "questions": [
+    {
+      "to": "sc26-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: both teams saw the same saturation of driver-gene calls across all cell classes, but the two teams did not weigh the same words of the task. The task says 'at least one non-synonymous (or otherwise non-reference) genotype call in any MDS driver gene' and also says 'participate in the mutant clone population'. Write down which of these words your reported count follows, which words count against it, and what the task's own fallback sentence about 'the union of genes with non-reference calls across samples' implies about how broad a call set the task expects. Your rule (enrichment in myelomonocytic cells over T cells) is not in the task text: what in the task or the data, as opposed to the notes you were handed, supports replacing the stated criterion with it? Does that change your method or your confidence?",
+      "from": [
+        "sl-sc-test-a2e3893e1cbf",
+        "sl-sc-test-4c08153cdf21",
+        "sl-sc-test-52c5846e1738"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-21199bdb3921"
+    },
+    {
+      "to": "sc26-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: the other team saw that some amplicons in the panel carry no gene name (custom amplicons) and found, from their genome coordinates, that they fall inside known driver genes. Your notes say amplicons without a gene name were dropped. Check in your data where those amplicons lie, which genes they cover, and whether any variant on them would enter your candidate set in any sample once they are included. Also compare your own call filters with the pipeline's per-variant 'filtered' flag stored in the file: do the two keep the same variants? Does that change your method?",
+      "from": [
+        "sl-sc-test-d156c359e209",
+        "sl-sc-test-4c08153cdf21",
+        "sl-sc-test-d61da1578e28"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-b71b1386f66e"
+    },
+    {
+      "to": "sc26-team-a",
+      "question": "QUESTION FROM THE DIRECTOR: your count rests on a rule with two thresholds that you chose yourself (a minimum myelomonocytic cell fraction and a minimum ratio over the T-cell fraction), and the rule assumes a clone is depleted in T cells. Check whether each sample's outcome is the same over a reasonable range of both thresholds, and list for every sample the best candidate variant that just fails the rule, with its fraction in myelomonocytic, T and NK cells. Your notes also list variants that are present in one sample only, at a high cell fraction in all lineages, next to sites that recur in every sample; these are not the same pattern. For each of those single-sample variants, what evidence (per-cell allele fraction, zygosity mix, depth, sequence context, sex chromosome) separates an artefact from a germline variant with dropout and from a clone that spans lineages including T cells? Does that change which samples you count?",
+      "from": [
+        "sl-sc-test-b0e1f4bd90af",
+        "sl-sc-test-b876e0e71129",
+        "sl-sc-test-a2e3893e1cbf"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-f6d58650cd03"
+    },
+    {
+      "to": "sc26-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the other team looked at the driver-gene calls that remain after germline-like variants are removed and saw that many of them sit at the same genomic positions in every sample, at similar cell fractions in NK, T and myelomonocytic cells, including an indel in a homopolymer. Check whether that holds in your data: for the calls that still make your NK cells mutant after your germline exclusion, are the positions shared across samples, and are the per-cell allele fraction, depth and genotype quality at those positions what a real heterozygous or homozygous variant would show? What would such calls mean for a criterion about cells that 'participate in the mutant clone population'? Does that change your method?",
+      "from": [
+        "sl-sc-test-b0e1f4bd90af",
+        "sl-sc-test-52c5846e1738"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-561f2feff67b"
+    },
+    {
+      "to": "sc26-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: your notes say a somatic-only analysis is not available because the file has no somatic annotation, while your plan said that if germline variants made every sample trivially positive you would report both a literal and a somatic-only count and pick by the task wording. The other team compared, for each variant within a sample, the fraction of mutant cells in myelomonocytic cells with the fraction in T cells. Check whether, in your data, any driver-gene variant differs clearly in cell fraction between lineages within a sample, and whether that pattern is present in every sample. Can such a comparison serve where annotation is missing, and what would your second count be? Then write down which words of the task ('non-synonymous (or otherwise non-reference)', 'participate in the mutant clone population', the fallback sentence on the driver list) support the count you report and which count against it. Does that change your method or your confidence?",
+      "from": [
+        "sl-sc-test-4c08153cdf21",
+        "sl-sc-test-52c5846e1738",
+        "sl-sc-test-a2e3893e1cbf"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-ee432aed2f4c"
+    },
+    {
+      "to": "sc26-team-b",
+      "question": "QUESTION FROM THE DIRECTOR: the two teams did not gate NK cells the same way and do not have the same number of NK-labelled cells per sample. The other team additionally required CD7 positive, set gates per marker within each sample from the marker's own distribution, and removed cells with high isotype-control signal, on the grounds that CD56 and CD16 are also found on myeloid cells in this disease. In one of your samples the strict and loose gates differ many-fold in cell number. Check what CD7, CD33, CD64, CD34, CD117 and the isotype controls look like in your NK-labelled cells under each gate, and whether the cells added by the loose gate look like NK cells or like something else. Check also, among NK-labelled cells carrying a call that is not shared by all lineages, whether protein and DNA read totals or myeloid markers point to doublets. Does that change your NK labels or anything downstream?",
+      "from": [
+        "sl-sc-test-5614e02ed23f",
+        "sl-sc-test-d61da1578e28",
+        "sl-sc-test-4c08153cdf21"
+      ],
+      "delivered": true,
+      "reasons": [],
+      "fact_id": "sl-sc-test-f56b4ce6d6df"
+    }
+  ],
+  "warning_signs_to_team_c": [],
+  "challenged": false,
+  "challenge_questions": null,
+  "challenge_changed_answer": null,
+  "challenge": null,
+  "referee": {
+    "difference": "X=3, Y=5. Both agree S7, S13 and S15 are positive. They differ on S8 and S10. X says S10 has no myeloid-enriched driver variant 'even unfiltered' and calls S8 negative under a strict 'clean' NK gate (CD7>0, CD34/CD13<0.5, IgG1<1). Y includes the customMYE DNMT3A amplicons, finds S8 DNMT3A chr2:25466799 C/T and S10 DNMT3A chr2:25466800 G/A, uses a standard NK gate, and also notes that the literal task criterion gives 5.",
+    "test": "test.py: for the DNMT3A AMP8/AMP1 sites in all 5 samples, the high-quality mutant fraction (NGT 1/2, DP>=10, GQ>=30, AF>=25) in myeloid, T, loose-gate NK (lineage-negative, CD56 or CD16 high) and X's clean NK gate, plus the pipeline filtered flag and recurrence in the other samples.",
+    "expected_if_x": "S10 has no pipeline-passing, sample-private, myeloid-enriched driver variant, or its NK fraction is below 1% under X's clean gate.",
+    "expected_if_y": "S10 carries a pipeline-passing, S10-private DNMT3A variant, enriched in myeloid over T, in >=1% of NK cells; S8 carries DNMT3A 25466799 in >=1% of NK cells under a standard gate.",
+    "outcome": "S10: chr2:25466800 G/A has filtered=0 (passes the pipeline). It is private to S10 (<=0.2% in other samples) and enriched in myeloid cells (2.9%) over T cells (0.4%). It is in 12/463 = 2.6% of loose-gate NK cells and in 7/294 = 2.4% of X's own clean NK cells. This disproves X's statement and makes S10 positive under X's own method, so X's count is at least 4. S8: chr2:25466799 C/T passes the pipeline (My 8.4%, T 0.9%) and is in 9/148 = 6.1% of standard-gate NK cells but 0/22 clean NK cells. S8 therefore depends only on X's extra-strict gate, which the task does not ask for. The literal criterion gives 5.",
+    "pick": "Y",
+    "reason": "X's answer of 3 rests on a factual error about S10, which the test shows is positive even under X's own gate and enrichment rule. The remaining S8 difference comes from X's non-standard NK gate exclusions; under standard NK labelling and the literal task criterion S8 passes, giving 5 as Y reports.",
+    "own_answer": null,
+    "picked_agent": "sc26-team-a",
+    "own_answer_valid": false,
+    "mapping": {
+      "X": "sc26-team-b",
+      "Y": "sc26-team-a"
+    }
+  },
+  "research": [
+    {
+      "round": "questions",
+      "questions": [
+        {
+          "question": "In the HDF5 output of the Mission Bio Tapestri DNA pipeline, what does the per-variant 'filtered' column attribute mean (which filters set it), and what are the default thresholds of Mosaic's Dna.filter_variants (min_dp, min_gq, vaf_ref, vaf_het, vaf_hom, min_prct_cells, min_mut_prct_cells)? Do these defaults remove germline SNPs, or only low-quality calls?",
+          "why": "One team relied on the pipeline's filtered flag and the other on its own depth/quality/allele-fraction filters; both still saw every cell called mutant. Knowing what the standard filter does and does not remove tells both teams whether a 'standard' analysis would still include germline and artefact calls.",
+          "passed": false,
+          "reasons": [
+            "a number within 1 percent of another team's value for \"n_samples_with_mutant_nk\""
+          ]
+        },
+        {
+          "question": "In published single-cell DNA+protein (Tapestri) studies of MDS or clonal haematopoiesis, how is a cell conventionally scored as belonging to the mutant clone when asking whether a lymphoid lineage such as NK cells is involved: by any non-reference genotype call in a driver-gene amplicon, or only by patient-specific pathogenic somatic variants (for example those known from bulk sequencing)? How are germline polymorphisms and recurrent panel artefacts (homopolymer indels, sites seen in every sample) usually excluded when no variant annotation is at hand?",
+          "why": "The disagreement is about whether 'non-synonymous (or otherwise non-reference) call in a driver gene' is meant literally or as somatic clonal variants. The field convention for this kind of lineage-involvement analysis would tell both teams which reading a task author most plausibly had in mind and how to operationalise it without annotation.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In MDS and clonal haematopoiesis, how often do mature T cells carry the driver mutation of the myeloid clone (for example TET2, DNMT3A, splicing-factor genes), and at what cell fractions compared with NK cells and monocytes? Is depletion in T cells a valid requirement for calling a variant somatic, or does it exclude true multilineage clones?",
+          "why": "One team's somatic rule requires a variant to be several-fold enriched in myelomonocytic cells over T cells. If T cells commonly share early driver mutations, that rule would discard real clones in some samples; if they rarely do, the rule is a sound stand-in for missing annotation.",
+          "passed": false,
+          "reasons": [
+            "a number within 1 percent of another team's value for \"n_samples_with_mutant_nk\""
+          ]
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "In published single-cell DNA+protein (Tapestri) studies of MDS or clonal haematopoiesis, how is a cell conventionally scored as belonging to the mutant clone when asking whether a lymphoid lineage such as NK cells is involved: by any non-reference genotype call in a driver-gene amplicon, or only by patient-specific pathogenic somatic variants (for example those known from bulk sequencing)? How are germline polymorphisms and recurrent panel artefacts (homopolymer indels, sites seen in every sample) usually excluded when no variant annotation is at hand?",
+          "answer": "Convention: a cell is called mutant only if it carries the patient's somatic driver mutations, not any non-reference call in a driver amplicon. The CCUS/MDS NK Tapestri study (Nat Commun 2025; ASH 2023 abstract 514) studied 5 CCUS patients 'with DNMT3A or TET2 mutations'. It reported that NK cells were 'part of the mutant clone population' or 'enriched in aberrant clones with mutational burdens similar to those of myelomonocytes', judged by those driver mutations. The retrieved pages were cut off before the methods, so I could not confirm directly that variants were picked from bulk sequencing. Without annotation, the standard way to do this is Mission Bio's somatic-variant pipeline (Clonal Insights): (1) per-call depth >= 10 and genotype quality >= 30; (2) variant mutated in >= 3 cells, and in >= 1% of cells when no background-error file is supplied; (3) synonymous variants removed; (4) for multiplexed samples, variants found in all samples at similar clonality (within 10%) removed as recurrent artefacts; (5) germline removed if gnomAD allele frequency >= 0.01 or listed as germline by the user. Other Tapestri papers also require single-cell VAF >= 25% and the variant genotyped in >= 60% of cells. Offline, the usual stand-ins are: a site seen in every sample at a similar mutant fraction is an artefact, and a site mutant in nearly all cells of every lineage (het/hom near 50%/100% VAF) is germline. The most plausible reading of the task is therefore quality-filtered somatic clonal variants, not every raw non-reference call.",
+          "sources": [
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC11992119/",
+            "https://ash.confex.com/ash/2023/webprogram/Paper184349.html",
+            "https://support.missionbio.com/hc/en-us/articles/31574334864279-Clonal-Insights-Software-Algorithm-Overview",
+            "https://doi.org/10.1182/blood.2020006996",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC12776156/"
+          ],
+          "confidence": "medium",
+          "deliveries": {
+            "sc26-team-a": {
+              "delivered": false,
+              "reasons": [
+                "a number within 1 percent of another team's value for \"n_samples_with_mutant_nk\""
+              ],
+              "fact_id": null
+            },
+            "sc26-team-b": {
+              "delivered": false,
+              "reasons": [
+                "a number within 1 percent of another team's value for \"n_samples_with_mutant_nk\""
+              ],
+              "fact_id": null
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In published single-cell DNA+protein (Tapestri) studies of MDS or clonal haematopoiesis, how is a cell conventionally scored as belonging to the mutant clone when asking whether a lymphoid lineage such as NK cells is involved: by any non-reference genotype call in a driver-gene amplicon, or only by patient-specific pathogenic somatic variants (for example those known from bulk sequencing)? How are germline polymorphisms and recurrent panel artefacts (homopolymer indels, sites seen in every sample) usually excluded when no variant annotation is at hand? ANSWER: Convention: a cell is called mutant only if it carries the patient's somatic driver mutations, not any non-reference call in a driver amplicon. The CCUS/MDS NK Tapestri study (Nat Commun 2025; ASH 2023 abstract 514) studied 5 CCUS patients 'with DNMT3A or TET2 mutations'. It reported that NK cells were 'part of the mutant clone population' or 'enriched in aberrant clones with mutational burdens similar to those of myelomonocytes', judged by those driver mutations. The retrieved pages were cut off before the methods, so I could not confirm directly that variants were picked from bulk sequencing. Without annotation, the standard way to do this is Mission Bio's somatic-variant pipeline (Clonal Insights): (1) per-call depth >= 10 and genotype quality >= 30; (2) variant mutated in >= 3 cells, and in >= 1% of cells when no background-error file is supplied; (3) synonymous variants removed; (4) for multiplexed samples, variants found in all samples at similar clonality (within 10%) removed as recurrent artefacts; (5) germline removed if gnomAD allele frequency >= 0.01 or listed as germline by the user. Other Tapestri papers also require single-cell VAF >= 25% and the variant genotyped in >= 60% of cells. Offline, the usual stand-ins are: a site seen in every sample at a similar mutant fraction is an artefact, and a site mutant in nearly all cells of every lineage (het/hom near 50%/100% VAF) is germline. The most plausible reading of the task is therefore quality-filtered somatic clonal variants, not every raw non-reference call. HOW SURE: medium. SOURCES: https://pmc.ncbi.nlm.nih.gov/articles/PMC11992119/, https://ash.confex.com/ash/2023/webprogram/Paper184349.html, https://support.missionbio.com/hc/en-us/articles/31574334864279-Clonal-Insights-Software-Algorithm-Overview, https://doi.org/10.1182/blood.2020006996, https://pmc.ncbi.nlm.nih.gov/articles/PMC12776156/."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "sc26-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "sc26-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's revise answer"
+    },
+    {
+      "agent": "sc26-team-b",
+      "round": "revise",
+      "reason": "the referee's test supported the other answer: X's answer of 3 rests on a factual error about S10, which the test shows is positive even under X's own gate and enrichment rule. The remaining S8 difference comes from X's non-standard NK gate exclusions; under standard NK labelling and the literal task criterion S8 passes, giving 5 as Y reports."
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "sc26-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 71.14796249999199,
+      "cost_usd": 0.32677399999999995,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 122.59215591696557,
+      "cost_usd": 0.18816449999999998,
+      "error": null
+    },
+    {
+      "agent": "sc26-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 128.5671351250494,
+      "cost_usd": 0.6076526,
+      "error": null
+    },
+    {
+      "agent": "sc26-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 890.6359516249504,
+      "cost_usd": 0.539916,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "questions",
+      "ok": true,
+      "seconds": 125.46731445903424,
+      "cost_usd": 0.25359200000000004,
+      "error": null
+    },
+    {
+      "agent": "sc26-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 100.64087008289061,
+      "cost_usd": 0.5584127999999999,
+      "error": null
+    },
+    {
+      "agent": "sc26-team-b",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 199.63053662504535,
+      "cost_usd": 0.539786,
+      "error": null
+    },
+    {
+      "agent": "sc26-team-a",
+      "phase": "revise",
+      "ok": true,
+      "seconds": 472.6136411250336,
+      "cost_usd": 0.9692784,
+      "error": null
+    },
+    {
+      "agent": "sc26-referee",
+      "phase": "referee",
+      "ok": true,
+      "seconds": 72.60506091604475,
+      "cost_usd": 0.3298214,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}

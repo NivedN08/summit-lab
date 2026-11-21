@@ -1,0 +1,408 @@
+{
+  "study": "bd32",
+  "status": "replicated",
+  "final": {
+    "agent": "bd32-team-a",
+    "team": "team-a",
+    "round": "challenge",
+    "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd32/final/answer.json"
+  },
+  "switches": {
+    "library": true,
+    "questions": true,
+    "referee": true,
+    "challenge": true,
+    "brief_teams": [
+      "team-a"
+    ],
+    "team_search": true,
+    "research": true
+  },
+  "models": {
+    "director": "opus",
+    "bd32-library": "opus",
+    "bd32-team-a": "opus",
+    "bd32-team-b": "opus",
+    "bd32-team-c": "opus",
+    "bd32-referee": "opus"
+  },
+  "briefed_teams": [
+    "team-a"
+  ],
+  "candidates": [
+    {
+      "team": "team-b",
+      "agent": "bd32-team-b",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd32/candidates/team-b-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd32-team-a",
+      "round": "analysis",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd32/candidates/team-a-analysis.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-b",
+      "agent": "bd32-team-b",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd32/candidates/team-b-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    },
+    {
+      "team": "team-a",
+      "agent": "bd32-team-a",
+      "round": "challenge",
+      "path": "/Users/nivednandakumar/Downloads/summit-lab/runs/dev-panel-noise-lab1/bd32/candidates/team-a-challenge.json",
+      "valid": true,
+      "problems": [],
+      "answer": {
+        "label": "False"
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "round": "analysis",
+      "between": [
+        "bd32-team-a",
+        "bd32-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    },
+    {
+      "round": "challenge",
+      "between": [
+        "bd32-team-a",
+        "bd32-team-b"
+      ],
+      "fields": {
+        "label": true
+      },
+      "agree": true
+    }
+  ],
+  "briefing": [
+    {
+      "text": "Lesion type is not a clinical column: CANCER_TYPE_DETAILED reads 'Invasive Breast Carcinoma' for every sample, including JP and DCIS. Take lesion type from the SAMPLE_ID suffix (-JP, -DCIS, -IDC). Only patient JuP3 has a matched JP, DCIS and IDC. JuP1 and JuP2 have one unsuffixed sample each. The hypothesis is about JP versus its associated DCIS and IDC, so the main comparison is within JuP3 (JuP3-JP vs JuP3-DCIS vs JuP3-IDC). Do not pool the unmatched samples into a JP group, and state that one matched trio supports only a descriptive comparison.",
+      "from": [
+        "sl-dev-panel-noise-lab1-f8ca7f7601d6"
+      ],
+      "reason": "Grouping by the clinical column or pooling unmatched samples would give the wrong comparison.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-1316adf8fba6"
+      }
+    },
+    {
+      "text": "data_cna_hg19.seg contains segmented copy number for JuP3-JP, JuP3-DCIS and JuP3-IDC (and for JuP1 and JuP2), so CNA burden per lesion can be computed. The relevant variable therefore exists. If JP shows fewer or similar CNAs than its matched DCIS/IDC, that counts as evidence against the hypothesis, not as grounds for 'Not verifiable'.",
+      "from": [
+        "sl-dev-panel-noise-lab1-d33a7ab16f70"
+      ],
+      "reason": "This prevents a wrong 'Not verifiable' label and clarifies what counts as contrary evidence.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-b74d0e769316"
+      }
+    },
+    {
+      "text": "Counting raw .seg rows measures segmentation, not alterations, and many segments may be copy-neutral. For each sample, compute (a) the number of segments, (b) the number of segments with |seg.mean| above a threshold, and (c) the fraction of genome altered (bp with |seg.mean| > threshold divided by total bp). Also tabulate num.mark and segment length, and recount after excluding small or low-marker segments (e.g. num.mark<10 or <1 Mb). Base the conclusion on called alterations, and report it as metric-dependent if the metrics disagree on direction.",
+      "from": [
+        "sl-dev-panel-noise-lab1-3b748a530380",
+        "sl-dev-panel-noise-lab1-8def3a186219"
+      ],
+      "reason": "The choice of CNA burden metric and noise filtering can decide the direction of the comparison.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-e2fcba1a7050"
+      }
+    },
+    {
+      "text": "CNA calls from log2 seg.mean depend on the threshold (cBioPortal FGA uses 0.1, CNVkit uses gain>0.2 and loss<-0.25, others use \u00b10.3). Recompute thresholded counts and FGA at 0.1, 0.2 and 0.3, plus high-level cutoffs, for the three JuP3 lesions. Check whether the JP vs DCIS/IDC ordering holds across thresholds, and say so explicitly if it flips.",
+      "from": [
+        "sl-dev-panel-noise-lab1-d1202f66d0c6"
+      ],
+      "reason": "The ranking may change with the cutoff, which affects how confident a True/False call can be.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-f68f7c8d9878"
+      }
+    },
+    {
+      "text": "Check each sample's length-weighted median seg.mean. It should be near 0. If it is not, recentre by subtracting it before thresholding, and report whether the conclusions change.",
+      "from": [
+        "sl-dev-panel-noise-lab1-50a131b109e9"
+      ],
+      "reason": "A shifted baseline can create or erase apparent genome-wide alterations in one lesion.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-3177ebb750aa"
+      }
+    },
+    {
+      "text": "No tumour purity values are provided. Normal-cell contamination pulls log2 ratios toward 0, so a lower-cellularity lesion can show fewer events above a fixed threshold. Compare the per-sample |seg.mean| distribution (max, 95th percentile) and check whether the same loci are altered at different amplitudes across the lesions. Note this limitation in the reasoning, but still report the observed burden.",
+      "from": [
+        "sl-dev-panel-noise-lab1-60a003794379"
+      ],
+      "reason": "Without this check, amplitude differences could be misread as differences in the number of alterations.",
+      "fact_ids": {
+        "team-a": "sl-dev-panel-noise-lab1-c0d03089eef5"
+      }
+    }
+  ],
+  "questions": [],
+  "warning_signs_to_team_c": [],
+  "challenged": true,
+  "challenge_questions": 6,
+  "challenge_changed_answer": false,
+  "challenge": {
+    "ran": true,
+    "shared_assumptions": [
+      "Both teams treat the seg.mean values of all lesions as being on the same scale. With no purity column, a fixed |log2| threshold compares lesions of possibly very different cellularity, and JP may be the least pure lesion.",
+      "Both teams take lesion type from the SAMPLE_ID suffix and assume JuP1 and JuP2 (no suffix) are JP samples. Team B uses them as JP context. Nothing in the clinical table says what lesion they are.",
+      "Both teams treat 'number of CNAs' as burden measured by FGA or thresholded segment count. Neither treats it as a count of discrete events (breakpoints, or arm/focal events) once neighbouring segments with the same call are merged.",
+      "Both teams treat the seg file as whole-genome, though the panel matrix says WXS. Exome-derived segments are sparse and noisy off-target, and the per-sample marker totals differ (JuP2 has fewer)."
+    ],
+    "unused_evidence": [
+      "data_mutations.txt and TMB_NONSYNONYMOUS (JP 0.1 vs DCIS 1.4 vs IDC 1.17): neither team used mutations, for example shared clonal mutations to judge whether JP is clonally related to the DCIS/IDC, or VAF-type information to gauge JP purity. Purity is exactly the weak point both teams named.",
+      "num.mark per segment: Team A filtered on it, but neither team weighted the amplitude reliability of JP's segments by marker count when deciding whether JP's low-level segments are noise or real subclonal events.",
+      "GRADE, ER and HER2 are filled in only for DCIS and IDC, and neither team used them. They do not obviously bear on CNA burden, but they confirm that JP has no annotation at all."
+    ],
+    "unresolved_weak_points": [
+      "Purity/cellularity of JuP3-JP: both teams named it as their weakest point. Team A partly addressed it with a locus check (shared arm events are about 0 in JP, not attenuated). Team B only reported it. No team estimated purity from the data, e.g. from allele fractions or from the amplitude of the one shared 5q31 event.",
+      "n=1 matched trio: both teams reported it. Neither team stated what result would count as 'similar' as opposed to 'lower', or how stable a single-trio conclusion is.",
+      "Metric dependence: Team A found that the raw count at |0.1| is equal across lesions (18/18/17). That reading supports 'similar', not 'lower', and it was dismissed as noise without a noise estimate."
+    ],
+    "second_readings": [
+      "'Number of copy number alterations' could mean a count of discrete events rather than fraction of genome altered. Under a count reading at low threshold, Team A's own figures show JP equal to DCIS/IDC.",
+      "'JP compared to associated DCIS and IDC' could be read at cohort level (all JP samples, JuP1/JuP2/JuP3-JP, versus the DCIS/IDC) as well as within the matched patient. Either way, it depends on what JuP1/JuP2 are.",
+      "'High number' could be absolute (JP is highly rearranged) as well as relative to the others. The relative reading is the natural one."
+    ],
+    "verdict": "I moderately trust the agreed conclusion that JP does not show more CNAs than its matched DCIS/IDC. Burden by FGA and higher thresholds is consistently lower in JP, and Team A's locus check argues against simple dilution. The remaining risks are low JP purity, which neither team quantified with the mutation data, and a count-based reading under which JP looks similar rather than lower. Neither risk is likely to make the hypothesis True, but each could weaken how firmly the label is stated.",
+    "questions": [
+      {
+        "to": "bd32-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Your raw |seg.mean|>0.1 count is equal across JP/DCIS/IDC (18/18/17). Merge adjacent segments that have the same gain/loss call and count discrete events per lesion. Then estimate a per-sample noise floor, e.g. the spread of seg.mean in segments with many markers near 0, and test whether JP's 0.1-0.2 segments exceed it. Does an event-count reading change whether JP is 'lower' or only 'similar', and does that change your label logic?",
+        "from": [
+          "sl-dev-panel-noise-lab1-38d214b617e7"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-34c4f83819d3"
+      },
+      {
+        "to": "bd32-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Check data_mutations.txt for mutations shared between JuP3-JP and JuP3-DCIS/IDC. Does the overlap (or its absence) show whether JP is clonally related, and does it bear on whether JP's flat profile reflects low purity rather than few alterations? Does it change your method?",
+        "from": [
+          "sl-dev-panel-noise-lab1-7ea070979d48"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-c292697dfece"
+      },
+      {
+        "to": "bd32-team-a",
+        "question": "QUESTION FROM THE DIRECTOR: Nothing in the clinical table says what lesion JuP1 and JuP2 are. Compute their CNA burden with the same metrics. If they are JP and their profiles differed from JuP3-JP, would that change how you frame the JP-versus-DCIS/IDC comparison?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-f0b5ce014e7d"
+      },
+      {
+        "to": "bd32-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You named JP purity as your weakest point but ran no check on it. Compare the amplitude at loci altered in JuP3-DCIS/IDC (e.g. 1q, 6q, 8p, 16q, 5q31) with the same loci in JuP3-JP, and look at mutation sharing in data_mutations.txt. Are the events absent or attenuated, and does the result change your method?",
+        "from": [
+          "sl-dev-panel-noise-lab1-5ea9bf8fe110"
+        ],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-e00c775639d1"
+      },
+      {
+        "to": "bd32-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You used JuP1/JuP2 as JP context, but their SAMPLE_IDs carry no lesion suffix. What in the data supports calling them JP? If that cannot be shown, does dropping them change your reasoning?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-e30c2f02cf80"
+      },
+      {
+        "to": "bd32-team-b",
+        "question": "QUESTION FROM THE DIRECTOR: You did not filter on num.mark or segment length. Recompute the altered segment counts and FGA without segments under 10 markers or under 1 Mb, and also as discrete events after merging adjacent same-call segments. Does JP's position relative to DCIS/IDC (lower vs similar) hold under a count reading as well as an FGA reading?",
+        "from": [],
+        "delivered": true,
+        "reasons": [],
+        "fact_id": "sl-dev-panel-noise-lab1-0cd3db259c1f"
+      }
+    ]
+  },
+  "referee": null,
+  "research": [
+    {
+      "round": "challenge",
+      "questions": [
+        {
+          "question": "How can tumour purity or cellularity be estimated for an exome-sequenced sample when only segmented log2 copy-ratio values and a mutation list without read counts are available, and how strongly does low purity attenuate log2 ratios toward zero for single-copy gains and losses?",
+          "why": "Both teams named JP purity as their weakest point. Knowing the expected attenuation, e.g. a single-copy loss at 30% purity, would tell whether the near-zero JP profile can be explained by dilution.",
+          "passed": true,
+          "reasons": []
+        },
+        {
+          "question": "In copy-number studies comparing precursor and invasive breast lesions, is 'number of copy number alterations' usually reported as a count of discrete events (after merging segments) or as fraction of genome altered, and how are low-amplitude segments in exome-derived copy-number data usually treated?",
+          "why": "Under one of the teams' own count metrics the lesions are equal while FGA differs, so the convention decides whether the result reads as 'lower' or 'similar'.",
+          "passed": true,
+          "reasons": []
+        }
+      ],
+      "ran": true,
+      "error": null,
+      "findings": [
+        {
+          "question": "How can tumour purity or cellularity be estimated for an exome-sequenced sample when only segmented log2 copy-ratio values and a mutation list without read counts are available, and how strongly does low purity attenuate log2 ratios toward zero for single-copy gains and losses?",
+          "answer": "For a diploid genome with purity p and a clonal event, the expected log2 ratio is log2((p*CN + 2(1-p))/2). CNVkit's docs give the 50% case: a single-copy loss is log2(0.75) = -0.415. A single-copy loss is -1.0 at 100% purity, -0.415 at 50%, -0.234 at 30%, -0.152 at 20% and -0.074 at 10%. A single-copy gain is +0.585 at 100%, +0.322 at 50%, +0.202 at 30%, +0.138 at 20% and +0.070 at 10%. At 30% purity, single-copy events sit right at the common 0.2/-0.25 cutoffs; at 20% or below they fall under them. Without read counts or VAFs, the only data-based way to estimate purity is to fit the observed segment log2 levels to the expected levels for integer copy states (CNVkit's approach 4; PureCN and ABSOLUTE fit purity and ploidy jointly). This is unreliable when a sample has few events. Other options are a pathologist's estimate, or VAFs of clonal mutations and BAF shifts, which need read counts. A near-zero JP profile fits purity of about 10-20%, but from log2 alone you cannot tell dilution apart from a genuinely quiet genome.",
+          "sources": [
+            "https://cnvkit.readthedocs.io/en/stable/heterogeneity.html",
+            "https://cnvkit.readthedocs.io/en/stable/calling.html",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC9302205/",
+            "https://www.keatslab.org/blog/dnacopynumberanditseffectsonlog2valuesandallelicratiosatdifferenttumorpurities"
+          ],
+          "confidence": "high",
+          "deliveries": {
+            "bd32-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-fe31f9ec7c6e"
+            },
+            "bd32-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-8f1ef8659fb6"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: How can tumour purity or cellularity be estimated for an exome-sequenced sample when only segmented log2 copy-ratio values and a mutation list without read counts are available, and how strongly does low purity attenuate log2 ratios toward zero for single-copy gains and losses? ANSWER: For a diploid genome with purity p and a clonal event, the expected log2 ratio is log2((p*CN + 2(1-p))/2). CNVkit's docs give the 50% case: a single-copy loss is log2(0.75) = -0.415. A single-copy loss is -1.0 at 100% purity, -0.415 at 50%, -0.234 at 30%, -0.152 at 20% and -0.074 at 10%. A single-copy gain is +0.585 at 100%, +0.322 at 50%, +0.202 at 30%, +0.138 at 20% and +0.070 at 10%. At 30% purity, single-copy events sit right at the common 0.2/-0.25 cutoffs; at 20% or below they fall under them. Without read counts or VAFs, the only data-based way to estimate purity is to fit the observed segment log2 levels to the expected levels for integer copy states (CNVkit's approach 4; PureCN and ABSOLUTE fit purity and ploidy jointly). This is unreliable when a sample has few events. Other options are a pathologist's estimate, or VAFs of clonal mutations and BAF shifts, which need read counts. A near-zero JP profile fits purity of about 10-20%, but from log2 alone you cannot tell dilution apart from a genuinely quiet genome. HOW SURE: high. SOURCES: https://cnvkit.readthedocs.io/en/stable/heterogeneity.html, https://cnvkit.readthedocs.io/en/stable/calling.html, https://pmc.ncbi.nlm.nih.gov/articles/PMC9302205/, https://www.keatslab.org/blog/dnacopynumberanditseffectsonlog2valuesandallelicratiosatdifferenttumorpurities."
+        },
+        {
+          "question": "In copy-number studies comparing precursor and invasive breast lesions, is 'number of copy number alterations' usually reported as a count of discrete events (after merging segments) or as fraction of genome altered, and how are low-amplitude segments in exome-derived copy-number data usually treated?",
+          "answer": "There is no single convention, and the pages I read do not fully settle it. Precursor-lesion papers describe burden as numbers of discrete aberrations: 'ADH ... had fewer aberrations than LG or HG DCIS', and '18 copy number changes' across 9 ADHs. Matched DCIS/IDC studies often use fraction of genome altered or shared. cBioPortal's FGA is the length of segments with |log2| > 0.1 divided by the genome length (another post says 0.2), weighted by bases, not by segment count. Low-amplitude segments are treated as copy-neutral below a fixed |log2| cutoff, typically 0.1-0.3; CNVkit's defaults are -0.25 and +0.2. Results are known to depend on the cutoff. None of the methods sections I read describe how segments are merged into events. If the counts are equal while FGA differs, report the result as metric-dependent. Neither metric gives JP 'more' CNAs.",
+          "sources": [
+            "https://pathsocjournals.onlinelibrary.wiley.com/doi/10.1002/path.5262",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC3346166/",
+            "https://www.biostars.org/p/406584/",
+            "https://www.nature.com/articles/s41698-023-00408-6",
+            "https://cnvkit.readthedocs.io/en/stable/calling.html"
+          ],
+          "confidence": "low",
+          "deliveries": {
+            "bd32-team-a": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-91a05cc3bd27"
+            },
+            "bd32-team-b": {
+              "delivered": true,
+              "reasons": [],
+              "fact_id": "sl-dev-panel-noise-lab1-31a1e0626faa"
+            }
+          },
+          "text": "FINDING FROM THE LAB'S LIBRARY, asked for by the director. QUESTION: In copy-number studies comparing precursor and invasive breast lesions, is 'number of copy number alterations' usually reported as a count of discrete events (after merging segments) or as fraction of genome altered, and how are low-amplitude segments in exome-derived copy-number data usually treated? ANSWER: There is no single convention, and the pages I read do not fully settle it. Precursor-lesion papers describe burden as numbers of discrete aberrations: 'ADH ... had fewer aberrations than LG or HG DCIS', and '18 copy number changes' across 9 ADHs. Matched DCIS/IDC studies often use fraction of genome altered or shared. cBioPortal's FGA is the length of segments with |log2| > 0.1 divided by the genome length (another post says 0.2), weighted by bases, not by segment count. Low-amplitude segments are treated as copy-neutral below a fixed |log2| cutoff, typically 0.1-0.3; CNVkit's defaults are -0.25 and +0.2. Results are known to depend on the cutoff. None of the methods sections I read describe how segments are merged into events. If the counts are equal while FGA differs, report the result as metric-dependent. Neither metric gives JP 'more' CNAs. HOW SURE: low. SOURCES: https://pathsocjournals.onlinelibrary.wiley.com/doi/10.1002/path.5262, https://pmc.ncbi.nlm.nih.gov/articles/PMC3346166/, https://www.biostars.org/p/406584/, https://www.nature.com/articles/s41698-023-00408-6, https://cnvkit.readthedocs.io/en/stable/calling.html."
+        }
+      ]
+    }
+  ],
+  "not_chosen": [
+    {
+      "agent": "bd32-team-b",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd32-team-a",
+      "round": "analysis",
+      "reason": "replaced by the same team's challenge answer"
+    },
+    {
+      "agent": "bd32-team-b",
+      "round": "challenge",
+      "reason": "agreed with bd32-team-a; that team's file is the reported copy"
+    }
+  ],
+  "agent_runs": [
+    {
+      "agent": "bd32-library",
+      "phase": "library",
+      "ok": true,
+      "seconds": 93.67215941590257,
+      "cost_usd": 0.37144980000000005,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "briefing",
+      "ok": true,
+      "seconds": 52.813560000038706,
+      "cost_usd": 0.1361342,
+      "error": null
+    },
+    {
+      "agent": "bd32-team-b",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 39.047505084075965,
+      "cost_usd": 0.10434360000000001,
+      "error": null
+    },
+    {
+      "agent": "bd32-team-a",
+      "phase": "analysis",
+      "ok": true,
+      "seconds": 75.99213091703132,
+      "cost_usd": 0.20676799999999998,
+      "error": null
+    },
+    {
+      "agent": "director",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 89.14768904203083,
+      "cost_usd": 0.32226980000000005,
+      "error": null
+    },
+    {
+      "agent": "bd32-library",
+      "phase": "research",
+      "ok": true,
+      "seconds": 119.9066995830508,
+      "cost_usd": 0.5613559999999999,
+      "error": null
+    },
+    {
+      "agent": "bd32-team-b",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 93.14462204207666,
+      "cost_usd": 0.31766079999999997,
+      "error": null
+    },
+    {
+      "agent": "bd32-team-a",
+      "phase": "challenge",
+      "ok": true,
+      "seconds": 105.54840424994472,
+      "cost_usd": 0.36112980000000006,
+      "error": null
+    }
+  ],
+  "unsanctioned_pass_downs": []
+}
