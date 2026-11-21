@@ -222,4 +222,4 @@ Run folders under `runs/` stay local. The graded records of each run are in `res
 - **Usage limits.** The account's Fable limit stopped both test runs once (I-13), and the scBench lab moved to Opus analysts because of it (D-21).
 - **Next:** run the search-off comparison; try teams on different models (`--team-b-model`), so the two teams do not share one model's blind spots; test I-1 with an agent that names another identity.
 
-Built entirely during the event. A practice lab was built beforehand in a separate repository; no file was copied from it. The full working log, with every decision, observation, issue and measurement, is [explanation.md](explanation.md).
+The full working log, with every decision, observation, issue and measurement, is [explanation.md](explanation.md).
