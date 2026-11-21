@@ -43,6 +43,17 @@ with local memory its first-round memory writes; the briefing is passed down aga
 Prompt overlay (Config.prompt_dir): template() reads `<prompt_dir>/<name>.md` when it exists, else
 lab/prompts/<name>.md. Checks (Config.checks) are the code-level switches in lab/check_registry.py.
 
+Department heads (Config.heads, off by default; D-23). Three heads, `head-library`, `head-team-a` and
+`head-team-b`, share the department `heads`. Like the director they read every department's memory;
+the lab also gives each the study's event log so far. Workers still read only their own department.
+  1b. library review   after step 1, the head of the library reviews the library's findings; the
+                       director's briefing brief carries its review.
+  3b. team review      after step 3, each team's head reviews its own scientist's answer before the
+                       comparison and may write notes for it. A note is delivered only if it passes the
+                       leak check against the other team's answer and cites no fact from the other
+                       team's department (only the director moves findings between teams). A team that
+                       received a note revises once; a revised answer that is not valid is not used.
+
 The answer file is the study's first deliverable (answer_file): `answer.json` for GeneBench,
 `eval_answer.json` for scBench. Briefs name it through the {answer_file} field.
 
@@ -80,7 +91,7 @@ from typing import Any
 
 from lab import check_registry
 from lab.budget import Budget, BudgetExceeded, estimates_for, prior_spend
-from lab.contracts import DIRECTOR, WORKER, Adapter, Agent, AgentResult, Backend, EventLog, Memory, Org, Study
+from lab.contracts import DIRECTOR, HEAD, WORKER, Adapter, Agent, AgentResult, Backend, EventLog, Memory, Org, Study
 from lab.gateway import Gateway
 from lab.inventory import INVENTORY_FILE, build_inventory, hypothesis_text, render_inventory
 from lab.limits import UsageLimit   # defined there so lab.budget can subclass it; still importable from here
@@ -102,6 +113,12 @@ SITUATION = {      # the {situation} line of analyst_revise.md, per round
     "challenge": "The other team reached the same answer as you. The director does not think agreement alone "
                  "makes it right, and has questions for both teams.",
 }
+HEADS = {"library": "head-library", "team-a": "head-team-a", "team-b": "head-team-b"}
+HEAD_DEPARTMENT = "heads"
+TEAM_NAMES = {"team-a": "Team A", "team-b": "Team B"}
+# Files from a scientist's folder its head may read: its own work, never the raw session logs.
+WORK_SUFFIXES = {".json", ".py", ".r", ".md", ".txt", ".csv", ".tsv", ".ipynb", ".sh"}
+WORK_MAX_BYTES = 1_000_000
 # The analysts' revision brief, when research on demand is on (its {findings_note} field).
 FINDINGS_NOTE = ("\n\nThe director may also have passed down findings from the lab's library: answers to questions "
                  "about how a method is defined, what a tool does by default, or which convention a field uses. They "
@@ -176,7 +193,8 @@ class Config:
     worker_model: str = "fable"
     team_b_model: str | None = None   # None: team B uses worker_model (set it for a mixed run)
     timeouts: dict = dataclasses.field(default_factory=lambda: {
-        "library": 900, "director": 600, "analyst": 1800, "referee": 1200, "baseline": 1800, "research": 900})
+        "library": 900, "director": 600, "analyst": 1800, "referee": 1200, "baseline": 1800, "research": 900,
+        "head": 600})
     max_agents: int = 4          # agents running at once, shared across all studies
     max_searches: int = 12       # Exa calls the library may make in its first pass, per study
     team_searches: int = 8       # Exa calls team A's analyst may make per round
@@ -188,6 +206,9 @@ class Config:
     referee: bool = True         # run the referee before calling team C
     challenge: bool = True       # challenge an agreed answer before reporting it as replicated
     brief_teams: tuple = ("team-a",)   # the first teams that receive the director's briefing
+    heads: bool = False          # department heads review the library's findings and each team's answer (D-23)
+    head_model: str = "fable"
+    max_head_notes: int = 4      # notes a team's head may send its scientist in one review
     seed: int | None = None      # for the referee's X/Y order; None means random
     max_usd: float | None = None   # hard dollar cap for the run directory (lab.budget); None means no cap
     recheck: bool = False        # re-check a team's "Not verifiable" answer against an inventory of the data
@@ -867,6 +888,10 @@ class Lab:
                 model = (cfg.team_b_model or cfg.worker_model) if team == "team-b" else cfg.worker_model
                 agents.append(Agent(f"{s.id}-{team}", WORKER, f"{s.id}-{team}", model))
             agents.append(Agent(f"{s.id}-referee", WORKER, f"{s.id}-referee", cfg.worker_model))
+        if cfg.heads:
+            # One head per department, shared by every study, like the director. Their own notes go to
+            # the department "heads", which only heads and the director can read.
+            agents += [Agent(head_id, HEAD, HEAD_DEPARTMENT, cfg.head_model) for head_id in HEADS.values()]
         return Org(agents=agents)
 
     def finished(self) -> dict[str, dict]:
@@ -957,11 +982,14 @@ class StudyRun:
             "library": self.cfg.library, "questions": self.cfg.questions, "referee": self.cfg.referee,
             "challenge": self.cfg.challenge, "brief_teams": list(self.cfg.brief_teams),
             "team_search": self.cfg.team_search, "research": self.research_on},
-            "models": {n: lab.org.agent(n).model for n in names},
+            "models": {n: lab.org.agent(n).model for n in names + (list(HEADS.values()) if self.cfg.heads else [])},
             "briefed_teams": self.briefed if self.cfg.library else [],
             "candidates": [], "comparisons": [], "briefing": [], "questions": [], "warning_signs_to_team_c": [],
             "challenged": False, "challenge_questions": None, "challenge_changed_answer": None, "challenge": None,
             "referee": None, "research": [], "not_chosen": [], "agent_runs": [], "unsanctioned_pass_downs": []}
+        if self.cfg.heads:                         # recorded only when on, like the switches below
+            self.record["switches"]["heads"] = True
+            self.record["heads"] = {}
         for switch in ("recheck", "guard"):       # recorded only when on, so a default study.json is unchanged
             if getattr(self.cfg, switch):
                 self.record["switches"][switch] = True
@@ -1006,7 +1034,7 @@ class StudyRun:
         s = self.study
         return {"statement": s.statement, "data_dir": str(s.data_dir), "max_searches": self.cfg.max_searches,
                 "team_searches": self.cfg.team_searches, "research_searches": self.cfg.research_searches,
-                "search": "", "findings_note": "", "research": "", "research_shape": "", "evidence_note": "",
+                "search": "", "findings_note": "", "research": "", "research_shape": "", "evidence_note": "", "heads_note": "",
                 "questions_source": QUESTIONS_SOURCE.format(tools=TOOLS), "reply_note": REPLY_NOTE,
                 "study_id": s.id,
                 "time_limit_minutes": self.cfg.timeout("analyst") // 60, "answer_file": self.deliverable,
@@ -1090,6 +1118,139 @@ class StudyRun:
                 shutil.copyfile(note, teams_dir / f"{self.dept(team)}.json")
         return teams_dir
 
+    # ----- what a head gets to read -----
+
+    def study_log(self, ws: pathlib.Path) -> pathlib.Path:
+        """Copy this study's events so far into `ws/log/events.jsonl`: a head reads the logs, workers never do."""
+        if hasattr(self.lab.gateway, "sync"):
+            self.lab.gateway.sync()
+        sid = self.study.id
+        mine = lambda value: isinstance(value, str) and (value == sid or value.startswith(sid + "-"))
+        lines = [json.dumps(e, default=str) for e in self.lab.log.events()
+                 if e["seq"] >= self.start_seq and any(mine(e.get(k)) for k in ("study", "actor", "agent", "to_department"))]
+        path = ws / "log" / "events.jsonl"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("\n".join(lines) + ("\n" if lines else ""))
+        return path
+
+    def copy_work(self, team: str, dest: pathlib.Path) -> pathlib.Path:
+        """Copy a scientist's own work (notes, answer, scripts; no raw session logs, nothing large) for its head."""
+        src = self.dir / team
+        dest.mkdir(parents=True, exist_ok=True)
+        for f in src.rglob("*") if src.is_dir() else []:
+            rel = f.relative_to(src)
+            if not f.is_file() or any(part.startswith(".") for part in rel.parts):
+                continue
+            if f.suffix.lower() not in WORK_SUFFIXES or f.stat().st_size > WORK_MAX_BYTES:
+                continue
+            (dest / rel).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(f, dest / rel)
+        return dest
+
+    def fact_departments(self) -> dict[str, str]:
+        """Fact id -> the department it was written or passed down to, from the event log."""
+        out = {}
+        for e in self.lab.log.events():
+            if e["kind"] == "memory.write" and e.get("fact_id"):
+                out[e["fact_id"]] = e.get("department") or ""
+            elif e["kind"] == "memory.pass_down" and e.get("fact_id"):
+                out[e["fact_id"]] = e.get("to_department") or ""
+        return out
+
+    # ----- department heads (D-23) -----
+
+    def head_library_review(self) -> dict:
+        """The head of the library reviews the library's findings before the director's briefing."""
+        head = self.lab.org.agent(HEADS["library"])
+        ws = self.dir / "head-library"
+        log_file = self.study_log(ws)
+        brief = self.brief("head_library", head, **self.fields(log_file=str(log_file)))
+        result = self.run_agent(head, brief, "head-library", [self.study.data_dir, TOOLS], "head-review", "head")
+        doc = result.result if result.ok else {}
+        lists = {k: doc.get(k) if isinstance(doc.get(k), list) else [] for k in ("strong", "weak", "missing")}
+        review = {"ran": bool(result.ok), "verdict": doc.get("verdict") if result.ok else f"review failed: {result.error}",
+                  **lists}
+        self.record["heads"]["library"] = review
+        self.log("head.review", head=head.id, of=library_department(self.study), ran=review["ran"],
+                 weak=len(lists["weak"]), missing=len(lists["missing"]))
+        return review
+
+    def heads_note(self, review: dict | None) -> str:
+        """The director's briefing brief: what the head of the library said, if it reviewed."""
+        if not review or not review.get("ran"):
+            return ""
+        def line(item):
+            if isinstance(item, dict):
+                return f"{item.get('fact', '')}: {item.get('why', '')}".strip(": ")
+            return str(item)
+        parts = [f"\n\nThe head of the library reviewed these findings before you. Its verdict: {review.get('verdict') or 'none given'}"]
+        if review["weak"]:
+            parts.append("Findings it judged weak or likely to mislead:\n" + "\n".join(f"- {line(w)}" for w in review["weak"]))
+        if review["missing"]:
+            parts.append("What it found missing:\n" + "\n".join(f"- {line(m)}" for m in review["missing"]))
+        parts.append("Weigh its review; you still decide what is passed down.")
+        return "\n\n".join(parts)
+
+    def head_team_review(self, team: str, own: Candidate | None, other: Candidate | None) -> Candidate | None:
+        """A team's head reviews its scientist's answer before the comparison and may send notes.
+        Returns the answer to compare: the revised one if the team revised and it is valid, else `own`."""
+        if own is None:
+            return own
+        head = self.lab.org.agent(HEADS[team])
+        ws = self.dir / f"head-{team}"
+        work = self.copy_work(team, ws / "work")
+        log_file = self.study_log(ws)
+        dept = self.dept(team)
+        brief = self.brief("head_team", head, **self.fields(
+            team_name=TEAM_NAMES[team], team_department=dept, work_dir=str(work), log_file=str(log_file),
+            max_notes=self.cfg.max_head_notes, note_prefix=f"NOTE FROM THE HEAD OF {TEAM_NAMES[team].upper()}:"))
+        result = self.run_agent(head, brief, f"head-{team}", [self.study.data_dir, TOOLS], "head-review", "head")
+        doc = result.result if result.ok else {}
+        other_dept = self.dept("team-b" if team == "team-a" else "team-a")
+        departments = self.fact_departments()
+        others = [other.values] if other is not None and other.values else []
+        notes, waits = [], []
+        for item in doc.get("notes") if isinstance(doc.get("notes"), list) else []:
+            text = item.get("text") if isinstance(item, dict) else None
+            if not isinstance(text, str) or not text.strip():
+                continue
+            came_from = [str(x) for x in item.get("from") or [] if isinstance(x, str)] \
+                if isinstance(item.get("from"), list) else []
+            reasons = leak_check(text, own.values, others)
+            if any(departments.get(f) == other_dept for f in came_from):
+                reasons.append("cites the other team's notes; only the director passes findings between teams")
+            if self.names_source(text):
+                reasons.append("names something that identifies this task's source")
+            if sum(n["delivered"] for n in notes) >= self.cfg.max_head_notes:
+                reasons = [f"more than {self.cfg.max_head_notes} notes"]
+            passed = not reasons
+            self.log("relay.leak_check", round="head-review", to=dept, passed=passed, reasons=sorted(set(reasons)),
+                     question=text, by=head.id)
+            entry = {"text": text, "from": came_from, "why": str(item.get("why") or ""), "delivered": passed,
+                     "reasons": sorted(set(reasons)), "fact_id": None}
+            if passed:
+                entry["fact_id"] = self.lab.memory.pass_down(head.id, dept, text, came_from,
+                                                             entry["why"] or f"the head of {TEAM_NAMES[team]} reviewed this answer")
+                self.lab.delivered.add(entry["fact_id"])
+                waits.append(entry["fact_id"])
+            notes.append(entry)
+        review = {"ran": bool(result.ok), "approve": bool(doc.get("approve")) if result.ok else None,
+                  "verdict": doc.get("verdict") if result.ok else f"review failed: {result.error}",
+                  "notes": notes, "revised": False, "changed_answer": None}
+        self.record["heads"][team] = review
+        self.log("head.review", head=head.id, of=dept, ran=review["ran"], approve=review["approve"],
+                 notes=len(notes), delivered=len(waits))
+        if not waits:
+            return own
+        self.wait_visible({self.agent(team).id: waits})
+        revised = self.analyse(team, "analyst_review", round_="review", phase="review")
+        review["revised"] = True
+        if revised is None or not revised.valid:
+            return own
+        review["changed_answer"] = not all(field_agreement(self.lab.adapter, self.study, own.path, revised.path).values()) \
+            if own.valid else True
+        return revised
+
     # ----- steps -----
 
     def library(self) -> None:
@@ -1098,10 +1259,11 @@ class StudyRun:
         brief = self.brief("library", agent, **self.fields())
         self.run_agent(agent, brief, "library", [self.study.data_dir, TOOLS], "library", "library")
 
-    def briefing(self) -> list[dict]:
+    def briefing(self, library_review: dict | None = None) -> list[dict]:
         director = self.agent("director")
         brief = self.brief("director_relay", director,
-                           **self.fields(team_departments=", ".join(self.dept(t) for t in self.briefed)))
+                           **self.fields(team_departments=", ".join(self.dept(t) for t in self.briefed),
+                                         heads_note=self.heads_note(library_review)))
         result = self.run_agent(director, brief, "director-briefing", [TOOLS], "briefing", "director")
         items = result.result.get("pass_down") if result.ok else None
         kept = []
@@ -1380,8 +1542,14 @@ class StudyRun:
             if self.cfg.library:
                 self.library()
                 self.wait_visible({self.agent("director").id: self.library_facts()})
-                briefing = self.briefing()
+                review = self.head_library_review() if self.cfg.heads else None
+                briefing = self.briefing(review)
             a, b = self.both(self.analyse)
+            if self.cfg.heads:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+                    fa = pool.submit(self.head_team_review, "team-a", a, b)
+                    fb = pool.submit(self.head_team_review, "team-b", b, a)
+                    a, b = fa.result(), fb.result()
             if self.cfg.snapshot_first_round:
                 self.snapshot_first_round()
         if self.recheck_wanted(a, b):

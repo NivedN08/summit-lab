@@ -8,7 +8,7 @@ The library has researched the task below and written what it found to memory, i
 
 Decide what the teams need. Pass down only what could change how the analysis should be done; leave out the rest. The briefing goes only to the teams named below. Any other team starts from the data alone, on purpose, so that the teams do not all begin from the same information.
 
-List each item in `result.json`. Rewrite it so it stands on its own, give the ids of the library facts it comes from, and say why the teams need it. The lab delivers your items to the teams' memory under your name and records each one. The teams are: {team_departments}.
+List each item in `result.json`. Rewrite it so it stands on its own, give the ids of the library facts it comes from, and say why the teams need it. The lab delivers your items to the teams' memory under your name and records each one. The teams are: {team_departments}.{heads_note}
 
 Do not analyse the data and do not suggest an answer.
 
